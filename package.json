@@ -1,0 +1,21 @@
+{
+  "name": "aegis-static-wiki",
+  "version": "1.0.0",
+  "description": "Canonical, agent-facing wiki for AEGIS.",
+  "type": "commonjs",
+  "scripts": {
+    "migrate:remaining": "node tools/wiki/migrateRemaining.js",
+    "rebuild:index": "node tools/wiki/rebuildIndex.js",
+    "mcp:server": "node tools/wiki/mcpServer.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kosh7707/aegis-static-wiki.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "zod": "^4.1.12"
+  }
+}

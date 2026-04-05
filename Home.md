@@ -46,3 +46,9 @@ This is the Obsidian-friendly dashboard for the canonical AEGIS wiki.
 - Open this repository as a vault.
 - Keep `Home.md` pinned if you want a stable landing page.
 - Graph view should become more useful as more `wiki/context/**` pages are added.
+
+
+## Maintenance control
+- [[wiki/system/writing-guide]]
+- [[wiki/system/index]]
+- [[wiki/system/log]]

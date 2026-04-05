@@ -1,0 +1,4 @@
+{
+  "enabledMcpjsonServers": ["aegis-static-wiki"],
+  "enableAllProjectMcpServers": true
+}

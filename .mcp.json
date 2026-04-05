@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "aegis-static-wiki": {
+      "command": "node",
+      "args": ["tools/wiki/mcpServer.js"],
+      "cwd": "."
+    }
+  }
+}

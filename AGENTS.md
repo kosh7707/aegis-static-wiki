@@ -39,8 +39,15 @@ Every page should include at least:
 3. add or revise context pages that preserve decision flow
 4. keep retrieval-friendly links explicit
 5. run `python3 tools/validate_wiki.py`
+6. run `npm test` when MCP or migration tooling changes
 
 ## Retrieval model
 - Primary future interface: wiki-focused MCP
 - Current ground truth: markdown files in this repo
 - Obsidian is optional and must never be the only way to access critical information
+
+
+## Maintenance contract
+- `wiki/system/writing-guide.md` is the operational guide for page/index/log maintenance.
+- Prefer typed MCP operations for `index.md`, `log.md`, and `migration-map.md` maintenance when available.
+- Use the wiki MCP typed read/write tools for control-file maintenance when the server is available.
