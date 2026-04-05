@@ -1,0 +1,5 @@
+.omx/
+
+__pycache__/
+*.pyc
+.obsidian/appearance.json
