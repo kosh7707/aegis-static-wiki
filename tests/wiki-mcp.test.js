@@ -47,6 +47,10 @@ test('MCP server exposes typed read/write wiki operations', async () => {
     const listResult = await client.callTool({ name: 'list_pages', arguments: { scope: 'canon' } });
     assert.equal(listResult.structuredContent.pages.length >= 1, true);
 
+    const readResult = await client.callTool({ name: 'read_page', arguments: { path: 'wiki/canon/charter/aegis.md' } });
+    assert.equal(readResult.structuredContent.title, 'AEGIS');
+    assert.equal(readResult.structuredContent.canonical, true);
+
     await client.callTool({
       name: 'write_page',
       arguments: {

@@ -57,8 +57,8 @@ server.registerTool('read_page', {
   inputSchema: {
     path: z.string()
   }
-}, async ({ path }) => {
-  const normalized = path.endsWith('.md') ? path : `${path}.md`;
+}, async ({ path: pagePath }) => {
+  const normalized = pagePath.endsWith('.md') ? pagePath : `${pagePath}.md`;
   const page = buildPageRecord(path.join(ROOT, normalized));
   return textAndStructured({
     path: page.relPath,
