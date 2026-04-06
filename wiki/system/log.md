@@ -57,3 +57,7 @@ related_pages:
 ## [2026-04-06] maintenance | wiki-first governance cutover
 - Updated the wiki instructions to make aegis-static-wiki the preferred agent-facing documentation surface.
 - Removed stale absolute provenance paths from context/system control pages where they were not needed.
+
+## [2026-04-06] maintenance | post-cutover residual docs validation model
+- Rebased wiki validation/tests onto migration-map coverage plus the intentional AEGIS local residual docs surface.
+- Added session-history and test-evidence policy pages plus MCP tools for session evidence recording.

@@ -213,5 +213,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-06; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
+- [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*
 - [[wiki/system/taxonomy|Wiki taxonomy]] — - wiki/canon/charter/ — platform charter and global rules *(verified 2026-04-05; platform)*
+- [[wiki/system/test-evidence-policy|Test evidence policy]] — Test and verification activity should be attached to session-history artifacts. *(verified 2026-04-06; platform)*
 - [[wiki/system/writing-guide|AEGIS static wiki writing guide]] — This is the main maintenance contract for the wiki. *(verified 2026-04-05; platform)*

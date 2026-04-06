@@ -28,6 +28,8 @@ Agents should prefer **typed MCP operations** over ad-hoc manual edits for criti
 - `wiki/system/log.md` — append-only chronological activity ledger
 - `wiki/system/migration-map.md` — source-to-target migration ledger
 - `wiki/system/writing-guide.md` — this contract
+- `wiki/system/session-history-policy.md` — lane session evidence policy
+- `wiki/system/test-evidence-policy.md` — test/verification evidence policy
 
 ## Required maintenance behavior
 ### When pages are added or migrated
@@ -41,6 +43,8 @@ Agents should prefer **typed MCP operations** over ad-hoc manual edits for criti
 - Use `append_log_entry` for `log.md`
 - Use `update_index` for deterministic index regeneration
 - Use `record_migration_transition` for migration-map status changes
+- Use `record_session_history` for lane/session artifacts
+- Use `append_test_evidence` for verification evidence linked to session artifacts
 
 ## Log format
 Use parseable headings:

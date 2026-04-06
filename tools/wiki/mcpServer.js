@@ -10,8 +10,10 @@ const {
   getRecentChanges,
   listPages,
   recordMigrationTransition,
+  recordSessionHistory,
   rebuildIndex,
   searchPages,
+  appendTestEvidence,
   writePage,
   buildPageRecord,
   ROOT,
@@ -181,6 +183,54 @@ server.registerTool('record_migration_transition', {
 }, async ({ old_path, status, notes = '' }) => {
   const row = recordMigrationTransition({ oldPath: old_path, status, notes });
   return textAndStructured({ row }, `Updated migration status for ${old_path} to ${status}`);
+});
+
+server.registerTool('record_session_history', {
+  description: 'Create or update a deterministic session-history artifact under wiki/system/session-history/**.',
+  inputSchema: {
+    lane: z.string(),
+    session_id: z.string(),
+    status: z.string().optional(),
+    summary: z.string().optional(),
+    started_at: z.string().optional(),
+    updated_at: z.string().optional(),
+    related_pages: z.array(z.string()).optional(),
+    source_refs: z.array(z.string()).optional()
+  }
+}, async ({ lane, session_id, status = 'started', summary = '', started_at, updated_at, related_pages = [], source_refs = [] }) => {
+  const page = recordSessionHistory({
+    lane,
+    sessionId: session_id,
+    status,
+    summary,
+    startedAt: started_at,
+    updatedAt: updated_at,
+    relatedPages: related_pages,
+    sourceRefs: source_refs
+  });
+  return textAndStructured({ path: page.relPath, title: page.title }, `Recorded session history at ${page.relPath}`);
+});
+
+server.registerTool('append_test_evidence', {
+  description: 'Append test/verification evidence to a session-history artifact.',
+  inputSchema: {
+    lane: z.string(),
+    session_id: z.string(),
+    command: z.string(),
+    status: z.string(),
+    log_ref: z.string(),
+    details: z.array(z.string()).optional()
+  }
+}, async ({ lane, session_id, command, status, log_ref, details = [] }) => {
+  const page = appendTestEvidence({
+    lane,
+    sessionId: session_id,
+    command,
+    status,
+    logRef: log_ref,
+    details
+  });
+  return textAndStructured({ path: page.relPath, title: page.title }, `Appended test evidence to ${page.relPath}`);
 });
 
 async function main() {

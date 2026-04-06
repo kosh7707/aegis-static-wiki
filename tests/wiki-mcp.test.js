@@ -40,7 +40,7 @@ test('MCP server exposes typed read/write wiki operations', async () => {
 
     const tools = await client.listTools();
     const toolNames = tools.tools.map((tool) => tool.name);
-    for (const name of ['list_pages', 'read_page', 'search_pages', 'get_backlinks', 'get_recent_changes', 'get_migration_target', 'write_page', 'append_log_entry', 'update_index', 'record_migration_transition']) {
+    for (const name of ['list_pages', 'read_page', 'search_pages', 'get_backlinks', 'get_recent_changes', 'get_migration_target', 'write_page', 'append_log_entry', 'update_index', 'record_migration_transition', 'record_session_history', 'append_test_evidence']) {
       assert.equal(toolNames.includes(name), true, `${name} should be registered`);
     }
 
@@ -68,6 +68,32 @@ test('MCP server exposes typed read/write wiki operations', async () => {
     await client.callTool({ name: 'append_log_entry', arguments: { date: '2026-04-05', event: 'mcp', subject: 'fixture write', details: ['updated via test'] } });
     const recentChanges = await client.callTool({ name: 'get_recent_changes', arguments: { limit: 5 } });
     assert.equal(recentChanges.structuredContent.entries[0].subject, 'fixture write');
+
+    await client.callTool({
+      name: 'record_session_history',
+      arguments: {
+        lane: 's2',
+        session_id: 'session-42',
+        status: 'started',
+        summary: 'Cutover verification session',
+        related_pages: ['wiki/canon/charter/aegis.md']
+      }
+    });
+    await client.callTool({
+      name: 'append_test_evidence',
+      arguments: {
+        lane: 's2',
+        session_id: 'session-42',
+        command: 'python3 tools/validate_wiki.py',
+        status: 'pass',
+        log_ref: 'logs://validate-wiki',
+        details: ['validate_wiki passed in fixture']
+      }
+    });
+    const sessionPage = fs.readFileSync(path.join(root, 'wiki/system/session-history/s2/session-42.md'), 'utf8');
+    assert.match(sessionPage, /Cutover verification session/);
+    assert.match(sessionPage, /python3 tools\/validate_wiki.py/);
+    assert.match(sessionPage, /logs:\/\/validate-wiki/);
 
     await client.callTool({ name: 'record_migration_transition', arguments: { old_path: 'docs/s1-handoff/README.md', status: 'canonicalized', notes: 'fixture canonicalized' } });
     const migrationRow = await client.callTool({ name: 'get_migration_target', arguments: { old_path: 'docs/s1-handoff/README.md' } });

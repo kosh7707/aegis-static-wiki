@@ -41,6 +41,7 @@ Every page should include at least:
 4. keep retrieval-friendly links explicit
 5. run `python3 tools/validate_wiki.py`
 6. run `npm test` when MCP or migration tooling changes
+7. when lane/session evidence behavior changes, update `wiki/system/session-history-policy.md` and `wiki/system/test-evidence-policy.md`
 
 ## Retrieval model
 - Primary future interface: wiki-focused MCP

@@ -22,6 +22,7 @@ const INDEX_PATH = path.join(SYSTEM_ROOT, 'index.md');
 const LOG_PATH = path.join(SYSTEM_ROOT, 'log.md');
 const WRITING_GUIDE_PATH = path.join(SYSTEM_ROOT, 'writing-guide.md');
 const MIGRATION_MAP_PATH = path.join(SYSTEM_ROOT, 'migration-map.md');
+const SESSION_HISTORY_ROOT = path.join(SYSTEM_ROOT, 'session-history');
 
 const CATEGORY_ORDER = [
   ['charter', 'Platform charter'],
@@ -515,8 +516,16 @@ function validateWritePath(relPath, canonical) {
   if (canonical && !normalized.startsWith('wiki/canon/')) {
     throw new Error('Canonical pages must live under wiki/canon/**');
   }
-  if (!canonical && !(normalized.startsWith('wiki/context/') || normalized === 'wiki/system/writing-guide.md' || normalized === 'Home.md')) {
-    throw new Error('Non-canonical writes must target wiki/context/**, wiki/system/writing-guide.md, or Home.md');
+  if (
+    !canonical &&
+    !(
+      normalized.startsWith('wiki/context/') ||
+      normalized === 'wiki/system/writing-guide.md' ||
+      normalized.startsWith('wiki/system/session-history/') ||
+      normalized === 'Home.md'
+    )
+  ) {
+    throw new Error('Non-canonical writes must target wiki/context/**, wiki/system/writing-guide.md, wiki/system/session-history/**, or Home.md');
   }
 }
 
@@ -536,6 +545,103 @@ function writePage({ relPath, title, pageType, canonical, sourceRefs = [], servi
   };
   writeMarkdownPage({ relPath, frontmatter, body });
   return buildPageRecord(path.join(ROOT, relPath));
+}
+
+function sanitizeSegment(value) {
+  return String(value).trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function getSessionHistoryRelPath({ lane, sessionId }) {
+  return path.join('wiki', 'system', 'session-history', sanitizeSegment(lane), `${sanitizeSegment(sessionId)}.md`).replace(/\\/g, '/');
+}
+
+function buildSessionHistoryBody({ lane, sessionId, status, summary, startedAt, updatedAt, relatedPages = [] }) {
+  const related = relatedPages.length
+    ? relatedPages.map((page) => `- ${page.startsWith('[[') ? page : `[[${page.replace(/\\.md$/i, '')}]]`}`).join('\n')
+    : '- None';
+  return [
+    `# Session history — ${lane} / ${sessionId}`,
+    '',
+    '## Session',
+    `- Lane: ${lane}`,
+    `- Session ID: ${sessionId}`,
+    `- Status: ${status}`,
+    `- Started at: ${startedAt}`,
+    `- Updated at: ${updatedAt}`,
+    '',
+    '## Summary',
+    summary || 'No summary recorded yet.',
+    '',
+    '## Related pages',
+    related,
+    '',
+    '## Test evidence',
+    '_No test evidence recorded yet._',
+    ''
+  ].join('\n');
+}
+
+function recordSessionHistory({ lane, sessionId, status = 'started', summary = '', startedAt, updatedAt, relatedPages = [], sourceRefs = [] }) {
+  const now = new Date().toISOString();
+  const relPath = getSessionHistoryRelPath({ lane, sessionId });
+  const absPath = path.join(ROOT, relPath);
+  const existing = fs.existsSync(absPath) ? buildPageRecord(absPath) : null;
+  const page = writePage({
+    relPath,
+    title: `Session history — ${lane} / ${sessionId}`,
+    pageType: 'system-session-history',
+    canonical: false,
+    sourceRefs: sourceRefs.length ? sourceRefs : ['../../writing-guide.md'],
+    serviceTags: [sanitizeSegment(lane)],
+    decisionTags: ['session-history', 'hook-policy'],
+    relatedPages,
+    body: buildSessionHistoryBody({
+      lane,
+      sessionId,
+      status,
+      summary: summary || existing?.summary || '',
+      startedAt: startedAt || existing?.body.match(/- Started at: (.+)/)?.[1] || now,
+      updatedAt: updatedAt || now,
+      relatedPages
+    }),
+    lastVerified: now.slice(0, 10)
+  });
+  return page;
+}
+
+function appendTestEvidence({ lane, sessionId, command, status, logRef, details = [] }) {
+  const relPath = getSessionHistoryRelPath({ lane, sessionId });
+  const absPath = path.join(ROOT, relPath);
+  const page = fs.existsSync(absPath)
+    ? buildPageRecord(absPath)
+    : recordSessionHistory({ lane, sessionId, status: 'started', summary: 'Session created automatically for test evidence logging.' });
+  let body = page.body;
+  const placeholder = '_No test evidence recorded yet._';
+  if (body.includes(placeholder)) body = body.replace(placeholder, '');
+  const evidenceLines = [
+    `### ${new Date().toISOString()} — ${status}`,
+    `- Command: \`${command}\``,
+    `- Log ref: ${logRef}`,
+    ...details.map((detail) => `- ${detail}`),
+    ''
+  ];
+  body = `${body.trimEnd()}\n\n${evidenceLines.join('\n')}\n`;
+  const { data } = parseFrontmatter(readText(absPath));
+  writeMarkdownPage({
+    relPath,
+    frontmatter: {
+      title: data.title || `Session history — ${lane} / ${sessionId}`,
+      page_type: data.page_type || 'system-session-history',
+      canonical: false,
+      source_refs: Array.isArray(data.source_refs) ? data.source_refs : [],
+      last_verified: new Date().toISOString().slice(0, 10),
+      service_tags: Array.isArray(data.service_tags) ? data.service_tags : [sanitizeSegment(lane)],
+      decision_tags: Array.isArray(data.decision_tags) ? data.decision_tags : ['session-history', 'hook-policy'],
+      related_pages: Array.isArray(data.related_pages) ? data.related_pages : []
+    },
+    body
+  });
+  return buildPageRecord(absPath);
 }
 
 function listPages({ scope = 'all', canonical = null, search = '' } = {}) {
@@ -608,6 +714,7 @@ module.exports = {
   getBacklinks,
   getMigrationTarget,
   getRecentChanges,
+  getSessionHistoryRelPath,
   inferServiceTags,
   isValidTransition,
   listPages,
@@ -616,9 +723,11 @@ module.exports = {
   parseFrontmatter,
   parseLogEntries,
   recordMigrationTransition,
+  recordSessionHistory,
   rebuildIndex,
   rebuildMigrationMap,
   searchPages,
+  appendTestEvidence,
   toWikiLink,
   writeMarkdownPage,
   writePage,

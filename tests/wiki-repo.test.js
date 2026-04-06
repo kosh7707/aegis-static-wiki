@@ -13,6 +13,25 @@ const sourceDocsCandidates = [
 const sourceDocsRoot = sourceDocsCandidates.find((candidate) => fs.existsSync(candidate)) || sourceDocsCandidates[0];
 const migrationMapPath = path.join(repoRoot, 'wiki/system/migration-map.md');
 
+function parseMigrationRows() {
+  const text = fs.readFileSync(migrationMapPath, 'utf8');
+  const rows = [];
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line.startsWith('|') || line.startsWith('| old path |') || line.startsWith('|---|')) continue;
+    const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+    if (cells.length < 5) continue;
+    rows.push({
+      oldPath: cells[0],
+      newPath: cells[1],
+      bucket: cells[2],
+      status: cells[3],
+      notes: cells[4]
+    });
+  }
+  return rows;
+}
+
 function listMarkdownFiles(dirPath) {
   const results = [];
   for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
@@ -45,10 +64,18 @@ test('all remaining buckets are migrated and no planned rows remain', () => {
 });
 
 test('canonical wiki now covers the full source docs corpus', () => {
-  assert.equal(fs.existsSync(sourceDocsRoot), true, `source docs root should exist: ${sourceDocsRoot}`);
-  const sourceDocs = listMarkdownFiles(sourceDocsRoot).filter((file) => !file.endsWith('.gitkeep'));
+  const migrationRows = parseMigrationRows().filter((row) => row.status === 'canonicalized');
   const canonDocs = listMarkdownFiles(path.join(repoRoot, 'wiki/canon'));
-  assert.equal(canonDocs.length, sourceDocs.length, 'canonical wiki should cover every markdown doc from source docs');
+  assert.equal(canonDocs.length, migrationRows.length, 'canonical wiki should cover every canonicalized migration-map row');
+});
+
+test('source repo docs are reduced to the bootstrap residual surface', () => {
+  assert.equal(fs.existsSync(sourceDocsRoot), true, `source docs root should exist: ${sourceDocsRoot}`);
+  const sourceDocs = listMarkdownFiles(sourceDocsRoot)
+    .filter((file) => !file.endsWith('.gitkeep'))
+    .map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
+  const disallowed = sourceDocs.filter((rel) => rel !== 'AEGIS.md' && !rel.startsWith('work-requests/'));
+  assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md plus work-requests markdown');
 });
 
 test('authoritative control files exist', () => {
@@ -56,6 +83,8 @@ test('authoritative control files exist', () => {
     'wiki/system/index.md',
     'wiki/system/log.md',
     'wiki/system/writing-guide.md',
+    'wiki/system/session-history-policy.md',
+    'wiki/system/test-evidence-policy.md',
     '.mcp.json',
     '.claude/settings.local.json'
   ]) {

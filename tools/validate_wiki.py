@@ -37,6 +37,8 @@ REQUIRED_FILES = [
     'wiki/system/migration-map.md',
     'wiki/system/taxonomy.md',
     'wiki/system/writing-guide.md',
+    'wiki/system/session-history-policy.md',
+    'wiki/system/test-evidence-policy.md',
     'schemas/frontmatter.md',
     'templates/source-summary.md',
     'templates/concept-page.md',
@@ -78,13 +80,43 @@ def list_markdown_files(dir_path: Path) -> list[Path]:
     )
 
 
+def parse_migration_rows() -> list[dict[str, str]]:
+    text = (ROOT / 'wiki/system/migration-map.md').read_text(encoding='utf-8')
+    rows: list[dict[str, str]] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line.startswith('|') or line.startswith('| old path |') or line.startswith('|---|'):
+            continue
+        cells = [cell.strip() for cell in line.split('|')[1:-1]]
+        if len(cells) < 5:
+            continue
+        rows.append({
+            'old_path': cells[0],
+            'new_path': cells[1],
+            'bucket': cells[2],
+            'status': cells[3],
+            'notes': cells[4],
+        })
+    return rows
+
+
 def ensure_corpus_coverage() -> None:
-    if not SOURCE_DOCS.exists():
-        fail(f'source docs root not found: {SOURCE_DOCS}')
-    source_docs = list_markdown_files(SOURCE_DOCS)
+    migration_rows = [row for row in parse_migration_rows() if row['status'] == 'canonicalized']
     canon_docs = list_markdown_files(ROOT / 'wiki' / 'canon')
-    if len(canon_docs) != len(source_docs):
-        fail(f'canonical corpus count mismatch: {len(canon_docs)} != {len(source_docs)}')
+    if len(canon_docs) != len(migration_rows):
+        fail(f'canonical corpus count mismatch: {len(canon_docs)} != {len(migration_rows)}')
+
+
+def ensure_residual_source_surface() -> None:
+    if not SOURCE_DOCS.exists():
+        return
+    source_docs = [path.relative_to(SOURCE_DOCS).as_posix() for path in list_markdown_files(SOURCE_DOCS)]
+    disallowed = [
+        rel for rel in source_docs
+        if rel != 'AEGIS.md' and not rel.startswith('work-requests/')
+    ]
+    if disallowed:
+        fail(f'source docs residual surface contains unexpected markdown files: {disallowed[:10]}')
 
 
 def ensure_frontmatter(path: Path, canonical: bool) -> None:
@@ -123,7 +155,7 @@ def ensure_control_files() -> None:
     for needle in ['## [2026-04-05] migration | handoff bucket', '## [2026-04-05] migration | feedback bucket']:
         if needle not in log_text:
             fail(f'log.md missing {needle}')
-    for needle in ['typed MCP operations', 'append_log_entry', 'update_index', 'record_migration_transition']:
+    for needle in ['typed MCP operations', 'append_log_entry', 'update_index', 'record_migration_transition', 'record_session_history', 'append_test_evidence']:
         if needle not in guide_text:
             fail(f'writing-guide.md missing {needle}')
 
@@ -131,6 +163,7 @@ def ensure_control_files() -> None:
 def main() -> None:
     ensure_exists()
     ensure_corpus_coverage()
+    ensure_residual_source_surface()
     ensure_frontmatter(ROOT / 'wiki/canon/charter/aegis.md', True)
     ensure_frontmatter(ROOT / 'wiki/context/decisions/canonical-wiki.md', False)
     ensure_frontmatter(ROOT / 'wiki/system/writing-guide.md', False)
