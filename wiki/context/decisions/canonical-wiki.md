@@ -5,8 +5,8 @@ canonical: false
 source_refs:
   - "../../canon/charter/aegis.md"
   - "../../../README.md"
-  - "/home/kosh/projects/.omx/plans/prd-aegis-static-wiki.md"
-  - "/home/kosh/projects/.omx/specs/deep-interview-aegis-static-wiki.md"
+  - "../../system/migration-map.md"
+  - "../../system/writing-guide.md"
 last_verified: "2026-04-05"
 service_tags: ["platform"]
 decision_tags: ["canonicality", "migration", "agent-memory"]

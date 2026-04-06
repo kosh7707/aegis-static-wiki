@@ -8,6 +8,11 @@ Canonical, agent-facing wiki for AEGIS.
 - keep S4/static-analysis engineering knowledge in the same system
 - support agent retrieval and maintenance through a wiki-focused MCP
 
+## Canonical usage
+- AEGIS sessions should start here, not from `AEGIS/docs/**`.
+- Source-repo `docs/**` now exists as a migration/compatibility surface.
+- The canonical navigation entrypoint is `wiki/system/index.md`.
+
 ## Information model
 - `wiki/canon/**` — canonical migrated documentation
 - `wiki/context/**` — synthesized agent-facing context pages

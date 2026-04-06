@@ -19,6 +19,10 @@ This is the main maintenance contract for the wiki.
 ## Core rule
 Agents should prefer **typed MCP operations** over ad-hoc manual edits for critical maintenance files.
 
+## Canonical surface rule
+- The wiki is the preferred agent-facing documentation surface for AEGIS.
+- The source repo `AEGIS/docs/**` should be treated as migration input or compatibility copy, not the long-term reading target.
+
 ## Control files
 - `wiki/system/index.md` — content-oriented catalog of the wiki
 - `wiki/system/log.md` — append-only chronological activity ledger

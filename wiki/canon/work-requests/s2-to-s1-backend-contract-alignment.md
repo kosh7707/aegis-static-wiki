@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/work-requests/s2-to-s1-backend-contract-alignment.md"
 original_path: "docs/work-requests/s2-to-s1-backend-contract-alignment.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s2", "platform"]
 decision_tags: []
 related_pages: []

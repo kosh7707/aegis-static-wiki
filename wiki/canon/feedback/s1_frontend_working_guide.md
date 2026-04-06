@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/외부피드백/S1_frontend_working_guide.md"
 original_path: "docs/외부피드백/S1_frontend_working_guide.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s1", "platform"]
 decision_tags: []
 related_pages: []

@@ -4,7 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const sourceDocsRoot = '/home/kosh/projects/AEGIS-codex-safety-20260403/docs';
+const sourceDocsCandidates = [
+  process.env.SOURCE_DOCS_ROOT,
+  path.join(repoRoot, '..', 'AEGIS', 'docs'),
+  '/home/kosh/AEGIS/docs',
+  '/home/kosh/projects/AEGIS-codex-safety-20260403/docs'
+].filter(Boolean).map((candidate) => path.resolve(candidate));
+const sourceDocsRoot = sourceDocsCandidates.find((candidate) => fs.existsSync(candidate)) || sourceDocsCandidates[0];
 const migrationMapPath = path.join(repoRoot, 'wiki/system/migration-map.md');
 
 function listMarkdownFiles(dirPath) {
@@ -13,7 +19,12 @@ function listMarkdownFiles(dirPath) {
     const fullPath = path.join(dirPath, entry.name);
     if (entry.isDirectory()) {
       results.push(...listMarkdownFiles(fullPath));
-    } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== '.gitkeep') {
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith('.md') &&
+      entry.name !== '.gitkeep' &&
+      !(fullPath === path.join(sourceDocsRoot, 'README.md'))
+    ) {
       results.push(fullPath);
     }
   }
@@ -34,6 +45,7 @@ test('all remaining buckets are migrated and no planned rows remain', () => {
 });
 
 test('canonical wiki now covers the full source docs corpus', () => {
+  assert.equal(fs.existsSync(sourceDocsRoot), true, `source docs root should exist: ${sourceDocsRoot}`);
   const sourceDocs = listMarkdownFiles(sourceDocsRoot).filter((file) => !file.endsWith('.gitkeep'));
   const canonDocs = listMarkdownFiles(path.join(repoRoot, 'wiki/canon'));
   assert.equal(canonDocs.length, sourceDocs.length, 'canonical wiki should cover every markdown doc from source docs');

@@ -2,7 +2,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(process.env.WIKI_ROOT || path.join(__dirname, '..', '..'));
-const SOURCE_DOCS_ROOT = path.resolve(process.env.SOURCE_DOCS_ROOT || '/home/kosh/projects/AEGIS-codex-safety-20260403/docs');
+
+function resolveSourceDocsRoot() {
+  const candidates = [
+    process.env.SOURCE_DOCS_ROOT,
+    path.join(ROOT, '..', 'AEGIS', 'docs'),
+    '/home/kosh/AEGIS/docs',
+    '/home/kosh/projects/AEGIS-codex-safety-20260403/docs'
+  ].filter(Boolean).map((candidate) => path.resolve(candidate));
+
+  const existing = candidates.find((candidate) => fs.existsSync(candidate));
+  return existing || candidates[0];
+}
+
+const SOURCE_DOCS_ROOT = resolveSourceDocsRoot();
 const WIKI_ROOT = path.join(ROOT, 'wiki');
 const SYSTEM_ROOT = path.join(WIKI_ROOT, 'system');
 const INDEX_PATH = path.join(SYSTEM_ROOT, 'index.md');

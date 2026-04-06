@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/외부피드백/26.03.25/AEGIS_review_index.md"
 original_path: "docs/외부피드백/26.03.25/AEGIS_review_index.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []

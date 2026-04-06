@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/README.md"
 original_path: "docs/s7-handoff/README.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -176,4 +176,4 @@ OpenAI-compatible chat completion 프록시. S3 Agent가 멀티턴 LLM 호출 �
 | [architecture.md](architecture.md) | 파일 구조, 요청 흐름, 환경변수, Observability, 동시성, Thinking 제어 |
 | [llm-engine-ops.md](llm-engine-ops.md) | DGX Spark 접속, vLLM 기동/중지, 성능 실측, 트러블슈팅 |
 | [roadmap.md](roadmap.md) | 다음 작업 + LoRA 파인튜닝 장기 계획 |
-| session-{1~10}.md | 세션별 작업 로그 |
+| session-{1~11}.md | 세션별 작업 로그 |

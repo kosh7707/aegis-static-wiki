@@ -3,8 +3,8 @@ title: "Why agents should use MCP over Obsidian"
 page_type: "context-decision"
 canonical: false
 source_refs:
-  - "/home/kosh/projects/.omx/specs/deep-interview-aegis-static-wiki.md"
   - "../../system/index.md"
+  - "../../system/writing-guide.md"
 last_verified: "2026-04-05"
 service_tags: ["platform"]
 decision_tags: ["retrieval", "mcp", "obsidian"]

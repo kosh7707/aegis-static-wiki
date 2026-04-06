@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []

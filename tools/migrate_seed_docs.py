@@ -2,10 +2,29 @@
 from __future__ import annotations
 
 from datetime import date
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = Path('/home/kosh/projects/AEGIS-codex-safety-20260403/docs')
+
+
+def resolve_source_docs() -> Path:
+    candidates = [
+        os.environ.get('SOURCE_DOCS_ROOT'),
+        ROOT.parent / 'AEGIS' / 'docs',
+        Path('/home/kosh/AEGIS/docs'),
+        Path('/home/kosh/projects/AEGIS-codex-safety-20260403/docs'),
+    ]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        path = Path(candidate).expanduser().resolve()
+        if path.exists():
+            return path
+    return Path(candidates[1]).expanduser().resolve()
+
+
+SOURCE = resolve_source_docs()
 TODAY = date.today().isoformat()
 
 MAPPINGS = [

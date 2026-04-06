@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/adapter.md"
 original_path: "docs/specs/adapter.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s6"]
 decision_tags: []
 related_pages: []

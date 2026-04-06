@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/AEGIS.md"
 original_path: "docs/AEGIS.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []

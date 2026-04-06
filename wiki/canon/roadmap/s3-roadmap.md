@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s3-handoff/roadmap.md"
 original_path: "docs/s3-handoff/roadmap.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: []
@@ -26,25 +26,44 @@ migration_status: "canonicalized"
 
 
 
+## 세션 25 완료 (2026-04-04)
+
+1. ~~**S4 v0.11 build-path 대응**~~ ✅ explicit `buildCommand` / `buildEnvironment` / `provenance` 기반으로 S3 build path 적응
+2. ~~**S5 readiness/provenance 대응**~~ ✅ `KB_NOT_READY` 명시 처리 + provenance seam pass-through 준비
+3. ~~**RE100 4/4 build-resolve 검증**~~ ✅ `certificate-maker`, `gateway`, `gateway-webserver`, `gateway-test` direct endpoint-driven 검증 완료
+4. ~~**build-script hint field 도입**~~ ✅ optional / text-only / reference-only / direct execution 금지 semantics 반영
+
+## 다음 세션 목표 (세션 26)
+
+### 즉시 처리
+
+1. **S2 gate reopen 여부 결정** — Build Snapshot / BuildAttempt implementation-open signal 발행 여부 판단
+2. **RE100 analysis 확장 여부 결정** — `deep-analyze`/PoC까지 같은 기준으로 확대 검증할지 판단
+3. **gateway-test hint guidance 정리** — 최소 caller hint 기준과 문서화 여부 결정
+
+### 백로그
+
+1. **Build Agent 프로세스 격리** — bash 실행 namespace 격리
+2. **Build Snapshot public surface / shared model 승격 시점 결정**
+3. **analysis boundary 문서화 추가 정리** — snapshot/reference-first 관점 후속 반영 여부 판단
+
+## 세션 24 완료 (2026-04-04)
+
+1. ~~**S2/S4/S5 회신 처리**~~ ✅ Build Snapshot 후속 WR 회신 읽고 핵심 결론을 handoff로 흡수
+2. ~~**WR cleanup 반영**~~ ✅ 처리 완료된 Build Snapshot / contract WR 묶음을 삭제 대상으로 정리
+3. ~~**새 blocker 식별**~~ ✅ S4 `/v1` build path inversion(v0.11.0)과 S5 Neo4j-required readiness를 차기 핵심 작업으로 승격
+
+## 세션 23 완료 (2026-04-04)
+
+1. ~~**downstream WR completion**~~ ✅ S2 구현 착수 요청, S4 consumer alignment 요청, S5 provenance alignment 요청 발행
+2. ~~**S3-first coordination backlog 정리**~~ ✅ Build Snapshot / BuildAttempt 후속 액션을 recipient별 ownership으로 분리
+3. ~~**handoff 업데이트**~~ ✅ 세션 23 로그 + 로드맵에 outbound WR 상태 반영
+
 ## 세션 22 완료 (2026-04-04)
 
 1. ~~**strict compile-first canonical surface 정리**~~ ✅ `subprojectPath/subprojectName`, `build-resolve-v1`, nested `build.mode`/`build.sdkId` 기준으로 docs/runtime/tests를 재정렬
 2. ~~**result semantics 노출 보강**~~ ✅ `contractVersion`, `strictMode`, `declaredMode`, `sdkId`가 response/result에서 일관되게 드러나도록 보강
 3. ~~**S3-owned harness/docs drift 제거**~~ ✅ build/analyze harness 예시와 API/spec failure terminology를 현재 런타임 기준으로 정렬
-
-## 다음 세션 목표 (세션 23)
-
-### 즉시 처리
-
-1. **strict compile-first 전체 Ralph 검증** — 이번 canonical surface 변경 포함 전체 회귀 + architect sign-off
-2. **analysis boundary 문서화 여부 결정** — analysis-agent API/spec에 Build Snapshot reference-first 경계를 지금 반영할지 판단
-3. **RE100 gateway 재검증 준비** — canonical strict payload로 live stress path를 재개할 준비 정리
-
-### 백로그
-
-1. **Build Agent 프로세스 격리** — bash 실행 namespace 격리
-2. **gateway / gateway-webserver 재검증** — strict contract 기준 live build stress test
-3. **Build Snapshot public surface / shared model 승격 시점 결정**
 
 ## 세션 21 완료 (2026-04-04)
 

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s6-handoff/session-3.md"
 original_path: "docs/s6-handoff/session-3.md"
-last_verified: "2026-04-05"
+last_verified: "2026-04-06"
 service_tags: ["s6"]
 decision_tags: []
 related_pages: []

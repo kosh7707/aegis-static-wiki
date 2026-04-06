@@ -12,6 +12,7 @@ Primary goals:
 - `wiki/canon/**` is for **canonical migrated documentation**.
 - `wiki/context/**` is for **agent-facing synthesized pages** that explain, connect, or summarize canonical pages.
 - Do not treat `wiki/context/**` as authoritative over `wiki/canon/**`.
+- The active AEGIS repo should point sessions here first; `/home/kosh/AEGIS/docs/**` is now a migration/compatibility surface rather than the preferred reading path.
 - Every substantive page must carry frontmatter with provenance.
 - Preserve rationale, tradeoffs, and migration history; do not reduce everything to polished summaries.
 - The wiki is **offline and non-runtime-critical**. Do not design it as an AEGIS runtime dependency.

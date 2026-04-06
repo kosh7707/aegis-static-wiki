@@ -1,11 +1,30 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DOCS = Path('/home/kosh/projects/AEGIS-codex-safety-20260403/docs')
+
+
+def resolve_source_docs() -> Path:
+    candidates = [
+        os.environ.get('SOURCE_DOCS_ROOT'),
+        ROOT.parent / 'AEGIS' / 'docs',
+        Path('/home/kosh/AEGIS/docs'),
+        Path('/home/kosh/projects/AEGIS-codex-safety-20260403/docs'),
+    ]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        path = Path(candidate).expanduser().resolve()
+        if path.exists():
+            return path
+    return Path(candidates[1]).expanduser().resolve()
+
+
+SOURCE_DOCS = resolve_source_docs()
 REQUIRED_FILES = [
     '.mcp.json',
     '.claude/settings.local.json',
@@ -51,10 +70,17 @@ def ensure_exists() -> None:
 def list_markdown_files(dir_path: Path) -> list[Path]:
     if not dir_path.exists():
         return []
-    return sorted(path for path in dir_path.rglob('*.md') if path.name != '.gitkeep')
+    return sorted(
+        path
+        for path in dir_path.rglob('*.md')
+        if path.name != '.gitkeep'
+        and not (path.parent == dir_path and path.name == 'README.md')
+    )
 
 
 def ensure_corpus_coverage() -> None:
+    if not SOURCE_DOCS.exists():
+        fail(f'source docs root not found: {SOURCE_DOCS}')
     source_docs = list_markdown_files(SOURCE_DOCS)
     canon_docs = list_markdown_files(ROOT / 'wiki' / 'canon')
     if len(canon_docs) != len(source_docs):

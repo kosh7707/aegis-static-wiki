@@ -49,3 +49,11 @@ related_pages:
 ## [2026-04-05] mcp | typed read-write wiki server
 - Implemented typed MCP operations for list/read/search/backlinks/recent-changes/migration lookup.
 - Implemented constrained write operations: write_page, append_log_entry, update_index, and record_migration_transition.
+
+## [2026-04-06] migration | active AEGIS docs resync
+- Resynced 163 canonical pages from /home/kosh/AEGIS/docs.
+- Added newly discovered handoff/work-request pages and rebuilt migration-map.md plus index.md.
+
+## [2026-04-06] maintenance | wiki-first governance cutover
+- Updated the wiki instructions to make aegis-static-wiki the preferred agent-facing documentation surface.
+- Removed stale absolute provenance paths from context/system control pages where they were not needed.
