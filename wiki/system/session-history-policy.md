@@ -19,6 +19,7 @@ Every lane work session should produce durable wiki evidence.
 
 ## Required shape
 - one session-history artifact per lane/session pair
+- artifact path under `wiki/canon/handoff/<lane>/session-*.md`
 - lane identifier
 - session identifier
 - status

@@ -81,6 +81,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-7|세션 7 — 풀스택 통합 — Agent 응답 완전 보존 + 테스트]] — 날짜: 2026-03-23 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-8|세션 8 — 풀스택 통합 테스트 + 서브 프로젝트 파이프라인]] — 날짜: 2026-03-24 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-9|세션 9 — 외부 리뷰 피드백 기반 리팩토링]] — 날짜: 2026-03-25 *(verified 2026-04-06; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1775448433752-gfeokr|Session history — S2 / omx-1775448433752-gfeokr]] — - Lane: S2 *(verified 2026-04-06; s2)*
+- [[wiki/canon/handoff/s2/session-path-correction-smoke|Session history — s2 / path-correction-smoke]] — - Lane: s2 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-10|세션 10: Build Agent 분리 + 프로젝트 메모리 (2026-03-24, 완료)]] — - Build Agent 서비스 분리 (:8003) *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-11|세션 11: Build Agent v2 재설계 + 외부 리뷰 (2026-03-25, 완료)]] — - Build Agent v2 재설계: 정책 엔진, edit/delete 도구, trybuild v2, 서브프로젝트 스코핑 *(verified 2026-04-06; s3)*
@@ -167,7 +169,6 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## Work requests
 
-- [[wiki/canon/work-requests/s2-to-all-global-notice|Global notice]] — - Kind: notice *(verified 2026-04-06; s2)*
 - [[wiki/canon/work-requests/s2-to-all-omx-memory-discipline|S2 → ALL: 공용 `.omx` 메모 운영 규칙 정리]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
 - [[wiki/canon/work-requests/s2-to-s1-backend-contract-alignment|S2 → S1: 프론트엔드 API 계약 정렬 요청]] — 날짜: 2026-04-04 *(verified 2026-04-06; s2/platform)*
 - [[wiki/canon/work-requests/s2-to-s1-contract-lockdown-fyi|S2 → S1: S1↔S2 계약 lockdown 완료 (FYI / 추가 구현 없음)]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*

@@ -94,7 +94,7 @@ test('MCP server exposes typed read/write wiki operations', async () => {
         details: ['validate_wiki passed in fixture']
       }
     });
-    const sessionPage = fs.readFileSync(path.join(root, 'wiki/system/session-history/s2/session-42.md'), 'utf8');
+    const sessionPage = fs.readFileSync(path.join(root, 'wiki/canon/handoff/s2/session-42.md'), 'utf8');
     assert.match(sessionPage, /Cutover verification session/);
     assert.match(sessionPage, /python3 tools\/validate_wiki.py/);
     assert.match(sessionPage, /logs:\/\/validate-wiki/);

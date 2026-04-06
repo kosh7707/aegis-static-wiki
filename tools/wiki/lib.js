@@ -22,8 +22,6 @@ const INDEX_PATH = path.join(SYSTEM_ROOT, 'index.md');
 const LOG_PATH = path.join(SYSTEM_ROOT, 'log.md');
 const WRITING_GUIDE_PATH = path.join(SYSTEM_ROOT, 'writing-guide.md');
 const MIGRATION_MAP_PATH = path.join(SYSTEM_ROOT, 'migration-map.md');
-const SESSION_HISTORY_ROOT = path.join(SYSTEM_ROOT, 'session-history');
-
 const CATEGORY_ORDER = [
   ['charter', 'Platform charter'],
   ['specs', 'Specifications'],
@@ -525,11 +523,10 @@ function validateWritePath(relPath, canonical) {
     !(
       normalized.startsWith('wiki/context/') ||
       normalized === 'wiki/system/writing-guide.md' ||
-      normalized.startsWith('wiki/system/session-history/') ||
       normalized === 'Home.md'
     )
   ) {
-    throw new Error('Non-canonical writes must target wiki/context/**, wiki/system/writing-guide.md, wiki/system/session-history/**, or Home.md');
+    throw new Error('Non-canonical writes must target wiki/context/**, wiki/system/writing-guide.md, or Home.md');
   }
 }
 
@@ -738,6 +735,15 @@ function sanitizeSegment(value) {
 }
 
 function getSessionHistoryRelPath({ lane, sessionId }) {
+  const normalizedLane = sanitizeSegment(lane);
+  const normalizedSessionId = sanitizeSegment(sessionId);
+  const filename = normalizedSessionId.startsWith('session-')
+    ? `${normalizedSessionId}.md`
+    : `session-${normalizedSessionId}.md`;
+  return path.join('wiki', 'canon', 'handoff', normalizedLane, filename).replace(/\\/g, '/');
+}
+
+function getLegacySessionHistoryRelPath({ lane, sessionId }) {
   return path.join('wiki', 'system', 'session-history', sanitizeSegment(lane), `${sanitizeSegment(sessionId)}.md`).replace(/\\/g, '/');
 }
 
@@ -767,20 +773,43 @@ function buildSessionHistoryBody({ lane, sessionId, status, summary, startedAt, 
   ].join('\n');
 }
 
-function recordSessionHistory({ lane, sessionId, status = 'started', summary = '', startedAt, updatedAt, relatedPages = [], sourceRefs = [] }) {
-  const now = new Date().toISOString();
+function migrateLegacySessionHistoryIfNeeded({ lane, sessionId }) {
   const relPath = getSessionHistoryRelPath({ lane, sessionId });
   const absPath = path.join(ROOT, relPath);
+  if (fs.existsSync(absPath)) return { relPath, absPath };
+
+  const legacyRelPath = getLegacySessionHistoryRelPath({ lane, sessionId });
+  const legacyAbsPath = path.join(ROOT, legacyRelPath);
+  if (!fs.existsSync(legacyAbsPath)) return { relPath, absPath };
+
+  ensureDir(path.dirname(absPath));
+  fs.renameSync(legacyAbsPath, absPath);
+  const legacyLaneDir = path.dirname(legacyAbsPath);
+  const legacyRoot = path.dirname(legacyLaneDir);
+  try { fs.rmdirSync(legacyLaneDir); } catch {}
+  try { fs.rmdirSync(legacyRoot); } catch {}
+  return { relPath, absPath };
+}
+
+function recordSessionHistory({ lane, sessionId, status = 'started', summary = '', startedAt, updatedAt, relatedPages = [], sourceRefs = [] }) {
+  const now = new Date().toISOString();
+  const { relPath, absPath } = migrateLegacySessionHistoryIfNeeded({ lane, sessionId });
   const existing = fs.existsSync(absPath) ? buildPageRecord(absPath) : null;
-  const page = writePage({
+  writeMarkdownPage({
     relPath,
-    title: `Session history — ${lane} / ${sessionId}`,
-    pageType: 'system-session-history',
-    canonical: false,
-    sourceRefs: sourceRefs.length ? sourceRefs : ['../../writing-guide.md'],
-    serviceTags: [sanitizeSegment(lane)],
-    decisionTags: ['session-history', 'hook-policy'],
-    relatedPages,
+    frontmatter: {
+      title: `Session history — ${lane} / ${sessionId}`,
+      page_type: 'canonical-handoff-session',
+      canonical: true,
+      source_repo: 'AEGIS',
+      source_refs: sourceRefs.length ? sourceRefs : ['mcp://record_session_history'],
+      original_path: `mcp://record_session_history/${sanitizeSegment(lane)}/${sanitizeSegment(sessionId)}`,
+      last_verified: now.slice(0, 10),
+      service_tags: [sanitizeSegment(lane)],
+      decision_tags: ['session-history', 'hook-policy'],
+      related_pages: relatedPages,
+      migration_status: 'canonicalized'
+    },
     body: buildSessionHistoryBody({
       lane,
       sessionId,
@@ -790,14 +819,13 @@ function recordSessionHistory({ lane, sessionId, status = 'started', summary = '
       updatedAt: updatedAt || now,
       relatedPages
     }),
-    lastVerified: now.slice(0, 10)
   });
-  return page;
+  rebuildIndex();
+  return buildPageRecord(absPath);
 }
 
 function appendTestEvidence({ lane, sessionId, command, status, logRef, details = [] }) {
-  const relPath = getSessionHistoryRelPath({ lane, sessionId });
-  const absPath = path.join(ROOT, relPath);
+  const { relPath, absPath } = migrateLegacySessionHistoryIfNeeded({ lane, sessionId });
   const page = fs.existsSync(absPath)
     ? buildPageRecord(absPath)
     : recordSessionHistory({ lane, sessionId, status: 'started', summary: 'Session created automatically for test evidence logging.' });
@@ -817,16 +845,20 @@ function appendTestEvidence({ lane, sessionId, command, status, logRef, details 
     relPath,
     frontmatter: {
       title: data.title || `Session history — ${lane} / ${sessionId}`,
-      page_type: data.page_type || 'system-session-history',
-      canonical: false,
+      page_type: data.page_type || 'canonical-handoff-session',
+      canonical: true,
+      source_repo: data.source_repo || 'AEGIS',
       source_refs: Array.isArray(data.source_refs) ? data.source_refs : [],
+      original_path: data.original_path || `mcp://record_session_history/${sanitizeSegment(lane)}/${sanitizeSegment(sessionId)}`,
       last_verified: new Date().toISOString().slice(0, 10),
       service_tags: Array.isArray(data.service_tags) ? data.service_tags : [sanitizeSegment(lane)],
       decision_tags: Array.isArray(data.decision_tags) ? data.decision_tags : ['session-history', 'hook-policy'],
-      related_pages: Array.isArray(data.related_pages) ? data.related_pages : []
+      related_pages: Array.isArray(data.related_pages) ? data.related_pages : [],
+      migration_status: data.migration_status || 'canonicalized'
     },
     body
   });
+  rebuildIndex();
   return buildPageRecord(absPath);
 }
 

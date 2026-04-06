@@ -50,6 +50,10 @@ function listMarkdownFiles(dirPath) {
   return results;
 }
 
+function toRepoRelative(filePath) {
+  return path.relative(repoRoot, filePath).replace(/\\/g, '/');
+}
+
 test('all remaining buckets are migrated and no planned rows remain', () => {
   const text = fs.readFileSync(migrationMapPath, 'utf8');
   assert.equal(text.includes('| planned |'), false, 'migration-map should not contain planned rows after this phase');
@@ -65,8 +69,9 @@ test('all remaining buckets are migrated and no planned rows remain', () => {
 
 test('canonical wiki now covers the full source docs corpus', () => {
   const migrationRows = parseMigrationRows().filter((row) => row.status === 'canonicalized');
-  const canonDocs = listMarkdownFiles(path.join(repoRoot, 'wiki/canon'));
-  assert.equal(canonDocs.length, migrationRows.length, 'canonical wiki should cover every canonicalized migration-map row');
+  const canonDocs = new Set(listMarkdownFiles(path.join(repoRoot, 'wiki/canon')).map(toRepoRelative));
+  const missing = migrationRows.map((row) => row.newPath).filter((relPath) => !canonDocs.has(relPath));
+  assert.deepEqual(missing, [], 'canonical wiki should contain every canonicalized migration-map row');
 });
 
 test('source repo docs are reduced to the bootstrap residual surface', () => {
@@ -74,8 +79,8 @@ test('source repo docs are reduced to the bootstrap residual surface', () => {
   const sourceDocs = listMarkdownFiles(sourceDocsRoot)
     .filter((file) => !file.endsWith('.gitkeep'))
     .map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
-  const disallowed = sourceDocs.filter((rel) => rel !== 'AEGIS.md' && !rel.startsWith('work-requests/'));
-  assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md plus work-requests markdown');
+  const disallowed = sourceDocs.filter((rel) => !['AEGIS.md', 'mcp.md'].includes(rel) && !rel.startsWith('work-requests/'));
+  assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md, mcp.md, plus work-requests markdown');
 });
 
 test('authoritative control files exist', () => {

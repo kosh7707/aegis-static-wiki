@@ -189,7 +189,7 @@ server.registerTool('record_migration_transition', {
 });
 
 server.registerTool('record_session_history', {
-  description: 'Create or update a deterministic session-history artifact under wiki/system/session-history/**.',
+  description: 'Create or update a deterministic session-history artifact under wiki/canon/handoff/<lane>/session-*.md.',
   inputSchema: {
     lane: z.string(),
     session_id: z.string(),
@@ -215,7 +215,7 @@ server.registerTool('record_session_history', {
 });
 
 server.registerTool('append_test_evidence', {
-  description: 'Append test/verification evidence to a session-history artifact.',
+  description: 'Append test/verification evidence to a canonical handoff session artifact.',
   inputSchema: {
     lane: z.string(),
     session_id: z.string(),

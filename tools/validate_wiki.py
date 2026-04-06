@@ -101,11 +101,17 @@ def parse_migration_rows() -> list[dict[str, str]]:
     return rows
 
 
+def canon_rel_paths() -> list[str]:
+    root = ROOT / 'wiki' / 'canon'
+    return [path.relative_to(ROOT).as_posix() for path in list_markdown_files(root)]
+
+
 def ensure_corpus_coverage() -> None:
     migration_rows = [row for row in parse_migration_rows() if row['status'] == 'canonicalized']
-    canon_docs = list_markdown_files(ROOT / 'wiki' / 'canon')
-    if len(canon_docs) != len(migration_rows):
-        fail(f'canonical corpus count mismatch: {len(canon_docs)} != {len(migration_rows)}')
+    canon_paths = set(canon_rel_paths())
+    missing = [row['new_path'] for row in migration_rows if row['new_path'] not in canon_paths]
+    if missing:
+        fail(f'canonical corpus missing migrated rows: {missing[:10]}')
 
 
 def ensure_residual_source_surface() -> None:
@@ -114,7 +120,7 @@ def ensure_residual_source_surface() -> None:
     source_docs = [path.relative_to(SOURCE_DOCS).as_posix() for path in list_markdown_files(SOURCE_DOCS)]
     disallowed = [
         rel for rel in source_docs
-        if rel != 'AEGIS.md' and not rel.startswith('work-requests/')
+        if rel not in {'AEGIS.md', 'mcp.md'} and not rel.startswith('work-requests/')
     ]
     if disallowed:
         fail(f'source docs residual surface contains unexpected markdown files: {disallowed[:10]}')
