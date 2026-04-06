@@ -170,9 +170,13 @@ function renderFrontmatter(data) {
         } else {
           lines.push(`${key}: [${inline}]`);
         }
+      } else {
+        lines.push(`${key}: ${JSON.stringify(value)}`);
       }
     } else if (typeof value === 'boolean') {
       lines.push(`${key}: ${value ? 'true' : 'false'}`);
+    } else if (value && typeof value === 'object') {
+      lines.push(`${key}: ${JSON.stringify(value)}`);
     } else {
       lines.push(`${key}: "${String(value).replace(/"/g, "'")}"`);
     }
@@ -547,6 +551,188 @@ function writePage({ relPath, title, pageType, canonical, sourceRefs = [], servi
   return buildPageRecord(path.join(ROOT, relPath));
 }
 
+function normalizeLane(value) {
+  return sanitizeSegment(value);
+}
+
+function workRequestsRoot() {
+  return path.join(ROOT, 'wiki', 'canon', 'work-requests');
+}
+
+function listWorkRequestRecords() {
+  const root = workRequestsRoot();
+  if (!fs.existsSync(root)) return [];
+  return listMarkdownFiles(root).map(buildPageRecord).map((record) => {
+    const { data } = parseFrontmatter(readText(record.absPath));
+    return {
+      ...record,
+      wrKind: data.wr_kind || 'request',
+      status: data.status || 'open',
+      fromLane: data.from_lane || '',
+      toLanes: Array.isArray(data.to_lanes) ? data.to_lanes.map(normalizeLane) : [],
+      completionRecords: Array.isArray(data.completed_by) ? data.completed_by : (Array.isArray(data.completion_records) ? data.completion_records : []),
+      wrId: data.wr_id || path.basename(record.relPath, '.md')
+    };
+  });
+}
+
+function listMyOpenWrs({ lane, includeToAll = true, limit = 20 }) {
+  const normalizedLane = normalizeLane(lane);
+  return listWorkRequestRecords()
+    .filter((record) => {
+      if (record.status !== 'open') return false;
+      const completionLanes = record.completionRecords.map((entry) => normalizeLane(entry.lane));
+      if (completionLanes.includes(normalizedLane)) return false;
+      return record.toLanes.includes(normalizedLane) || (includeToAll && record.toLanes.includes('all'));
+    })
+    .slice(0, limit)
+    .map((record) => ({
+      wrId: record.wrId,
+      path: record.relPath,
+      title: record.title,
+      wrKind: record.wrKind,
+      fromLane: record.fromLane,
+      toLanes: record.toLanes,
+      summary: record.summary
+    }));
+}
+
+function slugifyWorkRequestTitle(title) {
+  return sanitizeSegment(title).slice(0, 80) || 'untitled';
+}
+
+function buildWrFilename({ fromLane, toLanes, title }) {
+  const toPart = toLanes.length === 1 ? toLanes[0] : toLanes.join('-');
+  return `${fromLane}-to-${toPart}-${slugifyWorkRequestTitle(title)}.md`;
+}
+
+function buildWrBody({ title, fromLane, toLanes, body, wrKind }) {
+  return [
+    `# ${title}`,
+    '',
+    `- Kind: ${wrKind}`,
+    `- From: ${fromLane}`,
+    `- To: ${toLanes.join(', ')}`,
+    '',
+    body.trim(),
+    ''
+  ].join('\n');
+}
+
+function registerWorkRequest({ wrKind, fromLane, toLanes, title, body, relatedPages = [], serviceTags = [], decisionTags = [] }) {
+  const normalizedKind = String(wrKind || '').trim().toLowerCase();
+  const allowedKinds = new Set(['request', 'reply', 'notice', 'question']);
+  if (!allowedKinds.has(normalizedKind)) throw new Error(`Unsupported wr_kind: ${wrKind}`);
+  const normalizedFrom = normalizeLane(fromLane);
+  const normalizedTo = [...new Set((toLanes || []).map(normalizeLane).filter(Boolean))];
+  if (!normalizedFrom) throw new Error('from_lane is required');
+  if (!normalizedTo.length) throw new Error('to_lanes is required');
+  if (!title?.trim()) throw new Error('title is required');
+  if (!body?.trim()) throw new Error('body is required');
+
+  const filename = buildWrFilename({ fromLane: normalizedFrom, toLanes: normalizedTo, title });
+  const relPath = path.join('wiki', 'canon', 'work-requests', filename).replace(/\\/g, '/');
+  const wrId = path.basename(filename, '.md');
+  const now = new Date().toISOString();
+  const page = writeMarkdownPage({
+    relPath,
+    frontmatter: {
+      title,
+      page_type: 'canonical-work-request',
+      canonical: true,
+      source_repo: 'AEGIS',
+      source_refs: ['mcp://register_wr'],
+      original_path: `mcp://register_wr/${wrId}`,
+      last_verified: now.slice(0, 10),
+      service_tags: serviceTags.length ? serviceTags : [normalizedFrom],
+      decision_tags: decisionTags,
+      related_pages: relatedPages,
+      migration_status: 'canonicalized',
+      wr_id: wrId,
+      wr_kind: normalizedKind,
+      status: 'open',
+      from_lane: normalizedFrom,
+      to_lanes: normalizedTo,
+      completed_by: [],
+      registered_at: now
+    },
+    body: buildWrBody({ title, fromLane: normalizedFrom, toLanes: normalizedTo, body, wrKind: normalizedKind })
+  });
+  rebuildIndex();
+  appendLogEntry({
+    date: now.slice(0, 10),
+    event: 'mcp',
+    subject: `register_wr | ${wrId}`,
+    details: [`Registered ${normalizedKind} WR for ${normalizedTo.join(', ')}`, `Path: ${relPath}`]
+  });
+  return buildPageRecord(page);
+}
+
+function resolveWrRecord({ pathOrId }) {
+  const normalized = pathOrId.endsWith('.md') ? pathOrId : `${pathOrId}.md`;
+  const asPath = normalized.startsWith('wiki/') ? normalized : path.join('wiki', 'canon', 'work-requests', normalized).replace(/\\/g, '/');
+  const absPath = path.join(ROOT, asPath);
+  if (fs.existsSync(absPath)) {
+    const record = listWorkRequestRecords().find((item) => item.relPath === asPath);
+    if (record) return record;
+  }
+  const bareId = path.basename(pathOrId, '.md');
+  const byId = listWorkRequestRecords().find((item) => item.wrId === bareId);
+  if (!byId) throw new Error(`No WR found for ${pathOrId}`);
+  return byId;
+}
+
+function updateWrFrontmatter(absPath, data) {
+  const { body } = parseFrontmatter(readText(absPath));
+  writeMarkdownPage({
+    relPath: path.relative(ROOT, absPath).replace(/\\/g, '/'),
+    frontmatter: data,
+    body
+  });
+}
+
+function maybeDeriveGlobalStatus(toLanes, completionRecords) {
+  if (toLanes.includes('all')) return 'open';
+  const completed = new Set(completionRecords.map((entry) => normalizeLane(entry.lane)));
+  return toLanes.every((lane) => completed.has(normalizeLane(lane))) ? 'completed' : 'open';
+}
+
+function completeWorkRequest({ pathOrId, lane, completionNote = '' }) {
+  const wr = resolveWrRecord({ pathOrId });
+  const normalizedLane = normalizeLane(lane);
+  const canComplete = wr.toLanes.includes(normalizedLane) || wr.toLanes.includes('all');
+  if (!canComplete) throw new Error(`Lane ${lane} is not allowed to complete ${wr.wrId}`);
+  const { data } = parseFrontmatter(readText(wr.absPath));
+  const completionRecords = Array.isArray(data.completed_by)
+    ? data.completed_by
+    : (Array.isArray(data.completion_records) ? data.completion_records : []);
+  const existing = completionRecords.find((entry) => normalizeLane(entry.lane) === normalizedLane);
+  const now = new Date().toISOString();
+  if (existing) {
+    existing.completed_at = now;
+    if (completionNote) existing.note = completionNote;
+  } else {
+    completionRecords.push({
+      lane: normalizedLane,
+      completed_at: now,
+      ...(completionNote ? { note: completionNote } : {})
+    });
+  }
+  data.completed_by = completionRecords;
+  data.status = maybeDeriveGlobalStatus(Array.isArray(data.to_lanes) ? data.to_lanes : wr.toLanes, completionRecords);
+  data.last_verified = now.slice(0, 10);
+  if (data.status === 'completed') data.completed_at = now;
+  updateWrFrontmatter(wr.absPath, data);
+  rebuildIndex();
+  appendLogEntry({
+    date: now.slice(0, 10),
+    event: 'mcp',
+    subject: `complete_wr | ${wr.wrId}`,
+    details: [`Lane ${normalizedLane} completed recipient-side handling`, `Status: ${data.status}`]
+  });
+  return resolveWrRecord({ pathOrId: wr.relPath });
+}
+
 function sanitizeSegment(value) {
   return String(value).trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
 }
@@ -715,18 +901,22 @@ module.exports = {
   getMigrationTarget,
   getRecentChanges,
   getSessionHistoryRelPath,
+  listMyOpenWrs,
   inferServiceTags,
   isValidTransition,
   listPages,
+  listWorkRequestRecords,
   mapSourceRelToTarget,
   migrateDocument,
   parseFrontmatter,
   parseLogEntries,
   recordMigrationTransition,
   recordSessionHistory,
+  registerWorkRequest,
   rebuildIndex,
   rebuildMigrationMap,
   searchPages,
+  completeWorkRequest,
   appendTestEvidence,
   toWikiLink,
   writeMarkdownPage,

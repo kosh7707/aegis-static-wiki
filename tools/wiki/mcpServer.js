@@ -8,11 +8,14 @@ const {
   getBacklinks,
   getMigrationTarget,
   getRecentChanges,
+  listMyOpenWrs,
   listPages,
   recordMigrationTransition,
   recordSessionHistory,
+  registerWorkRequest,
   rebuildIndex,
   searchPages,
+  completeWorkRequest,
   appendTestEvidence,
   writePage,
   buildPageRecord,
@@ -231,6 +234,60 @@ server.registerTool('append_test_evidence', {
     details
   });
   return textAndStructured({ path: page.relPath, title: page.title }, `Appended test evidence to ${page.relPath}`);
+});
+
+server.registerTool('list_my_open_wrs', {
+  description: 'List open work requests relevant to a specific lane, excluding WRs already completed by that lane.',
+  inputSchema: {
+    lane: z.string(),
+    include_to_all: z.boolean().optional(),
+    limit: z.number().int().min(1).max(100).optional()
+  }
+}, async ({ lane, include_to_all = true, limit = 20 }) => {
+  const wrs = listMyOpenWrs({ lane, includeToAll: include_to_all, limit });
+  return textAndStructured({ wrs }, JSON.stringify(wrs, null, 2));
+});
+
+server.registerTool('register_wr', {
+  description: 'Register a canonical work-request page using the single validated WR schema.',
+  inputSchema: {
+    wr_kind: z.enum(['request', 'reply', 'notice', 'question']),
+    from_lane: z.string(),
+    to_lanes: z.array(z.string()).min(1),
+    title: z.string(),
+    body: z.string(),
+    related_pages: z.array(z.string()).optional(),
+    service_tags: z.array(z.string()).optional(),
+    decision_tags: z.array(z.string()).optional()
+  }
+}, async ({ wr_kind, from_lane, to_lanes, title, body, related_pages = [], service_tags = [], decision_tags = [] }) => {
+  const page = registerWorkRequest({
+    wrKind: wr_kind,
+    fromLane: from_lane,
+    toLanes: to_lanes,
+    title,
+    body,
+    relatedPages: related_pages,
+    serviceTags: service_tags,
+    decisionTags: decision_tags
+  });
+  return textAndStructured({ path: page.relPath, title: page.title }, `Registered WR at ${page.relPath}`);
+});
+
+server.registerTool('complete_wr', {
+  description: 'Mark a WR completed from the perspective of a recipient lane, preserving recipient-scoped completion metadata.',
+  inputSchema: {
+    path_or_id: z.string(),
+    lane: z.string(),
+    completion_note: z.string().optional()
+  }
+}, async ({ path_or_id, lane, completion_note = '' }) => {
+  const page = completeWorkRequest({
+    pathOrId: path_or_id,
+    lane,
+    completionNote: completion_note
+  });
+  return textAndStructured({ path: page.relPath, title: page.title, status: page.status, completionRecords: page.completionRecords }, `Completed WR recipient-side at ${page.relPath}`);
 });
 
 async function main() {

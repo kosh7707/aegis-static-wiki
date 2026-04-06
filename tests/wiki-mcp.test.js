@@ -40,7 +40,7 @@ test('MCP server exposes typed read/write wiki operations', async () => {
 
     const tools = await client.listTools();
     const toolNames = tools.tools.map((tool) => tool.name);
-    for (const name of ['list_pages', 'read_page', 'search_pages', 'get_backlinks', 'get_recent_changes', 'get_migration_target', 'write_page', 'append_log_entry', 'update_index', 'record_migration_transition', 'record_session_history', 'append_test_evidence']) {
+    for (const name of ['list_pages', 'read_page', 'search_pages', 'get_backlinks', 'get_recent_changes', 'get_migration_target', 'write_page', 'append_log_entry', 'update_index', 'record_migration_transition', 'record_session_history', 'append_test_evidence', 'list_my_open_wrs', 'register_wr', 'complete_wr']) {
       assert.equal(toolNames.includes(name), true, `${name} should be registered`);
     }
 
@@ -98,6 +98,59 @@ test('MCP server exposes typed read/write wiki operations', async () => {
     assert.match(sessionPage, /Cutover verification session/);
     assert.match(sessionPage, /python3 tools\/validate_wiki.py/);
     assert.match(sessionPage, /logs:\/\/validate-wiki/);
+
+    const registered = await client.callTool({
+      name: 'register_wr',
+      arguments: {
+        wr_kind: 'request',
+        from_lane: 's2',
+        to_lanes: ['s3', 's4'],
+        title: 'Need response from S3 and S4',
+        body: 'Please confirm the new contract.',
+        related_pages: ['wiki/canon/charter/aegis.md']
+      }
+    });
+    const wrPath = registered.structuredContent.path;
+    assert.match(wrPath, /wiki\/canon\/work-requests\/s2-to-s3-s4-/);
+
+    const s3Open = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's3' } });
+    assert.equal(s3Open.structuredContent.wrs.some((entry) => entry.path === wrPath), true);
+    const s2Open = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's2' } });
+    assert.equal(s2Open.structuredContent.wrs.some((entry) => entry.path === wrPath), false);
+
+    const badComplete = await client.callTool({ name: 'complete_wr', arguments: { path_or_id: wrPath, lane: 's2' } });
+    assert.equal(badComplete.isError, true);
+
+    await client.callTool({ name: 'complete_wr', arguments: { path_or_id: wrPath, lane: 's3', completion_note: 'Handled by S3' } });
+    const s3After = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's3' } });
+    assert.equal(s3After.structuredContent.wrs.some((entry) => entry.path === wrPath), false);
+    const s4After = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's4' } });
+    assert.equal(s4After.structuredContent.wrs.some((entry) => entry.path === wrPath), true);
+
+    await client.callTool({ name: 'complete_wr', arguments: { path_or_id: wrPath, lane: 's4', completion_note: 'Handled by S4' } });
+    const wrText = fs.readFileSync(path.join(root, wrPath), 'utf8');
+    assert.match(wrText, /status: "completed"/);
+    assert.match(wrText, /completed_by:/);
+    assert.match(wrText, /Handled by S3/);
+    assert.match(wrText, /Handled by S4/);
+
+    const toAll = await client.callTool({
+      name: 'register_wr',
+      arguments: {
+        wr_kind: 'notice',
+        from_lane: 's2',
+        to_lanes: ['all'],
+        title: 'Global notice',
+        body: 'Please read this.'
+      }
+    });
+    const toAllPath = toAll.structuredContent.path;
+    const s5Open = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's5' } });
+    assert.equal(s5Open.structuredContent.wrs.some((entry) => entry.path === toAllPath), true);
+    await client.callTool({ name: 'complete_wr', arguments: { path_or_id: toAllPath, lane: 's5' } });
+    const toAllText = fs.readFileSync(path.join(root, toAllPath), 'utf8');
+    assert.match(toAllText, /status: "open"/);
+    assert.match(toAllText, /"lane":"s5"/);
 
     await client.callTool({ name: 'record_migration_transition', arguments: { old_path: 'docs/s1-handoff/README.md', status: 'canonicalized', notes: 'fixture canonicalized' } });
     const migrationRow = await client.callTool({ name: 'get_migration_target', arguments: { old_path: 'docs/s1-handoff/README.md' } });

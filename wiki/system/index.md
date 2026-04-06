@@ -167,6 +167,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## Work requests
 
+- [[wiki/canon/work-requests/s2-to-all-global-notice|Global notice]] — - Kind: notice *(verified 2026-04-06; s2)*
 - [[wiki/canon/work-requests/s2-to-all-omx-memory-discipline|S2 → ALL: 공용 `.omx` 메모 운영 규칙 정리]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
 - [[wiki/canon/work-requests/s2-to-s1-backend-contract-alignment|S2 → S1: 프론트엔드 API 계약 정렬 요청]] — 날짜: 2026-04-04 *(verified 2026-04-06; s2/platform)*
 - [[wiki/canon/work-requests/s2-to-s1-contract-lockdown-fyi|S2 → S1: S1↔S2 계약 lockdown 완료 (FYI / 추가 구현 없음)]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
@@ -216,4 +217,5 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*
 - [[wiki/system/taxonomy|Wiki taxonomy]] — - wiki/canon/charter/ — platform charter and global rules *(verified 2026-04-05; platform)*
 - [[wiki/system/test-evidence-policy|Test evidence policy]] — Test and verification activity should be attached to session-history artifacts. *(verified 2026-04-06; platform)*
+- [[wiki/system/work-request-policy|Work request policy]] — Canonical work requests live under wiki/canon/work-requests/. *(verified 2026-04-06; platform)*
 - [[wiki/system/writing-guide|AEGIS static wiki writing guide]] — This is the main maintenance contract for the wiki. *(verified 2026-04-05; platform)*

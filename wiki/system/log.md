@@ -61,3 +61,27 @@ related_pages:
 ## [2026-04-06] maintenance | post-cutover residual docs validation model
 - Rebased wiki validation/tests onto migration-map coverage plus the intentional AEGIS local residual docs surface.
 - Added session-history and test-evidence policy pages plus MCP tools for session evidence recording.
+
+## [2026-04-06] mcp | register_wr | s2-to-s3-wr-mcp-live-smoke
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-wr-mcp-live-smoke.md
+
+## [2026-04-06] mcp | complete_wr | s2-to-s3-wr-mcp-live-smoke
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-06] mcp | register_wr | s2-to-s3-wr-mcp-smoke-test
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-wr-mcp-smoke-test.md
+
+## [2026-04-06] mcp | complete_wr | s2-to-s3-wr-mcp-smoke-test
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-06] mcp | register_wr | s2-to-all-global-notice
+- Registered notice WR for all
+- Path: wiki/canon/work-requests/s2-to-all-global-notice.md
+
+## [2026-04-06] mcp | complete_wr | s2-to-all-global-notice
+- Lane s2 completed recipient-side handling
+- Status: open

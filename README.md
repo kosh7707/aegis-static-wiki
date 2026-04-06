@@ -13,6 +13,7 @@ Canonical, agent-facing wiki for AEGIS.
 - Source-repo `docs/**` now exists as a migration/compatibility surface.
 - The canonical navigation entrypoint is `wiki/system/index.md`.
 - Session-history and test-evidence policy now live under `wiki/system/session-history-policy.md` and `wiki/system/test-evidence-policy.md`.
+- Canonical WR lifecycle semantics now live under `wiki/system/work-request-policy.md`.
 
 ## Information model
 - `wiki/canon/**` — canonical migrated documentation

@@ -37,6 +37,7 @@ REQUIRED_FILES = [
     'wiki/system/migration-map.md',
     'wiki/system/taxonomy.md',
     'wiki/system/writing-guide.md',
+    'wiki/system/work-request-policy.md',
     'wiki/system/session-history-policy.md',
     'wiki/system/test-evidence-policy.md',
     'schemas/frontmatter.md',

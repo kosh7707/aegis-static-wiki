@@ -83,6 +83,7 @@ test('authoritative control files exist', () => {
     'wiki/system/index.md',
     'wiki/system/log.md',
     'wiki/system/writing-guide.md',
+    'wiki/system/work-request-policy.md',
     'wiki/system/session-history-policy.md',
     'wiki/system/test-evidence-policy.md',
     '.mcp.json',
