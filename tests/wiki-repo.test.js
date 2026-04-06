@@ -65,13 +65,28 @@ test('all remaining buckets are migrated and no planned rows remain', () => {
   ]) {
     assert.match(text, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+  for (const expected of [
+    '| docs/work-requests/s2-to-all-omx-memory-discipline.md | wiki/canon/work-requests/s2-to-all-omx-memory-discipline.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |',
+    '| docs/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | wiki/canon/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |'
+  ]) {
+    assert.match(text, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
 });
 
 test('canonical wiki now covers the full source docs corpus', () => {
-  const migrationRows = parseMigrationRows().filter((row) => row.status === 'canonicalized');
+  const migrationRows = parseMigrationRows().filter((row) => row.status === 'canonicalized' && row.bucket !== 'work-requests');
   const canonDocs = new Set(listMarkdownFiles(path.join(repoRoot, 'wiki/canon')).map(toRepoRelative));
   const missing = migrationRows.map((row) => row.newPath).filter((relPath) => !canonDocs.has(relPath));
-  assert.deepEqual(missing, [], 'canonical wiki should contain every canonicalized migration-map row');
+  assert.deepEqual(missing, [], 'canonical wiki should contain every canonicalized non-WR migration-map row');
+});
+
+test('legacy WR migration rows stay mirrored and out of canonical corpus coverage', () => {
+  const workRequestRows = parseMigrationRows().filter((row) => row.bucket === 'work-requests');
+  assert.equal(workRequestRows.length > 0, true);
+  for (const row of workRequestRows) {
+    assert.equal(row.status, 'mirrored');
+    assert.match(row.notes, /archived under docs\/work-requests|runtime canonical WR model/i);
+  }
 });
 
 test('source repo docs are reduced to the bootstrap residual surface', () => {
@@ -81,6 +96,13 @@ test('source repo docs are reduced to the bootstrap residual surface', () => {
     .map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
   const disallowed = sourceDocs.filter((rel) => !['AEGIS.md', 'mcp.md'].includes(rel) && !rel.startsWith('work-requests/'));
   assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md, mcp.md, plus work-requests markdown');
+});
+
+test('archived docs work-requests are intentionally retained outside the canonical corpus', () => {
+  const archivedRoot = path.join(sourceDocsRoot, 'work-requests');
+  assert.equal(fs.existsSync(archivedRoot), true, 'archived docs/work-requests should exist');
+  const archivedDocs = listMarkdownFiles(archivedRoot).map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
+  assert.equal(archivedDocs.length > 0, true, 'archived docs/work-requests should retain markdown files');
 });
 
 test('authoritative control files exist', () => {

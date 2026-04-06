@@ -369,8 +369,12 @@ function buildIndexContent() {
   ];
   for (const [key, label] of CATEGORY_ORDER) {
     const records = (grouped.get(key) || []).sort((a, b) => a.relPath.localeCompare(b.relPath));
-    if (!records.length) continue;
+    if (!records.length && key !== 'work-requests') continue;
     lines.push(`## ${label}`, '');
+    if (!records.length) {
+      lines.push('- No active canonical work requests are currently present. Archived legacy WRs under `AEGIS/docs/work-requests/` are runtime out-of-scope.', '');
+      continue;
+    }
     for (const record of records) {
       const metaBits = [];
       if (record.lastVerified) metaBits.push(`verified ${record.lastVerified}`);
@@ -556,21 +560,38 @@ function workRequestsRoot() {
   return path.join(ROOT, 'wiki', 'canon', 'work-requests');
 }
 
+const WR_ALLOWED_KINDS = new Set(['request', 'reply', 'notice', 'question']);
+const WR_ALLOWED_STATUSES = new Set(['open', 'completed']);
+
+function isCanonicalWrRecord(data, record) {
+  if (!record.canonical) return false;
+  if (record.pageType !== 'canonical-work-request') return false;
+  if (!data.wr_id || typeof data.wr_id !== 'string') return false;
+  if (!WR_ALLOWED_KINDS.has(String(data.wr_kind || '').trim().toLowerCase())) return false;
+  if (!WR_ALLOWED_STATUSES.has(String(data.status || '').trim().toLowerCase())) return false;
+  if (!data.from_lane || typeof data.from_lane !== 'string') return false;
+  if (!Array.isArray(data.to_lanes) || data.to_lanes.length === 0) return false;
+  if (!Array.isArray(data.completed_by)) return false;
+  if (!data.registered_at || typeof data.registered_at !== 'string') return false;
+  return true;
+}
+
 function listWorkRequestRecords() {
   const root = workRequestsRoot();
   if (!fs.existsSync(root)) return [];
-  return listMarkdownFiles(root).map(buildPageRecord).map((record) => {
-    const { data } = parseFrontmatter(readText(record.absPath));
-    return {
+  return listMarkdownFiles(root)
+    .map(buildPageRecord)
+    .map((record) => ({ record, data: parseFrontmatter(readText(record.absPath)).data }))
+    .filter(({ record, data }) => isCanonicalWrRecord(data, record))
+    .map(({ record, data }) => ({
       ...record,
-      wrKind: data.wr_kind || 'request',
-      status: data.status || 'open',
-      fromLane: data.from_lane || '',
-      toLanes: Array.isArray(data.to_lanes) ? data.to_lanes.map(normalizeLane) : [],
-      completionRecords: Array.isArray(data.completed_by) ? data.completed_by : (Array.isArray(data.completion_records) ? data.completion_records : []),
-      wrId: data.wr_id || path.basename(record.relPath, '.md')
-    };
-  });
+      wrKind: String(data.wr_kind).trim().toLowerCase(),
+      status: String(data.status).trim().toLowerCase(),
+      fromLane: normalizeLane(data.from_lane),
+      toLanes: data.to_lanes.map(normalizeLane),
+      completionRecords: data.completed_by,
+      wrId: data.wr_id
+    }));
 }
 
 function listMyOpenWrs({ lane, includeToAll = true, limit = 20 }) {
@@ -604,22 +625,38 @@ function buildWrFilename({ fromLane, toLanes, title }) {
 }
 
 function buildWrBody({ title, fromLane, toLanes, body, wrKind }) {
+  const contentHeading = wrKind === 'notice'
+    ? 'Notice'
+    : wrKind === 'question'
+      ? 'Question'
+      : 'Request';
   return [
     `# ${title}`,
     '',
+    '## Summary',
     `- Kind: ${wrKind}`,
     `- From: ${fromLane}`,
     `- To: ${toLanes.join(', ')}`,
     '',
+    '## Context',
+    '- Canonical WR generated through the WR MCP surface.',
+    '',
+    `## ${contentHeading}`,
     body.trim(),
+    '',
+    '## Completion expectation',
+    '- Recipient-side handling should be tracked through `complete_wr`.',
+    '- Runtime WR semantics apply only to canonical WR pages under `wiki/canon/work-requests/**`.',
+    '',
+    '## Notes',
+    '- Archived WR files under `docs/work-requests/` are out-of-scope runtime inputs.',
     ''
   ].join('\n');
 }
 
 function registerWorkRequest({ wrKind, fromLane, toLanes, title, body, relatedPages = [], serviceTags = [], decisionTags = [] }) {
   const normalizedKind = String(wrKind || '').trim().toLowerCase();
-  const allowedKinds = new Set(['request', 'reply', 'notice', 'question']);
-  if (!allowedKinds.has(normalizedKind)) throw new Error(`Unsupported wr_kind: ${wrKind}`);
+  if (!WR_ALLOWED_KINDS.has(normalizedKind)) throw new Error(`Unsupported wr_kind: ${wrKind}`);
   const normalizedFrom = normalizeLane(fromLane);
   const normalizedTo = [...new Set((toLanes || []).map(normalizeLane).filter(Boolean))];
   if (!normalizedFrom) throw new Error('from_lane is required');

@@ -85,3 +85,31 @@ related_pages:
 ## [2026-04-06] mcp | complete_wr | s2-to-all-global-notice
 - Lane s2 completed recipient-side handling
 - Status: open
+
+## [2026-04-06] mcp | register_wr | s1-to-s2-list_my_open_wrs-s1-wr
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-list_my_open_wrs-s1-wr.md
+
+## [2026-04-06] mcp | register_wr | s2-to-s2-wr-mcp-canonical-smoke-test
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s2-to-s2-wr-mcp-canonical-smoke-test.md
+
+## [2026-04-06] mcp | complete_wr | s2-to-s2-wr-mcp-canonical-smoke-test
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-06] mcp | register_wr | s2-to-s3-s4-wr-mcp-multi-recipient-smoke-test
+- Registered request WR for s3, s4
+- Path: wiki/canon/work-requests/s2-to-s3-s4-wr-mcp-multi-recipient-smoke-test.md
+
+## [2026-04-06] mcp | register_wr | s2-to-all-wr-mcp-to-all-smoke-test
+- Registered notice WR for all
+- Path: wiki/canon/work-requests/s2-to-all-wr-mcp-to-all-smoke-test.md
+
+## [2026-04-06] mcp | complete_wr | s2-to-s3-s4-wr-mcp-multi-recipient-smoke-test
+- Lane s3 completed recipient-side handling
+- Status: open
+
+## [2026-04-06] mcp | complete_wr | s2-to-all-wr-mcp-to-all-smoke-test
+- Lane s5 completed recipient-side handling
+- Status: open

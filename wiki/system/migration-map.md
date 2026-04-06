@@ -19,7 +19,7 @@ This file is the authoritative old-path to new-path ledger during phased cutover
 
 ## Status meanings
 - `planned` — target location agreed but not migrated yet
-- `mirrored` — copied over, but old location may still be transitional
+- `mirrored` — copied over, or intentionally retained in source docs as archive/reference while excluded from active runtime semantics
 - `canonicalized` — new wiki path is canonical for the bucket/page
 
 ## Bucket cutover rule
@@ -163,11 +163,11 @@ Cutover should happen by bucket, not file-by-file. Once a bucket is canonicalize
 | docs/specs/observability.md | wiki/canon/specs/observability.md | specs | canonicalized | migrated into canonical wiki |
 | docs/specs/sast-runner.md | wiki/canon/specs/sast-runner.md | specs | canonicalized | migrated into canonical wiki |
 | docs/specs/technical-overview.md | wiki/canon/specs/technical-overview.md | specs | canonicalized | migrated into canonical wiki |
-| docs/work-requests/s2-to-all-omx-memory-discipline.md | wiki/canon/work-requests/s2-to-all-omx-memory-discipline.md | work-requests | canonicalized | migrated into canonical wiki |
-| docs/work-requests/s2-to-s1-backend-contract-alignment.md | wiki/canon/work-requests/s2-to-s1-backend-contract-alignment.md | work-requests | canonicalized | migrated into canonical wiki |
-| docs/work-requests/s2-to-s1-contract-lockdown-fyi.md | wiki/canon/work-requests/s2-to-s1-contract-lockdown-fyi.md | work-requests | canonicalized | migrated into canonical wiki |
-| docs/work-requests/s3-to-s3-prompt-enhancement-backlog.md | wiki/canon/work-requests/s3-to-s3-prompt-enhancement-backlog.md | work-requests | canonicalized | migrated into canonical wiki |
-| docs/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | wiki/canon/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | work-requests | canonicalized | migrated into canonical wiki |
+| docs/work-requests/s2-to-all-omx-memory-discipline.md | wiki/canon/work-requests/s2-to-all-omx-memory-discipline.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |
+| docs/work-requests/s2-to-s1-backend-contract-alignment.md | wiki/canon/work-requests/s2-to-s1-backend-contract-alignment.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |
+| docs/work-requests/s2-to-s1-contract-lockdown-fyi.md | wiki/canon/work-requests/s2-to-s1-contract-lockdown-fyi.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |
+| docs/work-requests/s3-to-s3-prompt-enhancement-backlog.md | wiki/canon/work-requests/s3-to-s3-prompt-enhancement-backlog.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |
+| docs/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | wiki/canon/work-requests/s4-to-s2-build-path-boundary-inversion-notice.md | work-requests | mirrored | archived under docs/work-requests; excluded from runtime canonical WR model |
 | docs/외부피드백/26.03.25/AEGIS_00_project_direction.md | wiki/canon/feedback/26.03.25/aegis_00_project_direction.md | feedback | canonicalized | migrated into canonical wiki |
 | docs/외부피드백/26.03.25/AEGIS_review_index.md | wiki/canon/feedback/26.03.25/aegis_review_index.md | feedback | canonicalized | migrated into canonical wiki |
 | docs/외부피드백/26.03.25/AEGIS_S1_frontend_QA_review.md | wiki/canon/feedback/26.03.25/aegis_s1_frontend_qa_review.md | feedback | canonicalized | migrated into canonical wiki |

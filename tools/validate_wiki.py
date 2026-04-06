@@ -107,7 +107,10 @@ def canon_rel_paths() -> list[str]:
 
 
 def ensure_corpus_coverage() -> None:
-    migration_rows = [row for row in parse_migration_rows() if row['status'] == 'canonicalized']
+    migration_rows = [
+        row for row in parse_migration_rows()
+        if row['status'] == 'canonicalized' and row['bucket'] != 'work-requests'
+    ]
     canon_paths = set(canon_rel_paths())
     missing = [row['new_path'] for row in migration_rows if row['new_path'] not in canon_paths]
     if missing:
@@ -159,6 +162,8 @@ def ensure_control_files() -> None:
     for needle in ['## Platform charter', '## Handoff', '## Work requests', '## Feedback']:
         if needle not in index_text:
             fail(f'index.md missing {needle}')
+    if 'Archived legacy WRs under `AEGIS/docs/work-requests/` are runtime out-of-scope.' not in index_text:
+        fail('index.md missing WR archive split note')
     for needle in ['## [2026-04-05] migration | handoff bucket', '## [2026-04-05] migration | feedback bucket']:
         if needle not in log_text:
             fail(f'log.md missing {needle}')

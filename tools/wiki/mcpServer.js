@@ -237,7 +237,7 @@ server.registerTool('append_test_evidence', {
 });
 
 server.registerTool('list_my_open_wrs', {
-  description: 'List open work requests relevant to a specific lane, excluding WRs already completed by that lane.',
+  description: 'List open work requests relevant to a specific lane, excluding WRs already completed by that lane. Reads only canonical new-format WRs under wiki/canon/work-requests/**.',
   inputSchema: {
     lane: z.string(),
     include_to_all: z.boolean().optional(),
@@ -249,7 +249,7 @@ server.registerTool('list_my_open_wrs', {
 });
 
 server.registerTool('register_wr', {
-  description: 'Register a canonical work-request page using the single validated WR schema.',
+  description: 'Register a canonical new-format work-request page using the single validated WR schema.',
   inputSchema: {
     wr_kind: z.enum(['request', 'reply', 'notice', 'question']),
     from_lane: z.string(),
@@ -275,7 +275,7 @@ server.registerTool('register_wr', {
 });
 
 server.registerTool('complete_wr', {
-  description: 'Mark a WR completed from the perspective of a recipient lane, preserving recipient-scoped completion metadata.',
+  description: 'Mark a canonical new-format WR completed from the perspective of a recipient lane, preserving recipient-scoped completion metadata.',
   inputSchema: {
     path_or_id: z.string(),
     lane: z.string(),

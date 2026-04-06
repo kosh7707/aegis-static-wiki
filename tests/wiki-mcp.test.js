@@ -21,6 +21,7 @@ function createFixture() {
   write(path.join(root, 'wiki/canon/charter/aegis.md'), `---\ntitle: "AEGIS"\npage_type: "canonical-charter"\ncanonical: true\nsource_refs:\n  - "docs/AEGIS.md"\nlast_verified: "2026-04-05"\nservice_tags: ["platform"]\ndecision_tags: []\nrelated_pages: []\n---\n\n# AEGIS\n\nPlatform charter fixture.\n`);
   write(path.join(root, 'Home.md'), `---\ntitle: "Home"\npage_type: "system-home"\ncanonical: false\nsource_refs: []\nlast_verified: "2026-04-05"\nservice_tags: ["platform"]\ndecision_tags: []\nrelated_pages: []\n---\n\n# Home\n\n[[wiki/canon/charter/aegis]]\n`);
   write(path.join(docsRoot, 's1-handoff/README.md'), '# S1 README\n\nFixture handoff.\n');
+  write(path.join(docsRoot, 'work-requests/s2-to-s3-legacy.md'), '# Legacy WR\n\nArchived legacy fixture.\n');
   return { root, docsRoot };
 }
 
@@ -46,6 +47,9 @@ test('MCP server exposes typed read/write wiki operations', async () => {
 
     const listResult = await client.callTool({ name: 'list_pages', arguments: { scope: 'canon' } });
     assert.equal(listResult.structuredContent.pages.length >= 1, true);
+
+    const emptyOpen = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's3' } });
+    assert.deepEqual(emptyOpen.structuredContent.wrs, []);
 
     const readResult = await client.callTool({ name: 'read_page', arguments: { path: 'wiki/canon/charter/aegis.md' } });
     assert.equal(readResult.structuredContent.title, 'AEGIS');
@@ -129,6 +133,13 @@ test('MCP server exposes typed read/write wiki operations', async () => {
 
     await client.callTool({ name: 'complete_wr', arguments: { path_or_id: wrPath, lane: 's4', completion_note: 'Handled by S4' } });
     const wrText = fs.readFileSync(path.join(root, wrPath), 'utf8');
+    assert.match(wrText, /wr_id:/);
+    assert.match(wrText, /registered_at:/);
+    assert.match(wrText, /## Summary/);
+    assert.match(wrText, /## Context/);
+    assert.match(wrText, /## Request/);
+    assert.match(wrText, /## Completion expectation/);
+    assert.match(wrText, /## Notes/);
     assert.match(wrText, /status: "completed"/);
     assert.match(wrText, /completed_by:/);
     assert.match(wrText, /Handled by S3/);
@@ -175,6 +186,7 @@ test('MCP server exposes typed read/write wiki operations', async () => {
     const indexText = fs.readFileSync(path.join(root, 'wiki/system/index.md'), 'utf8');
     assert.match(indexText, /Example service context/);
     assert.match(indexText, /Platform charter/);
+    assert.match(indexText, /## Work requests/);
   } finally {
     await transport.close().catch(() => {});
   }

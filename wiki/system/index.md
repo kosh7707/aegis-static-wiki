@@ -55,6 +55,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-12|S1 Session 12 — 2026-03-27]] — 58. ✅ S2 WR 처리 (s2-to-s1-session11-changes.md) — 세션 11 변경사항 대응 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-13|S1 세션 13 — 2026-03-31]] — Playwright E2E 테스트 인프라 구축 + QA 전용 세션 분화 + S2 Rule 엔진 제거 WR 처리 + QA 피드백 2라운드 대응. *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-15|S1 세션 15 — 2026-04-02]] — S2 API/모델 확장 완료 통보(A/B/C 전부) + QA 분석가 UX 리뷰 S1 독립 14건 + mock 보강. *(verified 2026-04-06; s1)*
+- [[wiki/canon/handoff/s1/session-16|Session history — s1 / 16]] — - Lane: s1 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-2|S1 Session 2 — 2026-03-16]] — 3. ✅ 종합 리팩토링 — 버그 3건 수정 + 코드 품질 감사 50건 일괄 정리 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-3|S1 Session 3 — 2026-03-17]] — 4. ✅ 정적 분석 대시보드 2-탭 개편 (SonarQube 패턴) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-4|S1 Session 4 — 2026-03-18]] — 9. ✅ 디자인 리뷰 2차 피드백 8건 수정 *(verified 2026-04-06; s1)*
@@ -82,7 +83,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-8|세션 8 — 풀스택 통합 테스트 + 서브 프로젝트 파이프라인]] — 날짜: 2026-03-24 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-9|세션 9 — 외부 리뷰 피드백 기반 리팩토링]] — 날짜: 2026-03-25 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775448433752-gfeokr|Session history — S2 / omx-1775448433752-gfeokr]] — - Lane: S2 *(verified 2026-04-06; s2)*
-- [[wiki/canon/handoff/s2/session-path-correction-smoke|Session history — s2 / path-correction-smoke]] — - Lane: s2 *(verified 2026-04-06; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1775463166551-zydb7o|Session history — s2 / omx-1775463166551-zydb7o]] — - Lane: s2 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-10|세션 10: Build Agent 분리 + 프로젝트 메모리 (2026-03-24, 완료)]] — - Build Agent 서비스 분리 (:8003) *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-11|세션 11: Build Agent v2 재설계 + 외부 리뷰 (2026-03-25, 완료)]] — - Build Agent v2 재설계: 정책 엔진, edit/delete 도구, trybuild v2, 서브프로젝트 스코핑 *(verified 2026-04-06; s3)*
@@ -116,6 +117,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-7|S4 Session 7 — version hygiene 정리 + 공용 `.omx` 메모 규칙 반영 (2026-04-04)]] — - docs/work-requests/s2-to-all-omx-memory-discipline.md가 추가되었고, *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-8|S4 Session 8 — Build Snapshot consumer seam 정렬 + S3 WR triage (2026-04-04)]] — 2026-04-04 오후 기준 docs/work-requests/에 S3→S4 WR이 다수 도착했다. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-9|S4 Session 9 — build path boundary inversion (`sdkId` 제거, autodetect 제거, sdk-registry 제거) (2026-04-04)]] — 사용자 검토 결과, S4 build path가 MCP/tool surface 이상의 일을 하고 있다는 구조적 문제가 드러났다. *(verified 2026-04-06; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1775463834644-s84ud8|Session history — s4 / omx-1775463834644-s84ud8]] — - Lane: s4 *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-1|S5 Session 1 — 2026-03-18]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -166,14 +168,6 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-06; s6)*
 - [[wiki/canon/roadmap/s7-roadmap|S7 Roadmap]] — 다음 작업 + 장기 계획 *(verified 2026-04-06; s7)*
-
-## Work requests
-
-- [[wiki/canon/work-requests/s2-to-all-omx-memory-discipline|S2 → ALL: 공용 `.omx` 메모 운영 규칙 정리]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
-- [[wiki/canon/work-requests/s2-to-s1-backend-contract-alignment|S2 → S1: 프론트엔드 API 계약 정렬 요청]] — 날짜: 2026-04-04 *(verified 2026-04-06; s2/platform)*
-- [[wiki/canon/work-requests/s2-to-s1-contract-lockdown-fyi|S2 → S1: S1↔S2 계약 lockdown 완료 (FYI / 추가 구현 없음)]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
-- [[wiki/canon/work-requests/s3-to-s3-prompt-enhancement-backlog|S3 → S3: 시스템 프롬프트 고도화 백로그]] — 날짜: 2026-04-02 *(verified 2026-04-06; platform)*
-- [[wiki/canon/work-requests/s4-to-s2-build-path-boundary-inversion-notice|S4 → S2: Build path boundary inversion 및 sdk-registry 제거 통보]] — 날짜: 2026-04-04 *(verified 2026-04-06; platform)*
 
 ## Feedback
 
