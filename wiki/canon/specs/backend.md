@@ -155,6 +155,10 @@ WS     /ws/dynamic-test?testId=
 
 - `POST /api/analysis/run`은 `202 { success, data: { analysisId, status: "running" } }`를 즉시 반환하고 Quick→Deep 백그라운드 오케스트레이션을 시작한다.
 - active analysis progress는 `/ws/analysis`에서 emit된다.
+- progress/completion 관점의 current split:
+  - foreground progress: `/ws/upload`, `/ws/sdk`, `/ws/analysis`, `/ws/pipeline`
+  - background completion awareness: `/ws/notifications`
+- 사용자가 navigation / re-entry / reconnect 이후 상태를 복구할 때는 WS replay가 아니라 각 REST/status surface를 authoritative source로 본다.
 
 ### P0-1. 파일 업로드 처리 ✅
 
@@ -342,7 +346,15 @@ GET /health
 - **`/ws/upload?uploadId=xxx`** — 소스 업로드 진행률 push
 - **`/ws/pipeline?projectId=xxx`** — 서브프로젝트 파이프라인 진행률 push
 - **`/ws/sdk?projectId=xxx`** — SDK 등록/검증 진행률 push
-- **`/ws/notifications?projectId=xxx`** — 프로젝트 알림 push
+- **`/ws/notifications?projectId=xxx`** — 프로젝트 알림 push (background completion awareness)
+
+Recovery / re-entry source-of-truth:
+
+- upload → `GET /api/projects/:pid/source/upload-status/:uploadId`
+- sdk → `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id`
+- analysis → `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId`
+- pipeline → `GET /api/projects/:pid/pipeline/status`
+- notifications → `GET /api/projects/:pid/notifications`
 
 ### P1-2. 프로젝트별 어댑터 관리 ✅
 
@@ -892,7 +904,7 @@ GET /api/gate-profiles/:id    프로필 상세
 
 ## 알림 시스템 ✅ 구현 완료
 
-프로젝트 스코프 알림. 4개 트리거: analysis_complete, critical_finding, approval_pending, gate_failed.
+프로젝트 스코프 알림. 현재 progress/completion UX에서 중요한 트리거는 `analysis_complete`, `critical_finding`, `approval_pending`, `gate_failed`, `upload_complete`, `upload_failed`, `sdk_ready`, `sdk_failed`, `pipeline_complete`, `pipeline_failed` 이다.
 
 ```
 GET    /api/projects/:pid/notifications        알림 목록 (?unread=true)
@@ -902,6 +914,8 @@ PATCH  /api/notifications/:id/read              개별 읽음
 ```
 
 WebSocket: `/ws/notifications?projectId=<pid>`
+
+`jobKind/resourceId/correlationId`는 foreground progress와 background completion을 연결하는 contract metadata다. 업로드/SDK/파이프라인 완료 알림은 각각 `uploadId` / `sdkId` / `pipelineId`를 correlation key로 사용한다.
 
 ## Finding 그루핑 API ✅ 구현 완료
 

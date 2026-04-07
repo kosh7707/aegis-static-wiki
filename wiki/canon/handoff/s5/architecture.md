@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/architecture.md"
 original_path: "docs/s5-handoff/architecture.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s5"]
 decision_tags: []
 related_pages: []
@@ -97,14 +97,14 @@ services/knowledge-base/
 │   └── threat-db-raw/             # ETL 다운로드 캐시
 ├── requirements.txt               # fastapi, uvicorn, pydantic, neo4j, qdrant-client, fastembed, httpx
 ├── .env                           # Neo4j + Qdrant + NVD API 키
-└── tests/                              # 161 tests
+└── tests/                              # 163 tests
     ├── test_neo4j_graph.py             # 7 tests
-    ├── test_code_graph_service.py      # 16 tests
+    ├── test_code_graph_service.py      # 17 tests
     ├── test_code_vector_search.py      # 12 tests
     ├── test_code_graph_assembler.py    # 10 tests
     ├── test_knowledge_assembler.py     # 15 tests
     ├── test_nvd_client.py              # 37 tests
-    ├── test_project_memory_service.py  # 22 tests
+    ├── test_project_memory_service.py  # 23 tests
     ├── test_api_error_responses.py     # 15 tests
     ├── test_qdrant_modes.py            # 5 tests
     ├── test_benchmark_metrics.py       # 15 tests
@@ -151,6 +151,7 @@ threat search는 이제 **Qdrant + Neo4j 둘 다 필요**하다:
 - code graph ingest/search/read surface는 선택적으로 `buildSnapshotId`, `buildUnitId`, `sourceBuildAttemptId`를 수용/반환한다.
 - project memory create/list도 같은 provenance 메타데이터를 수용/반환한다.
 - 현재 단계는 **프로젝트당 활성 code graph 1개**를 유지하며, provenance는 future snapshot-aware 확장을 위한 **metadata/filter seam**이다.
+- 2026-04-07 수정으로, legacy 노드에 provenance property key가 없는 경우에도 read/query 경로가 `properties(node)['build_snapshot_id']` 형태의 map access를 사용한다. 따라서 optional provenance seam은 유지하면서도 Neo4j `01N52 property key does not exist` warning noise를 줄인다.
 - 외부 lane 통지는 `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md`에 정리되어 있다. `docs/work-requests/**`는 archive-only이며 WR MCP 런타임 대상이 아니다.
 
 ---
@@ -180,3 +181,6 @@ CVE/NVD는 ETL에서 제외됨 — 프로젝트 분석 시 `POST /v1/cve/batch-l
 - service 식별자: `s5-kb`
 - 로그 파일: `logs/aegis-knowledge-base.jsonl`
 - 응답 헤더에 `X-Request-Id` 반환 (`_RequestIdMiddleware`)
+- 2026-04-07 기준 알려진 운영 교훈:
+  - Neo4j 미연결 startup 구간에는 `/v1/search*`와 관련 PoC helper가 `503 KB_NOT_READY`를 낼 수 있다.
+  - legacy `Function`/`Memory` 노드에 optional provenance property가 없어서 생기던 `01N52` warning은 read query에서 map access 사용으로 완화했다.

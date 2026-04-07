@@ -85,6 +85,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-9|세션 9 — 외부 리뷰 피드백 기반 리팩토링]] — 날짜: 2026-03-25 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775448433752-gfeokr|Session history — S2 / omx-1775448433752-gfeokr]] — - Lane: S2 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775463166551-zydb7o|Session history — s2 / omx-1775463166551-zydb7o]] — - Lane: s2 *(verified 2026-04-06; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1775469122100-df8axl|Session history — s2 / omx-1775469122100-df8axl]] — - Lane: s2 *(verified 2026-04-07; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1775553999378-p10q7s|Session history — s2 / omx-1775553999378-p10q7s]] — - Lane: s2 *(verified 2026-04-07; s2)*
 - [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-10|세션 10: Build Agent 분리 + 프로젝트 메모리 (2026-03-24, 완료)]] — - Build Agent 서비스 분리 (:8003) *(verified 2026-04-06; s3)*
@@ -109,6 +111,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-8|세션 8: Claim.detail + PoC + Adaptive Timeout (2026-03-21, 완료)]] — - Claim.detail 필드, generate-poc taskType *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-9|세션 9: 프롬프트 고도화 + Observability v2 (2026-03-23, 완료)]] — - 프롬프트 도구 사용 재조정, adaptive timeout 보정 *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1775469122100-df8axl|Session history — s3 / omx-1775469122100-df8axl]] — - Lane: s3 *(verified 2026-04-07; s3)*
+- [[wiki/canon/handoff/s3/session-omx-1775554030010-j7lykp|Session history — s3 / omx-1775554030010-j7lykp]] — - Lane: s3 *(verified 2026-04-07; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-1|S4 세션 1 — 전체 빌드업 (~ 2026-03-27)]] — 초기 구축부터 v0.7.0까지의 전체 작업 로그. *(verified 2026-04-06; s4)*
@@ -122,8 +125,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-9|S4 Session 9 — build path boundary inversion (`sdkId` 제거, autodetect 제거, sdk-registry 제거) (2026-04-04)]] — 사용자 검토 결과, S4 build path가 MCP/tool surface 이상의 일을 하고 있다는 구조적 문제가 드러났다. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1775463834644-s84ud8|Session history — s4 / omx-1775463834644-s84ud8]] — - Lane: s4 *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1775469122100-df8axl|Session history — s4 / omx-1775469122100-df8axl]] — - Lane: s4 *(verified 2026-04-07; s4)*
-- [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-06; s5)*
-- [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s5)*
+- [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-07; s5)*
+- [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-07; s5)*
 - [[wiki/canon/handoff/s5/session-1|S5 Session 1 — 2026-03-18]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-10|S5 Session 10 — 2026-03-26]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-11|S5 Session 11 — 2026-03-27]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -170,22 +173,23 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-06; s2)*
 - [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — 다음 작업 + 장기 계획. README에서 분리. *(verified 2026-04-06; s3)*
 - [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-04-06; s4)*
-- [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-06; s5)*
+- [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-07; s5)*
 - [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-06; s6)*
 - [[wiki/canon/roadmap/s7-roadmap|S7 Roadmap]] — 다음 작업 + 장기 계획 *(verified 2026-04-06; s7)*
 
 ## Work requests
 
-- Archived legacy WRs under `AEGIS/docs/work-requests/` are runtime out-of-scope.
-
 - [[wiki/canon/work-requests/s1-qa-to-s1-s1-qa---s1-qa-p0-baseline-p1|S1-QA -> S1: 종합 QA 결과 — P0 승인버튼 복원 + baseline 갱신 + P1 수정 요청]] — - Kind: request *(verified 2026-04-07; s1)*
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-qa-qa|S1-QA 종합 QA 요청 — 페르소나 기반 전면 검증]] — - Kind: request *(verified 2026-04-06; s1)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts|Frontend full-depth audit against refreshed S2 API/WebSocket contracts]] — - Kind: request *(verified 2026-04-07; s1/s2/frontend/backend/api-contract/websocket)*
+- [[wiki/canon/work-requests/s2-to-s1-frontend-ux-handoff-for-websocket-progress-completion-surfaces|Frontend UX handoff for WebSocket progress/completion surfaces]] — - Kind: request *(verified 2026-04-07; s1/s2)*
 - [[wiki/canon/work-requests/s2-to-s1-reply-ws-static-analysis-removed-ws-analysis-is-the-canonical-progress-channel|Reply: `/ws/static-analysis` removed; `/ws/analysis` is the canonical progress channel]] — - Kind: reply *(verified 2026-04-07; s1/s2/websocket/analysis)*
 - [[wiki/canon/work-requests/s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs|Inspect gateway-webserver findings drift in S4 logs]] — - Kind: request *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/work-requests/s3-to-s5-inspect-gateway-webserver-s5-context-logs-for-analysis-drift|Inspect gateway-webserver S5 context/logs for analysis drift]] — - Kind: request *(verified 2026-04-07; s3/s5/analysis-agent/knowledge-base)*
+- [[wiki/canon/work-requests/s4-to-s2-s3-prepare-for-s4-omission-policy-contract-changes-on-v1-scan-and-v1-build-and-anal|Prepare for S4 omission-policy contract changes on /v1/scan and /v1/build-and-analyze]] — - Kind: request *(verified 2026-04-07; s4/s2/s3/sast-runner/analysis-agent)*
 - [[wiki/canon/work-requests/s4-to-s3-confirm-s4-exploitability-consumer-minimum-field-set-and-normalization-expectati|Confirm S4 exploitability-consumer minimum field set and normalization expectations]] — - Kind: request *(verified 2026-04-07; s4/s3/analysis-agent/sast-runner)*
+- [[wiki/canon/work-requests/s5-to-s2-aegis-static-wiki-read_page-wiki-prefix|aegis-static-wiki read_page: wiki/ prefix 누락 시 힌트 메시지 개선]] — - Kind: request *(verified 2026-04-07; aegis-static-wiki/mcp)*
 
 ## Feedback
 

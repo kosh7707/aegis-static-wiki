@@ -354,11 +354,23 @@ interface DynamicTestFinding {
 interface Notification {
   id: string;
   projectId: string;
-  type: "analysis_complete" | "critical_finding" | "approval_pending" | "gate_failed";
+  type:
+    | "analysis_complete"
+    | "critical_finding"
+    | "approval_pending"
+    | "gate_failed"
+    | "upload_complete"
+    | "upload_failed"
+    | "sdk_ready"
+    | "sdk_failed"
+    | "pipeline_complete"
+    | "pipeline_failed";
   title: string;
   body: string;
   severity?: "critical" | "high" | "medium" | "low" | "info";
+  jobKind?: "analysis" | "upload" | "sdk" | "pipeline" | "gate" | "approval" | "finding";
   resourceId?: string;
+  correlationId?: string;
   read: boolean;
   createdAt: string;
 }
@@ -557,7 +569,7 @@ Validation enforced today:
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
 | POST | `/api/projects/:pid/pipeline/run` | `{ targetIds?: string[] }` | `202 { success, data: { pipelineId, status: "running" } }` | `202`, `404` |
-| POST | `/api/projects/:pid/pipeline/run/:targetId` | empty body | `202 { success, data: { targetId, status: "running" } }` | `202`, `404` |
+| POST | `/api/projects/:pid/pipeline/run/:targetId` | empty body | `202 { success, data: { pipelineId, targetId, status: "running" } }` | `202`, `404` |
 | GET | `/api/projects/:pid/pipeline/status` | - | `200 { success, data: PipelineStatus }` | `200`, `404` |
 
 ```ts
@@ -688,6 +700,41 @@ interface CustomReportRequest {
 | GET | `/api/projects/:pid/notifications/count` | `200 { success, data: { unread: number } }` | `200` |
 | PATCH | `/api/projects/:pid/notifications/read-all` | `200 { success: true }` | `200` |
 | PATCH | `/api/notifications/:id/read` | `200 { success: true }` | `200` |
+
+Current `Notification` payload semantics:
+
+```ts
+interface Notification {
+  id: string;
+  projectId: string;
+  type:
+    | "analysis_complete"
+    | "critical_finding"
+    | "approval_pending"
+    | "gate_failed"
+    | "upload_complete"
+    | "upload_failed"
+    | "sdk_ready"
+    | "sdk_failed"
+    | "pipeline_complete"
+    | "pipeline_failed";
+  title: string;
+  body: string;
+  severity?: Severity;
+  jobKind?: "analysis" | "upload" | "sdk" | "pipeline" | "gate" | "approval" | "finding";
+  resourceId?: string;
+  correlationId?: string;
+  read: boolean;
+  createdAt: string;
+}
+```
+
+Important clarification:
+
+- `type` is the **exact notification category** emitted by S2.
+- `jobKind` is the **exact async-flow/domain kind** when the same notification channel spans upload/sdk/pipeline/analysis/gate/etc.
+- `resourceId` is the durable resource identifier carried by the notification.
+- `correlationId` is the foreground/live-flow correlation key when one exists (for example `uploadId`, `sdkId`, `pipelineId`).
 
 ## 3.12 Auth surface
 
@@ -832,27 +879,62 @@ S1 should therefore treat `meta.projectId` as routing metadata, not as a guarant
 | `upload-complete` | `{ uploadId, fileCount, projectPath }` |
 | `upload-error` | `{ uploadId, phase: "failed", error }` |
 
+Role and recovery:
+
+- **Foreground role**: live upload progress while the user stays on the upload/source-management flow.
+- **Terminal signals**: `upload-complete`, `upload-error`.
+- **Background completion awareness**: a project notification is also emitted with:
+  - success → `type: "upload_complete", jobKind: "upload", resourceId: uploadId, correlationId: uploadId`
+  - failure → `type: "upload_failed", jobKind: "upload", resourceId: uploadId, correlationId: uploadId`
+- **Recovery / re-entry source of truth**: `GET /api/projects/:pid/source/upload-status/:uploadId`
+  - this is a last-known-status fallback snapshot (current implementation: in-memory, ~30 minute retention), not an indefinitely durable history surface.
+
 ### 4.4 Pipeline WS — `/ws/pipeline?projectId=<projectId>`
 
 | `type` | Payload |
 |---|---|
-| `pipeline-target-status` | `{ projectId, targetId, targetName, status: BuildTargetStatus, message, phase: "setup" \| "build" \| "ready" }` |
-| `pipeline-complete` | `{ projectId, readyCount, failedCount, totalCount }` |
-| `pipeline-error` | `{ projectId, targetId, targetName, phase, error }` |
+| `pipeline-target-status` | `{ pipelineId, projectId, targetId, targetName, status: BuildTargetStatus, message, phase: "setup" \| "build" \| "ready" }` |
+| `pipeline-complete` | `{ pipelineId, projectId, readyCount, failedCount, totalCount }` |
+| `pipeline-error` | `{ pipelineId, projectId, targetId, targetName, phase, error }` |
 
 Implementation note:
 
 - `pipeline-error.phase` is currently emitted from the catch path and should be treated as a coarse phase indicator, not a guaranteed exact failing step.
+- `pipelineId` is the foreground/background correlation key for a single pipeline execution, while the subscription key remains `projectId`.
+
+Role and recovery:
+
+- **Foreground role**: target-by-target lifecycle stream, not a single scalar progress bar contract.
+- **Terminal signals**:
+  - `pipeline-complete` always fires at run end with `{ readyCount, failedCount, totalCount }`
+  - `pipeline-error` fires per failed target during the run
+- **Background completion awareness**:
+  - success → `type: "pipeline_complete", jobKind: "pipeline", resourceId: pipelineId, correlationId: pipelineId`
+  - partial/failed terminal outcome → `type: "pipeline_failed", jobKind: "pipeline", resourceId: pipelineId, correlationId: pipelineId`
+- **Recovery / re-entry source of truth**: `GET /api/projects/:pid/pipeline/status`
+  - authoritative after navigation/reconnect
+  - returns current target statuses/phases for the project rather than replaying an old WS stream.
 
 ### 4.5 SDK WS — `/ws/sdk?projectId=<projectId>`
 
 | `type` | Payload |
 |---|---|
-| `sdk-progress` | `{ sdkId, phase, message }` |
+| `sdk-progress` | `{ sdkId, phase: "uploading" \| "extracting" \| "analyzing" \| "verifying" \| "ready", message }` |
 | `sdk-complete` | `{ sdkId, profile }` |
-| `sdk-error` | `{ sdkId, error }` |
+| `sdk-error` | `{ sdkId, phase: "verify_failed", error }` |
 
-`phase` aligns with current SDK pipeline states (`uploading`, `extracting`, `analyzing`, `verifying`, `ready`) plus error termination.
+Role and recovery:
+
+- **Foreground role**: live SDK registration/verification state machine within project-scoped SDK UI.
+- **Terminal signals**:
+  - `sdk-complete`
+  - `sdk-error`
+- **Background completion awareness**:
+  - success → `type: "sdk_ready", jobKind: "sdk", resourceId: sdkId, correlationId: sdkId`
+  - failure → `type: "sdk_failed", jobKind: "sdk", resourceId: sdkId, correlationId: sdkId`
+- **Recovery / re-entry source of truth**:
+  - `GET /api/projects/:pid/sdk/:id` for a single SDK
+  - `GET /api/projects/:pid/sdk` for collection/list recovery
 
 ### 4.6 Analysis WS — `/ws/analysis?analysisId=<analysisId>`
 
@@ -872,6 +954,20 @@ Current progress phases:
 - `deep_retrying`
 - `deep_complete`
 
+Role and recovery:
+
+- **Foreground role**: primary real-time progress surface for Quick→Deep analysis jobs.
+- **Terminal signals**:
+  - `analysis-quick-complete`
+  - `analysis-deep-complete`
+  - `analysis-error`
+- **Background completion awareness**:
+  - project notifications may also appear (`analysis_complete`, `critical_finding`, `gate_failed`) after normalization/gate evaluation, but they are **supplementary** and not the authoritative 1:1 replay surface for a specific `analysisId`.
+- **Recovery / re-entry source of truth**:
+  - while status is retained: `GET /api/analysis/status/:analysisId`
+  - for completed material: `GET /api/analysis/results/:analysisId`
+  - if the live WS stream was missed, clients should recover from these REST surfaces rather than expecting WS replay.
+
 ### 4.7 Dynamic-test WS — `/ws/dynamic-test?testId=<testId>`
 
 | `type` | Payload |
@@ -887,6 +983,43 @@ Current progress phases:
 |---|---|
 | `notification` | `Notification` |
 
+Current high-value notification categories for progress/completion UX:
+
+- `upload_complete` / `upload_failed`
+- `sdk_ready` / `sdk_failed`
+- `pipeline_complete` / `pipeline_failed`
+- `analysis_complete`
+- `critical_finding`
+- `approval_pending`
+
+Interpretation rules:
+
+- `type` is the coarse UX category.
+- `jobKind` identifies the async domain or object family.
+- `resourceId` is the stable resource/job identifier for follow-up lookup.
+- `correlationId` is the live-flow correlation key when the notification should be associated with an in-progress foreground stream.
+
+### 4.9 Recovery source-of-truth matrix
+
+| Async flow | Live foreground progress | Re-entry / reconnect source of truth | Background completion surface |
+|---|---|---|---|
+| Source upload | `/ws/upload?uploadId=` | `GET /api/projects/:pid/source/upload-status/:uploadId` | `/ws/notifications` + notifications list (`upload_complete` / `upload_failed`) |
+| SDK registration | `/ws/sdk?projectId=` | `GET /api/projects/:pid/sdk/:id` | `/ws/notifications` + notifications list (`sdk_ready` / `sdk_failed`) |
+| Quick→Deep analysis | `/ws/analysis?analysisId=` | `GET /api/analysis/status/:analysisId`, then `GET /api/analysis/results/:analysisId` | notifications are supplementary; HTTP status/results remain authoritative |
+| Pipeline | `/ws/pipeline?projectId=` | `GET /api/projects/:pid/pipeline/status` | `/ws/notifications` + notifications list (`pipeline_complete` / `pipeline_failed`) |
+| General cross-screen completion | n/a | `GET /api/projects/:pid/notifications` / `/count` | `/ws/notifications?projectId=` |
+
+Role and recovery:
+
+- **Background role**: completion/failure awareness after navigation, tab switches, or late arrival.
+- **Not a replacement for foreground progress**: notifications complement `/ws/upload`, `/ws/sdk`, `/ws/analysis`, `/ws/pipeline`; they do not replay those streams.
+- **Authoritative recovery surface**:
+  - `GET /api/projects/:pid/notifications`
+  - `GET /api/projects/:pid/notifications/count`
+- **Correlation rule**:
+  - use `jobKind` + `resourceId` + optional `correlationId` to route a notification back to the appropriate screen/state
+  - use the per-flow REST recovery endpoint when the foreground WS stream itself is needed.
+
 ---
 
 ## 5. Canonical drift notes resolved by this document
@@ -900,3 +1033,5 @@ These points are intentional contract clarifications and should be preserved unl
 5. WS envelopes are flattened as `{ ...message, meta }`, not `{ message, meta }`.
 6. WS `meta.projectId` equals the subscription key on non-project channels today.
 7. `pipeline-error.phase` is currently only a coarse catch-path phase hint, not an exact failed-step contract.
+8. Upload / SDK / pipeline completion now have explicit notification categories and correlation keys for cross-screen completion awareness.
+9. Analysis recovery is authoritative via `/api/analysis/status/:analysisId` and `/api/analysis/results/:analysisId`; notification delivery is supplemental rather than a strict mirror of `/ws/analysis`.

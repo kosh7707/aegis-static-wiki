@@ -115,12 +115,40 @@ migration_status: "canonicalized"
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **343개 통과** (vitest, 2026-04-07 재검증) |
+| 테스트 | **347개 통과** (vitest, 2026-04-07 WebSocket progress/completion hardening 재검증) |
 | DB 테이블 | **29개** (SQLite, WAL) — 기존 21개 활성 표면 + snapshot/build persistence seam 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
 | 에러 클래스 | 18개 (AppError 계층, 21개 에러코드) |
 | 외부 클라이언트 | SastClient(S4), AgentClient(S3), BuildAgentClient(S3:8003), KbClient(S5), AdapterClient(S6), LlmTaskClient(S7) |
+
+### 3-0. Progress / completion UX 계약 메모 (2026-04-07)
+
+현재 S2는 WebSocket을 단순 transport가 아니라 **비동기 작업의 진행/완료 인지 표면**으로 본다.
+
+- **foreground progress 채널**
+  - `/ws/upload`
+  - `/ws/sdk`
+  - `/ws/analysis`
+  - `/ws/pipeline`
+- **background completion awareness 채널**
+  - `/ws/notifications`
+
+Recovery / re-entry 원칙:
+
+- 사용자가 화면을 이동하거나 재연결한 뒤에는 **WS replay를 기대하지 않는다**.
+- 대신 채널별 authoritative recovery path를 사용한다.
+  - upload → `/api/projects/:pid/source/upload-status/:uploadId`
+  - sdk → `/api/projects/:pid/sdk` / `/:id`
+  - analysis → `/api/analysis/status/:analysisId`, `/api/analysis/results/:analysisId`
+  - pipeline → `/api/projects/:pid/pipeline/status`
+  - notifications → `/api/projects/:pid/notifications`
+
+S1 handoff 원칙:
+
+- API/WS 계약은 **normative**
+- 화면별 활용 방식은 **advisory**
+- 즉 S2는 exact contract를 주고, S1은 그 위에 UX를 설계한다
 
 ### 3-1. 최근 계약 회귀 잠금 메모 (2026-04-04)
 
@@ -140,7 +168,7 @@ migration_status: "canonicalized"
   - `/api/projects/:pid/pipeline/run/:targetId`
 - contract lockdown 관련 S2 기준 검증 결과:
   - `src/__tests__/contract/api-contract.test.ts` → **79 passed**
-  - `cd services/backend && npx vitest run` → **19 files / 343 tests passed**
+  - `cd services/backend && npx vitest run` → **20 files / 347 tests passed**
   - `services/backend` / `services/shared` `tsc --noEmit` 통과
 - 문서 동기화 완료 범위:
   - `wiki/canon/api/shared-models.md`
@@ -207,3 +235,15 @@ migration_status: "canonicalized"
 | SAST Runner API | `wiki/canon/api/sast-runner-api.md` | S2↔S4 직접 호출 스펙 |
 | KB API | `wiki/canon/api/knowledge-base-api.md` | S5 호출 스펙 |
 | 공유 모델 | `wiki/canon/api/shared-models.md` | 전 서비스 공유 타입 |
+
+
+### 3-4. WebSocket progress/completion contract 메모 (2026-04-07)
+
+- progress/completion UX 관점의 우선 채널은 `upload`, `sdk`, `analysis`, `pipeline`, `notifications` 다.
+- `notifications` 는 단순 부가 알림이 아니라 **background completion surface** 로 취급한다.
+- recovery source of truth는 flow별로 다르다:
+  - upload → `GET /api/projects/:pid/source/upload-status/:uploadId`
+  - sdk → `GET /api/projects/:pid/sdk/:id`
+  - analysis → `GET /api/analysis/status/:analysisId`, terminal은 `GET /api/analysis/results/:analysisId`
+  - pipeline → `GET /api/projects/:pid/pipeline/status`
+- S2는 exact contract/docs/tests를 owning하고, S1에는 advisory UX handoff를 WR로 넘긴다.

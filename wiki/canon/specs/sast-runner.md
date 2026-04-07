@@ -40,7 +40,7 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.0 |
 | API 계약 | `docs/api/sast-runner-api.md` |
-| 테스트 | 369개 (23개 파일) |
+| 테스트 | 376개 |
 
 ---
 
@@ -48,7 +48,7 @@ migration_status: "canonicalized"
 
 | 엔드포인트 | 용도 |
 |-----------|------|
-| `POST /v1/scan` | 6개 SAST 도구 병렬 + 실행 보고서 + SDK 해석 + scope-early + 노이즈 필터링. **Build Snapshot provenance 입력/echo + degraded-aware NDJSON 스트리밍** 지원 |
+| `POST /v1/scan` | 6개 SAST 도구 병렬 + 실행 보고서 + SDK 해석 + scope-early + 노이즈 필터링. **Build Snapshot provenance 입력/echo + degraded-aware NDJSON 스트리밍 + omission policy gate** 지원 |
 | `POST /v1/functions` | clang AST -> 함수+호출 관계 + origin 태깅 |
 | `POST /v1/includes` | gcc -E -M -> 인클루드 트리 |
 | `POST /v1/metadata` | gcc -E -dM -> 타겟 매크로/아키텍처 |
@@ -102,6 +102,15 @@ migration_status: "canonicalized"
 | clang (AST dump) | >= 16 | `-ast-dump=json` 형식 호환 |
 
 서버 시작 시 `check_tools()`가 버전을 확인하고, 최소 버전 미만 시 경고 로그를 기록한다 (차단하지 않음). 결과는 TTL 300초로 캐시.
+
+### 도구 omission / skip 정책
+
+- 허용된 skip만 성공 가능
+- allowed skip taxonomy: `operator-requested-subset`, `profile-not-applicable`
+- disallowed omission taxonomy: `runtime-tool-missing`, `environment-drift`, `tool-check-failed`
+- sync `/v1/scan`은 비허용 omission 시 HTTP 503 + failed response로 종료
+- NDJSON는 final `type="error"` 이벤트를 authoritative exception surface로 사용
+- `/v1/build-and-analyze`는 build evidence를 유지한 채 inner scan failure를 outer failure로 전파
 
 ### 도구 자동 선택
 

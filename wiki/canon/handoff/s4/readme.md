@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-04-06**
+> **마지막 업데이트: 2026-04-07**
 
 ---
 
@@ -65,7 +65,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.0** |
-| 테스트 | **369개** (23개 파일) |
+| 테스트 | **376개** |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -73,6 +73,8 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - build / scan / build-and-analyze가 nested `provenance` 입력을 받음
 - `/v1/build`는 structured `buildEvidence` + `failureDetail` 반환
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
+- `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
+- `/v1/health`는 기존 top-level 필드를 유지한 채 `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`를 추가 노출
 - `/v1/build-and-analyze`는 convenience / transitional surface로 유지
 
 ### 6개 SAST 도구

@@ -94,15 +94,8 @@ test('source repo docs are reduced to the bootstrap residual surface', () => {
   const sourceDocs = listMarkdownFiles(sourceDocsRoot)
     .filter((file) => !file.endsWith('.gitkeep'))
     .map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
-  const disallowed = sourceDocs.filter((rel) => !['AEGIS.md', 'mcp.md'].includes(rel) && !rel.startsWith('work-requests/'));
-  assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md, mcp.md, plus work-requests markdown');
-});
-
-test('archived docs work-requests are intentionally retained outside the canonical corpus', () => {
-  const archivedRoot = path.join(sourceDocsRoot, 'work-requests');
-  assert.equal(fs.existsSync(archivedRoot), true, 'archived docs/work-requests should exist');
-  const archivedDocs = listMarkdownFiles(archivedRoot).map((file) => path.relative(sourceDocsRoot, file).replace(/\\/g, '/'));
-  assert.equal(archivedDocs.length > 0, true, 'archived docs/work-requests should retain markdown files');
+  const disallowed = sourceDocs.filter((rel) => !['AEGIS.md', 'mcp.md'].includes(rel));
+  assert.deepEqual(disallowed, [], 'source docs should only retain AEGIS.md and mcp.md');
 });
 
 test('authoritative control files exist', () => {

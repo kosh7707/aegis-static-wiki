@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/roadmap.md"
 original_path: "docs/s5-handoff/roadmap.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s5"]
 decision_tags: []
 related_pages: []
@@ -55,6 +55,15 @@ migration_status: "canonicalized"
 | 4 | **Graph-aware oracle 추가** | validation set의 일부 exact query에 `required_match_types`를 추가하고 benchmark runner가 oracle full-pass/mean-pass를 집계하도록 확장. compare 기준 Qdrant-only `0/6` vs Neo4j-enabled `6/6` |
 | 5 | **Threat search readiness hardening + provenance seam** | Qdrant-only degraded fallback 제거. threat search는 Neo4j 필수로 정렬. code graph / project memory는 optional `buildSnapshotId` / `buildUnitId` / `sourceBuildAttemptId` seam 추가 |
 | 6 | **S3 회신 + architect 승인 + closeout sync** | `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md` 작성, Boyle architect 승인 확보, handoff/spec/API 문서 최신 상태로 동기화 |
+
+---
+
+## 최근 완료 (2026-04-07)
+
+| # | 작업 | 결과 |
+|---|------|------|
+| 1 | **gateway-webserver 분석 drift 로그 점검** | `live-*` / `e2e-*` 로그, request trace, prompt dump를 대조해 S5 drift보다는 S3-side synthesis/tool-use failure가 주원인임을 확인. S5는 search/project-memory/dangerous-callers를 정상 공급 |
+| 2 | **optional provenance warning noise 완화** | `project_memory_service.py`, `code_graph_service.py` read/query 경로를 `properties(node)['...']` map access 기반으로 바꿔 legacy `Function`/`Memory` 노드의 `01N52 property key does not exist` warning을 줄임. API 계약 변화는 없어서 WR은 발행하지 않음 |
 
 ---
 

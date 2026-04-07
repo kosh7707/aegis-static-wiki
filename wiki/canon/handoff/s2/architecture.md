@@ -144,6 +144,21 @@ Controller → Service → DAO → SQLite
   - **WS broadcaster 7개**: `dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`
 - `router-setup.ts`: 프로젝트/글로벌 라우터 일괄 마운트
 
+### Progress / completion 중심 WS 역할표
+
+| channel | purpose | terminal / failure signal | recovery source | role |
+|---|---|---|---|---|
+| `upload` | 소스 업로드 live progress | `upload-complete`, `upload-error` | `/api/projects/:pid/source/upload-status/:uploadId` | foreground |
+| `sdk` | SDK 등록/검증 state machine | `sdk-complete`, `sdk-error` | `/api/projects/:pid/sdk`, `/api/projects/:pid/sdk/:id` | foreground |
+| `analysis` | Quick→Deep 분석 live progress | `analysis-quick-complete`, `analysis-deep-complete`, `analysis-error` | `/api/analysis/status/:analysisId`, `/api/analysis/results/:analysisId` | foreground |
+| `pipeline` | 타겟별 build/scan/graph lifecycle | `pipeline-complete`, `pipeline-error` | `/api/projects/:pid/pipeline/status` | foreground |
+| `notifications` | completion/failure awareness after navigation | `notification` | `/api/projects/:pid/notifications` | background |
+
+메모:
+
+- `pipeline`은 단일 progress bar라기보다 **target-status lifecycle stream**이다.
+- `notifications`는 foreground progress를 대체하지 않으며, 화면 이탈 후 completion/failure awareness를 보완한다.
+
 ### 외부 연동 클라이언트
 
 S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.

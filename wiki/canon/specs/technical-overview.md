@@ -123,7 +123,9 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 - 코어 도메인: Run, Finding (7-state FSM), EvidenceRef, AuditLog
 - Quality Gate 정책 엔진 + Approval 워크플로우
 - ResultNormalizer (SAST findings + Agent claims → 통합 Finding)
-- WebSocket 실시간 진행률 (4개 인스턴스: static/dynamic/test/analysis)
+- WebSocket 진행/완료 인지 표면
+  - foreground progress: upload / sdk / analysis / pipeline
+  - background completion awareness: notifications
 - Observability (구조화 로깅, Correlation ID, 에러 클래스 계층)
 
 ### S3. Analysis Agent
@@ -178,7 +180,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 | From | To | 프로토콜 | 용도 | 비고 |
 |------|----|---------|------|------|
 | S1 → S2 | HTTP REST | 분석 요청/응답, CRUD | S1의 유일한 서버 통신 대상 |
-| S1 ↔ S2 | WebSocket | 분석/업로드/파이프라인/SDK/알림 실시간 스트리밍 | 7개 broadcaster |
+| S1 ↔ S2 | WebSocket | 분석/업로드/파이프라인/SDK foreground progress + notifications background completion awareness | 7개 broadcaster |
 | S2 → S3 | HTTP REST | `POST /v1/tasks` (deep-analyze 위임) | 분석 위임 |
 | S2 → S4 | HTTP REST | `POST /v1/scan` (직접 SAST 요청) | 사용자 트리거 Quick |
 | S2 → S5 | HTTP REST | `POST /v1/search` (지식 조회) | Finding 상세 등 |
@@ -195,6 +197,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 - **LLM 단일 관문**: 모든 LLM 호출은 S7(Gateway)을 경유한다.
 - **역방향 호출 금지**: 하위 서비스가 상위 서비스를 호출하지 않는다.
 - **WebSocket 예외**: S2가 S1에게 실시간 데이터를 push할 수 있다 (구독 모델).
+- **Recovery 원칙**: 사용자가 navigation/reconnect 이후 상태를 복구할 때는 WS replay 대신 각 REST/status endpoint를 authoritative source로 사용한다.
 
 ---
 

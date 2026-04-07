@@ -71,7 +71,7 @@ migration_status: "canonicalized"
 | GET | `/api/gate-profiles` | Gate 프로필 목록 |
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
-| GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 |
+| GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source) |
 | POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 JSON + `localPath`; multipart file upload 미들웨어는 아직 미연결) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
@@ -82,7 +82,7 @@ migration_status: "canonicalized"
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | POST | `/api/projects/:pid/source/upload` | ZIP/tar.gz 소스 업로드 |
-| GET | `/api/projects/:pid/source/upload-status/:uploadId` | 업로드 상태 폴링 폴백 (`UploadStatus`: `phase/message/fileCount?/projectPath?/error?`) |
+| GET | `/api/projects/:pid/source/upload-status/:uploadId` | 업로드 상태 폴링 폴백 + re-entry recovery (`UploadStatus`: `phase/message/fileCount?/projectPath?/error?`) |
 | POST | `/api/projects/:pid/source/clone` | Git URL 클론 |
 | GET | `/api/projects/:pid/source/files` | 소스 파일 트리 (`?filter=source` 지원, `composition/totalFiles/totalSize/targetMapping` 포함) |
 | GET | `/api/projects/:pid/source/file` | 파일 내용 읽기 (`?path=` 필수) |
@@ -93,12 +93,12 @@ migration_status: "canonicalized"
 | DELETE | `/api/projects/:pid/targets/:id` | 빌드 타겟 삭제 |
 | GET | `/api/projects/:pid/targets/:id/build-log` | 타겟 빌드 로그 조회 |
 | POST | `/api/projects/:pid/targets/discover` | 빌드 타겟 자동 탐색 (S4 호출) |
-| POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`) |
-| POST | `/api/projects/:pid/pipeline/run/:targetId` | 단일 타겟 파이프라인 재실행 |
+| POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |
+| POST | `/api/projects/:pid/pipeline/run/:targetId` | 단일 타겟 파이프라인 재실행 (`202 { pipelineId, targetId, status: "running" }`) |
 | GET | `/api/projects/:pid/pipeline/status` | 프로젝트 파이프라인 상태 |
 | POST | `/api/analysis/run` | Quick→Deep 분석 실행 (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
 | GET | `/api/analysis/status` | 모든 진행 중 분석 |
-| GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 |
+| GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 (disconnect/re-entry recovery source while running) |
 | POST | `/api/analysis/abort/:analysisId` | 분석 중단 |
 | GET | `/api/analysis/results` | 결과 목록 (`?projectId=` 지원) |
 | GET | `/api/analysis/results/:analysisId` | 결과 상세 |
@@ -153,12 +153,18 @@ migration_status: "canonicalized"
 
 ### WebSocket 채널
 
-| 메서드 | 경로 | 설명 |
-|--------|------|------|
-| WebSocket | `/ws/notifications?projectId=` | 알림 실시간 push |
-| WebSocket | `/ws/dynamic-analysis?sessionId=` | 동적 분석 실시간 이벤트 |
-| WebSocket | `/ws/dynamic-test?testId=` | 동적 테스트 진행률 |
-| WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 |
-| WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 |
-| WebSocket | `/ws/pipeline?projectId=` | 파이프라인 진행률 |
-| WebSocket | `/ws/sdk?projectId=` | SDK 등록/검증 진행률 |
+| 메서드 | 경로 | 설명 | Recovery / source of truth |
+|--------|------|------|----------------------------|
+| WebSocket | `/ws/notifications?projectId=` | 프로젝트 알림 실시간 push (background completion awareness) | `GET /api/projects/:pid/notifications`, `GET /api/projects/:pid/notifications/count` |
+| WebSocket | `/ws/dynamic-analysis?sessionId=` | 동적 분석 실시간 이벤트 | out-of-scope for current progress/completion hardening |
+| WebSocket | `/ws/dynamic-test?testId=` | 동적 테스트 진행률 | out-of-scope for current progress/completion hardening |
+| WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 | `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId` |
+| WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 | `GET /api/projects/:pid/source/upload-status/:uploadId` |
+| WebSocket | `/ws/pipeline?projectId=` | 파이프라인 타겟 상태 스트림 | `GET /api/projects/:pid/pipeline/status` |
+| WebSocket | `/ws/sdk?projectId=` | SDK 등록/검증 진행률 | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id` |
+
+운영 의미론:
+
+- `/ws/upload`, `/ws/sdk`, `/ws/analysis`, `/ws/pipeline` 는 **foreground progress** 채널이다.
+- `/ws/notifications` 는 **background completion awareness** 채널이다.
+- 사용자가 화면을 이동하거나 재연결한 뒤에는 WS replay를 기대하지 말고, 위 표의 REST/status surface를 authoritative recovery path로 사용해야 한다.
