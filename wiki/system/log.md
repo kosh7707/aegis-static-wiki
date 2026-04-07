@@ -113,3 +113,63 @@ related_pages:
 ## [2026-04-06] mcp | complete_wr | s2-to-all-wr-mcp-to-all-smoke-test
 - Lane s5 completed recipient-side handling
 - Status: open
+
+## [2026-04-06] mcp | register_wr | s1-to-s1-qa-s1-qa-qa
+- Registered request WR for s1-qa
+- Path: wiki/canon/work-requests/s1-to-s1-qa-s1-qa-qa.md
+
+## [2026-04-06] mcp | register_wr | s1-qa-to-s1-s1-qa---s1-qa-p0-baseline-p1
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa---s1-qa-p0-baseline-p1.md
+
+## [2026-04-07] mcp | complete_wr | s1-qa-to-s1-s1-qa---s1-qa-p0-baseline-p1
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs.md
+
+## [2026-04-07] mcp | register_wr | s3-to-s5-inspect-gateway-webserver-s5-context-logs-for-analysis-drift
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-inspect-gateway-webserver-s5-context-logs-for-analysis-drift.md
+
+## [2026-04-07] mcp | complete_wr | s3-to-s5-inspect-gateway-webserver-s5-context-logs-for-analysis-drift
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts.md
+
+## [2026-04-07] mcp | register_wr | s4-to-s3-confirm-s4-exploitability-consumer-minimum-field-set-and-normalization-expectati
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-confirm-s4-exploitability-consumer-minimum-field-set-and-normalization-expectati.md
+
+## [2026-04-07] mcp | register_wr | s1-to-s2-ws-static-analysis
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-ws-static-analysis.md
+
+## [2026-04-07] mcp | register_wr | s2-to-s1-reply-ws-static-analysis-removed-ws-analysis-is-the-canonical-progress-channel
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-ws-static-analysis-removed-ws-analysis-is-the-canonical-progress-channel.md
+
+## [2026-04-07] mcp | complete_wr | s1-to-s2-ws-static-analysis
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s2-to-s1-reply-ws-static-analysis-removed-ws-analysis-is-the-canonical-progress-channel
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s4-to-s3-confirm-s4-exploitability-consumer-minimum-field-set-and-normalization-expectati
+- Lane s3 completed recipient-side handling
+- Status: completed

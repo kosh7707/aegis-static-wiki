@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []
@@ -795,7 +795,7 @@ Backend WS broadcasters serialize messages as JSON and automatically append:
 
 ```ts
 interface WsEnvelopeMeta {
-  channel: "dynamic-analysis" | "static-analysis" | "dynamic-test" | "analysis" | "upload" | "pipeline" | "sdk" | "notification";
+  channel: "dynamic-analysis" | "dynamic-test" | "analysis" | "upload" | "pipeline" | "sdk" | "notification";
   projectId?: string;
   timestamp: number;
   seq?: number;
@@ -806,7 +806,8 @@ Actual runtime behavior today:
 
 - payloads are sent as `{ ...message, meta }`.
 - `meta.projectId` is the broadcaster subscription key.
-  - project-scoped channels: real `projectId`
+  - project-scoped channels: real `projectId` (`/ws/notifications`, `/ws/pipeline`, `/ws/sdk`)
+  - `/ws/dynamic-analysis`: current value is `sessionId`
   - `/ws/upload`: current value is `uploadId`
   - `/ws/analysis`: current value is `analysisId`
   - `/ws/dynamic-test`: current value is `testId`
@@ -823,24 +824,7 @@ S1 should therefore treat `meta.projectId` as routing metadata, not as a guarant
 | `injection-result` | `CanInjectionResponse` |
 | `injection-error` | `{ error }` |
 
-### 4.3 Static-analysis WS — `/ws/static-analysis?analysisId=<analysisId>`
-
-| `type` | Payload |
-|---|---|
-| `static-progress` | `{ analysisId, phase, currentChunk?, totalChunks?, totalFiles?, processedFiles?, message?, phaseWeights? }` |
-| `static-warning` | `{ analysisId, code, message }` |
-| `static-complete` | `{ analysisId, resultId, findingCount, summary }` |
-| `static-error` | `{ analysisId, error }` |
-
-Current static phases:
-
-- `queued`
-- `rule_engine`
-- `llm_chunk`
-- `merging`
-- `complete`
-
-### 4.4 Upload WS — `/ws/upload?uploadId=<uploadId>`
+### 4.3 Upload WS — `/ws/upload?uploadId=<uploadId>`
 
 | `type` | Payload |
 |---|---|
@@ -848,7 +832,7 @@ Current static phases:
 | `upload-complete` | `{ uploadId, fileCount, projectPath }` |
 | `upload-error` | `{ uploadId, phase: "failed", error }` |
 
-### 4.5 Pipeline WS — `/ws/pipeline?projectId=<projectId>`
+### 4.4 Pipeline WS — `/ws/pipeline?projectId=<projectId>`
 
 | `type` | Payload |
 |---|---|
@@ -860,7 +844,7 @@ Implementation note:
 
 - `pipeline-error.phase` is currently emitted from the catch path and should be treated as a coarse phase indicator, not a guaranteed exact failing step.
 
-### 4.6 SDK WS — `/ws/sdk?projectId=<projectId>`
+### 4.5 SDK WS — `/ws/sdk?projectId=<projectId>`
 
 | `type` | Payload |
 |---|---|
@@ -870,7 +854,7 @@ Implementation note:
 
 `phase` aligns with current SDK pipeline states (`uploading`, `extracting`, `analyzing`, `verifying`, `ready`) plus error termination.
 
-### 4.7 Analysis WS — `/ws/analysis?analysisId=<analysisId>`
+### 4.6 Analysis WS — `/ws/analysis?analysisId=<analysisId>`
 
 | `type` | Payload |
 |---|---|
@@ -888,7 +872,7 @@ Current progress phases:
 - `deep_retrying`
 - `deep_complete`
 
-### 4.8 Dynamic-test WS — `/ws/dynamic-test?testId=<testId>`
+### 4.7 Dynamic-test WS — `/ws/dynamic-test?testId=<testId>`
 
 | `type` | Payload |
 |---|---|
@@ -897,7 +881,7 @@ Current progress phases:
 | `test-complete` | `{ testId }` |
 | `test-error` | `{ testId, error }` |
 
-### 4.9 Notification WS — `/ws/notifications?projectId=<projectId>`
+### 4.8 Notification WS — `/ws/notifications?projectId=<projectId>`
 
 | `type` | Payload |
 |---|---|
@@ -913,5 +897,6 @@ These points are intentional contract clarifications and should be preserved unl
 2. `ProjectOverviewResponse` is a raw object, not the common success envelope.
 3. SDK file-upload is service-capable but not currently mounted with multipart middleware on `/api/projects/:pid/sdk`.
 4. `SourceFileEntry.fileType` uses the current 12-value filesystem classifier from `ProjectSourceService`, not older ad-hoc labels.
-5. WS `meta.projectId` equals the subscription key on non-project channels today.
-6. `pipeline-error.phase` is currently only a coarse catch-path phase hint, not an exact failed-step contract.
+5. WS envelopes are flattened as `{ ...message, meta }`, not `{ message, meta }`.
+6. WS `meta.projectId` equals the subscription key on non-project channels today.
+7. `pipeline-error.phase` is currently only a coarse catch-path phase hint, not an exact failed-step contract.

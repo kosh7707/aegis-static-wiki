@@ -18,7 +18,7 @@ migration_status: "canonicalized"
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S3(Analysis Agent) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-04-04**
+> **마지막 업데이트: 2026-04-06**
 
 ---
 
@@ -61,10 +61,10 @@ migration_status: "canonicalized"
 
 | 문서 | 경로 | 비고 |
 |------|------|------|
-| S3 인수인계서 | `docs/s3-handoff/README.md` | 이 문서 |
-| S3 기능 명세 | `docs/specs/analysis-agent.md` | Analysis Agent 아키텍처, 원칙 |
-| S3 API 계약서 | `docs/api/analysis-agent-api.md` | S2↔S3 API 계약 (Analysis Agent) |
-| Build Agent API 계약서 | `docs/api/build-agent-api.md` | S2↔S3 API 계약 (Build Agent) |
+| S3 인수인계서 | `wiki/canon/handoff/s3/readme.md` | 이 문서 |
+| S3 기능 명세 | `wiki/canon/specs/analysis-agent.md` | Analysis Agent 아키텍처, 원칙 |
+| S3 API 계약서 | `wiki/canon/api/analysis-agent-api.md` | S2↔S3 API 계약 (Analysis Agent) |
+| Build Agent API 계약서 | `wiki/canon/api/build-agent-api.md` | S2↔S3 API 계약 (Build Agent) |
 
 ### S3의 정체성
 
@@ -87,17 +87,17 @@ migration_status: "canonicalized"
 - 소유 코드:
   - `services/analysis-agent/` — 에이전트 기반 심층 분석 (Phase 1/2)
 - 관리하는 문서:
-  - `docs/s3-handoff/README.md` — 이 인수인계서
+  - `wiki/canon/handoff/s3/readme.md` — 이 인수인계서
 
 ### KB(S5) 인수인계 상태
 
 - S3가 `services/knowledge-base/` 코드를 구축했지만, AEGIS 체제에서 **S5로 분리**
-- S5 담당자 투입 시 `docs/s5-handoff/README.md` 초안 작성 + 소유권 이전 예정
+- S5 담당자 투입 시 `wiki/canon/handoff/s5/readme.md` 기준으로 역할/운영 경계를 재확인하고 소유권 이전 예정
 - **그때까지 S3가 KB 코드/운영을 임시 관리**
 
 ### API 계약 소통 원칙 (필수)
 
-- **다른 서비스의 동작은 반드시 API 계약서(`docs/api/`)로만 파악한다**
+- **다른 서비스의 동작은 반드시 canonical API 계약서(`wiki/canon/api/`)로만 파악한다**
 - **다른 서비스의 코드를 절대 읽지 않는다** — 코드를 보고 동작을 파악하거나 거기에 맞춰 구현하는 것은 금지
 - 계약서에 없는 필드/엔드포인트는 "존재하지 않는다"고 간주한다
 - 계약서와 실제 코드가 다르면, 해당 서비스 소유자에게 계약서 갱신을 work-request로 요청한다
@@ -109,12 +109,13 @@ migration_status: "canonicalized"
 
 ### 작업 요청 주고받기
 
-- **경로**: `docs/work-requests/`
-- **파일명**: `{보내는쪽}-to-{받는쪽}-{주제}.md` (예: `s2-to-s3-mock-enhancement.md`)
-- S1이나 S2에게 요청할 일이 있으면 이 폴더에 문서를 작성한다
-- 반대로 S1/S2가 너에게 요청한 문서도 여기에 있다
-- **작업 완료 후 해당 요청 문서를 반드시 삭제한다**
-- 세션 시작 시 이 폴더를 확인하여 밀린 요청이 있는지 체크한다
+- **런타임 canonical WR 경로**: `wiki/canon/work-requests/`
+- **archive/reference 경로**: `/home/kosh/AEGIS/docs/work-requests/`
+- `list_my_open_wrs`, `register_wr`, `complete_wr` 등 WR MCP 런타임 동작은 **canonical new-format WR**만 대상으로 한다.
+- archived `docs/work-requests/**` 는 참고/이관 기록일 뿐이며, **WR MCP open list / completion semantics 범위 밖**이다.
+- S1이나 S2에게 새 요청을 보낼 때는 canonical WR 모델을 기준으로 작성/등록한다.
+- 반대로 S1/S2가 S3에 보낸 새 WR도 canonical WR 경로와 WR MCP 결과를 기준으로 확인한다.
+- recipient로서 처리를 끝낸 canonical WR만 recipient-side completion 대상으로 간주한다.
 
 ### Codex / OMX 운영 메모
 
@@ -125,10 +126,10 @@ migration_status: "canonicalized"
   - **커밋은 하지 않는다**. 커밋은 S2 세션만 한다.
   - `scripts/start*.sh`, `scripts/stop*.sh`, 서비스 기동 명령은 **사용자 허락 없이 실행하지 않는다**.
   - 로그/장애 분석은 `log-analyzer` MCP를 우선 사용한다.
-- 장기 S3 작업 메모와 후속 세션 인계는 기본적으로 `docs/s3-handoff/`와 세션 state를 우선 사용한다.
+- 장기 S3 작업 메모와 후속 세션 인계는 기본적으로 `wiki/canon/handoff/s3/`와 세션 state를 우선 사용한다.
   - 공용 `.omx/notepad.md`, `.omx/project-memory.json`에는 **전역 durable 정보 / 공통 운영 규칙 / cross-lane에 실제로 필요한 사실**만 남긴다.
-  - S3 lane 전용 작업 메모, 중간 추론, 세부 TODO, 세션 한정 기록은 `docs/s3-handoff/session-{N}.md`, `docs/work-requests/`, `.omx/state/sessions/{session-id}/...`로 분리한다.
-  - 2026-04-04 `docs/work-requests/s2-to-all-omx-memory-discipline.md`와 `docs/AEGIS.md` 갱신 규칙을 따른다.
+  - S3 lane 전용 작업 메모, 중간 추론, 세부 TODO, 세션 한정 기록은 `wiki/canon/handoff/s3/session-{N}.md`, canonical WR, `.omx/state/sessions/{session-id}/...`로 분리한다.
+  - WR MCP 런타임 기준은 `wiki/canon/work-requests/**` 이며, `/home/kosh/AEGIS/docs/work-requests/**` 는 archive-only reference다.
 - **`$ralph`**: Analysis Agent 또는 Build Agent 한 축을 끝까지 설계→수정→검증해야 할 때 우선 사용한다.
 - **`$team`**: S3가 S4(SAST), S5(KB), S7(Gateway), S2(호출자)와 병렬 맥락을 맞춰야 할 때 우선 사용한다.
 - **`$trace`**: 이전 Codex/OMX 세션의 reasoning/turn 흐름 복기가 필요할 때 사용한다.
@@ -238,13 +239,13 @@ POST /v1/tasks (taskType: "deep-analyze")
 
 ### KB (S5, S3 임시 관리)
 
-- Neo4j + Qdrant 하이브리드 GraphRAG. 상세: `docs/s5-handoff/README.md`
+- Neo4j + Qdrant 하이브리드 GraphRAG. 상세: `wiki/canon/handoff/s5/readme.md`
 - Neo4j: `~/neo4j-community-5.26.3`, 포트 7687/7474, 인증 neo4j/smartcar
 
 ### Observability
 
 - service 식별자: `s3-agent`. 로그: `logs/aegis-analysis-agent.jsonl`, `logs/llm-exchange.jsonl`
-- `docs/specs/observability.md` 준수. 교차 추적: `grep '{request-id}' logs/*.jsonl`
+- `wiki/canon/specs/observability.md` 준수. 교차 추적: `grep '{request-id}' logs/*.jsonl`
 
 ---
 
@@ -261,13 +262,13 @@ POST /v1/tasks (taskType: "deep-analyze")
 
 | 문서 | 경로 | 용도 |
 |------|------|------|
-| 이 인수인계서 | `docs/s3-handoff/README.md` | 진입점 |
-| 세션 로그 | `docs/s3-handoff/session-{N}.md` | 수정 이력 (1세션 = 1파일, 5~18) |
-| 로드맵 | `docs/s3-handoff/roadmap.md` | 다음 작업 + 장기 계획 |
-| Analysis Agent 명세 | `docs/specs/analysis-agent.md` | 아키텍처, 원칙 |
-| Build Agent 명세 | `docs/specs/build-agent.md` | 아키텍처, 원칙 |
-| Analysis Agent API | `docs/api/analysis-agent-api.md` | S2↔S3 계약 |
-| Build Agent API | `docs/api/build-agent-api.md` | S2↔S3 계약 |
+| 이 인수인계서 | `wiki/canon/handoff/s3/readme.md` | 진입점 |
+| 세션 로그 | `wiki/canon/handoff/s3/session-{N}.md` | 수정 이력 (1세션 = 1파일) |
+| 로드맵 | `wiki/canon/roadmap/s3-roadmap.md` | 다음 작업 + 장기 계획 |
+| Analysis Agent 명세 | `wiki/canon/specs/analysis-agent.md` | 아키텍처, 원칙 |
+| Build Agent 명세 | `wiki/canon/specs/build-agent.md` | 아키텍처, 원칙 |
+| Analysis Agent API | `wiki/canon/api/analysis-agent-api.md` | S2↔S3 계약 |
+| Build Agent API | `wiki/canon/api/build-agent-api.md` | S2↔S3 계약 |
 
 ---
 

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/README.md"
 original_path: "docs/s2-handoff/README.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -18,7 +18,7 @@ migration_status: "canonicalized"
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-04**
+> **마지막 업데이트: 2026-04-07**
 
 ---
 
@@ -30,7 +30,7 @@ migration_status: "canonicalized"
 | [architecture.md](architecture.md) | 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행 방법, Observability |
 | [api-endpoints.md](api-endpoints.md) | API 엔드포인트 전체 목록 (현재 라우터 구현 반영) |
 | [roadmap.md](roadmap.md) | 다음 작업, 후순위, 인프라 계획 |
-| session-{N}.md | 세션별 작업 로그 (session-1.md ~ session-15.md) |
+| session-{N}.md / session-omx-*.md | 세션별 작업 로그 (legacy numbered sessions + deterministic omx sessions) |
 
 ---
 
@@ -76,20 +76,22 @@ migration_status: "canonicalized"
 
 ### API 계약 소통 원칙 (필수)
 
-- **다른 서비스의 코드를 절대 읽지 않는다** — API 계약서(`docs/api/`)로만 소통
-- **S2는 `shared-models.md`의 단독 소유자** — 코드 변경 시 계약서 동기화 필수
+- **다른 서비스의 코드를 절대 읽지 않는다** — API 계약서(`wiki/canon/api/`)로만 소통
+- **S2는 `wiki/canon/api/shared-models.md`의 단독 소유자** — 코드 변경 시 계약서 동기화 필수
 - 공유 모델 변경 시 영향받는 서비스에 work-request로 고지
 
 ### 작업 요청
 
-- **경로**: `docs/work-requests/`
-- 세션 시작 시 이 폴더를 확인하여 밀린 요청이 있는지 체크
-- **2026-04-04 종료 시점 기준 메모**
-  - `s2-to-all-omx-memory-discipline.md` — 전 lane 공용 `.omx` 운영 규칙 공지
-  - `s2-to-s1-backend-contract-alignment.md`, `s2-to-s1-contract-lockdown-fyi.md` — S1 계약 정렬/closure 통보
-  - `s3-to-s2-build-snapshot-*.md`, `s2-to-s3-build-snapshot-*.md` — Build Snapshot / BuildAttempt 계약 협의 및 구현 착수 게이트 회신 묶음
-  - `s3-to-s3-prompt-enhancement-backlog.md` — S3 내부 백로그 (S2 액션 아님)
-- 즉, 더 이상 “`.gitkeep` + S3 내부 백로그 1건만 남음” 상태가 아니므로, 다음 세션은 **WR 폴더를 실제 기준으로 재확인**해야 한다.
+- **새 canonical WR 경로**: `wiki/canon/work-requests/`
+- **legacy archive 경로**: `docs/work-requests/`
+- 세션 시작 시:
+  1. **active canonical WR**는 `wiki/canon/work-requests/`를 기준으로 확인
+  2. `docs/work-requests/`는 historical archive/reference로만 취급
+- **2026-04-06 기준 메모**
+  - WR-only wiki MCP hardening 완료
+  - runtime WR semantics는 **new canonical WR only**
+  - archived `docs/work-requests/**`는 **runtime out-of-scope**
+  - canonical WR 디렉토리는 비어 있을 수 있으며, 이는 정상 상태다
 
 ### Codex / OMX 운영 메모
 
@@ -108,14 +110,15 @@ migration_status: "canonicalized"
 
 ---
 
-## 3. 현재 상태 (2026-04-04)
+## 3. 현재 상태 (2026-04-07)
 
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **330개 통과** (vitest, 2026-04-04 전체 재검증) |
-| DB 테이블 | 21개 (SQLite, WAL) — 세션 14에서 notifications, users, sessions 추가 |
+| 테스트 | **343개 통과** (vitest, 2026-04-07 재검증) |
+| DB 테이블 | **29개** (SQLite, WAL) — 기존 21개 활성 표면 + snapshot/build persistence seam 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 |
+| WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
 | 에러 클래스 | 18개 (AppError 계층, 21개 에러코드) |
 | 외부 클라이언트 | SastClient(S4), AgentClient(S3), BuildAgentClient(S3:8003), KbClient(S5), AdapterClient(S6), LlmTaskClient(S7) |
 
@@ -136,16 +139,25 @@ migration_status: "canonicalized"
   - `/api/projects/:pid/sdk`
   - `/api/projects/:pid/pipeline/run/:targetId`
 - contract lockdown 관련 S2 기준 검증 결과:
-  - `src/__tests__/contract/api-contract.test.ts` → **73 passed**
-  - `cd services/backend && npx vitest run` → **18 files / 330 tests passed**
+  - `src/__tests__/contract/api-contract.test.ts` → **79 passed**
+  - `cd services/backend && npx vitest run` → **19 files / 343 tests passed**
   - `services/backend` / `services/shared` `tsc --noEmit` 통과
 - 문서 동기화 완료 범위:
-  - `docs/api/shared-models.md`
-  - `docs/specs/backend.md`
-  - `docs/s2-handoff/README.md`
-  - `docs/s2-handoff/roadmap.md`
-  - `docs/s2-handoff/architecture.md`
-  - `docs/s2-handoff/session-15.md`
+  - `wiki/canon/api/shared-models.md`
+  - `wiki/canon/specs/backend.md`
+  - `wiki/canon/handoff/s2/readme.md`
+  - `wiki/canon/handoff/s2/roadmap.md`
+  - `wiki/canon/handoff/s2/architecture.md`
+  - `wiki/canon/handoff/s2/session-omx-*.md`
+
+### 3-3. WR / handoff 운영 메모 (2026-04-06)
+
+- canonical WR runtime model은 `wiki/canon/work-requests/` 기준으로만 동작한다.
+- archived `docs/work-requests/`는 historical reference만 남는 경로이며, `list_my_open_wrs` / `register_wr` / `complete_wr`의 입력이 아니다.
+- WR semantics를 다시 바꿀 때는 최소한 아래 3곳을 함께 점검해야 한다.
+  - `wiki/system/work-request-policy.md`
+  - `wiki/system/migration-map.md`
+  - `wiki/system/index.md`
 
 ### Durable (투자, 유지)
 
@@ -174,13 +186,13 @@ migration_status: "canonicalized"
 | 문서 | 경로 | 용도 |
 |------|------|------|
 | **공통 제약 사항** | `docs/AEGIS.md` | 프로젝트 전체 거버넌스. **S2가 관리** |
-| 기능 명세서 | `docs/specs/backend.md` | S2의 모든 API + 아키텍처 상세 |
-| 전체 기술 개요 | `docs/specs/technical-overview.md` | 전체 시스템 구조 (**S2 주도**) |
-| Observability 규약 | `docs/specs/observability.md` | MSA 공통 규약 |
-| 공유 모델 명세 | `docs/api/shared-models.md` | 전 서비스 공유 타입. **S2 단독 관리** |
+| 기능 명세서 | `wiki/canon/specs/backend.md` | S2의 모든 API + 아키텍처 상세 |
+| 전체 기술 개요 | `wiki/canon/specs/technical-overview.md` | 전체 시스템 구조 (**S2 주도**) |
+| Observability 규약 | `wiki/canon/specs/observability.md` | MSA 공통 규약 |
+| 공유 모델 명세 | `wiki/canon/api/shared-models.md` | 전 서비스 공유 타입. **S2 단독 관리** |
 | 서비스 관리 스크립트 | `scripts/start.sh`, `scripts/stop.sh` | 전체 서비스 기동/종료 |
 
-**중요**: 구현을 바꾸면 `docs/specs/backend.md`와 `docs/api/shared-models.md`도 반드시 같이 업데이트할 것.
+**중요**: 구현을 바꾸면 `wiki/canon/specs/backend.md`와 `wiki/canon/api/shared-models.md`도 반드시 같이 업데이트할 것.
 
 ---
 
@@ -189,9 +201,9 @@ migration_status: "canonicalized"
 | 문서 | 경로 | 왜 봐야 하는지 |
 |------|------|--------------|
 | 공통 제약 사항 | `docs/AEGIS.md` | **필독** — 역할, 소유권, 소통 규칙 전부 |
-| S2 기능 명세 | `docs/specs/backend.md` | 네가 관리하는 계약서 |
-| S3 Agent API | `docs/api/analysis-agent-api.md` | S2↔S3 deep-analyze 호출 스펙 |
-| S7 API 명세 | `docs/api/llm-gateway-api.md` | S2↔S7, S3↔S7 호출 스펙 |
-| SAST Runner API | `docs/api/sast-runner-api.md` | S2↔S4 직접 호출 스펙 |
-| KB API | `docs/api/knowledge-base-api.md` | S5 호출 스펙 |
-| 공유 모델 | `docs/api/shared-models.md` | 전 서비스 공유 타입 |
+| S2 기능 명세 | `wiki/canon/specs/backend.md` | 네가 관리하는 계약서 |
+| S3 Agent API | `wiki/canon/api/analysis-agent-api.md` | S2↔S3 deep-analyze 호출 스펙 |
+| S7 API 명세 | `wiki/canon/api/llm-gateway-api.md` | S2↔S7, S3↔S7 호출 스펙 |
+| SAST Runner API | `wiki/canon/api/sast-runner-api.md` | S2↔S4 직접 호출 스펙 |
+| KB API | `wiki/canon/api/knowledge-base-api.md` | S5 호출 스펙 |
+| 공유 모델 | `wiki/canon/api/shared-models.md` | 전 서비스 공유 타입 |

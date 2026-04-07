@@ -2,15 +2,12 @@
 title: "S7 LLM Gateway — 아키텍처 상세"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/architecture.md"
-original_path: "docs/s7-handoff/architecture.md"
 last_verified: "2026-04-06"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
-migration_status: "canonicalized"
 ---
 
 # S7 LLM Gateway — 아키텍처 상세
@@ -180,7 +177,7 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 
 ## Observability
 
-`docs/specs/observability.md` 준수.
+`wiki/canon/specs/observability.md` 준수.
 - service 식별자: `s7-gateway`
 - 로그 파일: `logs/aegis-llm-gateway.jsonl`
 - X-Request-Id: 수신 시 전파, 미전달 시 `gw-` 접두사로 자동 생성, 모든 응답에 포함

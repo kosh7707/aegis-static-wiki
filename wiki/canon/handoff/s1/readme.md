@@ -2,22 +2,19 @@
 title: "S1 Frontend 개발 인수인계서"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s1-handoff/README.md"
-original_path: "docs/s1-handoff/README.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s1"]
 decision_tags: []
 related_pages: []
-migration_status: "canonicalized"
 ---
 
 # S1 Frontend 개발 인수인계서
 
 > **먼저 `docs/AEGIS.md`를 읽을 것.**
 > 이 문서는 `services/frontend/` 기준의 현재 구현 상태, 검증 결과, 라우트/모듈 인벤토리를 다음 세션에 넘기기 위한 최신 진입점이다.
-> **마지막 검증/갱신: 2026-04-04**
+> **마지막 검증/갱신: 2026-04-07**
 
 ---
 
@@ -37,34 +34,25 @@ migration_status: "canonicalized"
 ## 1. 역할과 경계
 
 - S1은 `services/frontend/` 하위 프론트엔드 코드와 S1 handoff/spec 문서를 관리한다.
-- 연동 판단은 `docs/api/*.md` 계약서를 기준으로 한다.
+- 연동 판단은 `wiki/canon/api/*.md` 계약서를 기준으로 한다.
 - `services/shared/`는 참조만 하고 직접 소유하지 않는다.
+- **`src/renderer/api/mock-handler.ts` (dev-mode mock)는 S1의 유지관리 의무.** QA가 백엔드 없이 작업할 수 있는 완전한 모크 환경을 제공해야 하므로, API 계약 변경 시 `e2e/helpers/api-mocker.ts`뿐 아니라 `mock-handler.ts`도 반드시 동기화할 것.
 - 동적 분석/동적 테스트 화면은 **코드 자산은 남아 있지만 현재 운영 라우트에서는 placeholder 상태**다.
 - QA lane은 별도이며, 상세 절차는 [qa-guide.md](qa-guide.md)를 따른다.
 
 ---
 
-## 2. 2026-04-04 기준 검증 스냅샷
+## 2. 2026-04-07 기준 검증 스냅샷
 
 ### 명령 결과
 
 | 항목 | 명령 | 결과 |
 |------|------|------|
 | 의존성 설치 | `npm ci` | PASS |
-| 빌드 | `cd services/frontend && npm run build` | PASS (`dist/renderer/assets/index-CdKamH_F.js` 695.39 kB chunk warning 1건) |
+| 빌드 | `cd services/frontend && npm run build` | PASS |
 | 유닛 테스트 | `cd services/frontend && npm test` | PASS (`47` files, `356` tests) |
-| 라우트 스모크 | `cd services/frontend && npx playwright test e2e/specs/navigation.spec.ts` | PASS (`13` tests) |
-| 전체 E2E | `cd services/frontend && npm run test:e2e` | **FAIL** (`154` passed / `26` failed / `180` total) |
+| 전체 E2E | `cd services/frontend && npm run test:e2e` | PASS (`180` tests) |
 | TS 진단 | `npx tsc --noEmit --project services/frontend/tsconfig.json` | PASS (`0` errors, `0` warnings) |
-
-### 현재 E2E 실패 묶음
-
-1. **Approval interaction 2건 실패**
-   - `interactions.spec.ts`의 승인 버튼 탐색/클릭 단계 실패
-2. **시각 스냅샷 24건 실패**
-   - `responsive.spec.ts`, `theme.spec.ts`, `visual-qa*.spec.ts` 전반에서 baseline mismatch
-
-> 즉, **라우트 진입과 대부분의 상호작용은 살아 있지만 시각 기준선과 approval CTA 검증은 깨져 있다.**
 
 ---
 
@@ -139,16 +127,16 @@ migration_status: "canonicalized"
 - README/architecture/spec/qa-guide는 이번 갱신으로 **동일한 수치와 라우트 기준**을 사용한다.
 - 현재 신뢰 가능한 자동 검증 기준은:
   1. `npm run build`
-  2. `npm test`
-  3. `npx playwright test e2e/specs/navigation.spec.ts`
-- 전체 Playwright 스위트는 아직 green baseline이 아니다. 시각 diff와 approval 흐름 실패를 먼저 정리해야 한다.
-- 동적 분석/동적 테스트는 “구현 중”이 아니라 **코드는 남아 있으나 제품 라우트에서는 placeholder**라고 이해하는 것이 정확하다.
+  2. `npm test` (356 PASS)
+  3. `npm run test:e2e` (180 PASS)
+- 동적 분석/동적 테스트는 "구현 중"이 아니라 **코드는 남아 있으나 제품 라우트에서는 placeholder**라고 이해하는 것이 정확하다.
 
 ---
 
 ## 7. 다음 세션 우선순위
 
-1. Approval 페이지 CTA 셀렉터/동작 회귀 2건 정리
-2. Playwright screenshot baseline drift 원인 분류
-3. 동적 라우트 재활성화 여부 결정 전, placeholder 전략 유지 문서/QA 기준 고정
-4. 필요 시 `docs/specs/frontend.md` 기준으로 화면별 요구사항과 실제 구현 차이를 좁히기
+1. S2 계약 갱신 대응 — 프론트엔드 전체 깊이 감사 (WR 접수됨, deep-interview spec 완료)
+2. 풀스택 통합 테스트 (백엔드 기동 후 mock OFF E2E)
+3. 필요 시 `wiki/canon/specs/frontend.md` 기준으로 화면별 요구사항과 실제 구현 차이를 좁히기
+
+> 세션 17 (2026-04-07): S1-QA 수정 완료 (180 E2E PASS). S2 계약 감사 WR 접수, deep-interview spec 결정화 완료 (.omc/specs/deep-interview-s1-contract-audit.md).

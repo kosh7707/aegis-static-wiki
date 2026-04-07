@@ -222,6 +222,6 @@ services/frontend/
 
 ## 7. 다음 변경 시 체크리스트
 
-- 라우트를 바꾸면 `App.tsx`, `Sidebar.tsx`, `ProjectLayout.tsx`, `docs/specs/frontend.md`, `docs/s1-handoff/README.md`, `docs/s1-handoff/qa-guide.md`를 같이 갱신할 것.
+- 라우트를 바꾸면 `App.tsx`, `Sidebar.tsx`, `ProjectLayout.tsx`, `wiki/canon/specs/frontend.md`, `wiki/canon/handoff/s1/readme.md`, `wiki/canon/handoff/s1/qa-guide.md`를 같이 갱신할 것.
 - dynamic 화면을 다시 노출할 때는 **placeholder 제거 + 사이드바 공개 + QA baseline 재생성**을 한 세트로 처리할 것.
 - approval CTA 구조를 바꾸면 `interactions.spec.ts`, `qa-design-audit.spec.ts`, `qa-expert-review.spec.ts`를 함께 확인할 것.

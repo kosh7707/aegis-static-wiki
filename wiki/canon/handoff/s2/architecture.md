@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/architecture.md"
 original_path: "docs/s2-handoff/architecture.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -30,7 +30,7 @@ S2의 실제 런타임 표면은 다음 3개 축이다.
 2. **Shared contracts** — `services/shared/`
 3. **S2 소유 운영 스크립트** — `scripts/`
 
-연동 판단은 항상 **다른 서비스 코드가 아니라** `docs/api/*.md` 계약서를 기준으로 한다.
+연동 판단은 항상 **다른 서비스 코드가 아니라** `wiki/canon/api/*.md` 계약서를 기준으로 한다.
 
 ### 파일 구조
 
@@ -42,7 +42,7 @@ services/backend/
 └── src/
     ├── index.ts                  # 앱 진입점
     ├── config.ts                 # 환경변수 중앙화
-    ├── db.ts                     # SQLite 초기화 + 21개 테이블 스키마
+    ├── db.ts                     # SQLite 초기화 + 29개 테이블 스키마
     ├── composition.ts            # DI/AppContext 구성
     ├── router-setup.ts           # 전 라우터 마운트
     ├── bootstrap.ts              # 기동 시 admin 시딩
@@ -87,7 +87,7 @@ services/backend/
     │   ├── adapter-manager.ts
     │   ├── ws-broadcaster.ts
     │   └── ...
-    ├── dao/                      # 21개 DAO
+    ├── dao/                      # 활성 DAO 21개 + build/snapshot persistence seam 8개
     │   ├── project.dao.ts
     │   ├── analysis-result.dao.ts
     │   ├── build-target.dao.ts
@@ -139,9 +139,9 @@ Controller → Service → DAO → SQLite
 
 - `index.ts`: Express + middleware + DI + HTTP server + WS attach
 - `composition.ts`: AppContext 생성
-  - **DAO 21개**
+  - **활성 DAO 21개 + build/snapshot persistence DAO 8개** (현재는 별도 seam으로 존재)
   - **서비스 31개**
-  - **WS broadcaster 8개**: `dynamic-analysis`, `static-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`
+  - **WS broadcaster 7개**: `dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`
 - `router-setup.ts`: 프로젝트/글로벌 라우터 일괄 마운트
 
 ### 외부 연동 클라이언트
@@ -150,12 +150,12 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 
 | 클라이언트 | 대상 | 계약 문서 |
 |------------|------|-----------|
-| `LlmTaskClient` | S7 Gateway | `docs/api/llm-gateway-api.md` |
-| `AgentClient` | S3 Analysis Agent | `docs/api/analysis-agent-api.md` |
-| `BuildAgentClient` | S3 Build Agent | `docs/api/build-agent-api.md` |
-| `SastClient` | S4 SAST Runner | `docs/api/sast-runner-api.md` |
-| `KbClient` | S5 Knowledge Base | `docs/api/knowledge-base-api.md` |
-| `AdapterClient` / `AdapterManager` | S6 Adapter | `docs/api/adapter-api.md` |
+| `LlmTaskClient` | S7 Gateway | `wiki/canon/api/llm-gateway-api.md` |
+| `AgentClient` | S3 Analysis Agent | `wiki/canon/api/analysis-agent-api.md` |
+| `BuildAgentClient` | S3 Build Agent | `wiki/canon/api/build-agent-api.md` |
+| `SastClient` | S4 SAST Runner | `wiki/canon/api/sast-runner-api.md` |
+| `KbClient` | S5 Knowledge Base | `wiki/canon/api/knowledge-base-api.md` |
+| `AdapterClient` / `AdapterManager` | S6 Adapter | `wiki/canon/api/adapter-api.md` |
 
 ### 코어 기능 묶음
 
@@ -232,7 +232,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 - `MockEcu`
 - 레거시 `static-analysis.service.ts` 기반 설명
 
-역사적 배경은 `session-10.md` ~ `session-14.md`를 참고한다.
+역사적 배경은 `session-10.md` ~ `session-15.md`와 최신 `session-omx-*.md` 기록을 참고한다.
 
 ---
 
@@ -240,7 +240,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 
 SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/aegis.db`.
 
-### 현재 테이블 21개
+### 현재 테이블 29개
 
 | 테이블 | 용도 |
 |--------|------|
@@ -265,6 +265,20 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 | `sessions` | 로그인 세션 |
 | `sdk_registry` | 등록 SDK |
 | `target_libraries` | 타겟별 서드파티 라이브러리 |
+| `project_source_assets` | canonical source asset 기록 |
+| `sdk_assets` | canonical SDK asset 기록 |
+| `build_units` | build unit canonical record |
+| `build_unit_revisions` | build unit revision frozen snapshot |
+| `build_requests` | build request ledger |
+| `build_attempt_projections` | build attempt projection |
+| `build_snapshot_projections` | build snapshot projection |
+| `subproject_assets` | subproject asset mapping |
+
+### build/snapshot persistence seam 메모
+
+- 위 8개 추가 테이블은 snapshot-first build persistence seam을 위한 canonical 저장 표면이다.
+- 현재 handoff 기준으로는 **DB/schema 및 DAO 레벨에는 존재**하지만, 주 런타임 오케스트레이션 wiring은 여전히 기존 BuildTarget 중심 흐름이 메인이다.
+- 따라서 다음 세션은 “DB에 이미 존재하는 seam”과 “실제 runtime orchestration에서 얼마나 사용 중인지”를 구분해서 읽어야 한다.
 
 ### 마이그레이션 주의사항
 
@@ -323,7 +337,7 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 
 ## 6. Observability
 
-공통 규약은 `docs/specs/observability.md`가 기준이다.
+공통 규약은 `wiki/canon/specs/observability.md`가 기준이다.
 
 S2 구현 포인트:
 

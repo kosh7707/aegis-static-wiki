@@ -2,25 +2,22 @@
 title: "S4 Build Snapshot Consumer Seam 설계 메모"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/build-snapshot-consumer-seam.md"
-original_path: "docs/s4-handoff/build-snapshot-consumer-seam.md"
 last_verified: "2026-04-06"
 service_tags: ["s4"]
 decision_tags: []
-related_pages: []
-migration_status: "canonicalized"
+related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
 ---
 
 # S4 Build Snapshot Consumer Seam 설계 메모
 
 > 상태: **구현 완료 / `/v1` 계약 반영**
-> 마지막 업데이트: **2026-04-04**
+> 마지막 업데이트: **2026-04-06**
 >
 > 이 문서는 S3/S2가 Build Snapshot reference-first seam을 도입할 때,
 > S4가 어떤 입력/출력/provenance 경계를 가져가야 하는지 S4 관점에서 정리한 설계 메모다.
-> 현재는 `docs/api/sast-runner-api.md`와 함께 **실제 반영된 `/v1` 계약**을 설명한다.
+> 현재는 `wiki/canon/api/sast-runner-api.md`와 함께 **실제 반영된 `/v1` 계약**을 설명한다.
 
 ---
 

@@ -2,22 +2,19 @@
 title: "S4. SAST Runner 인수인계서"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/README.md"
-original_path: "docs/s4-handoff/README.md"
 last_verified: "2026-04-06"
 service_tags: ["s4"]
 decision_tags: []
-related_pages: []
-migration_status: "canonicalized"
+related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
 ---
 
 # S4. SAST Runner 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-04-04**
+> **마지막 업데이트: 2026-04-06**
 
 ---
 
@@ -26,8 +23,8 @@ migration_status: "canonicalized"
 ### 너는
 
 - **SAST Runner 전담 개발자** (`services/sast-runner/`)
-- `docs/api/sast-runner-api.md` API 계약서 소유
-- `docs/specs/sast-runner.md` 명세서 소유
+- `wiki/canon/api/sast-runner-api.md` API 계약서 소유
+- `wiki/canon/specs/sast-runner.md` 명세서 소유
 - `scripts/start-sast-runner.sh` + `services/sast-runner/.env` 소유
 - 9개 엔드포인트 관리: scan (동기+NDJSON 스트리밍), functions, includes, metadata, libraries, build, build-and-analyze, discover-targets, health
 - build path는 execution-only. SDK/toolchain/build-command 해석은 하지 않음
@@ -47,11 +44,11 @@ migration_status: "canonicalized"
 - 하드 가드레일 재확인:
   - S4는 **다른 서비스 코드를 읽지 않는다**.
   - 다른 서비스와의 소통은 **WR로만** 한다.
-  - 연동 판단은 `docs/api/` 계약서만 보고, 부족하면 담당자에게 WR을 보낸다.
+  - 연동 판단은 `wiki/canon/api/` 계약서만 보고, 부족하면 담당자에게 WR을 보낸다.
   - **커밋은 하지 않는다**. 커밋은 S2 세션만 한다.
   - `scripts/start*.sh`, `scripts/stop*.sh`, 서비스 기동 명령은 **사용자 허락 없이 실행하지 않는다**.
   - 로그/장애 분석은 `log-analyzer` MCP를 우선 사용한다.
-- lane 전용 작업 메모와 후속 세션 인계는 `docs/s4-handoff/`와 `.omx/state/sessions/{session-id}/...`를 우선 사용한다.
+- lane 전용 작업 메모와 후속 세션 인계는 `wiki/canon/handoff/s4/`와 `.omx/state/sessions/{session-id}/...`를 우선 사용한다.
 - 공용 `.omx/notepad.md`, `.omx/project-memory.json`에는 전역 durable 정보·공통 운영 규칙·cross-lane에 실제 필요한 사실만 짧게 남긴다.
 - **`$ralph`**: 스캐너 안정화, 빌드 파이프라인 복구, 벤치마크 개선처럼 한 lane이 끝까지 파고들어야 하는 작업에 우선 사용한다.
 - **`$team`**: S2 계약 조정, S5 CVE/KB 연동, S7 모델/프롬프트 영향 점검처럼 여러 lane이 동시에 얽히는 작업에 우선 사용한다.
@@ -91,7 +88,7 @@ migration_status: "canonicalized"
 
 ### 코드 구조
 
-```
+```text
 services/sast-runner/
 ├── app/
 │   ├── main.py              — FastAPI v0.11.0, JSON 로깅
@@ -148,7 +145,7 @@ SAST_SDK_ROOT=/home/kosh/sdks
 
 ### Observability
 
-`docs/specs/observability.md` 준수.
+`wiki/canon/specs/observability.md` 준수.
 - service 식별자: `s4-sast`
 - 로그 파일: `logs/s4-sast-runner.jsonl`
 - JSON structured, `time` epoch ms, `level` 숫자 (pino 표준)
@@ -172,7 +169,7 @@ SAST_SDK_ROOT=/home/kosh/sdks
 
 ## 4. 내부 SDK 해석 데이터 (analysis path only)
 
-```
+```text
 $SAST_SDK_ROOT/              <- .env: SAST_SDK_ROOT=/home/kosh/sdks
   ├── sdk-registry.json       <- SDK 메타데이터 (외부 설정, 코드 밖)
   └── ti-am335x/              <- sdkId = 폴더명
@@ -191,15 +188,15 @@ $SAST_SDK_ROOT/              <- .env: SAST_SDK_ROOT=/home/kosh/sdks
 
 | 문서 | 경로 |
 |------|------|
-| API 계약서 | `docs/api/sast-runner-api.md` |
-| 기능 명세서 | `docs/specs/sast-runner.md` |
-| 이 인수인계서 | `docs/s4-handoff/README.md` |
-| 로드맵 | `docs/s4-handoff/roadmap.md` |
-| Build Snapshot consumer seam 설계 메모 | `docs/s4-handoff/build-snapshot-consumer-seam.md` |
-| 세션 로그 | `docs/s4-handoff/session-*.md` |
+| API 계약서 | `wiki/canon/api/sast-runner-api.md` |
+| 기능 명세서 | `wiki/canon/specs/sast-runner.md` |
+| 이 인수인계서 | `wiki/canon/handoff/s4/readme.md` |
+| 로드맵 | `wiki/canon/roadmap/s4-roadmap.md` |
+| Build Snapshot consumer seam 설계 메모 | `wiki/canon/handoff/s4/build-snapshot-consumer-seam.md` |
+| 세션 로그 | `wiki/canon/handoff/s4/session-*.md` |
 
 ---
 
 ## 6. 다음 작업
 
-`roadmap.md` 참조.
+`wiki/canon/roadmap/s4-roadmap.md` 참조.

@@ -22,24 +22,14 @@ migration_status: "canonicalized"
 
 ## 10. 알려진 이슈 / 로드맵 / 세션 로그
 
-### 대기 중인 작업 요청 (2026-04-04 종료 시점 기준)
+### 대기 중인 작업 요청 / 참고 자료 (2026-04-06 기준)
 
-- 현재 WR 폴더에는 **Build Snapshot / BuildAttempt 계약 협의 묶음**이 S2의 다음 판단 재료로 남아 있다.
-  - inbound:
-    - `s3-to-s2-build-snapshot-contract-handoff.md`
-    - `s3-to-s2-build-snapshot-implementation-kickoff.md`
-    - `s3-to-s2-build-snapshot-clarification-reply.md`
-    - `s3-to-s2-build-snapshot-usecase-variants.md`
-  - outbound:
-    - `s2-to-s3-build-snapshot-contract-clarification.md`
-    - `s2-to-s3-build-snapshot-variant-feedback.md`
-    - `s2-to-s3-build-snapshot-implementation-gating-response.md`
-- S1 관련 계약 WR:
-  - `s2-to-s1-backend-contract-alignment.md`
-  - `s2-to-s1-contract-lockdown-fyi.md`
-- 전역 운영 WR:
-  - `s2-to-all-omx-memory-discipline.md`
-- `s3-to-s3-prompt-enhancement-backlog.md` 는 여전히 **S3 내부 백로그**이며 S2 직접 액션 대상은 아니다.
+- **active canonical WR**는 `wiki/canon/work-requests/` 기준으로 확인한다.
+- **archived legacy WR**는 `docs/work-requests/`에 남아 있을 수 있으나 runtime WR semantics의 입력이 아니다.
+- Build Snapshot / BuildAttempt 협의 메모는 현재 기준으로는 **historical reference** 성격이 강하며, 다음 판단은 아래 두 축을 같이 보고 해야 한다.
+  1. archived WR/세션 로그에 남은 협의 내용
+  2. 실제 backend codebase의 snapshot/build persistence seam 구현 현황
+- 즉, 다음 세션은 “active WR triage”와 “historical build-snapshot context reading”을 분리해서 진행해야 한다.
 
 ### 세션 13 완료 사항 (2026-03-28)
 
@@ -49,7 +39,7 @@ migration_status: "canonicalized"
 - `LlmV1Adapter` 제거 → `LlmTaskClient`에 concurrency queue 통합, Dynamic 서비스 직접 사용
 - `MockEcu` 제거 → 인터페이스를 `adapter-client.ts`로 인라인
 - `IRuleDAO`, `makeRule()`, 빈 `rules/` 디렉토리, stale dist 산출물 제거
-- `db-stats.sh` 전면 갱신 (9→18 테이블 조회) — 현재는 세션 14 이후 21테이블 체계로 다시 동기화 완료
+- `db-stats.sh` 전면 갱신 (9→18 테이블 조회) — 이후 snapshot/build persistence seam 추가로 현재 DB 스키마는 29테이블까지 확장
 - S3 통합 테스트 완료 대응: 파이프라인 격리 경로(`target.sourcePath`) 사용, Build Agent 경로 수정, 부분 빌드 처리, PoC에 `projectPath` 추가
 - log-analyzer 토큰 절감 (메시지 축약, 중복 그룹핑, max_lines)
 
@@ -125,7 +115,7 @@ S1↔S2 계약 drift를 backend-side에서 회귀 고정:
 
 ### 테스트 인프라: 구현 완료
 
-vitest 기반 테스트 330개. `cd services/backend && npx vitest run`으로 실행.
+vitest 기반 테스트 **331개**. `cd services/backend && npx vitest run`으로 실행.
 
 ```
 src/
@@ -150,9 +140,9 @@ src/
 ### 즉시 다음 작업 (Next S2 Session)
 
 1. **Build Snapshot / BuildAttempt 협의 상태 재평가**
-   - `docs/work-requests/s3-to-s2-build-snapshot-*.md`
-   - `docs/work-requests/s2-to-s3-build-snapshot-*.md`
-   - 현재 기준 S2 입장은 “kickoff 수용, 실제 구현 착수는 게이트 이후”
+   - archived reference: `docs/work-requests/` 및 관련 session logs
+   - code 기준: `services/backend/src/db.ts`, 관련 build/snapshot DAO, shared projection 타입
+   - 현재 기준 S2 입장은 “schema/persistence seam은 존재, runtime orchestration 확대는 별도 판단 필요”
 2. **E2E 풀스택 통합 테스트**
    - 전체 파이프라인 (업로드→서브프로젝트→빌드→스캔→Deep) 검증
    - 단, 사용자 허가 없는 start script 실행 금지 원칙 유지

@@ -178,7 +178,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 | From | To | 프로토콜 | 용도 | 비고 |
 |------|----|---------|------|------|
 | S1 → S2 | HTTP REST | 분석 요청/응답, CRUD | S1의 유일한 서버 통신 대상 |
-| S1 ↔ S2 | WebSocket | 분석 진행률, 동적 분석 실시간 스트리밍 | 4개 WS 엔드포인트 |
+| S1 ↔ S2 | WebSocket | 분석/업로드/파이프라인/SDK/알림 실시간 스트리밍 | 7개 broadcaster |
 | S2 → S3 | HTTP REST | `POST /v1/tasks` (deep-analyze 위임) | 분석 위임 |
 | S2 → S4 | HTTP REST | `POST /v1/scan` (직접 SAST 요청) | 사용자 트리거 Quick |
 | S2 → S5 | HTTP REST | `POST /v1/search` (지식 조회) | Finding 상세 등 |

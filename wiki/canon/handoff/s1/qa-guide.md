@@ -24,10 +24,10 @@ migration_status: "canonicalized"
 
 - QA는 `services/frontend/src/renderer/**` 구현 코드를 읽지 않는다.
 - 판단 기준은 아래 네 문서다.
-  1. `docs/AEGIS.md`
-  2. `docs/s1-handoff/README.md`
-  3. `docs/specs/frontend.md`
-  4. `docs/api/shared-models.md`
+  1. `docs/AEGIS.md` (부트스트랩 라우터)
+  2. `wiki/canon/handoff/s1/readme.md`
+  3. `wiki/canon/specs/frontend.md`
+  4. `wiki/canon/api/shared-models.md`
 - 현재 동적 분석/동적 테스트는 **실운영 화면이 아니라 placeholder 라우트**다.
 - repo의 Playwright 자산은 참고 가능하지만, **이 문서의 현재 검증 상태를 우선 기준**으로 삼는다.
 

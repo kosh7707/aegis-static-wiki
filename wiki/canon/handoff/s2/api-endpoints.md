@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-07"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -72,7 +72,7 @@ migration_status: "canonicalized"
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
 | GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 |
-| POST | `/api/projects/:pid/sdk` | SDK 등록 (업로드 또는 `localPath`) |
+| POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 JSON + `localPath`; multipart file upload 미들웨어는 아직 미연결) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
 | PATCH | `/api/projects/:pid/targets/:tid/libraries` | 라이브러리 포함 여부 일괄 수정 |
@@ -82,21 +82,21 @@ migration_status: "canonicalized"
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | POST | `/api/projects/:pid/source/upload` | ZIP/tar.gz 소스 업로드 |
-| GET | `/api/projects/:pid/source/upload-status/:uploadId` | 업로드 상태 폴링 폴백 |
+| GET | `/api/projects/:pid/source/upload-status/:uploadId` | 업로드 상태 폴링 폴백 (`UploadStatus`: `phase/message/fileCount?/projectPath?/error?`) |
 | POST | `/api/projects/:pid/source/clone` | Git URL 클론 |
-| GET | `/api/projects/:pid/source/files` | 소스 파일 트리 |
+| GET | `/api/projects/:pid/source/files` | 소스 파일 트리 (`?filter=source` 지원, `composition/totalFiles/totalSize/targetMapping` 포함) |
 | GET | `/api/projects/:pid/source/file` | 파일 내용 읽기 (`?path=` 필수) |
 | DELETE | `/api/projects/:pid/source` | 소스 삭제 |
 | GET | `/api/projects/:pid/targets` | 빌드 타겟 목록 |
-| POST | `/api/projects/:pid/targets` | 빌드 타겟 생성 `{ name, relativePath, buildProfile? }` |
-| PUT | `/api/projects/:pid/targets/:id` | 빌드 타겟 수정 |
+| POST | `/api/projects/:pid/targets` | 빌드 타겟 생성 `{ name, relativePath, buildProfile?, buildSystem?, includedPaths? }` |
+| PUT | `/api/projects/:pid/targets/:id` | 빌드 타겟 수정 (`includedPaths` 변경은 현재 `400 InvalidInput`) |
 | DELETE | `/api/projects/:pid/targets/:id` | 빌드 타겟 삭제 |
 | GET | `/api/projects/:pid/targets/:id/build-log` | 타겟 빌드 로그 조회 |
 | POST | `/api/projects/:pid/targets/discover` | 빌드 타겟 자동 탐색 (S4 호출) |
-| POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 |
+| POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/run/:targetId` | 단일 타겟 파이프라인 재실행 |
 | GET | `/api/projects/:pid/pipeline/status` | 프로젝트 파이프라인 상태 |
-| POST | `/api/analysis/run` | Quick→Deep 분석 실행 (202) `{ projectId, targetIds? }` |
+| POST | `/api/analysis/run` | Quick→Deep 분석 실행 (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
 | GET | `/api/analysis/status` | 모든 진행 중 분석 |
 | GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 |
 | POST | `/api/analysis/abort/:analysisId` | 분석 중단 |
@@ -157,7 +157,6 @@ migration_status: "canonicalized"
 |--------|------|------|
 | WebSocket | `/ws/notifications?projectId=` | 알림 실시간 push |
 | WebSocket | `/ws/dynamic-analysis?sessionId=` | 동적 분석 실시간 이벤트 |
-| WebSocket | `/ws/static-analysis?analysisId=` | 정적 분석 브로드캐스트 채널 (현재 broadcaster 유지) |
 | WebSocket | `/ws/dynamic-test?testId=` | 동적 테스트 진행률 |
 | WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 |
 | WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 |

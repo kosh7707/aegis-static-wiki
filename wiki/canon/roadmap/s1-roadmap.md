@@ -27,7 +27,7 @@ migration_status: "canonicalized"
 
 ## S1 독립 코드 작업 (남은 항목)
 
-1. **`includedPaths` 편집 다이얼로그** — 기존 서브프로젝트 파일 선택 수정. `SubprojectCreateDialog` 재사용
+1. ~~**`includedPaths` 편집 다이얼로그**~~ — backend가 `400 InvalidInput`으로 명시 거부 (lockdown 완료). 현재 edit guard 유지 중. backend 지원 시 재개
 2. **워크플로우 네비게이션** [Low] — 사이드바를 기능 목록 → 워크플로우 단계로 재설계 (QA FRICTION-29)
 3. **1440px 와이드 레이아웃 최적화** [Low] — 정보 밀도 개선 (QA CSS-3)
 

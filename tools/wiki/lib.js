@@ -371,8 +371,11 @@ function buildIndexContent() {
     const records = (grouped.get(key) || []).sort((a, b) => a.relPath.localeCompare(b.relPath));
     if (!records.length && key !== 'work-requests') continue;
     lines.push(`## ${label}`, '');
+    if (key === 'work-requests') {
+      lines.push('- Archived legacy WRs under `AEGIS/docs/work-requests/` are runtime out-of-scope.', '');
+    }
     if (!records.length) {
-      lines.push('- No active canonical work requests are currently present. Archived legacy WRs under `AEGIS/docs/work-requests/` are runtime out-of-scope.', '');
+      lines.push('- No active canonical work requests are currently present.', '');
       continue;
     }
     for (const record of records) {
