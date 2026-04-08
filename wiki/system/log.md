@@ -201,3 +201,79 @@ related_pages:
 ## [2026-04-07] mcp | complete_wr | s4-to-s2-s3-prepare-for-s4-omission-policy-contract-changes-on-v1-scan-and-v1-build-and-anal
 - Lane s3 completed recipient-side handling
 - Status: open
+
+## [2026-04-07] mcp | register_wr | s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh.md
+
+## [2026-04-07] mcp | register_wr | s2-to-s1-sdk-upload-request-shape-examples-for-s1-archive-.bin-folder-with-relativepath
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-sdk-upload-request-shape-examples-for-s1-archive-.bin-folder-with-relativepath.md
+
+## [2026-04-07] mcp | register_wr | s2-to-s4-clarify-migration-path-for-s4-build-sdk-contract-drift-currently-affecting-s2
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s2-to-s4-clarify-migration-path-for-s4-build-sdk-contract-drift-currently-affecting-s2.md
+
+## [2026-04-07] Identified adjacent S4 contract drift after omission-policy WR handling | s2
+- S2 verified omission-policy recipient fixes and then confirmed adjacent drift: S2 still uses legacy /v1/sdk-registry and old /v1/build request shape while current S4 canonical docs describe upstream-owned SDK registry and caller-materialized build contract.
+- Registered follow-up WR to S4 requesting migration-path clarification before S2 stages build/sdk compatibility changes.
+
+## [2026-04-07] mcp | complete_wr | s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s2-to-s1-sdk-upload-request-shape-examples-for-s1-archive-.bin-folder-with-relativepath
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s4-to-s2-reply-s4-build-sdk-migration-truth-is-runtime-aligned-with-canonical-docs-no-v1-
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s4-to-s2-reply-s4-build-sdk-migration-truth-is-runtime-aligned-with-canonical-docs-no-v1-.md
+
+## [2026-04-07] mcp | complete_wr | s2-to-s4-clarify-migration-path-for-s4-build-sdk-contract-drift-currently-affecting-s2
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | complete_wr | s4-to-s2-reply-s4-build-sdk-migration-truth-is-runtime-aligned-with-canonical-docs-no-v1-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s1-qa-to-s1-untitled
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-untitled.md
+
+## [2026-04-07] mcp | complete_wr | s1-qa-to-s1-untitled
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s1-qa-to-s1-websocket-overviewpage
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-websocket-overviewpage.md
+
+## [2026-04-07] mcp | complete_wr | s1-qa-to-s1-websocket-overviewpage
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s1-qa-to-s1-notification-dropdown
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-notification-dropdown.md
+
+## [2026-04-07] mcp | complete_wr | s1-qa-to-s1-notification-dropdown
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-07] mcp | register_wr | s1-qa-to-s2-aegis-58-design.md
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-qa-to-s2-aegis-58-design.md.md
+
+## [2026-04-07] mcp | register_wr | s2-to-s1-qa-reply-s2-opinion-on-aegis-design-system-choice-favors-ibm-carbon-as-canonical-ba
+- Registered reply WR for s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-qa-reply-s2-opinion-on-aegis-design-system-choice-favors-ibm-carbon-as-canonical-ba.md
+
+## [2026-04-07] mcp | complete_wr | s1-qa-to-s2-aegis-58-design.md
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | register_wr | s1-qa-to-s1-aegis-ibm-carbon-nvidia
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-aegis-ibm-carbon-nvidia.md

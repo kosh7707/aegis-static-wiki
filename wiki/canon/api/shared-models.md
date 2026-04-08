@@ -195,11 +195,20 @@ interface SdkProfile {
 ```ts
 type SdkRegistryStatus =
   | "uploading"
+  | "uploaded"
   | "extracting"
+  | "extracted"
+  | "installing"
+  | "installed"
   | "analyzing"
   | "verifying"
   | "ready"
+  | "upload_failed"
+  | "extract_failed"
+  | "install_failed"
   | "verify_failed";
+
+type SdkArtifactKind = "archive" | "bin" | "folder";
 
 interface SdkAnalyzedProfile {
   compiler?: string;
@@ -211,6 +220,10 @@ interface SdkAnalyzedProfile {
   environmentSetup?: string;
   includePaths?: string[];
   defines?: Record<string, string>;
+  artifactKind?: SdkArtifactKind;
+  sdkVersion?: string;
+  targetSystem?: string;
+  installLogPath?: string;
 }
 
 interface RegisteredSdk {
@@ -220,6 +233,10 @@ interface RegisteredSdk {
   description?: string;
   path: string;
   profile?: SdkAnalyzedProfile;
+  artifactKind?: SdkArtifactKind;
+  sdkVersion?: string;
+  targetSystem?: string;
+  installLogPath?: string;
   status: SdkRegistryStatus;
   verifyError?: string;
   verified: boolean;
@@ -552,10 +569,11 @@ Validation enforced today:
 
 `POST /api/projects/:pid/sdk` mounted behavior today:
 
-- required: `name`
-- accepted JSON body: `{ name: string; description?: string; localPath?: string }`
-- controller also checks `req.file?.buffer`, but **this route does not currently mount multer**, so JSON `localPath` is the only guaranteed mounted input path.
-- returned `RegisteredSdk.status` is initially `"uploading"`, then the async pipeline moves it through `extracting → analyzing → verifying → ready | verify_failed`.
+- required multipart field: `name`
+- accepted ingress: multipart `file` upload (single archive or single `.bin` in this milestone)
+- `localPath` is no longer the canonical/requested ingress
+- multiple uploaded files are treated as **folder upload** when the client preserves relative paths (for example via `webkitRelativePath`-derived filenames or explicit relative-path metadata)
+- returned `RegisteredSdk.status` is initially `"uploaded"`, then the async pipeline advances through upload materialization / analyze / verify terminal states
 
 ### SDK profile lookup routes
 
@@ -919,9 +937,9 @@ Role and recovery:
 
 | `type` | Payload |
 |---|---|
-| `sdk-progress` | `{ sdkId, phase: "uploading" \| "extracting" \| "analyzing" \| "verifying" \| "ready", message }` |
-| `sdk-complete` | `{ sdkId, profile }` |
-| `sdk-error` | `{ sdkId, phase: "verify_failed", error }` |
+| `sdk-progress` | `{ sdkId, phase: "uploading" \| "uploaded" \| "extracting" \| "extracted" \| "installing" \| "installed" \| "analyzing" \| "verifying" \| "ready", message, percent?, uploadedBytes?, totalBytes?, fileName? }` |
+| `sdk-complete` | `{ sdkId, profile, path? }` |
+| `sdk-error` | `{ sdkId, phase: "upload_failed" \| "extract_failed" \| "install_failed" \| "verify_failed", error, logPath? }` |
 
 Role and recovery:
 
@@ -1028,7 +1046,7 @@ These points are intentional contract clarifications and should be preserved unl
 
 1. `UploadedFile` APIs and `/source/*` APIs are different surfaces with different backing stores and shapes.
 2. `ProjectOverviewResponse` is a raw object, not the common success envelope.
-3. SDK file-upload is service-capable but not currently mounted with multipart middleware on `/api/projects/:pid/sdk`.
+3. SDK upload is now multipart-mounted on `/api/projects/:pid/sdk`; single archive / single `.bin` are supported for the current milestone, while multi-file folder upload is supported when the client preserves relative paths inside the multipart payload.
 4. `SourceFileEntry.fileType` uses the current 12-value filesystem classifier from `ProjectSourceService`, not older ad-hoc labels.
 5. WS envelopes are flattened as `{ ...message, meta }`, not `{ message, meta }`.
 6. WS `meta.projectId` equals the subscription key on non-project channels today.

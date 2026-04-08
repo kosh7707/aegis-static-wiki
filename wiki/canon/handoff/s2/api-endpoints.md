@@ -72,7 +72,7 @@ migration_status: "canonicalized"
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
 | GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source) |
-| POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 JSON + `localPath`; multipart file upload 미들웨어는 아직 미연결) |
+| POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 multipart project-scoped upload; 단일 archive / 단일 `.bin` / multi-file folder upload 지원. 폴더 업로드는 클라이언트가 상대경로를 보존해서 보내야 함) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
 | PATCH | `/api/projects/:pid/targets/:tid/libraries` | 라이브러리 포함 여부 일괄 수정 |
@@ -161,7 +161,7 @@ migration_status: "canonicalized"
 | WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 | `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId` |
 | WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 | `GET /api/projects/:pid/source/upload-status/:uploadId` |
 | WebSocket | `/ws/pipeline?projectId=` | 파이프라인 타겟 상태 스트림 | `GET /api/projects/:pid/pipeline/status` |
-| WebSocket | `/ws/sdk?projectId=` | SDK 등록/검증 진행률 | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id` |
+| WebSocket | `/ws/sdk?projectId=` | SDK 업로드/설치/검증 진행률 (`uploading`,`uploaded`,`extracting`/`installing`,`extracted`/`installed`,`analyzing`,`verifying`,`ready`) | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id` |
 
 운영 의미론:
 

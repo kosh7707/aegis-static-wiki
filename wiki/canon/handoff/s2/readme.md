@@ -2,15 +2,12 @@
 title: "S2. AEGIS Core (Backend) 인수인계서"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/README.md"
-original_path: "docs/s2-handoff/README.md"
 last_verified: "2026-04-07"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
-migration_status: "canonicalized"
 ---
 
 # S2. AEGIS Core (Backend) 인수인계서
@@ -115,7 +112,7 @@ migration_status: "canonicalized"
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **347개 통과** (vitest, 2026-04-07 WebSocket progress/completion hardening 재검증) |
+| 테스트 | **356개 통과** (vitest, 2026-04-07 WebSocket progress/completion hardening 재검증) |
 | DB 테이블 | **29개** (SQLite, WAL) — 기존 21개 활성 표면 + snapshot/build persistence seam 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
@@ -158,7 +155,7 @@ S1 handoff 원칙:
   - `GET /api/projects/:pid/pipeline/status` → canonical `PipelineStatus`
   - `GET/POST /api/projects/:pid/sdk` → `RegisteredSdk` / `{ builtIn, registered }`
 - build-target update는 현재도 `includedPaths` 변경을 지원하지 않으며, backend는 이를 **명시적 에러**로 거부한다.
-- SDK analyzed profile 연동에서 canonical 필드명은 `environmentSetup`이며, S4 SDK 등록 payload forwarding도 해당 이름으로 잠근다.
+- SDK analyzed profile 연동에서 canonical 필드명은 `environmentSetup`이며, S2 로컬 SDK 검증도 해당 이름을 기준으로 경로 존재/경계 검증을 수행한다.
 
 ### 3-2. 테스트/문서 동기화 메모 (2026-04-04)
 
@@ -168,7 +165,7 @@ S1 handoff 원칙:
   - `/api/projects/:pid/pipeline/run/:targetId`
 - contract lockdown 관련 S2 기준 검증 결과:
   - `src/__tests__/contract/api-contract.test.ts` → **79 passed**
-  - `cd services/backend && npx vitest run` → **20 files / 347 tests passed**
+  - `cd services/backend && npx vitest run` → **21 files / 356 tests passed**
   - `services/backend` / `services/shared` `tsc --noEmit` 통과
 - 문서 동기화 완료 범위:
   - `wiki/canon/api/shared-models.md`

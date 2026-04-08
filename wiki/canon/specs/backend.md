@@ -39,7 +39,7 @@ migration_status: "canonicalized"
 | 서브 프로젝트 파이프라인 | PipelineOrchestrator + BuildTarget + BuildAgentClient + KbClient | **구현 완료** |
 | S1 요청 API | 벌크 상태, Finding 이력, 활동 타임라인, Approval 카운트, 검색/정렬 확장 | **구현 완료** |
 | 코드 고도화 | AppError 타입화(KB/Pipeline), 쿼리 파라미터 검증, silent catch 로깅 | **구현 완료** |
-| 테스트 | 단위/통합/계약 테스트 322개 (vitest) | **구현 완료** |
+| 테스트 | 단위/통합/계약 테스트 356개 (vitest) | **구현 완료** |
 | 세션 14: CWE/CVE | Finding/Vulnerability CWE/CVE 매핑, confidenceScore | **구현 완료** |
 | 세션 14: Gate 프로필 | 프리셋 3종 (default/strict/relaxed), 프로필 기반 QG 평가 | **구현 완료** |
 | 세션 14: 알림 시스템 | NotificationDAO/Service, 4개 REST + WS, 4개 트리거 | **구현 완료** |
@@ -1050,7 +1050,7 @@ services/backend/src/
 │   ├── kb-client.ts                   S5 Knowledge Base HTTP 클라이언트 (코드그래프 적재)
 │   ├── project-source.service.ts      소스코드 관리 (ZIP 해제, 파일 트리, 물리적 복사)
 │   ├── build-target.service.ts        BuildTarget CRUD
-│   ├── sdk.service.ts                 SDK 등록/분석/검증 워크플로우
+│   ├── sdk.service.ts                 SDK 등록/분석/로컬 검증 워크플로우
 │   ├── activity.service.ts            활동 타임라인 집계 (Run, AuditLog, BuildTarget)
 │   ├── result-normalizer.ts           AnalysisResult → Run+Finding+EvidenceRef 정규화
 │   ├── finding.service.ts             Finding CRUD + 7-state FSM + 벌크 상태 + 이력 + audit trail

@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runn
 migration_status: "canonicalized"
 wr_id: "s4-to-s2-s3-prepare-for-s4-omission-policy-contract-changes-on-v1-scan-and-v1-build-and-anal"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s4"
 to_lanes: ["s2", "s3"]
-completed_by: [{"lane":"s3","completed_at":"2026-04-07T09:41:41.909Z","note":"S3 recipient handling completed on 2026-04-07. Analysis Agent now preserves S4 /v1/scan error payloads for both NDJSON final error events and sync HTTP 503 JSON responses instead of collapsing them into generic availability errors. Phase 1 build-and-analyze handling now retains preserved buildEvidence.compileCommandsPath and failureDetail from outer failures and forwards compileCommandsPath into fallback /v1/scan and /v1/functions calls. S3 does not currently consume S4 /v1/health, so additive health fields required no code change. Verification: py_compile passed; targeted tests passed (44); upstream contract tests passed (12); full Analysis Agent suite passed (282)."}]
+completed_by: [{"lane":"s3","completed_at":"2026-04-07T09:41:41.909Z","note":"S3 recipient handling completed on 2026-04-07. Analysis Agent now preserves S4 /v1/scan error payloads for both NDJSON final error events and sync HTTP 503 JSON responses instead of collapsing them into generic availability errors. Phase 1 build-and-analyze handling now retains preserved buildEvidence.compileCommandsPath and failureDetail from outer failures and forwards compileCommandsPath into fallback /v1/scan and /v1/functions calls. S3 does not currently consume S4 /v1/health, so additive health fields required no code change. Verification: py_compile passed; targeted tests passed (44); upstream contract tests passed (12); full Analysis Agent suite passed (282)."},{"lane":"s2","completed_at":"2026-04-07T11:38:54.083Z","note":"S2 consumed the WR and applied recipient-side compatibility fixes for omission-policy semantics. /v1/scan 503 policy failures are now treated as authoritative failed scan payloads (no overload retry), analysis quick phase stops before deep analysis when scan fails at request level, and aggregate /health now degrades when S4 reports policyStatus != ok. S2 does not currently consume NDJSON scan streaming or /v1/build-and-analyze, so no code change was needed there. Verified with backend typecheck, targeted client/orchestrator/health/pipeline tests, and fresh full backend vitest pass (355 tests)."}]
 registered_at: "2026-04-07T07:56:31.101Z"
+completed_at: "2026-04-07T11:38:54.083Z"
 ---
 
 # Prepare for S4 omission-policy contract changes on /v1/scan and /v1/build-and-analyze
