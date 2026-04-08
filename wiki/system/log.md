@@ -277,3 +277,102 @@ related_pages:
 ## [2026-04-08] mcp | register_wr | s1-qa-to-s1-aegis-ibm-carbon-nvidia
 - Registered request WR for s1
 - Path: wiki/canon/work-requests/s1-qa-to-s1-aegis-ibm-carbon-nvidia.md
+
+## [2026-04-08] maintenance | context project scenario flow page added
+- Added wiki/context/project/end-to-end-scenarios.md as a synthesized cross-service scenario guide.
+- Positioned it as a routing aid to canonical technical-overview/backend/api-endpoints/shared-models surfaces.
+- Planned routing entrypoint is wiki/system/index.md via deterministic index rebuild.
+
+## [2026-04-08] maintenance | technical overview linked to scenario flow page
+- Added an explicit routing hint from wiki/canon/specs/technical-overview.md to wiki/context/project/end-to-end-scenarios.md.
+- This compensates for the current deterministic index rebuild not surfacing the new project-context page.
+
+## [2026-04-08] maintenance | expanded scenario-page routing hints across S2 surfaces
+- Added explicit routing hints to wiki/canon/handoff/s2/readme.md, wiki/canon/handoff/s2/api-endpoints.md, wiki/canon/specs/backend.md, and wiki/canon/api/shared-models.md.
+- Updated related_pages metadata on those pages to include wiki/context/project/end-to-end-scenarios.md.
+- Backlink count for the scenario page increased from 2 to 6 canonical/session references.
+
+## [2026-04-08] mcp | complete_wr | s1-qa-to-s1-aegis-ibm-carbon-nvidia
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | register_wr | s1-qa-to-s1-carbon
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-carbon.md
+
+## [2026-04-08] mcp | register_wr | s1-qa-to-s1-qa-qa-stitch-mcp
+- Registered notice WR for s1-qa
+- Path: wiki/canon/work-requests/s1-qa-to-s1-qa-qa-stitch-mcp.md
+
+## [2026-04-08] mcp | register_wr | s3-to-s2-live-contract-audit-findings-build-agent-top-level-strict-fields-fixed-in-s3-rep
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-live-contract-audit-findings-build-agent-top-level-strict-fields-fixed-in-s3-rep.md
+
+## [2026-04-08] Ran S2 self-test sweep against canonical API contract and identified coverage gaps | S2 API contract audit
+- Verified backend suite (356 tests), focused contract suite (124 tests), backend/shared typecheck all passing
+- Conservative literal-scan of 97 documented REST endpoints found 49 still lacking direct request-level test coverage
+- Largest uncovered surfaces: adapters/settings, analysis status/results/summary/poc, dynamic-analysis, dynamic-test, file content/download/delete, health, gate override, approval detail, report dynamic/test
+
+## [2026-04-08] Refined route-family gap evidence for undocumented test coverage holes | S2 API contract audit
+- Endpoint-family scan over backend test files showed zero direct request-level references for adapters/settings, dynamic-analysis, dynamic-test, analysis status/results/summary/poc, file detail/download/delete, and report dynamic/test surfaces
+- Controller test directory currently contains only analysis-validation.test.ts and health.controller.test.ts, confirming most uncovered route families lack dedicated controller tests too
+- Health is partially covered at controller unit level via GET / mounted router test, but not by an app-level GET /health contract test
+
+## [2026-04-08] mcp | register_wr | s5-to-s3-s5-api-66-shape
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-api-66-shape.md
+
+## [2026-04-08] mcp | register_wr | s5-to-s2-s5-api-x-timeout-ms
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s5-to-s2-s5-api-x-timeout-ms.md
+
+## [2026-04-08] Added first contract-test batch for previously uncovered S2 API surfaces | S2 API contract audit
+- Expanded create-test-app harness to mount missing contract surfaces and lightweight fake services for dynamic-analysis/dynamic-test/health/adapters/settings/sdk-profiles
+- Added request-level contract tests for health, file content/download/delete, adapters, settings, sdk-profiles, analysis status/results/summary/poc, dynamic-analysis, and dynamic-test
+- Conservative endpoint literal scan improved from 49 unmatched documented REST endpoints to 17 unmatched after the new batch
+
+## [2026-04-08] mcp | register_wr | s3-to-s2-runtime-rollout-still-pending-as-of-2026-04-08-live-s3-services-continue-to-expo
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-runtime-rollout-still-pending-as-of-2026-04-08-live-s3-services-continue-to-expo.md
+
+## [2026-04-08] Closed request-level REST contract coverage gap across the documented S2 API surface | S2 API contract audit
+- Second contract-test batch covered project update/delete, adapter delete, SDK delete, source clone/delete, dynamic-analysis detail/delete, auth logout, finding summary, gate run detail/override, approval detail, target libraries, and report dynamic/test
+- Conservative endpoint scan improved from 17 unmatched documented REST endpoints to 0 unmatched
+- One concrete contract drift remains: GET /api/dynamic-analysis/sessions/:id currently returns a composite payload { session, alerts, recentMessages } while the canonical API doc still describes DynamicAnalysisSession-only detail
+
+## [2026-04-08] mcp | complete_wr | s5-to-s3-s5-api-66-shape
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | register_wr | s2-to-s3-s2-handled-build-agent-analysis-agent-rollout-and-consumer-alignment-on-2026-04-
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s2-handled-build-agent-analysis-agent-rollout-and-consumer-alignment-on-2026-04-.md
+
+## [2026-04-08] mcp | register_wr | s2-to-s5-s2-acknowledged-s5-project-memory-x-timeout-ms-clarification-on-2026-04-08
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s2-to-s5-s2-acknowledged-s5-project-memory-x-timeout-ms-clarification-on-2026-04-08.md
+
+## [2026-04-08] mcp | complete_wr | s3-to-s2-live-contract-audit-findings-build-agent-top-level-strict-fields-fixed-in-s3-rep
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | complete_wr | s3-to-s2-runtime-rollout-still-pending-as-of-2026-04-08-live-s3-services-continue-to-expo
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | complete_wr | s5-to-s2-s5-api-x-timeout-ms
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] Processed all currently open S2 WRs and posted recipient-side replies | S2 WR sweep
+- Handled both S3 WRs: updated S2 build-resolve consumer alignment, restarted live build-agent/analysis-agent runtime, and verified live health + strict-v1 response echo
+- Handled S5 timeout-header notice as acknowledged/no-code-change
+- Recorded reply WRs to S3 and S5 and marked all three incoming WRs complete for lane s2
+
+## [2026-04-08] mcp | complete_wr | s2-to-s5-s2-acknowledged-s5-project-memory-x-timeout-ms-clarification-on-2026-04-08
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | complete_wr | s2-to-s3-s2-handled-build-agent-analysis-agent-rollout-and-consumer-alignment-on-2026-04-
+- Lane s3 completed recipient-side handling
+- Status: completed

@@ -2,15 +2,12 @@
 title: "기술 명세 - 전체 개요"
 page_type: "canonical-spec"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/specs/technical-overview.md"
-original_path: "docs/specs/technical-overview.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-08"
 service_tags: ["platform"]
 decision_tags: []
-related_pages: []
-migration_status: "canonicalized"
+related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 ---
 
 # 기술 명세 - 전체 개요
@@ -18,7 +15,9 @@ migration_status: "canonicalized"
 > 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다.
 > 서비스별 상세 명세는 개별 문서로 분리한다.
 > **이 문서의 소유자는 S2(AEGIS Core)이다.** 변경 제안은 work-request로.
-> **마지막 업데이트: 2026-03-28**
+> **마지막 업데이트: 2026-04-08**
+>
+> 대표 사용자 시나리오의 실제 cross-service 흐름을 빠르게 보고 싶다면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 함께 참고한다.
 
 ---
 
@@ -503,3 +502,5 @@ ECU Simulator → [S6 Adapter] → WS → [S2]
   - [S5 Handoff](../s5-handoff/README.md)
   - [S6 Handoff](../s6-handoff/README.md)
   - [S7 Handoff](../s7-handoff/README.md)
+- 시나리오/통신 흐름
+  - [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]

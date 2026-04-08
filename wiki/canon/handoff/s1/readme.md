@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s1-handoff/README.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-08"
 service_tags: ["s1"]
 decision_tags: []
 related_pages: []
@@ -14,7 +14,7 @@ related_pages: []
 
 > **먼저 `docs/AEGIS.md`를 읽을 것.**
 > 이 문서는 `services/frontend/` 기준의 현재 구현 상태, 검증 결과, 라우트/모듈 인벤토리를 다음 세션에 넘기기 위한 최신 진입점이다.
-> **마지막 검증/갱신: 2026-04-07**
+> **마지막 검증/갱신: 2026-04-08**
 
 ---
 
@@ -23,11 +23,12 @@ related_pages: []
 | 문서 | 내용 |
 |------|------|
 | **이 파일 (`README.md`)** | 현재 상태, 검증 결과, 라우트/모듈 요약, 운영 메모 |
-| [architecture.md](architecture.md) | 실제 파일 구조, 라우트 표, API/컨텍스트/훅 인벤토리, 테스트 자산 |
+| [architecture.md](architecture.md) | 실제 파일 구조, 라우트 표, API/컨텍스트/훅 인벤토리, 테스트 자산, **CSS 디자인 시스템 규칙 (섹션 7)** |
 | [qa-guide.md](qa-guide.md) | S1-QA 전용 실행 가이드, 현재 회귀 상태, 권장 실행 순서 |
 | [roadmap.md](roadmap.md) | 후속 작업 / 대기 항목 |
 | `session-*.md` | 세션 로그 |
 | [`../specs/frontend.md`](../specs/frontend.md) | 현재 구현 기준 프론트 스펙 |
+| **`docs/design/AEGIS-DESIGN.md`** | **AEGIS 디자인 시스템 증적** — 토큰 목록, 색상 팔레트, 타이포 위계, 컴포넌트 패턴, severity 매핑. CSS 변경 시 반드시 참조 및 동기화 |
 
 ---
 
@@ -39,10 +40,11 @@ related_pages: []
 - **`src/renderer/api/mock-handler.ts` (dev-mode mock)는 S1의 유지관리 의무.** QA가 백엔드 없이 작업할 수 있는 완전한 모크 환경을 제공해야 하므로, API 계약 변경 시 `e2e/helpers/api-mocker.ts`뿐 아니라 `mock-handler.ts`도 반드시 동기화할 것.
 - 동적 분석/동적 테스트 화면은 **코드 자산은 남아 있지만 현재 운영 라우트에서는 placeholder 상태**다.
 - QA lane은 별도이며, 상세 절차는 [qa-guide.md](qa-guide.md)를 따른다.
+- **CSS/스타일 작업 시**: `architecture.md` 섹션 7 "CSS 디자인 시스템 규칙"과 `docs/design/AEGIS-DESIGN.md`를 반드시 먼저 읽을 것. 토큰 하드코딩 금지, 인라인 스타일 금지 등 규칙이 명시되어 있다.
 
 ---
 
-## 2. 2026-04-07 기준 검증 스냅샷
+## 2. 2026-04-08 기준 검증 스냅샷
 
 ### 명령 결과
 
@@ -50,8 +52,7 @@ related_pages: []
 |------|------|------|
 | 의존성 설치 | `npm ci` | PASS |
 | 빌드 | `cd services/frontend && npm run build` | PASS |
-| 유닛 테스트 | `cd services/frontend && npm test` | PASS (`47` files, `356` tests) |
-| 전체 E2E | `cd services/frontend && npm run test:e2e` | PASS (`180` tests) |
+| 유닛 테스트 | `cd services/frontend && npm test` | PASS (`51` files, `392` tests) |
 | TS 진단 | `npx tsc --noEmit --project services/frontend/tsconfig.json` | PASS (`0` errors, `0` warnings) |
 
 ---
@@ -68,8 +69,9 @@ related_pages: []
 | 커스텀 훅 | `9`개 |
 | 컴포넌트 | `58`개 (`ui 24 / static 24 / finding 3 / dynamic 2 / root 5`) |
 | 유틸리티 모듈 | `10`개 |
-| 렌더러 유닛 테스트 파일 | `47`개 |
+| 렌더러 유닛 테스트 파일 | `51`개 |
 | Playwright spec 파일 | `11`개 |
+| **디자인 시스템** | **IBM Carbon `--cds-*` + AEGIS `--aegis-*` 토큰 (274개, `tokens.css` 단일 관리)** |
 | lint 설정/스크립트 | **없음** |
 
 ---
@@ -127,16 +129,16 @@ related_pages: []
 - README/architecture/spec/qa-guide는 이번 갱신으로 **동일한 수치와 라우트 기준**을 사용한다.
 - 현재 신뢰 가능한 자동 검증 기준은:
   1. `npm run build`
-  2. `npm test` (356 PASS)
-  3. `npm run test:e2e` (180 PASS)
+  2. `npm test` (392 PASS)
 - 동적 분석/동적 테스트는 "구현 중"이 아니라 **코드는 남아 있으나 제품 라우트에서는 placeholder**라고 이해하는 것이 정확하다.
+- **디자인 시스템이 IBM Carbon 기반으로 전면 교체됨 (2026-04-08).** 모든 CSS 작업 시 `architecture.md` 섹션 7 CSS 규칙과 `docs/design/AEGIS-DESIGN.md`를 먼저 참조할 것.
 
 ---
 
 ## 7. 다음 세션 우선순위
 
-1. S2 계약 갱신 대응 — 프론트엔드 전체 깊이 감사 (WR 접수됨, deep-interview spec 완료)
-2. 풀스택 통합 테스트 (백엔드 기동 후 mock OFF E2E)
-3. 필요 시 `wiki/canon/specs/frontend.md` 기준으로 화면별 요구사항과 실제 구현 차이를 좁히기
+1. S1-QA Playwright 15라우트 × 2테마 시각적 전수 검증 (디자인 시스템 교체 후 baseline 재생성)
+2. S2 계약 갱신 대응 — 프론트엔드 전체 깊이 감사 (WR 접수됨, deep-interview spec 완료)
+3. 풀스택 통합 테스트 (백엔드 기동 후 mock OFF E2E)
 
-> 세션 17 (2026-04-07): S1-QA 수정 완료 (180 E2E PASS). S2 계약 감사 WR 접수, deep-interview spec 결정화 완료 (.omc/specs/deep-interview-s1-contract-audit.md).
+> 세션 18 (2026-04-08): CSS 디자인 시스템 전면 교체 완료. IBM Carbon --cds-* 토큰 274개, IBM Blue 액센트, IBM Plex Sans/Mono, 2px radius, flat design. 48 CSS + 36 TSX 토큰 치환, 하드코딩 제거, 인라인 추출, AEGIS-DESIGN.md 증적 생성. Build 0 errors, 392 tests pass.

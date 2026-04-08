@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/knowledge-base-api.md"
 original_path: "docs/api/knowledge-base-api.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-08"
 service_tags: ["s5"]
 decision_tags: []
 related_pages: []
@@ -18,7 +18,7 @@ migration_status: "canonicalized"
 > **소유자**: S5 (Knowledge Base)
 > **포트**: 8002
 > **호출자**: S2 (Backend), S3 (Analysis Agent)
-> **최종 업데이트**: 2026-04-04 (threat search readiness hardening + code graph/project memory provenance seam + closeout sync)
+> **최종 업데이트**: 2026-04-08 (X-Timeout-Ms 적용 범위 명확화 + API 계약 테스트 66건 추가)
 
 ---
 
@@ -36,7 +36,7 @@ http://localhost:8002/v1
 |------|------|------|
 | `Content-Type` | POST 요청 시 필수 | `application/json` |
 | `X-Request-Id` | 선택 | 교차 서비스 추적용. 전파하면 로그에 포함됨. **응답 헤더에도 동일한 값 반환** |
-| `X-Timeout-Ms` | **POST 필수** | 클라이언트 타임아웃 (밀리초). 양의 정수. 누락 시 **400 반환**. 서버가 데드라인 초과 시 **408 반환** |
+| `X-Timeout-Ms` | **검색/적재/조회 POST 필수** | 클라이언트 타임아웃 (밀리초). 양의 정수. 누락 시 **400 반환**. 서버가 데드라인 초과 시 **408 반환**. 적용 대상은 아래 권장값 테이블 참조 |
 
 ### 호출자-실행자 경계
 
@@ -84,7 +84,7 @@ http://localhost:8002/v1
 
 ### X-Timeout-Ms 권장값
 
-모든 POST 엔드포인트에서 `X-Timeout-Ms` 헤더가 필수입니다. 서버는 처리 단계 사이 체크포인트에서 데드라인을 확인하며, 초과 시 408을 반환합니다.
+아래 테이블에 나열된 POST 엔드포인트에서 `X-Timeout-Ms` 헤더가 필수입니다. 프로젝트 메모리 `POST /v1/project-memory/*`는 단순 Neo4j 쓰기이므로 적용 대상이 아닙니다. 서버는 처리 단계 사이 체크포인트에서 데드라인을 확인하며, 초과 시 408을 반환합니다.
 
 | 엔드포인트 | 소규모 | 대규모 (~3,000함수/20쿼리) |
 |-----------|--------|--------------------------|

@@ -6,10 +6,10 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/backend.md"
 original_path: "docs/specs/backend.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-08"
 service_tags: ["s2"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
 
@@ -18,6 +18,7 @@ migration_status: "canonicalized"
 > Express.js + TypeScript 기반 백엔드 서비스
 > Service(Orchestrator) 패턴: 각 검증 모듈을 독립 Service로 구현, Core가 조율
 > DAO를 통한 DB 접근 캡슐화
+> 빠른 시나리오/통신 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 함께 참고한다.
 
 ---
 

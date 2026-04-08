@@ -6,10 +6,10 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-08"
 service_tags: ["platform"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
 
@@ -23,6 +23,7 @@ migration_status: "canonicalized"
 > 3. mounted backend controllers under `services/backend/src/controllers/*.ts`
 >
 > This file is intentionally backend-owned. If S2 behavior changes, update this document first and treat it as the canonical contract for S1.
+> If you need the bigger end-to-end request/WS flow before reading field-level contracts, see [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]].
 
 ---
 

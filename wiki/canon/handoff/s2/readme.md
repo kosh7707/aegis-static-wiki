@@ -4,10 +4,10 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-08"
 service_tags: ["s2"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 ---
 
 # S2. AEGIS Core (Backend) 인수인계서
@@ -15,7 +15,8 @@ related_pages: []
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-07**
+> **마지막 업데이트: 2026-04-08**
+> 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
 

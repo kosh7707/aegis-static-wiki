@@ -6,10 +6,10 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-08"
 service_tags: ["s2"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
 
@@ -17,6 +17,7 @@ migration_status: "canonicalized"
 
 > S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트
 > 진입점: `README.md` → 필요 시 이 문서 참조
+> 엔드투엔드 맥락이 먼저 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 함께 본다.
 
 ---
 
