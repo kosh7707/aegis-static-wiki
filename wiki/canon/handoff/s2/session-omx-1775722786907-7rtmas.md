@@ -29,4 +29,10 @@ Per explicit user instruction, committed the remaining uncommitted changes in bo
 - [[wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas.md]]
 
 ## Test evidence
-_No test evidence recorded yet._
+
+### 2026-04-09T10:29:06.977Z — passed
+- Command: `Post-push verification: rev-parse HEAD/@{u}, ls-remote origin main, final git status after follow-up snapshot commits`
+- Log ref: wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas.md
+- Confirmed remote main reflected the pushed snapshot heads.
+- A follow-up snapshot commit/push was required because new local changes appeared immediately after the first push.
+- Final clean heads after the second push: AEGIS 5a06e5a, wiki 028161e.
