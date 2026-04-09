@@ -376,3 +376,43 @@ related_pages:
 ## [2026-04-08] mcp | complete_wr | s2-to-s3-s2-handled-build-agent-analysis-agent-rollout-and-consumer-alignment-on-2026-04-
 - Lane s3 completed recipient-side handling
 - Status: completed
+
+## [2026-04-08] mcp | register_wr | s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec
+- Registered request WR for s1, s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec.md
+
+## [2026-04-08] Registered S1/S1-QA WR after websocket recovery hardening | S2 websocket audit
+- WS hardening changed late-subscribe behavior for /ws/upload and /ws/analysis in a consumer-visible but non-breaking way
+- Requested S1/S1-QA validation of reconnect/progress UX against the updated snapshot-on-subscribe behavior
+
+## [2026-04-08] mcp | complete_wr | s1-qa-to-s1-carbon
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-08] mcp | complete_wr | s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec
+- Lane s1 completed recipient-side handling
+- Status: open
+
+## [2026-04-08] mcp | register_wr | s1-qa-to-s1-s1-qa-deep-design-review-of-design-reference-v3-v4-reject-v3-baseline-treat-v4-a
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-deep-design-review-of-design-reference-v3-v4-reject-v3-baseline-treat-v4-a.md
+
+## [2026-04-08] mcp | register_wr | s1-qa-to-s1-s1-qa-deep-design-review-v3-reject-as-baseline-v4-provisional-only-after-cleanup
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-deep-design-review-v3-reject-as-baseline-v4-provisional-only-after-cleanup.md
+
+## [2026-04-08] mcp | complete_wr | s1-qa-to-s1-s1-qa-deep-design-review-v3-reject-as-baseline-v4-provisional-only-after-cleanup
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-09] mcp | register_wr | s1-qa-to-s1-s1-qa-follow-up-review-of-v5-design-reference-strongest-candidate-so-far-but-not
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-follow-up-review-of-v5-design-reference-strongest-candidate-so-far-but-not.md
+
+## [2026-04-09] mcp | register_wr | s1-qa-to-s1-s1-qa-follow-up-design-review-of-v5-strongest-candidate-so-far-but-not-final
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-follow-up-design-review-of-v5-strongest-candidate-so-far-but-not-final.md
+
+## [2026-04-09] mcp | complete_wr | s1-qa-to-s1-s1-qa-follow-up-review-of-v5-design-reference-strongest-candidate-so-far-but-not
+- Lane s1 completed recipient-side handling
+- Status: completed

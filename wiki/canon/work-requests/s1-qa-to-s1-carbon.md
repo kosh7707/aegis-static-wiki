@@ -13,11 +13,12 @@ related_pages: []
 migration_status: "canonicalized"
 wr_id: "s1-qa-to-s1-carbon"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1-qa"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-08T07:55:07.703Z","note":"P0 폰트 수정: html,body에 font-family 선언 + input/textarea/select inherit 추가 + DynamicAnalysisPage.css 잔존 --font-sans→--cds-font-sans 수정. P1-1: .main-area에 background: --cds-layer-01 적용 (sidebar Gray100 vs content Gray90 분리). P1-4: .btn 토큰 --cds-interactive→--cds-button-primary + --cds-text-on-color 수정. P1-2/P1-3/P2-1 디자인 개선 항목은 QA 디자인 시안 완료 후 후속 처리. Build 0 errors, 392 tests pass."}]
 registered_at: "2026-04-08T03:46:46.594Z"
+completed_at: "2026-04-08T07:55:07.703Z"
 ---
 
 # 프로젝트 목록 페이지 — Carbon 이식 미완 + 폰트 폴백 버그 + 레이아웃 개선
