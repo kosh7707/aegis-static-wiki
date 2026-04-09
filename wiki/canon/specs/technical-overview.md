@@ -4,7 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "docs/specs/technical-overview.md"
-last_verified: "2026-04-08"
+last_verified: "2026-04-09"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다.
 > 서비스별 상세 명세는 개별 문서로 분리한다.
 > **이 문서의 소유자는 S2(AEGIS Core)이다.** 변경 제안은 work-request로.
-> **마지막 업데이트: 2026-04-08**
+> **마지막 업데이트: 2026-04-09**
 >
 > 대표 사용자 시나리오의 실제 cross-service 흐름을 빠르게 보고 싶다면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 함께 참고한다.
 
@@ -117,7 +117,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 
 **플랫폼 오케스트레이터**. S1에게 REST API를 제공하고, S3/S4/S5/S6를 호출하는 중추.
 
-- 프로젝트 CRUD + 소스코드 관리 (ZIP/Git → `uploads/{projectId}/`)
+- 프로젝트 CRUD + 소스코드 관리 (ZIP/Git → `uploads/{projectId}/`, delete는 quarantine-first teardown)
 - Quick→Deep 분석 오케스트레이션 (`AnalysisOrchestrator`)
 - 코어 도메인: Run, Finding (7-state FSM), EvidenceRef, AuditLog
 - Quality Gate 정책 엔진 + Approval 워크플로우
@@ -429,6 +429,7 @@ ECU Simulator → [S6 Adapter] → WS → [S2]
 - [x] **S3 Agent 통합** — 311 tests pass, RE100 통합 테스트 완료 (49 SAST findings + 3 Agent claims)
 - [x] **Quick→Deep 파이프라인** — AgentClient, SastClient, AnalysisOrchestrator, ProjectSourceService 구현
 - [x] **소스코드 업로드** — ZIP/Git → `uploads/{projectId}/` 파일시스템 관리
+- [x] **프로젝트 CRUD hardening** — blank-name validation + blocker-aware safe delete (`uploads/{projectId}` quarantine / restore)
 - [x] **프론트엔드 개편** — 동적 분석 UI 숨김, 소스 업로드 UI, Quick→Deep 진행률
 - [x] **BuildTarget + 서브 프로젝트 파이프라인** — 16-state FSM, 물리적 복사 격리, 빌드→스캔→코드그래프 순차 실행
 - [x] **Build Agent 연동** — S3(Build Agent :8003) build-resolve 파이프라인 통합

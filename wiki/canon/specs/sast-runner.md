@@ -6,10 +6,10 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s4"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
 migration_status: "canonicalized"
 ---
 
@@ -39,8 +39,8 @@ migration_status: "canonicalized"
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | v0.11.0 |
-| API 계약 | `docs/api/sast-runner-api.md` |
-| 테스트 | 376개 |
+| API 계약 | `wiki/canon/api/sast-runner-api.md` |
+| 테스트 | 376개 (23 files, 2026-04-09 재검증) |
 
 ---
 
@@ -56,7 +56,7 @@ migration_status: "canonicalized"
 | `POST /v1/build` | caller가 완전히 materialize한 build command/environment를 그대로 실행. **structured `buildEvidence` + `failureDetail`** 반환 |
 | `POST /v1/build-and-analyze` | explicit build command/environment로 빌드 후 나머지 분석 수행. **convenience surface** |
 | `POST /v1/discover-targets` | 프로젝트 내 빌드 타겟 자동 탐색 (파일시스템 스캔) |
-| `GET /v1/health` | 6개 도구 상태 + 버전 |
+| `GET /v1/health` | 6개 도구 상태 + 버전 + backward-compatible health policy surface |
 
 ---
 
@@ -81,7 +81,7 @@ migration_status: "canonicalized"
 
 | 도구 | 역할 | CWE 태깅 | profile | 비고 |
 |------|------|:---:|:---:|------|
-| Semgrep | 패턴 매칭 + **taint mode** | O (SARIF) | — | C++ 프로젝트에서 확장자 필터 (`--include *.c *.h`). 커스텀 룰 9종 53개 |
+| Semgrep | 패턴 매칭 + **taint mode** | O (SARIF) | — | C++ 프로젝트에서 확장자 필터 (`--include *.c *.h`). 커스텀 룰 39개 / 9 YAML |
 | Cppcheck | 코드 품질 + CTU | O (XML) | **original** | SDK 헤더 제외. `--check-level=exhaustive` |
 | clang-tidy | CERT 코딩 표준 + 버그 (CWE 매핑 24개) | O | **enriched** | SDK 헤더 포함 |
 | Flawfinder | 위험 함수 빠른 스캔 | O (regex) | — | |
@@ -330,12 +330,12 @@ $SAST_SDK_ROOT/               <- .env: SAST_SDK_ROOT=/home/kosh/sdks
 
 ## 12. 커스텀 Semgrep 룰
 
-`rules/automotive/` 디렉토리에 자동차 임베디드 특화 룰 53개 (9 YAML 파일).
+`rules/automotive/` 디렉토리에 자동차 임베디드 특화 룰 39개 (9 YAML 파일).
 
 | 파일 | CWE | 룰 수 | 모드 |
 |------|-----|:---:|------|
-| divide-by-zero.yaml | CWE-369 | 7 | **taint** (atoi/rand -> division sink) + **sanitizer** (if != 0) + 패턴 |
-| integer-overflow.yaml | CWE-190 | 7 | **taint** (atoi/rand -> arithmetic sink) + **sanitizer** (bounds check) + MAX 상수 + 패턴 |
+| divide-by-zero.yaml | CWE-369 | 6 | **taint** (atoi/rand -> division sink) + **sanitizer** (if != 0) + 패턴 |
+| integer-overflow.yaml | CWE-190 | 6 | **taint** (atoi/rand -> arithmetic sink) + **sanitizer** (bounds check) + MAX 상수 + 패턴 |
 | use-after-free.yaml | CWE-416 | 4 | **taint** (free -> use sink) + **sanitizer** (= NULL/malloc/calloc/realloc) + 패턴 |
 | command-injection.yaml | CWE-78 | 5 | 패턴 |
 | buffer-overflow-write.yaml | CWE-787 | 4 | 패턴 |
@@ -401,9 +401,10 @@ pattern-sanitizers:              # <- FP 감소
 | 형식 | JSON structured, `time` epoch ms, `level` 숫자 (pino 표준) |
 | 요청 추적 | `contextvars` 기반 `requestId` 전 레이어 전파 |
 | X-Request-Id | 수신 -> 로그 기록 -> 응답 헤더 반환 |
-| 실행 보고서 | 응답 `execution` 필드에 도구별 상태/시간/버전/스킵 사유 |
+| 실행 보고서 | 응답 `execution` 필드에 도구별 상태/시간/버전/스킵 사유 + degraded/file-budget 메타데이터 |
+| health backward compatibility | `/v1/health`는 top-level `semgrep` 필드를 유지하면서 `tools` + policy 필드를 추가 노출 |
 
-`docs/specs/observability.md` 준수.
+`wiki/canon/specs/observability.md` 준수.
 
 ### ToolExecutionResult
 
@@ -414,12 +415,21 @@ pattern-sanitizers:              # <- FP 감소
   "elapsedMs": 1200,
   "skipReason": null,
   "timedOutFiles": null,
+  "failedFiles": null,
+  "filesAttempted": null,
+  "batchCount": null,
+  "timeoutBudgetSeconds": null,
+  "perFileTimeoutSeconds": null,
+  "budgetWarning": null,
+  "degraded": false,
+  "degradeReasons": [],
   "version": "2.13.0"
 }
 ```
 
 - `"partial"`: 파일별 실행 도구(gcc-fanalyzer, scan-build)에서 일부 파일이 timeout되었으나 나머지는 정상 완료
-- `timedOutFiles`: `"partial"` 상태일 때 timeout된 파일 수 (그 외 상태에서는 `null`)
+- `timedOutFiles` / `failedFiles`: `"partial"` 상태일 때 timeout/실패한 파일 수 (그 외 상태에서는 `null`)
+- `filesAttempted`, `batchCount`, `timeoutBudgetSeconds`, `perFileTimeoutSeconds`, `budgetWarning`, `degraded`, `degradeReasons`: heavy analyzer long-run 상태를 설명하는 추가 메타데이터
 
 ---
 
@@ -538,4 +548,4 @@ snapshot-first architecture에서는 `/v1/build-and-analyze`를
 - [API 계약서](../api/sast-runner-api.md) -- 전체 엔드포인트 스키마
 - [SastFinding 타입](../api/shared-models.md)
 - [MSA Observability 규약](observability.md)
-- [S4 인수인계서](../s4-handoff/README.md)
+- [S4 인수인계서](../handoff/s4/readme.md)

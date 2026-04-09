@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-gateway.md"
 original_path: "docs/specs/llm-gateway.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -17,7 +17,7 @@ migration_status: "canonicalized"
 
 > S7은 AEGIS 플랫폼의 **LLM 단일 관문(Gateway)** 이자 **LLM Engine 운영자**이다.
 > 모든 LLM 호출은 S7(Gateway)을 경유한다. LLM Engine을 직접 호출하지 않는다.
-> **마지막 업데이트: 2026-04-04**
+> **마지막 업데이트: 2026-04-09**
 
 ---
 

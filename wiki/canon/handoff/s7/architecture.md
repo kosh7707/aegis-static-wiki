@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []

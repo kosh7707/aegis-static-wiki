@@ -416,3 +416,60 @@ related_pages:
 ## [2026-04-09] mcp | complete_wr | s1-qa-to-s1-s1-qa-follow-up-review-of-v5-design-reference-strongest-candidate-so-far-but-not
 - Lane s1 completed recipient-side handling
 - Status: completed
+
+## [2026-04-09] mcp | register_wr | s1-to-s1-aegis-design.md-v2-v6
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-aegis-design.md-v2-v6.md
+
+## [2026-04-09] mcp | complete_wr | s1-qa-to-s1-s1-qa-follow-up-design-review-of-v5-strongest-candidate-so-far-but-not-final
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-09] mcp | register_wr | s2-to-s6-s6-reactivation-for-dynamic-analysis-phase-2-prep-adapter-simulator-gap-inventor
+- Registered request WR for s6
+- Path: wiki/canon/work-requests/s2-to-s6-s6-reactivation-for-dynamic-analysis-phase-2-prep-adapter-simulator-gap-inventor.md
+
+## [2026-04-09] mcp | complete_wr | s2-to-s6-s6-reactivation-for-dynamic-analysis-phase-2-prep-adapter-simulator-gap-inventor
+- Lane s6 completed recipient-side handling
+- Status: completed
+
+## [2026-04-09] mcp | complete_wr | s1-to-s1-aegis-design.md-v2-v6
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-09] mcp | register_wr | s2-to-s3-s4-race-test-wr
+- Registered request WR for s3, s4
+- Path: wiki/canon/work-requests/s2-to-s3-s4-race-test-wr.md
+
+## [2026-04-09] mcp | complete_wr | s2-to-s3-s4-race-test-wr
+- Lane s3 completed recipient-side handling
+- Status: open
+
+## [2026-04-09] mcp | register_wr | s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet
+- Registered request WR for s1, s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet.md
+
+## [2026-04-09] implemented backend project CRUD hardening slice | s2
+- Validated blank-name rejection for PUT /api/projects/:id.
+- Added blocker-aware project deletion with uploads/{projectId} quarantine/restore semantics.
+- Registered S1/S1-QA WR to wire edit/delete UI against the new backend semantics.
+
+## [2026-04-09] docs | s4 canonical docs refresh
+- Updated S4 readme/roadmap/spec/api/build-snapshot docs against current services/sast-runner codebase.
+- Aligned test count (376), Semgrep rule count (39 across 9 YAML files), default concurrency (2), health backward-compatibility notes, and canonical wiki links.
+
+## [2026-04-09] docs | s4-owned-docs-refresh
+- Updated S4-owned canonical docs: readme, roadmap, spec, API contract, build-snapshot consumer seam.
+- Reconciled rule count to 39 across 9 YAML files, test count to 376 across 23 test files, and documented /v1/health backward-compatible top-level semgrep field plus policy surface.
+
+## [2026-04-09] synced S2-owned canonical docs for project CRUD hardening | s2
+- Updated S2 readme/architecture/api-endpoints/backend roadmap/spec and shared-models to match the new backend project delete semantics.
+- Documented blank-name validation, blocker-aware 409 responses, uploads/{projectId} quarantine/restore flow, current test counts, and the S1/S1-QA UI handoff WR.
+
+## [2026-04-09] mcp | register_wr | s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-.md
+
+## [2026-04-09] mcp | register_wr | s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t.md

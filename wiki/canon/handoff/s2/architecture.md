@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/architecture.md"
 original_path: "docs/s2-handoff/architecture.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-09"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -42,7 +42,7 @@ services/backend/
 └── src/
     ├── index.ts                  # 앱 진입점
     ├── config.ts                 # 환경변수 중앙화
-    ├── db.ts                     # SQLite 초기화 + 29개 테이블 스키마
+    ├── db.ts                     # SQLite 초기화 + 29개 테이블 스키마 + FK enforcement
     ├── composition.ts            # DI/AppContext 구성
     ├── router-setup.ts           # 전 라우터 마운트
     ├── bootstrap.ts              # 기동 시 admin 시딩
@@ -64,10 +64,11 @@ services/backend/
     │   ├── notification.controller.ts
     │   ├── auth.controller.ts
     │   └── ...
-    ├── services/                 # 31개 서비스/클라이언트
+    ├── services/                 # 32개 서비스/클라이언트
     │   ├── analysis-orchestrator.ts
     │   ├── pipeline-orchestrator.ts
     │   ├── project-source.service.ts
+    │   ├── project-deletion.service.ts
     │   ├── build-target.service.ts
     │   ├── sdk.service.ts
     │   ├── result-normalizer.ts
@@ -140,9 +141,29 @@ Controller → Service → DAO → SQLite
 - `index.ts`: Express + middleware + DI + HTTP server + WS attach
 - `composition.ts`: AppContext 생성
   - **활성 DAO 21개 + build/snapshot persistence DAO 8개** (현재는 별도 seam으로 존재)
-  - **서비스 31개**
+  - **서비스 32개**
   - **WS broadcaster 7개**: `dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`
 - `router-setup.ts`: 프로젝트/글로벌 라우터 일괄 마운트
+
+### 프로젝트 lifecycle hardening (2026-04-09)
+
+- `project.controller.ts`
+  - `PUT /api/projects/:id` 는 blank `name`을 `400`으로 거부한다.
+  - `DELETE /api/projects/:id` 는 async delete workflow로 전환됐다.
+- `project.service.ts`
+  - legacy inline delete 대신 `ProjectDeletionService`를 주입받아 delete semantics를 위임한다.
+- `project-deletion.service.ts`
+  - blocker preflight
+  - `uploads/{projectId}` quarantine / restore / final remove
+  - project-scoped DB row delete manifest
+  - `409 CONFLICT` 시 `errorDetail.blockers` 반환
+- 현재 delete blocker authority:
+  - `AnalysisTracker.getRunning(projectId)`
+  - `AdapterManager.findByProjectId(projectId)` live connection state
+  - `DynamicSessionDAO.findByProjectId(projectId)` with `connected|monitoring`
+  - `DynamicTestService.isRunningForProject(projectId)`
+  - `SdkRegistryDAO.findByProjectId(projectId)` non-terminal status
+  - `BuildTargetDAO.findByProjectId(projectId)` active pipeline status
 
 ### Progress / completion 중심 WS 역할표
 
@@ -191,6 +212,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 #### 2) 소스 업로드 / 빌드 타겟 / 서브프로젝트 파이프라인
 
 - `project-source.service.ts`
+- `project-deletion.service.ts`
 - `build-target.service.ts`
 - `pipeline-orchestrator.ts`
 - `target-library.controller.ts`
@@ -204,6 +226,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 4. S4 build/scan
 5. S5 code-graph ingest
 6. 타겟 라이브러리 및 SDK 레지스트리 반영
+7. 프로젝트 삭제 시 `uploads/{projectId}` quarantine-first teardown
 
 계약 잠금 메모 (2026-04-04):
 - `build-target.controller.ts`
@@ -254,6 +277,9 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 ## 4. 데이터베이스
 
 SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/aegis.db`.
+
+- connection 생성 시 `PRAGMA foreign_keys = ON`
+- 현재 프로젝트 삭제는 schema-level FK cascade만 믿지 않고, `ProjectDeletionService`의 explicit delete manifest + uploads quarantine으로 안전성을 확보한다.
 
 ### 현재 테이블 29개
 

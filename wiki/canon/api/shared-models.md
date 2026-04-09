@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-08"
+last_verified: "2026-04-09"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -79,6 +79,8 @@ interface ApiError {
     message: string;
     requestId?: string;
     retryable: boolean;
+    // endpoint-specific structured metadata may appear here
+    // e.g. project delete conflict → blockers
   };
 }
 ```
@@ -456,9 +458,31 @@ interface ProjectReport {
 | POST | `/api/projects` | `{ name: string; description?: string }` | `201 { success, data: Project }` | `201`, `400 name is required` |
 | GET | `/api/projects` | - | `200 { success, data: ProjectListItem[] }` | `200` |
 | GET | `/api/projects/:id` | - | `200 { success, data: Project }` | `200`, `404` |
-| PUT | `/api/projects/:id` | `{ name?: string; description?: string }` | `200 { success, data: Project }` | `200`, `404` |
-| DELETE | `/api/projects/:id` | - | `200 { success: true }` | `200`, `404` |
+| PUT | `/api/projects/:id` | `{ name?: string; description?: string }` | `200 { success, data: Project }` | `200`, `400 blank name`, `404` |
+| DELETE | `/api/projects/:id` | - | `200 { success: true }` | `200`, `404`, `409 active blockers`, `500 db/quarantine failure` |
 | GET | `/api/projects/:id/overview` | - | raw `ProjectOverviewResponse` | `200`, `404` |
+
+Current mounted semantics:
+
+- `PUT /api/projects/:id`
+  - `name`이 전달되면 trim 후 저장
+  - trim 결과 빈 문자열이면 `400 { success: false, error: "name is required" }`
+- `DELETE /api/projects/:id`
+  - raw row delete가 아니라 safe teardown workflow다.
+  - success path:
+    1. blocker check
+    2. `uploads/{projectId}` quarantine
+    3. project-scoped DB row delete
+    4. DB 실패 시 uploads root restore
+  - conflict path:
+    - `409 CONFLICT`
+    - `errorDetail.blockers` with currently authoritative blocker categories:
+      - `activeAnalysis`
+      - `connectedAdapters`
+      - `activeDynamicSessions`
+      - `runningDynamicTest`
+      - `activeSdkRegistrations`
+      - `activePipelineTargets`
 
 `ProjectOverviewResponse` currently has this shape:
 

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []

@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-08"
+last_verified: "2026-04-09"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-08**
+> **마지막 업데이트: 2026-04-09**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -108,19 +108,41 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 
 ---
 
-## 3. 현재 상태 (2026-04-07)
+## 3. 현재 상태 (2026-04-09)
 
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **356개 통과** (vitest, 2026-04-07 WebSocket progress/completion hardening 재검증) |
+| 테스트 | **403개 통과** (vitest, 2026-04-09 project CRUD hardening backend slice 반영 후 재검증) |
 | DB 테이블 | **29개** (SQLite, WAL) — 기존 21개 활성 표면 + snapshot/build persistence seam 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
 | 에러 클래스 | 18개 (AppError 계층, 21개 에러코드) |
 | 외부 클라이언트 | SastClient(S4), AgentClient(S3), BuildAgentClient(S3:8003), KbClient(S5), AdapterClient(S6), LlmTaskClient(S7) |
 
-### 3-0. Progress / completion UX 계약 메모 (2026-04-07)
+### 3-0. 프로젝트 CRUD hardening 메모 (2026-04-09)
+
+- `PUT /api/projects/:id`
+  - `name`이 빈 문자열/공백만 들어오면 `400 { success: false, error: "name is required" }`
+  - 유효한 `name`/`description`은 trim 후 저장
+- `DELETE /api/projects/:id`
+  - 더 이상 raw project row delete가 아니다.
+  - 현재 delete 순서:
+    1. blocker check
+    2. `uploads/{projectId}` quarantine
+    3. project-scoped DB row 정리
+    4. DB 실패 시 uploads root restore
+    5. 성공 시 quarantined root final remove
+- delete blocker는 현재 아래 authoritative surface만 사용한다.
+  - active analysis
+  - connected adapters
+  - dynamic-analysis sessions (`connected|monitoring`)
+  - running dynamic-test
+  - non-terminal SDK states
+  - active pipeline targets
+- conflict 응답은 `409`이며, `errorDetail.blockers`에 구조화된 blocker 정보를 포함한다.
+
+### 3-1. Progress / completion UX 계약 메모 (2026-04-07)
 
 현재 S2는 WebSocket을 단순 transport가 아니라 **비동기 작업의 진행/완료 인지 표면**으로 본다.
 
@@ -148,7 +170,7 @@ S1 handoff 원칙:
 - 화면별 활용 방식은 **advisory**
 - 즉 S2는 exact contract를 주고, S1은 그 위에 UX를 설계한다
 
-### 3-1. 최근 계약 회귀 잠금 메모 (2026-04-04)
+### 3-2. 최근 계약 회귀 잠금 메모 (2026-04-04)
 
 - S1↔S2 canonical contract 재작성 후, S2 backend 테스트 하네스는 다음 semantics를 **회귀 테스트로 고정**했다.
   - `POST /api/projects/:pid/targets/discover` → `data: { discovered, created, targets, elapsedMs }`
@@ -158,7 +180,7 @@ S1 handoff 원칙:
 - build-target update는 현재도 `includedPaths` 변경을 지원하지 않으며, backend는 이를 **명시적 에러**로 거부한다.
 - SDK analyzed profile 연동에서 canonical 필드명은 `environmentSetup`이며, S2 로컬 SDK 검증도 해당 이름을 기준으로 경로 존재/경계 검증을 수행한다.
 
-### 3-2. 테스트/문서 동기화 메모 (2026-04-04)
+### 3-3. 테스트/문서 동기화 메모 (2026-04-04)
 
 - backend contract test harness (`services/backend/src/test/create-test-app.ts`) 는 이제 다음 surface를 직접 검증 가능하게 맞춰져 있다.
   - `/api/projects/:pid/targets/discover`
@@ -176,7 +198,7 @@ S1 handoff 원칙:
   - `wiki/canon/handoff/s2/architecture.md`
   - `wiki/canon/handoff/s2/session-omx-*.md`
 
-### 3-3. WR / handoff 운영 메모 (2026-04-06)
+### 3-4. WR / handoff 운영 메모 (2026-04-06)
 
 - canonical WR runtime model은 `wiki/canon/work-requests/` 기준으로만 동작한다.
 - archived `docs/work-requests/`는 historical reference만 남는 경로이며, `list_my_open_wrs` / `register_wr` / `complete_wr`의 입력이 아니다.
@@ -235,7 +257,7 @@ S1 handoff 원칙:
 | 공유 모델 | `wiki/canon/api/shared-models.md` | 전 서비스 공유 타입 |
 
 
-### 3-4. WebSocket progress/completion contract 메모 (2026-04-07)
+### 3-5. WebSocket progress/completion contract 메모 (2026-04-07)
 
 - progress/completion UX 관점의 우선 채널은 `upload`, `sdk`, `analysis`, `pipeline`, `notifications` 다.
 - `notifications` 는 단순 부가 알림이 아니라 **background completion surface** 로 취급한다.

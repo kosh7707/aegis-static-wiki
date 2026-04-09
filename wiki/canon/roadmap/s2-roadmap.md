@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/roadmap.md"
 original_path: "docs/s2-handoff/roadmap.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -87,6 +87,29 @@ S1↔S2 계약 drift를 backend-side에서 회귀 고정:
   - `ca11063` — implicit contract drift 방지
   - `c12aeac` — backend spec에 locked semantics 반영
 
+### 세션 16 완료 사항 (2026-04-09)
+
+프로젝트 CRUD hardening backend slice 완료:
+- `PUT /api/projects/:id`
+  - blank `name` → `400`
+  - trim 후 metadata 저장
+- `DELETE /api/projects/:id`
+  - blocker preflight
+  - `uploads/{projectId}` quarantine
+  - project-scoped DB row delete
+  - DB 실패 시 restore
+  - blocker 존재 시 `409` + `errorDetail.blockers`
+- 신규/확장 검증:
+  - `project-deletion.service.test.ts`
+  - `project-source.test.ts`
+  - `api-contract.test.ts` project CRUD 확장
+- 검증:
+  - focused: **129 tests passed**
+  - full backend: **403 tests passed**
+  - backend/frontend typecheck 통과
+- S1 / S1-QA WR 발행:
+  - `s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet.md`
+
 ### DB hot-reload 함정
 
 서버가 `tsx watch`로 실행 중일 때 `aegis.db`를 삭제하면 0바이트 파일이 되고 테이블이 생성되지 않는다. 반드시 서버 프로세스를 종료 -> DB 삭제 -> 서버 재시작 순서로 진행할 것.
@@ -115,7 +138,7 @@ S1↔S2 계약 drift를 backend-side에서 회귀 고정:
 
 ### 테스트 인프라: 구현 완료
 
-vitest 기반 테스트 **331개**. `cd services/backend && npx vitest run`으로 실행.
+vitest 기반 테스트 **403개**. `cd services/backend && npx vitest run`으로 실행.
 
 ```
 src/
@@ -139,13 +162,17 @@ src/
 
 ### 즉시 다음 작업 (Next S2 Session)
 
-1. **Build Snapshot / BuildAttempt 협의 상태 재평가**
+1. **S1 / S1-QA frontend 프로젝트 CRUD wiring**
+   - rename / description edit UI
+   - delete confirmation UI
+   - `409` blocker reason 표시
+2. **Project delete semantics 문서/계약 후속 정리**
+   - backend/api/handoff 문서 sync 유지
+   - delete blocker authority 변경 시 shared-models + api-endpoints 동시 갱신
+3. **Build Snapshot / BuildAttempt 협의 상태 재평가**
    - archived reference: `docs/work-requests/` 및 관련 session logs
    - code 기준: `services/backend/src/db.ts`, 관련 build/snapshot DAO, shared projection 타입
    - 현재 기준 S2 입장은 “schema/persistence seam은 존재, runtime orchestration 확대는 별도 판단 필요”
-2. **E2E 풀스택 통합 테스트**
-   - 전체 파이프라인 (업로드→서브프로젝트→빌드→스캔→Deep) 검증
-   - 단, 사용자 허가 없는 start script 실행 금지 원칙 유지
 
 ### 후순위
 

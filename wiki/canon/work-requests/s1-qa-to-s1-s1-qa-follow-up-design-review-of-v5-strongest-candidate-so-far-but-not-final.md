@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/qa-guide.
 migration_status: "canonicalized"
 wr_id: "s1-qa-to-s1-s1-qa-follow-up-design-review-of-v5-strongest-candidate-so-far-but-not-final"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1-qa"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-09T04:53:43.545Z","note":"QA v5 리뷰 피드백 수용 완료. v5 P0/P1 이슈(title normalization, synthetic copy, report shell 등) 반영하여 v6 디자인 레퍼런스 13페이지 생성 + AEGIS-DESIGN.md v2 재작성 완료. 후속 구현 작업은 WR s1-to-s1-aegis-design.md-v2-v6으로 발행됨."}]
 registered_at: "2026-04-09T02:02:19.978Z"
+completed_at: "2026-04-09T04:53:43.545Z"
 ---
 
 # S1-QA follow-up design review of v5 — strongest candidate so far, but not final

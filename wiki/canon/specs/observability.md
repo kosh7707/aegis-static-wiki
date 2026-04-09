@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/observability.md"
 original_path: "docs/specs/observability.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []
@@ -18,7 +18,7 @@ migration_status: "canonicalized"
 > **S2(AEGIS Core)가 관리하는 전 서비스 공통 규약.**
 > 모든 서비스(S1~S7)는 이 문서를 준수해야 한다.
 > 변경 제안은 S2에게 work-request로.
-> **마지막 업데이트: 2026-03-28**
+> **마지막 업데이트: 2026-04-09**
 
 ---
 
@@ -38,6 +38,8 @@ migration_status: "canonicalized"
   }
 }
 ```
+
+`errorDetail`는 공통 필드 외에 endpoint-specific structured metadata를 추가로 포함할 수 있다. 예: project delete conflict의 `errorDetail.blockers`.
 
 ---
 

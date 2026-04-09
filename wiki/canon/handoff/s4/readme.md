@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/README.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-04-07**
+> **마지막 업데이트: 2026-04-09**
 
 ---
 
@@ -65,7 +65,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.0** |
-| 테스트 | **376개** |
+| 테스트 | **376개 수집 / 376개 통과 (2026-04-09 재검증)** |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -74,8 +74,9 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - `/v1/build`는 structured `buildEvidence` + `failureDetail` 반환
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
-- `/v1/health`는 기존 top-level 필드를 유지한 채 `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`를 추가 노출
+- `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`를 노출
 - `/v1/build-and-analyze`는 convenience / transitional surface로 유지
+- 현재 오픈 WR 없음 (`list_my_open_wrs(lane="s4", include_to_all=true)` 기준, 2026-04-09 재확인)
 
 ### 6개 SAST 도구
 
@@ -121,9 +122,9 @@ services/sast-runner/
 │       ├── library_identifier.py
 │       ├── library_differ.py — DiffResult 통일 shape + CloneCache
 │       └── library_hasher.py
-├── rules/automotive/        — 커스텀 Semgrep 룰 53개 (9 YAML)
+├── rules/automotive/        — 커스텀 Semgrep 룰 39개 (9 YAML)
 ├── benchmark/               — Juliet 벤치마크 러너 + 코드그래프 품질 평가
-├── tests/                   — 369개 테스트 (23개 파일)
+├── tests/                   — 376개 테스트 (23개 파일)
 └── requirements.txt
 ```
 
@@ -135,11 +136,11 @@ services/sast-runner/
 tail -20 logs/s4-sast-runner.jsonl
 ```
 
-`.env`:
+`.env` / 기본값 예시:
 ```env
 SAST_PORT=9000
 SAST_SCAN_TIMEOUT=120
-SAST_MAX_CONCURRENT_SCANS=1
+SAST_MAX_CONCURRENT_SCANS=2
 SAST_SDK_ROOT=/home/kosh/sdks
 ```
 

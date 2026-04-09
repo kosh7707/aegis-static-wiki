@@ -2,15 +2,12 @@
 title: "Adapter 기능 명세"
 page_type: "canonical-spec"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/specs/adapter.md"
-original_path: "docs/specs/adapter.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s6"]
 decision_tags: []
 related_pages: []
-migration_status: "canonicalized"
 ---
 
 # Adapter 기능 명세
@@ -22,11 +19,11 @@ migration_status: "canonicalized"
 
 ## 역할
 
-Adapter는 ECU(또는 ECU Simulator)와 Backend(S2) 사이에서 CAN 프레임을 중계하는 **경량 릴레이**다.
+Adapter는 ECU(또는 ECU Simulator / QEMU bridge)와 Backend(S2) 사이에서 CAN 프레임을 중계하는 **경량 릴레이**다.
 
-```
-ECU Simulator ←—WS—→ Adapter ←—WS—→ Backend (S2)
-  /ws/ecu (1:1)         :4000        /ws/backend (1:N)
+```text
+ECU Simulator / QEMU bridge ←—WS—→ Adapter ←—WS—→ Backend (S2)
+        /ws/ecu (1:1)               :4000        /ws/backend (1:N)
 ```
 
 - ECU 측: 단일 연결 (1대의 ECU만 연결 가능)
@@ -37,15 +34,17 @@ ECU Simulator ←—WS—→ Adapter ←—WS—→ Backend (S2)
 
 ## 파일 구조
 
-```
+```text
 services/adapter/
 ├── package.json
 ├── tsconfig.json
 └── src/
-    ├── index.ts        # 진입점: HTTP 서버 + WS 업그레이드 라우팅
-    ├── relay.ts        # 릴레이 코어: 메시지 라우팅, 타임아웃, 상태 관리
-    ├── protocol.ts     # 메시지 타입 정의
-    └── logger.ts       # 구조화 로깅 (pino)
+    ├── index.ts                       # 진입점: HTTP 서버 + WS 업그레이드 라우팅
+    ├── relay.ts                       # 릴레이 코어: 메시지 라우팅, 타임아웃, 상태 관리
+    ├── protocol.ts                    # 메시지 타입 정의
+    ├── logger.ts                      # 구조화 로깅 (pino)
+    ├── qemu-real-adapter-smoke-cli.ts # manifest-driven real adapter smoke CLI
+    └── __tests__/integration/...      # 실제 WS 통합 테스트
 ```
 
 ---
@@ -64,6 +63,17 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 |---------|--------|------|
 | `--port` | `4000` | HTTP/WebSocket 서버 포트 |
 
+### 실험용 QEMU smoke
+
+```bash
+cd services/adapter
+npm run qemu:smoke:sample
+```
+
+- sample ARMHF firmware + QEMU bridge + Adapter relay + backend WS client까지 한 번에 smoke 검증한다.
+- smoke 입력은 sample manifest의 `smoke.cases[]`를 따른다.
+- 2026-04-09 기준 이 명령은 **제품 기능이 아니라 runtime spike 검증용**이다.
+
 ---
 
 ## WebSocket 엔드포인트
@@ -71,13 +81,13 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 ### `/ws/ecu` — ECU 연결
 
 - **연결 수**: 1 (새 ECU 연결 시 기존 연결은 정상 종료 code 1000)
-- **방향**: ECU → Adapter (can-frame), Adapter → ECU (inject-request)
+- **방향**: ECU → Adapter (`can-frame`), Adapter → ECU (`inject-request`)
 - ECU가 연결/해제되면 모든 Backend에 `ecu-status` 메시지 broadcast
 
 ### `/ws/backend` — Backend 연결
 
 - **연결 수**: N (제한 없음)
-- **방향**: Adapter → Backend (can-frame, inject-response, ecu-status), Backend → Adapter (inject-request)
+- **방향**: Adapter → Backend (`can-frame`, `inject-response`, `ecu-status`, `ecu-info`), Backend → Adapter (`inject-request`)
 - Backend 연결 시 현재 ECU 상태를 즉시 전송
 
 ---
@@ -89,14 +99,13 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 ### ECU → Adapter → Backend (broadcast)
 
 ```jsonc
-// CAN 프레임 — ECU가 생성한 트래픽을 모든 Backend에 전달
 {
   "type": "can-frame",
   "frame": {
     "timestamp": "2026-03-08T14:23:45.123Z",
-    "id": "0x100",       // CAN ID (hex 문자열)
-    "dlc": 8,            // Data Length Code
-    "data": "DE AD BE EF 01 02 03 04"  // 페이로드 (hex, 공백 구분)
+    "id": "0x100",
+    "dlc": 8,
+    "data": "DE AD BE EF 01 02 03 04"
   }
 }
 ```
@@ -104,10 +113,9 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 ### Backend → Adapter → ECU (unicast)
 
 ```jsonc
-// 주입 요청 — 동적 테스트에서 ECU에 프레임 주입
 {
   "type": "inject-request",
-  "requestId": "req-abc123",   // 고유 ID (응답 매칭용)
+  "requestId": "req-abc123",
   "frame": {
     "timestamp": "2026-03-08T14:23:45.123Z",
     "id": "0x7DF",
@@ -117,18 +125,17 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 }
 ```
 
-### ECU → Adapter → Backend (unicast, 요청한 Backend에만)
+### ECU → Adapter → Backend (unicast)
 
 ```jsonc
-// 주입 응답 — ECU의 처리 결과
 {
   "type": "inject-response",
   "requestId": "req-abc123",
   "response": {
     "success": true,
-    "data": "DE AD BE EF 01 02 03 04",   // 응답 페이로드 (선택)
-    "error": null,                         // 에러 종류 (선택)
-    "delayMs": 25                          // 응답 지연 시간 (선택)
+    "data": "DE AD BE EF 01 02 03 04",
+    "error": null,
+    "delayMs": 25
   }
 }
 ```
@@ -138,8 +145,8 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 | 값 | 의미 |
 |----|------|
 | `null` | 정상 응답 |
-| `"no_response"` | ECU 무응답 (크래시 가능성) |
-| `"reset"` | ECU 리셋 발생 |
+| `"no_response"` | ECU 무응답 |
+| `"reset"` | ECU 리셋 |
 | `"malformed"` | 비정상 응답 형식 |
 | `"delayed"` | 응답 지연 (`delayMs` 참조) |
 
@@ -148,24 +155,23 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 ```jsonc
 {
   "type": "ecu-status",
-  "status": "connected"   // "connected" | "disconnected"
+  "status": "connected"
 }
 ```
 
 ### ECU → Adapter → Backend (broadcast, ECU 연결 시)
 
 ```jsonc
-// ECU 메타데이터 — ECU가 연결 시 자신의 정보를 전송
 {
   "type": "ecu-info",
   "ecu": {
-    "name": "ECU_SIM",                          // ECU 식별자
-    "canIds": ["0x100", "0x200", "0x300"]       // 사용하는 CAN ID 목록
+    "name": "ECU_SIM",
+    "canIds": ["0x100", "0x200", "0x300"]
   }
 }
 ```
 
-- ECU Sim이 Adapter에 연결 시 시나리오 CAN ID 목록과 ECU 이름을 전송
+- ECU Simulator 또는 QEMU bridge가 연결 시 자신의 메타데이터를 전송
 - Adapter가 저장 후 모든 Backend에 릴레이
 - Backend 신규 연결 시에도 저장된 ECU 메타를 즉시 전송
 - ECU 해제 시 메타 초기화
@@ -174,7 +180,7 @@ cd services/adapter && npx tsx watch src/index.ts --port=4000
 
 ## Health 엔드포인트
 
-```
+```text
 GET /health
 ```
 
@@ -183,8 +189,8 @@ GET /health
   "status": "ok",
   "ecu": {
     "connected": true,
-    "name": "ECU_SIM",                    // ECU 메타 (연결 시에만)
-    "canIds": ["0x100", "0x200", "0x300"] // ECU 메타 (연결 시에만)
+    "name": "ECU_SIM",
+    "canIds": ["0x100", "0x200", "0x300"]
   },
   "backends": 1
 }
@@ -194,7 +200,7 @@ GET /health
 
 ## 주입 요청 라우팅
 
-```
+```text
 Backend B1 → inject-request(requestId: "req-123")
   ↓
 Adapter: ECU 연결 확인
@@ -204,11 +210,24 @@ Adapter: ECU 연결 확인
 ECU → inject-response(requestId: "req-123")
   ↓
 Adapter: requestId로 원래 요청한 B1 식별
-  → B1에만 응답 전달 (unicast, 다른 Backend에는 안 감)
+  → B1에만 응답 전달 (unicast)
   → 타임아웃 해제
 ```
 
 **타임아웃**: 5초 내 ECU 응답이 없으면 `error: "no_response"`로 자동 응답.
+
+### 2026-04-09 QEMU smoke evidence
+
+실험용 `qemu:smoke:sample` 경로에서 sample manifest의 smoke 정의를 사용해 실제로 다음이 검증되었다.
+
+- `ecu-status`
+- `ecu-info`
+- telemetry `can-frame`
+- `inject-response(req-hello)`
+- `inject-response(req-exit)`
+- Adapter 로그의 `elapsedMs` 0~1ms 수준 응답
+
+이는 Adapter가 **manifest-driven QEMU bridge를 일반 ECU와 동일한 WS 계약**으로 처리할 수 있음을 보여준다.
 
 ---
 
@@ -217,11 +236,11 @@ Adapter: requestId로 원래 요청한 B1 식별
 | 상태 | 타입 | 설명 |
 |------|------|------|
 | `ecuWs` | `WebSocket \| null` | 현재 연결된 ECU (단일) |
-| `_ecuMeta` | `{ name, canIds } \| null` | ECU 메타데이터 (ecu-info 수신 시 저장) |
+| `_ecuMeta` | `{ name, canIds } \| null` | ECU 메타데이터 |
 | `backendClients` | `Set<WebSocket>` | 연결된 Backend 목록 |
-| `pendingRequests` | `Map<requestId, { timer, backendWs, startTime }>` | 진행 중인 주입 요청 (startTime으로 elapsedMs 계산) |
+| `pendingRequests` | `Map<requestId, { timer, backendWs, startTime }>` | 진행 중인 주입 요청 |
 
-모든 상태는 인메모리. Adapter 재시작 시 초기화됨.
+모든 상태는 인메모리. Adapter 재시작 시 초기화된다.
 
 ---
 
@@ -252,7 +271,7 @@ Backend의 `adapter-client.ts`가 Adapter에 WS 클라이언트로 연결한다.
 | 주입 타임아웃 | 5초 |
 
 - `connected`: Backend ↔ Adapter 연결 상태
-- `ecuConnected`: Adapter로부터 수신한 ECU 상태 (`ecu-status` 메시지)
+- `ecuConnected`: Adapter로부터 수신한 ECU 상태 (`ecu-status`)
 - 사용자가 명시적으로 disconnect하면 자동 재연결 비활성화
 
 ---
@@ -263,7 +282,7 @@ Backend의 `adapter-client.ts`가 Adapter에 WS 클라이언트로 연결한다.
 |------|-----|
 | 로그 파일 | `logs/adapter.jsonl` |
 | 형식 | JSON structured (observability.md 준수) |
-| 필수 필드 | `level`, `time` (epoch ms), `service` ("s6-adapter"), `msg` |
+| 필수 필드 | `level`, `time` (epoch ms), `service` (`s6-adapter`), `msg` |
 | 라이브러리 | pino |
 
 주요 로그 이벤트:
@@ -279,7 +298,18 @@ Backend의 `adapter-client.ts`가 Adapter에 WS 클라이언트로 연결한다.
 ## 제약사항
 
 - ECU 연결은 1개만 가능 (새 연결 시 기존 종료)
-- 인증/인가 없음 (아무나 연결 가능)
+- 인증/인가 없음
 - 잘못된 JSON은 debug 로그 후 무시
 - 주입 타임아웃 5초 하드코딩
 - 바이너리 프레임 미지원 (JSON 텍스트만)
+- QEMU smoke 경로는 sample firmware 기반이며 제품화된 capability surface가 아님
+
+---
+
+## 관련 문서
+
+- [Adapter WebSocket API](../api/adapter-api.md)
+- [ECU Simulator 기능 명세](../specs/ecu-simulator.md)
+- [공유 모델](../api/shared-models.md)
+- [Observability 규약](../specs/observability.md)
+- [S6 인수인계서](../handoff/s6/readme.md)

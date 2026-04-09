@@ -2,21 +2,18 @@
 title: "S1-QA 실행 가이드"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s1-handoff/qa-guide.md"
-original_path: "docs/s1-handoff/qa-guide.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s1"]
 decision_tags: []
 related_pages: []
-migration_status: "canonicalized"
 ---
 
 # S1-QA 실행 가이드
 
 > **역할**: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane
-> **최신 상태 반영일**: 2026-04-04
+> **최신 상태 반영일**: 2026-04-09
 
 ---
 
@@ -28,30 +25,22 @@ migration_status: "canonicalized"
   2. `wiki/canon/handoff/s1/readme.md`
   3. `wiki/canon/specs/frontend.md`
   4. `wiki/canon/api/shared-models.md`
-- 현재 동적 분석/동적 테스트는 **실운영 화면이 아니라 placeholder 라우트**다.
+- 동적 분석/동적 테스트는 **2026-04-09부터 실화면 마운트** 상태다. placeholder가 아니다.
 - repo의 Playwright 자산은 참고 가능하지만, **이 문서의 현재 검증 상태를 우선 기준**으로 삼는다.
+- S1은 Electron이 아닌 **순수 웹 SPA**다. Electron 관련 동작은 더 이상 존재하지 않는다.
 
 ---
 
-## 2. 2026-04-04 기준 자동 검증 상태
+## 2. 2026-04-09 기준 자동 검증 상태
 
 | 영역 | 명령 | 결과 |
 |------|------|------|
-| 전체 유닛 | `cd services/frontend && npm test` | PASS (`356` tests) |
-| 라우트 스모크 | `cd services/frontend && npx playwright test e2e/specs/navigation.spec.ts` | PASS (`13` tests) |
-| 전체 E2E | `cd services/frontend && npm run test:e2e` | **FAIL** (`154` passed / `26` failed / `180` total) |
+| 빌드 | `cd services/frontend && npm run build` | PASS (0 errors) |
+| 전체 유닛 | `cd services/frontend && npm test` | PASS (`392` tests, `51` files) |
+| TS 진단 | `npx tsc --noEmit --project services/frontend/tsconfig.json` | PASS (0 errors) |
 
-### 현재 실패 묶음
-
-1. **Approval interaction 2건**
-   - 승인 버튼 탐색/클릭 단계 실패
-2. **Visual baseline drift 24건**
-   - `responsive.spec.ts`
-   - `theme.spec.ts`
-   - `visual-qa.spec.ts`
-   - `visual-qa-dark.spec.ts`
-
-> 따라서 QA는 현재 **라우트 생존 여부는 안정적**이라고 보고, 우선순위를 approval 흐름과 시각 baseline 차이 분석에 둔다.
+> Playwright E2E baseline은 디자인 시스템 교체 + 라우트 변경 이후 재생성이 필요한 상태다.
+> 따라서 QA 우선순위는 **라우트 생존 여부 + 신규 화면(dynamic, signup) 동작 확인 + visual baseline 재생성**이다.
 
 ---
 
@@ -59,9 +48,10 @@ migration_status: "canonicalized"
 
 ### 전역 라우트
 
-- `/projects`
-- `/settings`
+- `/dashboard` — 프로젝트 목록 (구 `/projects`, redirect 처리됨)
+- `/signup` — 신규 (2026-04-09)
 - `/login`
+- `/settings`
 
 ### 프로젝트 라우트
 
@@ -74,15 +64,19 @@ migration_status: "canonicalized"
 - `/report`
 - `/quality-gate`
 - `/approvals`
+- `/dynamic-analysis` — **실화면** (2026-04-09 활성화)
+- `/dynamic-test` — **실화면** (2026-04-09 활성화)
 - `/settings`
-- `/dynamic-analysis` → placeholder
-- `/dynamic-test` → placeholder
 
 ### QA가 알아야 할 현재 사실
 
-- 동적 placeholder 경로는 라우트에 존재하지만 **사이드바에는 노출되지 않는다**.
-- 파일 상세는 `/files`에서 항목 클릭으로 진입한다.
-- report/quality-gate/approvals/settings는 모두 현재 mounted 상태다.
+- `/projects`로 접근하면 `/dashboard`로 redirect된다. 정상 동작이다.
+- `/`로 접근하면 `/dashboard`로 redirect된다.
+- dynamic 경로는 라우트에 존재하고 **사이드바에도 노출**된다.
+- Navbar: 48px 높이, 검색바, 알림 벨, 아바타.
+- Sidebar: 260px 너비, GitHub-style 라이트 배경, 모든 항목 노출.
+- 모든 페이지 `document.title = "AEGIS — {Page Name}"` 형식.
+- StatusBar: `"AEGIS v2.1.0 — Embedded Firmware Security Analysis Platform"`.
 
 ---
 
@@ -101,8 +95,9 @@ migration_status: "canonicalized"
 cd services/frontend
 
 npm test
+npm run build
 npx playwright test e2e/specs/navigation.spec.ts
-npx playwright test e2e/specs/interactions.spec.ts -g "Approval Decision"
+npx playwright test e2e/specs/interactions.spec.ts
 npx playwright test e2e/specs/visual-qa.spec.ts
 npx playwright test e2e/specs/visual-qa-dark.spec.ts
 npx playwright test e2e/specs/responsive.spec.ts
@@ -117,26 +112,41 @@ npm run test:e2e
 ### A. 라우트/기본 생존 확인
 
 1. `npx playwright test e2e/specs/navigation.spec.ts`
-2. `/projects`, `/settings`, 프로젝트 하위 핵심 라우트 진입 확인
-3. `/dynamic-analysis`, `/dynamic-test`는 placeholder가 보여야 정상
+2. `/dashboard` 진입 확인 (구 `/projects` redirect 포함)
+3. `/signup` 페이지 진입 확인 (신규)
+4. 프로젝트 하위 핵심 라우트 진입 확인
+5. `/dynamic-analysis`, `/dynamic-test`는 **실화면이 보여야 정상** (placeholder가 아님)
+6. 사이드바에 dynamic 항목이 노출되는지 확인
 
-### B. 현재 알려진 회귀 재현
+### B. GitHub-style UI 확인
 
-1. `npx playwright test e2e/specs/interactions.spec.ts -g "Approval Decision"`
-2. 승인 버튼 노출/클릭 가능 여부, dialog 표시 여부 확인
-3. 실패 시 selector 문제인지 실제 UI regression인지 구분
+1. Navbar 48px 높이 / 검색바 / 아바타 노출
+2. Sidebar 260px / 라이트 배경 / 활성 항목 파란 accent bar
+3. ProjectSettings 좌측 sidebar nav 동작 확인
 
-### C. 시각 회귀 확인
+### C. Title 정책 확인
 
-1. `visual-qa.spec.ts`
+각 페이지 접속 시 `document.title` = `"AEGIS — {Page Name}"` 형식 준수 여부.
+
+### D. Visual baseline 재생성
+
+디자인 시스템 교체(2026-04-08) 및 라우트 변경(2026-04-09) 이후 snapshot baseline 재생성 필요.
+
+1. `visual-qa.spec.ts` — 기존 baseline과 diff 확인
 2. `visual-qa-dark.spec.ts`
 3. `responsive.spec.ts`
 4. `theme.spec.ts`
 
 확인 포인트:
-- baseline이 오래된 것인지
+- baseline이 오래된 것인지 (의도된 디자인 변경)
 - 실제 레이아웃이 깨진 것인지
-- 테마/폰트/spacing 변경이 의도된 것인지
+
+### E. 신규/변경 화면 집중 확인
+
+1. `/signup` — 카드 레이아웃, 타이틀 정책, StatusBar 문자열
+2. `/dashboard` — ProjectsPage 정상 렌더링
+3. `/projects/:projectId/dynamic-analysis` — 실화면 (DynamicAnalysisPage)
+4. `/projects/:projectId/dynamic-test` — 실화면 (DynamicTestPage)
 
 ---
 
@@ -144,7 +154,7 @@ npm run test:e2e
 
 | spec | 목적 |
 |------|------|
-| `navigation.spec.ts` | 해시 라우팅/사이드바/핵심 서브페이지 smoke |
+| `navigation.spec.ts` | BrowserRouter 라우팅/사이드바/핵심 서브페이지 smoke |
 | `interactions.spec.ts` | 생성/필터/quality gate/approval 상호작용 |
 | `responsive.spec.ts` | 480/768/1024 반응형 스냅샷 |
 | `theme.spec.ts` | light/dark/system 테마 전환 |
@@ -187,10 +197,12 @@ npm run test:e2e
 
 ## 8. 지금 QA가 특히 봐야 할 것
 
-1. Approval 페이지에서 실제 CTA가 왜 잡히지 않는지
-2. visual snapshot diff가 전역 디자인 변경 때문인지, 특정 페이지 regression인지
-3. 동적 placeholder 라우트가 여전히 placeholder로 유지되는지
-4. report / quality gate / approvals / project settings가 최신 라우트 구조와 일치하는지
+1. `/dashboard` redirect — `/`, `/projects` 두 경로 모두 `/dashboard`로 이동하는지
+2. `/signup` 신규 페이지 동작 및 title 정책
+3. `/dynamic-analysis`, `/dynamic-test` 실화면 마운트 확인 (placeholder가 아닌지)
+4. Sidebar에 dynamic 항목이 모두 노출되는지 (`comingSoon` 숨김 없음)
+5. visual snapshot diff — 디자인 시스템 교체 + v6 레이아웃 리디자인으로 인한 의도적 변경인지 실제 regression인지 분류
+6. Navbar/Sidebar GitHub-style UI 적용 여부
 
 ---
 
@@ -198,5 +210,6 @@ npm run test:e2e
 
 - 구현 코드를 보고 원인을 단정하지 말 것
 - baseline mismatch를 무조건 스냅샷 갱신으로 덮지 말 것
-- 동적 placeholder를 실패로 오해하지 말 것
+- `/dynamic-analysis`, `/dynamic-test`를 더 이상 placeholder로 기대하지 말 것 (실화면임)
+- `/projects` 접근 시 redirect를 실패로 오해하지 말 것
 - lint는 현재 공식 게이트가 아니므로, QA 결과는 **브라우저 동작/스크린샷/로그** 중심으로 정리할 것

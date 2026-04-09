@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-engine.md"
 original_path: "docs/specs/llm-engine.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []

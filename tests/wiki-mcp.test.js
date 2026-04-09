@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawn } = require('node:child_process');
 const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
 const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');
 
@@ -23,6 +24,33 @@ function createFixture() {
   write(path.join(docsRoot, 's1-handoff/README.md'), '# S1 README\n\nFixture handoff.\n');
   write(path.join(docsRoot, 'work-requests/s2-to-s3-legacy.md'), '# Legacy WR\n\nArchived legacy fixture.\n');
   return { root, docsRoot };
+}
+
+async function waitFor(check, timeoutMs = 5000) {
+  const startedAt = Date.now();
+  while (!check()) {
+    if ((Date.now() - startedAt) >= timeoutMs) {
+      throw new Error('Timed out waiting for test condition');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+function waitForExit(child) {
+  return new Promise((resolve, reject) => {
+    let stdout = '';
+    let stderr = '';
+    child.stdout?.on('data', (chunk) => { stdout += chunk; });
+    child.stderr?.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(new Error(`Child exited with ${code}\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+      }
+    });
+  });
 }
 
 test('MCP server exposes typed read/write wiki operations', async () => {
@@ -145,6 +173,38 @@ test('MCP server exposes typed read/write wiki operations', async () => {
     assert.match(wrText, /Handled by S3/);
     assert.match(wrText, /Handled by S4/);
 
+    const apostropheWr = await client.callTool({
+      name: 'register_wr',
+      arguments: {
+        wr_kind: 'request',
+        from_lane: 's2',
+        to_lanes: ['s3', 's4'],
+        title: 'Need apostrophe-safe multicast completion',
+        body: 'Please confirm apostrophe notes do not drop prior completions.'
+      }
+    });
+    const apostropheWrPath = apostropheWr.structuredContent.path;
+    await client.callTool({
+      name: 'complete_wr',
+      arguments: {
+        path_or_id: apostropheWrPath,
+        lane: 's3',
+        completion_note: "I've handled the S3 side."
+      }
+    });
+    await client.callTool({
+      name: 'complete_wr',
+      arguments: {
+        path_or_id: apostropheWrPath,
+        lane: 's4',
+        completion_note: 'Handled by S4'
+      }
+    });
+    const apostropheWrText = fs.readFileSync(path.join(root, apostropheWrPath), 'utf8');
+    assert.match(apostropheWrText, /status: "completed"/);
+    assert.match(apostropheWrText, /I've handled the S3 side\./);
+    assert.match(apostropheWrText, /Handled by S4/);
+
     const toAll = await client.callTool({
       name: 'register_wr',
       arguments: {
@@ -190,4 +250,86 @@ test('MCP server exposes typed read/write wiki operations', async () => {
   } finally {
     await transport.close().catch(() => {});
   }
+});
+
+test('complete_wr preserves all multicast recipient completions under concurrent writers', async () => {
+  const { root, docsRoot } = createFixture();
+  process.env.WIKI_ROOT = root;
+  process.env.SOURCE_DOCS_ROOT = docsRoot;
+  const libPath = path.resolve(__dirname, '..', 'tools/wiki/lib.js');
+  delete require.cache[libPath];
+  const { registerWorkRequest, parseFrontmatter } = require(libPath);
+
+  const page = registerWorkRequest({
+    wrKind: 'request',
+    fromLane: 's2',
+    toLanes: ['s3', 's4'],
+    title: 'Concurrent multicast completion',
+    body: 'Both recipients will complete at once.'
+  });
+  const wrPath = page.relPath;
+  const wrAbsPath = path.join(root, wrPath);
+  const barrierDir = path.join(root, 'barrier');
+  fs.mkdirSync(barrierDir, { recursive: true });
+
+const workerPath = path.join(root, 'complete-worker.cjs');
+  write(workerPath, `
+const fs = require('node:fs');
+const path = require('node:path');
+const lane = process.env.LANE;
+const target = path.resolve(process.env.TARGET_FILE);
+const barrierDir = process.env.BARRIER_DIR;
+const origWrite = fs.writeFileSync;
+let blocked = false;
+const shouldBlockTargetWrite = process.env.BLOCK_TARGET_WRITE === '1';
+
+fs.writeFileSync = function(file, ...args) {
+  const resolved = path.resolve(String(file));
+  if (shouldBlockTargetWrite && !blocked && resolved === target) {
+    blocked = true;
+    origWrite(path.join(barrierDir, 'ready-' + lane), 'ready', 'utf8');
+    while (!fs.existsSync(path.join(barrierDir, 'go'))) {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+    }
+  }
+  return origWrite.call(this, file, ...args);
+};
+
+const { completeWorkRequest } = require(${JSON.stringify(libPath)});
+completeWorkRequest({
+  pathOrId: process.env.WR_PATH,
+  lane,
+  completionNote: 'handled by ' + lane
+});
+`);
+
+  const spawnWorker = (lane) => spawn(process.execPath, [workerPath], {
+    cwd: path.resolve(__dirname, '..'),
+    env: {
+      ...process.env,
+      WIKI_ROOT: root,
+      SOURCE_DOCS_ROOT: docsRoot,
+      TARGET_FILE: wrAbsPath,
+      BARRIER_DIR: barrierDir,
+      WR_PATH: wrPath,
+      LANE: lane,
+      BLOCK_TARGET_WRITE: lane === 's3' ? '1' : '0'
+    },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  const s3Worker = spawnWorker('s3');
+  await waitFor(() => fs.existsSync(path.join(barrierDir, 'ready-s3')));
+  const s4Worker = spawnWorker('s4');
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  fs.writeFileSync(path.join(barrierDir, 'go'), 'go', 'utf8');
+  await Promise.all([waitForExit(s3Worker), waitForExit(s4Worker)]);
+
+  const { data } = parseFrontmatter(fs.readFileSync(wrAbsPath, 'utf8'));
+  const completedLanes = data.completed_by.map((entry) => entry.lane).sort();
+
+  assert.deepEqual(completedLanes, ['s3', 's4']);
+  assert.equal(data.status, 'completed');
+  assert.match(fs.readFileSync(wrAbsPath, 'utf8'), /handled by s3/);
+  assert.match(fs.readFileSync(wrAbsPath, 'utf8'), /handled by s4/);
 });

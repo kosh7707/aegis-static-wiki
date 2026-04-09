@@ -6,23 +6,23 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/roadmap.md"
 original_path: "docs/s4-handoff/roadmap.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s4"]
 decision_tags: []
-related_pages: []
+related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
 migration_status: "canonicalized"
 ---
 
 # S4 SAST Runner — 로드맵
 
 > 다음 작업 + 후순위 계획. README.md에서 분리.
-> **마지막 업데이트: 2026-04-04**
+> **마지막 업데이트: 2026-04-09**
 
 ---
 
 ## 즉시 다음
 
-현재 미처리 WR 없음.
+현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-04-09 재확인)
 
 후속 후보:
 - downstream(S2/S3) build-path adaptation feedback 수신 시 contract drift 보정
@@ -34,6 +34,9 @@ migration_status: "canonicalized"
 
 ## 최근 완료
 
+- ~~S4 소유 문서 전체 refresh~~ — **완료** (2026-04-09, session-omx-1775611621885-coij9e)
+  - `readme`, `roadmap`, `spec`, `api`, `build-snapshot-consumer-seam`을 현재 코드/테스트 기준으로 재검토
+  - 규칙 수(39/9 YAML), 테스트 수(376/23 files), `/v1/health` backward-compatible 필드, build path execution-only 경계 문구를 정렬
 - ~~build path boundary inversion~~ — **완료** (2026-04-04, session-9)
   - build path에서 `sdkId` 제거
   - `buildCommand` 자동 감지 제거
@@ -66,7 +69,7 @@ migration_status: "canonicalized"
 - tinydtls 버전: `libcoap/ext/tinydtls`에 configure.ac 없음 → 버전 미탐지
 - wakaama 버전: 하위 tinydtls의 configure.ac를 잡아서 오탐
 - clang-tidy + compile_commands.json: `-p` 연동 불안정
-- `build-and-analyze`: 빌드 환경(SDK, 컴파일러)이 서버에 설치되어 있어야 함
+- `build-and-analyze`: caller가 제공한 `buildCommand` / `buildEnvironment`가 현재 S4 런타임에서 실제로 실행 가능해야 함
 - caller가 잘못된 build command / build environment를 주면 build path에서 그대로 실패하며, `failureDetail`로 가시화됨
 - 대형 프로젝트 heavy analyzer timeout-floor / vendor timeout은 여전히 발생 가능하지만, 이제 heartbeat/execution metadata로 degraded 상태가 노출됨
 

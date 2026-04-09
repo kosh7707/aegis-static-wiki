@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-08"
+last_verified: "2026-04-09"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -33,13 +33,30 @@ migration_status: "canonicalized"
 | POST | `/api/projects` | 프로젝트 생성 |
 | GET | `/api/projects` | 프로젝트 목록 |
 | GET | `/api/projects/:id` | 프로젝트 상세 |
-| PUT | `/api/projects/:id` | 프로젝트 수정 |
-| DELETE | `/api/projects/:id` | 프로젝트 삭제 |
+| PUT | `/api/projects/:id` | 프로젝트 수정 (`name`이 공백만 오면 `400`) |
+| DELETE | `/api/projects/:id` | 프로젝트 삭제 (`409` blocker / uploads quarantine / DB delete / DB 실패 시 restore) |
 | GET | `/api/projects/:id/overview` | 프로젝트 개요/집계 |
 | GET | `/api/projects/:projectId/files` | 프로젝트 파일 목록 |
 | GET | `/api/files/:fileId/content` | 파일 내용 조회 |
 | GET | `/api/files/:fileId/download` | 파일 다운로드 |
 | DELETE | `/api/projects/:projectId/files/:fileId` | 프로젝트 파일 삭제 |
+
+프로젝트 CRUD 메모 (2026-04-09):
+
+- `PUT /api/projects/:id`
+  - `name`이 전달된 경우 trim 후 저장
+  - trim 결과 빈 문자열이면 `400 { success: false, error: "name is required" }`
+- `DELETE /api/projects/:id`
+  - 단순 row delete가 아니라 safe teardown workflow다.
+  - 현재 blocker authority:
+    - active analysis
+    - connected adapters
+    - dynamic-analysis sessions (`connected|monitoring`)
+    - running dynamic-test
+    - non-terminal SDK states
+    - active pipeline targets
+  - blocker가 있으면 `409 CONFLICT` + `errorDetail.blockers`
+  - success path는 `uploads/{projectId}` quarantine 후 project-scoped DB row delete를 수행하고, DB 실패 시 quarantined root를 restore한다.
 
 ### 프로젝트 설정 / 활동 / 알림 / 인증
 

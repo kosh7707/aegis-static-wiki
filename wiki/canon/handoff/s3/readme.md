@@ -2,305 +2,221 @@
 title: "S3. Analysis Agent 인수인계서"
 page_type: "canonical-handoff"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s3-handoff/README.md"
-original_path: "docs/s3-handoff/README.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-09"
 service_tags: ["s3"]
 decision_tags: []
-related_pages: []
-migration_status: "canonicalized"
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
-> **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
-> 이 문서는 S3(Analysis Agent) 개발을 이어받는 다음 세션을 위한 인수인계서다.
-> 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-04-06**
+> **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
+> **마지막 업데이트: 2026-04-09**
+
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-09 기준 최신 내부 리팩토링 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
-## 1. 프로젝트 전체 그림
-
-### AEGIS 8세션 운영에서 S3의 위치
-
-```
-                  S1 / S1-QA (Frontend :5173)
-                          │
-                     S2 (AEGIS Core :3000)  ← 플랫폼 오케스트레이터
-                    ╱     │     ╲      ╲
-                 S3       S4     S5      S6
-               Agent    SAST     KB    동적분석
-              :8001    :9000   :8002    :4000
-                │
-           S7 Gateway (:8000)  ← LLM 단일 관문
-                │
-           LLM Engine
-            (DGX Spark)
-```
+## 1. S3의 역할
 
 ### S3 소유 서비스
 
 | 서비스 | 포트/위치 | 역할 |
-|--------|-----------|------|
-| **Analysis Agent** | :8001 | `deep-analyze`, `generate-poc` taskType. Phase 1(SAST+코드그래프+SCA) → Phase 2(LLM 해석) |
-| **Build Agent** | :8003 | `build-resolve`, `sdk-analyze` taskType. strict compile-first 계약으로 선언된 서브프로젝트/빌드 모드/expectedArtifacts를 기준으로 빌드를 수행하거나 SDK 프로파일을 추출한다. |
-| **agent-shared** | 라이브러리 | 두 에이전트 공통 프레임 (LLM 통신, 도구 실행, 스키마, 정책). `pip install -e ../agent-shared` |
+|---|---|---|
+| Analysis Agent | `:8001` | `deep-analyze`, `generate-poc` |
+| Build Agent | `:8003` | `build-resolve`, `sdk-analyze` |
+| agent-shared | 라이브러리 | 공통 LLM/도구/정책/스키마 프레임 |
 
-### S3가 호출하는 서비스 (소유 X)
+### S3가 호출하는 외부 서비스
 
-| 서비스 | 소유 | 엔드포인트 | 역할 |
-|--------|------|-----------|------|
-| **S7 LLM Gateway** (:8000) | S7 | `POST /v1/chat` | Phase 2 LLM 호출 (모든 LLM 접근은 S7 Gateway 경유) |
-| **SAST Runner** (:9000) | S4 | scan, functions, includes, metadata, libraries, build-and-analyze, health (7개) | Phase 1 도구 실행 |
-| **Knowledge Base** (:8002) | **S5** (S3가 구축, 인수인계 예정) | search, cve/batch-lookup, graph/*, code-graph/* | Phase 1 + Phase 2 위협 지식 + 코드 그래프 |
-
-### S3 소유 문서
-
-| 문서 | 경로 | 비고 |
-|------|------|------|
-| S3 인수인계서 | `wiki/canon/handoff/s3/readme.md` | 이 문서 |
-| S3 기능 명세 | `wiki/canon/specs/analysis-agent.md` | Analysis Agent 아키텍처, 원칙 |
-| S3 API 계약서 | `wiki/canon/api/analysis-agent-api.md` | S2↔S3 API 계약 (Analysis Agent) |
-| Build Agent API 계약서 | `wiki/canon/api/build-agent-api.md` | S2↔S3 API 계약 (Build Agent) |
+| 서비스 | 소유 | 역할 |
+|---|---|---|
+| S7 Gateway (`:8000`) | S7 | 모든 LLM 호출 단일 관문 |
+| S4 SAST Runner (`:9000`) | S4 | scan / functions / libraries / build-and-analyze / build |
+| S5 Knowledge Base (`:8002`) | S5 | KB search / CVE lookup / code-graph / project-memory |
 
 ### S3의 정체성
 
-> S3는 **감사 가능하고, 재현 가능하며, 자동화 가능한 증거 기반 보안 분석** 통제 계층이다.
-> 결정론적 처리(Phase 1)를 최대화하고, LLM의 결정 표면(Phase 2)을 최소화한다.
+> S3는 **결정론적 수집 + 구조화된 LLM 해석**으로 동작하는 증거 기반 보안 분석/control-plane 계층이다.
 
-**S3의 성공 기준:**
-1. 항상 파싱 가능할 것 → `parsedOk: true`
-2. 항상 supplied evidence 안에서만 말할 것 → `evidenceValid: true`
-3. 전 구간 requestId로 추적 가능할 것 → 구조화 JSON 로깅
-4. SAST 결과는 결정론적으로, LLM 해석은 구조화된 JSON으로 → Phase 1/2 분리
+핵심 원칙:
+1. Phase 1 결정론적 실행 우선
+2. Phase 2 LLM 결정 표면 최소화
+3. Evidence-first
+4. public contract/health surface 안정성 우선
 
 ---
 
-## 2. 너의 역할과 경계
+## 2. 소유 문서
 
-### 너는
+| 문서 | 경로 |
+|---|---|
+| S3 handoff | `wiki/canon/handoff/s3/readme.md` |
+| S3 roadmap | `wiki/canon/roadmap/s3-roadmap.md` |
+| Analysis Agent spec | `wiki/canon/specs/analysis-agent.md` |
+| Build Agent spec | `wiki/canon/specs/build-agent.md` |
+| Analysis Agent API | `wiki/canon/api/analysis-agent-api.md` |
+| Build Agent API | `wiki/canon/api/build-agent-api.md` |
 
-- **S3 — Analysis Agent**
-- 소유 코드:
-  - `services/analysis-agent/` — 에이전트 기반 심층 분석 (Phase 1/2)
-- 관리하는 문서:
-  - `wiki/canon/handoff/s3/readme.md` — 이 인수인계서
+문서 갱신 원칙:
+- canonical wiki를 먼저 갱신한다.
+- `docs/**`는 migration/compatibility surface일 뿐 canonical source가 아니다.
+- 다른 lane 코드 동작은 API 계약서로만 이해한다.
 
-### KB(S5) 인수인계 상태
+---
 
-- S3가 `services/knowledge-base/` 코드를 구축했지만, AEGIS 체제에서 **S5로 분리**
-- S5 담당자 투입 시 `wiki/canon/handoff/s5/readme.md` 기준으로 역할/운영 경계를 재확인하고 소유권 이전 예정
-- **그때까지 S3가 KB 코드/운영을 임시 관리**
-
-### API 계약 소통 원칙 (필수)
-
-- **다른 서비스의 동작은 반드시 canonical API 계약서(`wiki/canon/api/`)로만 파악한다**
-- **다른 서비스의 코드를 절대 읽지 않는다** — 코드를 보고 동작을 파악하거나 거기에 맞춰 구현하는 것은 금지
-- 계약서에 없는 필드/엔드포인트는 "존재하지 않는다"고 간주한다
-- 계약서와 실제 코드가 다르면, 해당 서비스 소유자에게 계약서 갱신을 work-request로 요청한다
-- **공유 모델(`shared-models.md`) 또는 API 계약서가 변경되면, 영향받는 상대 서비스에게 반드시 work-request로 고지한다**
+## 3. 경계와 운영 규칙
 
 ### 다른 서비스 코드
+- 다른 lane 코드 열람 금지
+- 연동 해석은 API 계약서와 WR 기준
+- 계약과 구현이 어긋나면 WR로 조정
 
-- S1(프론트), S2(백엔드), S7(Gateway) 코드는 기본적으로 수정하지 않으며 **읽는 것도 금지** (API 계약서로만 소통)
+### 금지/주의
+- 커밋 금지
+- 사용자 허락 없는 서비스 start/stop 금지
+- canonical WR은 `wiki/canon/work-requests/**` 기준
+- `docs/work-requests/**`는 archive-only reference
 
-### 작업 요청 주고받기
-
-- **런타임 canonical WR 경로**: `wiki/canon/work-requests/`
-- **archive/reference 경로**: `/home/kosh/AEGIS/docs/work-requests/`
-- `list_my_open_wrs`, `register_wr`, `complete_wr` 등 WR MCP 런타임 동작은 **canonical new-format WR**만 대상으로 한다.
-- archived `docs/work-requests/**` 는 참고/이관 기록일 뿐이며, **WR MCP open list / completion semantics 범위 밖**이다.
-- S1이나 S2에게 새 요청을 보낼 때는 canonical WR 모델을 기준으로 작성/등록한다.
-- 반대로 S1/S2가 S3에 보낸 새 WR도 canonical WR 경로와 WR MCP 결과를 기준으로 확인한다.
-- recipient로서 처리를 끝낸 canonical WR만 recipient-side completion 대상으로 간주한다.
-
-### Codex / OMX 운영 메모
-
-- 하드 가드레일 재확인:
-  - S3는 **다른 서비스 코드를 읽지 않는다**.
-  - S2/S4/S5/S7 등과의 소통은 **WR로만** 한다.
-  - 연동 판단은 API 계약서만 보고, 계약이 비었거나 낡았으면 WR로 갱신 요청한다.
-  - **커밋은 하지 않는다**. 커밋은 S2 세션만 한다.
-  - `scripts/start*.sh`, `scripts/stop*.sh`, 서비스 기동 명령은 **사용자 허락 없이 실행하지 않는다**.
-  - 로그/장애 분석은 `log-analyzer` MCP를 우선 사용한다.
-- 장기 S3 작업 메모와 후속 세션 인계는 기본적으로 `wiki/canon/handoff/s3/`와 세션 state를 우선 사용한다.
-  - 공용 `.omx/notepad.md`, `.omx/project-memory.json`에는 **전역 durable 정보 / 공통 운영 규칙 / cross-lane에 실제로 필요한 사실**만 남긴다.
-  - S3 lane 전용 작업 메모, 중간 추론, 세부 TODO, 세션 한정 기록은 `wiki/canon/handoff/s3/session-{N}.md`, canonical WR, `.omx/state/sessions/{session-id}/...`로 분리한다.
-  - WR MCP 런타임 기준은 `wiki/canon/work-requests/**` 이며, `/home/kosh/AEGIS/docs/work-requests/**` 는 archive-only reference다.
-- **`$ralph`**: Analysis Agent 또는 Build Agent 한 축을 끝까지 설계→수정→검증해야 할 때 우선 사용한다.
-- **`$team`**: S3가 S4(SAST), S5(KB), S7(Gateway), S2(호출자)와 병렬 맥락을 맞춰야 할 때 우선 사용한다.
-- **`$trace`**: 이전 Codex/OMX 세션의 reasoning/turn 흐름 복기가 필요할 때 사용한다.
-- skill을 써도 **다른 서비스 코드 열람 금지 / API 계약 우선** 규칙은 그대로다.
+### Codex/OMX 메모
+- 로그/장애 분석은 `log-analyzer` 우선
+- 문서/세션 기록은 `wiki/canon/handoff/s3/` 우선
+- lane 전용 진행 상태는 `.omx/state`와 handoff session artifact로 남긴다
 
 ---
 
-## 3. API
+## 4. 현재 아키텍처 상태 (2026-04-09)
 
-### Analysis Agent (:8001) — 심층 분석
+### Analysis Agent 현재 구조
 
-| 메서드 | 경로 | 용도 |
-|--------|------|------|
-| POST | `/v1/tasks` | `deep-analyze` taskType. Phase 1/2 자동 실행. |
-| GET | `/v1/health` | 서비스 상태 + 에이전트 설정 |
+#### 공개 surface
+- `POST /v1/tasks`
+  - `deep-analyze`
+  - `generate-poc`
+- `GET /v1/health`
+- `GET /v1/models`
+- `GET /v1/prompts`
 
-### Knowledge Base (:8002) — GraphRAG (S3 임시 관리)
+#### 현재 내부 레이아웃
 
-| 메서드 | 경로 | 용도 |
-|--------|------|------|
-| POST | `/v1/search` | 하이브리드 검색 (ID exact + graph neighbor + vector) |
-| GET | `/v1/graph/stats` | 위협 지식 그래프 통계 |
-| GET | `/v1/graph/neighbors/{node_id}` | CWE/CVE/ATT&CK 관계 탐색 |
-| POST | `/v1/code-graph/{project_id}/ingest` | 프로젝트 코드 그래프 적재 |
-| GET | `/v1/code-graph/{project_id}/callers/{func}` | 함수 호출자 추적 |
-| POST | `/v1/code-graph/{project_id}/dangerous-callers` | 위험 함수 호출자 식별 |
-| GET | `/v1/health` | 서비스 상태 + Neo4j 연결 + Qdrant 상태 |
+| 영역 | 현재 파일 |
+|---|---|
+| public router | `services/analysis-agent/app/routers/tasks.py` |
+| deep analyze handler | `services/analysis-agent/app/routers/deep_analyze_handler.py` |
+| generate-poc handler | `services/analysis-agent/app/routers/generate_poc_handler.py` |
+| phase1 compatibility surface | `services/analysis-agent/app/core/phase_one.py` |
+| phase1 executor façade | `services/analysis-agent/app/core/phase_one_executor.py` |
+| phase1 flow | `services/analysis-agent/app/core/phase_one_flow.py` |
+| phase1 shared types | `services/analysis-agent/app/core/phase_one_types.py` |
+| phase1 execution helpers | `services/analysis-agent/app/core/phase_one_exec.py` |
+| phase1 KB/CVE helpers | `services/analysis-agent/app/core/phase_one_kb.py` |
+| phase1 prompt/render | `services/analysis-agent/app/core/phase_one_prompt.py` |
+| agent loop | `services/analysis-agent/app/core/agent_loop.py` |
+| result assembly | `services/analysis-agent/app/core/result_assembler.py` |
 
-### Task Type
+### Build Agent 현재 구조
 
-| Task Type | 서비스 | 용도 |
-|-----------|--------|------|
-| **`deep-analyze`** | **Analysis Agent (:8001)** | **프로젝트 전반 보안 분석 (Phase 1/2)** |
+#### 공개 surface
+- `POST /v1/tasks`
+  - `build-resolve`
+  - `sdk-analyze`
+- `GET /v1/health`
 
-> 레거시 5개 taskType (`static-explain`, `static-cluster`, `dynamic-annotate`, `test-plan-propose`, `report-draft`)은 S7 LLM Gateway (:8000)가 담당한다.
+#### 현재 내부 레이아웃
 
----
+| 영역 | 현재 파일 |
+|---|---|
+| public router | `services/build-agent/app/routers/tasks.py` |
+| build-resolve handler | `services/build-agent/app/routers/build_resolve_handler.py` |
+| build-resolve support | `services/build-agent/app/routers/build_route_support.py` |
+| sdk-analyze handler | `services/build-agent/app/routers/sdk_analyze_handler.py` |
+| sdk-analyze support | `services/build-agent/app/routers/sdk_analyze_support.py` |
+| phase0 | `services/build-agent/app/core/phase_zero.py` |
+| agent loop | `services/build-agent/app/core/agent_loop.py` |
+| result assembly | `services/build-agent/app/core/result_assembler.py` |
 
-## 4. Analysis Agent 아키텍처 (2026-03-18 신규)
+### agent-shared 현재 구조
 
-### Phase 1/2 분리 아키텍처
-
-```
-POST /v1/tasks (taskType: "deep-analyze")
-  │
-  ├── Phase 1: 결정론적 (LLM 없이)
-  │   ├── sast.scan        → S4 SAST Runner (NDJSON 스트리밍) → findings
-  │   ├── code.functions   → S4 SAST Runner → 함수+호출 관계
-  │   ├── sca.libraries    → S4 SAST Runner → 라이브러리 + 버전
-  │   ├── cve.batch-lookup → S5 KB → 버전 매칭된 CVE (NEW)
-  │   ├── threat.search    → S5 KB → CWE별 위협 지식 (NEW)
-  │   └── dangerous-callers → S5 KB → 위험 함수 호출자 (NEW)
-  │
-  ├── Phase 2: LLM 해석
-  │   ├── Phase 1 결과(SAST+코드+SCA+CVE+위협+호출자)를 프롬프트에 주입
-  │   ├── 시스템 프롬프트: 임무 중심 4단계 (평가→연결→도구→보고서)
-  │   ├── LLM이 추가 tool 호출 가능 (6종):
-  │   │     knowledge.search, code_graph.callers, code_graph.callees,
-  │   │     code_graph.search, code.read_file, build.metadata
-  │   ├── LLM 호출은 S7 Gateway 경유 (POST /v1/chat)
-  │   └── Qwen 122B GPTQ-Int4 → 구조화 JSON (claims + evidence refs)
-  │
-  └── 응답: TaskSuccessResponse (기존 API 계약 준수)
-```
-
-### 핵심 설계 원칙
-
-- **결정론적 처리를 최대화** — Phase 1에서 SAST, 코드 그래프, SCA를 LLM 없이 실행
-- **LLM의 결정 표면을 최소화** — Phase 2에서 LLM은 해석만 담당
-- **증거 기반** — 모든 claim은 eref(Evidence Reference)로 근거 연결 필수
-- **SCA CVE는 참고 정보** — 라이브러리 코드는 미분석이므로 claims가 아닌 caveats에 포함
-- **LLM 접근은 S7 경유** — 모든 LLM 호출은 S7 Gateway(`POST /v1/chat`)를 통해 수행
-
-### 주요 컴포넌트 (세션 15 추가)
-
-**Evidence Sanitizer** (`app/validators/evidence_sanitizer.py`):
-- LLM 환각 refId를 fuzzy match(threshold 0.6)로 교정 또는 제거
-- `ResultAssembler.build()` + `generate-poc` 모두 validation 전 실행
-- allowed_refs가 비어있으면 모든 refs 제거
-
-**SAST NDJSON 스트리밍** (`app/tools/implementations/sast_tool.py`):
-- `httpx.AsyncClient.stream()` + `Accept: application/x-ndjson` 헤더
-- 이벤트: progress, heartbeat, result, error
-- 60초 inactivity timeout (`asyncio.wait_for` per line)
-- 동기 fallback 유지 (Content-Type이 ndjson이 아니면)
-
-**RE100 전체 테스트** (`scripts/re100-full-test.sh`):
-- 4개 프로젝트 병렬 Build → Analyze → PoC + 마크다운 보고서
-- 보고서: `reports/re100-YYYYMMDD-HHMMSS/`
-
-### 파일 구조 (요약)
-
-| 디렉토리 | 핵심 파일 | 역할 |
-|----------|----------|------|
-| `services/agent-shared/` | `llm/caller.py`, `tools/registry.py`, `schemas/{agent,upstream}.py`, `path_util.py` | 공통 프레임: LLM 통신, 도구 실행, DTO, 경로 검증 |
-| `services/analysis-agent/app/core/` | `phase_one.py`, `agent_loop.py`, `result_assembler.py` | Phase 1 결정론적 실행 + Phase 2 LLM 루프 |
-| `services/analysis-agent/app/tools/` | `router.py`, `implementations/` (sast, codegraph, knowledge, sca) | 도구 디스패치 + S4/S5 HTTP 위임 |
-| `services/build-agent/app/core/` | `phase_zero.py`, `agent_loop.py`, `result_assembler.py` | Phase 0 사전 분석 + 빌드 스크립트 생성/복구 |
-| `services/build-agent/app/tools/` | `router.py`, `implementations/` (list/read/write/edit/delete/try_build) | 파일 도구 + S4 빌드 실행 |
-| `services/build-agent/app/policy/` | `file_policy.py` | 능력 기반 파일 접근 + 내용 안전성 검사 |
-
-### 환경변수 (.env)
-
-`services/analysis-agent/.env` — pydantic-settings 자동 로드. 주요: `AEGIS_LLM_ENDPOINT` (S7 Gateway), `AEGIS_LLM_MODEL` (모델명).
-
-## 5. 핵심 의존성
-
-### KB (S5, S3 임시 관리)
-
-- Neo4j + Qdrant 하이브리드 GraphRAG. 상세: `wiki/canon/handoff/s5/readme.md`
-- Neo4j: `~/neo4j-community-5.26.3`, 포트 7687/7474, 인증 neo4j/smartcar
-
-### Observability
-
-- service 식별자: `s3-agent`. 로그: `logs/aegis-analysis-agent.jsonl`, `logs/llm-exchange.jsonl`
-- `wiki/canon/specs/observability.md` 준수. 교차 추적: `grep '{request-id}' logs/*.jsonl`
+| 영역 | 현재 파일 |
+|---|---|
+| shared budget | `services/agent-shared/agent_shared/budget/manager.py` |
+| shared termination | `services/agent-shared/agent_shared/policy/termination.py` |
+| shared tool router core | `services/agent-shared/agent_shared/tools/router_core.py` |
+| shared LLM caller | `services/agent-shared/agent_shared/llm/caller.py` |
 
 ---
 
-## 7. 분할 문서
+## 5. 보호해야 하는 외부 surface
 
-| 문서 | 내용 |
-|------|------|
-| [`session-{N}.md`](.) | 세션별 수정 이력 (1세션 = 1파일, 세션 5~18) |
-| [`roadmap.md`](roadmap.md) | 다음 작업 + v2 장기 계획 |
+다음은 **S2-visible protected surface**이며 내부 리팩토링 중에도 바꾸면 안 된다.
 
----
-
-## 8. 관리하는 문서
-
-| 문서 | 경로 | 용도 |
-|------|------|------|
-| 이 인수인계서 | `wiki/canon/handoff/s3/readme.md` | 진입점 |
-| 세션 로그 | `wiki/canon/handoff/s3/session-{N}.md` | 수정 이력 (1세션 = 1파일) |
-| 로드맵 | `wiki/canon/roadmap/s3-roadmap.md` | 다음 작업 + 장기 계획 |
-| Analysis Agent 명세 | `wiki/canon/specs/analysis-agent.md` | 아키텍처, 원칙 |
-| Build Agent 명세 | `wiki/canon/specs/build-agent.md` | 아키텍처, 원칙 |
-| Analysis Agent API | `wiki/canon/api/analysis-agent-api.md` | S2↔S3 계약 |
-| Build Agent API | `wiki/canon/api/build-agent-api.md` | S2↔S3 계약 |
+1. Analysis Agent `/v1/health`
+   - `activePromptVersions = {deep-analyze: agent-v1, generate-poc: v1}`
+2. Build Agent `/v1/health`
+   - `version = 1.0.0`
+3. Build Agent strict contract parsing
+   - top-level `contractVersion`, `strictMode`
+   - legacy alias normalization 유지
+4. `/v1/tasks` request/response top-level shape
+5. Analysis Agent legacy task rejection semantics
 
 ---
 
-## 9. 실행 방법
+## 6. 2026-04-09 기준 리팩토링 상태
 
-> **서버를 직접 실행하지 마라.** 서비스 기동/종료는 반드시 사용자에게 요청할 것.
+### 완료된 내부 정리
+- shared `TerminationPolicy` 공통화
+- shared `BudgetManager` 공통화
+- shared `ToolRouter` core 공통화
+- Build Agent `tasks.py` thin-router 분리 완료
+- Analysis Agent `tasks.py` thin-router 분리 완료
+- Analysis `phase_one.py`를 façade 수준까지 분해
 
-### 사전 조건
+### 현재 크기(대략)
+- `services/build-agent/app/routers/tasks.py`: **86 LOC**
+- `services/analysis-agent/app/routers/tasks.py`: **185 LOC**
+- `services/analysis-agent/app/core/phase_one.py`: **14 LOC** compatibility surface
 
-- S7 Gateway (:8000) 가동 중
-- S4 SAST Runner (:9000) 가동 중
-- Neo4j: `$NEO4J_HOME/bin/neo4j start` (~/neo4j-community-5.26.3)
-- S5 Knowledge Base (:8002) 가동 중 (S3가 임시 관리)
+### 의미
+- public surface는 유지
+- 내부는 handler / flow / helper / type 단위로 분리
+- 향후 수정 시 drift 위험이 크게 줄어든 상태
 
-### Agent 기동
+---
 
-```bash
-cd services/analysis-agent && source .venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8001
-```
+## 7. 최신 검증 상태 (2026-04-09)
 
-### 확인
+### Analysis Agent
+- `test_phase_one.py`
+- `test_generate_poc_handler.py`
+- `test_skeleton_smoke.py`
+- 최근 합산 검증: **43 passed**
 
-```bash
-curl http://localhost:8001/v1/health  # Agent
-```
+### Build Agent
+- `test_health.py`
+- `test_build_request_contract.py`
+- `test_tool_router.py`
+- `test_concurrency.py`
+- 최근 합산 검증: **26 passed**
 
-### 통합 테스트
+### Live health
+- `http://localhost:8001/v1/health` → PASS
+- `http://localhost:8003/v1/health` → PASS
 
-```bash
-cd services/analysis-agent
-bash scripts/project-scan.sh  # RE100 프로젝트 전반 분석
-```
+---
 
-**주의**: WSL2 환경. `.venv` + `.env` 구비됨.
+## 8. 다음 세션에서 바로 이어갈 수 있는 것
+
+1. 내부 추가 cleanup
+   - handler 내부 추가 분해
+   - phase-one helper naming 정리
+2. broader live smoke
+   - `deep-analyze`
+   - `generate-poc`
+   - `build-resolve`
+3. 문서/세션 기록 유지
+   - major internal structure 변화 시 spec/handoff/roadmap 동시 갱신
+
+현재 상태는 **public contract를 유지한 채 내부 구조를 정리하는 작업이 거의 안정권에 들어온 상태**다.

@@ -22,6 +22,10 @@ const INDEX_PATH = path.join(SYSTEM_ROOT, 'index.md');
 const LOG_PATH = path.join(SYSTEM_ROOT, 'log.md');
 const WRITING_GUIDE_PATH = path.join(SYSTEM_ROOT, 'writing-guide.md');
 const MIGRATION_MAP_PATH = path.join(SYSTEM_ROOT, 'migration-map.md');
+const LOCK_RETRY_MS = 10;
+const LOCK_TIMEOUT_MS = 5000;
+const STALE_LOCK_MS = 30000;
+const SLEEP_BUFFER = new Int32Array(new SharedArrayBuffer(4));
 const CATEGORY_ORDER = [
   ['charter', 'Platform charter'],
   ['specs', 'Specifications'],
@@ -50,6 +54,52 @@ function readText(filePath) {
 function writeText(filePath, text) {
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, text, 'utf8');
+}
+
+function sleepMs(ms) {
+  Atomics.wait(SLEEP_BUFFER, 0, 0, ms);
+}
+
+function withFileLock(targetPath, fn, { timeoutMs = LOCK_TIMEOUT_MS, retryMs = LOCK_RETRY_MS, staleMs = STALE_LOCK_MS } = {}) {
+  const lockPath = `${targetPath}.lock`;
+  const startedAt = Date.now();
+
+  while (true) {
+    let fd = null;
+    try {
+      ensureDir(path.dirname(lockPath));
+      fd = fs.openSync(lockPath, 'wx');
+      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, acquired_at: new Date().toISOString() }), 'utf8');
+      return fn();
+    } catch (error) {
+      if (fd !== null) {
+        try { fs.closeSync(fd); } catch { /* ignore close failure */ }
+      }
+      if (error.code !== 'EEXIST') throw error;
+      try {
+        const stat = fs.statSync(lockPath);
+        if ((Date.now() - stat.mtimeMs) > staleMs) {
+          fs.unlinkSync(lockPath);
+          continue;
+        }
+      } catch (statError) {
+        if (statError.code === 'ENOENT') continue;
+        throw statError;
+      }
+      if ((Date.now() - startedAt) >= timeoutMs) {
+        throw new Error(`Timed out acquiring lock for ${path.basename(targetPath)}`);
+      }
+      sleepMs(retryMs);
+      continue;
+    } finally {
+      if (fd !== null) {
+        try { fs.closeSync(fd); } catch { /* ignore close failure */ }
+        try { fs.unlinkSync(lockPath); } catch (unlinkError) {
+          if (unlinkError.code !== 'ENOENT') throw unlinkError;
+        }
+      }
+    }
+  }
 }
 
 function listMarkdownFiles(dirPath) {
@@ -115,13 +165,58 @@ function yamlValue(raw) {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (value.startsWith('[') && value.endsWith(']')) {
-    try {
-      return JSON.parse(value.replace(/'/g, '"'));
-    } catch {
-      return [];
-    }
+    return parseInlineCollection(value);
   }
   return value.replace(/^"|"$/g, '');
+}
+
+function normalizeJsonishSingleQuotes(value) {
+  let result = '';
+  let inDouble = false;
+  let inSingle = false;
+  let escapeNext = false;
+
+  for (const char of value) {
+    if (escapeNext) {
+      result += char;
+      escapeNext = false;
+      continue;
+    }
+    if (char === '\\') {
+      result += char;
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"' && !inSingle) {
+      inDouble = !inDouble;
+      result += char;
+      continue;
+    }
+    if (char === '\'' && !inDouble) {
+      inSingle = !inSingle;
+      result += '"';
+      continue;
+    }
+    result += char;
+  }
+
+  return inSingle ? value : result;
+}
+
+function parseInlineCollection(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    const normalized = normalizeJsonishSingleQuotes(value);
+    if (normalized !== value) {
+      try {
+        return JSON.parse(normalized);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
 }
 
 function parseFrontmatter(text) {
@@ -735,39 +830,46 @@ function maybeDeriveGlobalStatus(toLanes, completionRecords) {
 }
 
 function completeWorkRequest({ pathOrId, lane, completionNote = '' }) {
-  const wr = resolveWrRecord({ pathOrId });
   const normalizedLane = normalizeLane(lane);
-  const canComplete = wr.toLanes.includes(normalizedLane) || wr.toLanes.includes('all');
-  if (!canComplete) throw new Error(`Lane ${lane} is not allowed to complete ${wr.wrId}`);
-  const { data } = parseFrontmatter(readText(wr.absPath));
-  const completionRecords = Array.isArray(data.completed_by)
-    ? data.completed_by
-    : (Array.isArray(data.completion_records) ? data.completion_records : []);
-  const existing = completionRecords.find((entry) => normalizeLane(entry.lane) === normalizedLane);
-  const now = new Date().toISOString();
-  if (existing) {
-    existing.completed_at = now;
-    if (completionNote) existing.note = completionNote;
-  } else {
-    completionRecords.push({
-      lane: normalizedLane,
-      completed_at: now,
-      ...(completionNote ? { note: completionNote } : {})
+  const initial = resolveWrRecord({ pathOrId });
+  return withFileLock(initial.absPath, () => {
+    const wr = resolveWrRecord({ pathOrId: initial.relPath });
+    const canComplete = wr.toLanes.includes(normalizedLane) || wr.toLanes.includes('all');
+    if (!canComplete) throw new Error(`Lane ${lane} is not allowed to complete ${wr.wrId}`);
+    const { data } = parseFrontmatter(readText(wr.absPath));
+    const completionRecords = Array.isArray(data.completed_by)
+      ? data.completed_by
+      : (Array.isArray(data.completion_records) ? data.completion_records : []);
+    const existing = completionRecords.find((entry) => normalizeLane(entry.lane) === normalizedLane);
+    const now = new Date().toISOString();
+    if (existing) {
+      existing.completed_at = now;
+      if (completionNote) existing.note = completionNote;
+    } else {
+      completionRecords.push({
+        lane: normalizedLane,
+        completed_at: now,
+        ...(completionNote ? { note: completionNote } : {})
+      });
+    }
+    data.completed_by = completionRecords;
+    data.status = maybeDeriveGlobalStatus(Array.isArray(data.to_lanes) ? data.to_lanes : wr.toLanes, completionRecords);
+    data.last_verified = now.slice(0, 10);
+    if (data.status === 'completed') {
+      data.completed_at = now;
+    } else {
+      delete data.completed_at;
+    }
+    updateWrFrontmatter(wr.absPath, data);
+    rebuildIndex();
+    appendLogEntry({
+      date: now.slice(0, 10),
+      event: 'mcp',
+      subject: `complete_wr | ${wr.wrId}`,
+      details: [`Lane ${normalizedLane} completed recipient-side handling`, `Status: ${data.status}`]
     });
-  }
-  data.completed_by = completionRecords;
-  data.status = maybeDeriveGlobalStatus(Array.isArray(data.to_lanes) ? data.to_lanes : wr.toLanes, completionRecords);
-  data.last_verified = now.slice(0, 10);
-  if (data.status === 'completed') data.completed_at = now;
-  updateWrFrontmatter(wr.absPath, data);
-  rebuildIndex();
-  appendLogEntry({
-    date: now.slice(0, 10),
-    event: 'mcp',
-    subject: `complete_wr | ${wr.wrId}`,
-    details: [`Lane ${normalizedLane} completed recipient-side handling`, `Status: ${data.status}`]
+    return resolveWrRecord({ pathOrId: wr.relPath });
   });
-  return resolveWrRecord({ pathOrId: wr.relPath });
 }
 
 function sanitizeSegment(value) {

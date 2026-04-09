@@ -20,36 +20,36 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## Specifications
 
-- [[wiki/canon/specs/adapter|Adapter 기능 명세]] — ECU ↔ Backend 사이의 WebSocket 릴레이 서비스 *(verified 2026-04-06; s6)*
-- [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-06; s3)*
-- [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-04-08; s2)*
-- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-06; s3)*
-- [[wiki/canon/specs/ecu-simulator|ECU Simulator 기능 명세]] — 가상 ECU — CAN 트래픽 생성 + 주입 응답 시뮬레이션 *(verified 2026-04-06; s6)*
-- [[wiki/canon/specs/frontend|S1 Frontend 현재 구현 스펙]] — 이 문서는 services/frontend/의 현재 실제 구현 + 검증된 상태를 기준으로 작성한 S1 프론트 스펙이다. *(verified 2026-04-06; s1)*
+- [[wiki/canon/specs/adapter|Adapter 기능 명세]] — ECU ↔ Backend 사이의 WebSocket 릴레이 서비스 *(verified 2026-04-09; s6)*
+- [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-09; s3)*
+- [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-04-09; s2)*
+- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-09; s3)*
+- [[wiki/canon/specs/ecu-simulator|ECU Simulator 기능 명세]] — 가상 ECU — CAN 트래픽 생성 + 주입 응답 시뮬레이션 *(verified 2026-04-09; s6)*
+- [[wiki/canon/specs/frontend|S1 Frontend 현재 구현 스펙]] — 이 문서는 services/frontend/의 현재 실제 구현 + 검증된 상태를 기준으로 작성한 S1 프론트 스펙이다. *(verified 2026-04-09; s1)*
 - [[wiki/canon/specs/knowledge-base|Knowledge Base 명세서]] — 소유자: S5 *(verified 2026-04-06; s5)*
-- [[wiki/canon/specs/llm-engine|S7. LLM Engine 기능 명세]] — LLM Engine은 S7이 관리하는 LLM 추론 모델 서빙 계층이다. *(verified 2026-04-06; s7)*
-- [[wiki/canon/specs/llm-gateway|S7. LLM Gateway 기능 명세 (AEGIS)]] — S7은 AEGIS 플랫폼의 LLM 단일 관문(Gateway) 이자 LLM Engine 운영자이다. *(verified 2026-04-06; s7)*
-- [[wiki/canon/specs/observability|MSA Observability 규약]] — S2(AEGIS Core)가 관리하는 전 서비스 공통 규약. *(verified 2026-04-06; platform)*
-- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.0)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-04-06; s4)*
-- [[wiki/canon/specs/technical-overview|기술 명세 - 전체 개요]] — 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다. *(verified 2026-04-08; platform)*
+- [[wiki/canon/specs/llm-engine|S7. LLM Engine 기능 명세]] — LLM Engine은 S7이 관리하는 LLM 추론 모델 서빙 계층이다. *(verified 2026-04-09; s7)*
+- [[wiki/canon/specs/llm-gateway|S7. LLM Gateway 기능 명세 (AEGIS)]] — S7은 AEGIS 플랫폼의 LLM 단일 관문(Gateway) 이자 LLM Engine 운영자이다. *(verified 2026-04-09; s7)*
+- [[wiki/canon/specs/observability|MSA Observability 규약]] — S2(AEGIS Core)가 관리하는 전 서비스 공통 규약. *(verified 2026-04-09; platform)*
+- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.0)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-04-09; s4)*
+- [[wiki/canon/specs/technical-overview|기술 명세 - 전체 개요]] — 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다. *(verified 2026-04-09; platform)*
 
 ## API contracts
 
 - [[wiki/canon/api/adapter-api|Adapter WebSocket API 명세 (v0.1.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-06; s6)*
-- [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 (Analysis Agent) *(verified 2026-04-06; s3)*
-- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (v1.0.0)]] — 소유자: S3 (Analysis Agent 겸 Build Agent) *(verified 2026-04-06; s3)*
+- [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-04-09; s3)*
+- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (v1.0.0)]] — 소유자: S3 *(verified 2026-04-09; s3)*
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-04-08; s5)*
-- [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-06; s7)*
-- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-06; s7)*
-- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-06; s4)*
-- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-08; platform)*
+- [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-09; s7)*
+- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-09; s7)*
+- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-09; s4)*
+- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-09; platform)*
 
 ## Handoff
 
 - [[wiki/canon/handoff/s1-qa/session-s1qa-comprehensive-20260406|Session history — s1-qa / s1qa-comprehensive-20260406]] — - Lane: s1-qa *(verified 2026-04-06; s1-qa)*
-- [[wiki/canon/handoff/s1/architecture|S1 Frontend Architecture Snapshot]] — services/frontend/의 실제 코드 구조와 라우팅/모듈/테스트 자산을 2026-04-08 기준으로 정리한 문서. *(verified 2026-04-08; s1)*
-- [[wiki/canon/handoff/s1/qa-guide|S1-QA 실행 가이드]] — 역할: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane *(verified 2026-04-06; s1)*
-- [[wiki/canon/handoff/s1/readme|S1 Frontend 개발 인수인계서]] — 먼저 docs/AEGIS.md를 읽을 것. *(verified 2026-04-08; s1)*
+- [[wiki/canon/handoff/s1/architecture|S1 Frontend Architecture Snapshot]] — services/frontend/의 실제 코드 구조와 라우팅/모듈/테스트 자산을 2026-04-09 기준으로 정리한 문서. *(verified 2026-04-09; s1)*
+- [[wiki/canon/handoff/s1/qa-guide|S1-QA 실행 가이드]] — 역할: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane *(verified 2026-04-09; s1)*
+- [[wiki/canon/handoff/s1/readme|S1 Frontend 개발 인수인계서]] — 먼저 docs/AEGIS.md를 읽을 것. *(verified 2026-04-09; s1)*
 - [[wiki/canon/handoff/s1/session-1|S1 Session 1 — 2026-03-14]] — 1. ✅ CSS 폴리싱 — !important 13개 제거, 인라인 스타일 30개 → CSS 클래스 전환, transition 토큰화, 반응형 보강 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-10|S1 Session 10 — 2026-03-25]] — 44. ✅ 외부 리뷰 피드백 수신 및 검토 (docs/외부피드백/26.03.25/AEGISS1frontendQAreview.md) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-11|S1 Session 11 — 2026-03-26]] — 57. ✅ S2 WR 처리 (s2-to-s1-sdk-management-ui.md) — SDK 관리 UI 구현 *(verified 2026-04-06; s1)*
@@ -65,9 +65,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-7|S1 Session 7 — 2026-03-21]] — 16. ✅ 소스코드 트리 탐색 UI (S2 WR s2-to-s1-source-tree-ux.md 대응) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-8|S1 Session 8 — 2026-03-23]] — 21. ✅ Summary API 전환 (/api/static-analysis/summary → /api/analysis/summary) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-9|S1 Session 9 — 2026-03-24]] — 26. ✅ 업로드 엔드포인트 통합 — 파일 유형 분기 로직 제거, uploadSource 단일 엔드포인트 *(verified 2026-04-06; s1)*
-- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-08; s2)*
-- [[wiki/canon/handoff/s2/architecture|S2 아키텍처 상세]] — 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행/운영 메모 *(verified 2026-04-07; s2)*
-- [[wiki/canon/handoff/s2/readme|S2. AEGIS Core (Backend) 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-08; s2)*
+- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-09; s2)*
+- [[wiki/canon/handoff/s2/architecture|S2 아키텍처 상세]] — 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행/운영 메모 *(verified 2026-04-09; s2)*
+- [[wiki/canon/handoff/s2/readme|S2. AEGIS Core (Backend) 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-09; s2)*
 - [[wiki/canon/handoff/s2/session-1|세션 1 — 문서-코드 감사]] — 날짜: 2026-03-17 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-10|세션 10 — 백로그 일괄 처리 — build-resolve + Transient 제거 + 테스트 + MCP]] — 날짜: 2026-03-25 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-11|세션 11 — S1 요청 API 10건 + 테스트 + MCP + S4 동기화]] — 날짜: 2026-03-26 *(verified 2026-04-06; s2)*
@@ -87,8 +87,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-omx-1775463166551-zydb7o|Session history — s2 / omx-1775463166551-zydb7o]] — - Lane: s2 *(verified 2026-04-06; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775469122100-df8axl|Session history — s2 / omx-1775469122100-df8axl]] — - Lane: s2 *(verified 2026-04-07; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775553999378-p10q7s|Session history — s2 / omx-1775553999378-p10q7s]] — - Lane: s2 *(verified 2026-04-07; s2)*
-- [[wiki/canon/handoff/s2/session-omx-1775611563366-wajjae|Session history — s2 / omx-1775611563366-wajjae]] — - Lane: s2 *(verified 2026-04-08; s2)*
-- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s3)*
+- [[wiki/canon/handoff/s2/session-omx-1775611563366-wajjae|Session history — s2 / omx-1775611563366-wajjae]] — - Lane: s2 *(verified 2026-04-09; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas|Session history — s2 / omx-1775722786907-7rtmas]] — - Lane: s2 *(verified 2026-04-09; s2)*
+- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-04-09; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-10|세션 10: Build Agent 분리 + 프로젝트 메모리 (2026-03-24, 완료)]] — - Build Agent 서비스 분리 (:8003) *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-11|세션 11: Build Agent v2 재설계 + 외부 리뷰 (2026-03-25, 완료)]] — - Build Agent v2 재설계: 정책 엔진, edit/delete 도구, trybuild v2, 서브프로젝트 스코핑 *(verified 2026-04-06; s3)*
@@ -113,9 +114,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-9|세션 9: 프롬프트 고도화 + Observability v2 (2026-03-23, 완료)]] — - 프롬프트 도구 사용 재조정, adaptive timeout 보정 *(verified 2026-04-06; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1775469122100-df8axl|Session history — s3 / omx-1775469122100-df8axl]] — - Lane: s3 *(verified 2026-04-07; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1775554030010-j7lykp|Session history — s3 / omx-1775554030010-j7lykp]] — - Lane: s3 *(verified 2026-04-07; s3)*
-- [[wiki/canon/handoff/s3/session-omx-1775611602872-86xufo|Session history — s3 / omx-1775611602872-86xufo]] — - Lane: s3 *(verified 2026-04-08; s3)*
-- [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-06; s4)*
-- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s4)*
+- [[wiki/canon/handoff/s3/session-omx-1775611602872-86xufo|Session history — s3 / omx-1775611602872-86xufo]] — - Lane: s3 *(verified 2026-04-09; s3)*
+- [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-09; s4)*
+- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-09; s4)*
 - [[wiki/canon/handoff/s4/session-1|S4 세션 1 — 전체 빌드업 (~ 2026-03-27)]] — 초기 구축부터 v0.7.0까지의 전체 작업 로그. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-2|S4 세션 2 — 외부 피드백 잔여 5건 + 문서 전면 갱신 (2026-03-28)]] — - [x] 외부 피드백 잔여 5건 전체 반영: *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-3|S4 세션 3 — 통합테스트 전 코드 점검 + 통합테스트 대응 (2026-03-28 ~ 2026-03-31)]] — 통합테스트 전 S3/S4/S5/S7 협력 대비 코드 점검: *(verified 2026-04-06; s4)*
@@ -128,7 +129,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-omx-1775463834644-s84ud8|Session history — s4 / omx-1775463834644-s84ud8]] — - Lane: s4 *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1775469122100-df8axl|Session history — s4 / omx-1775469122100-df8axl]] — - Lane: s4 *(verified 2026-04-07; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1775554053910-28cuqs|Session history — s4 / omx-1775554053910-28cuqs]] — - Lane: s4 *(verified 2026-04-07; s4)*
-- [[wiki/canon/handoff/s4/session-omx-1775611621885-coij9e|Session history — s4 / omx-1775611621885-coij9e]] — - Lane: s4 *(verified 2026-04-08; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1775611621885-coij9e|Session history — s4 / omx-1775611621885-coij9e]] — - Lane: s4 *(verified 2026-04-09; s4)*
 - [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-07; s5)*
 - [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-07; s5)*
 - [[wiki/canon/handoff/s5/session-1|S5 Session 1 — 2026-03-18]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -152,16 +153,18 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s5/session-8|S5 Session 8 — 2026-03-25]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-9|S5 Session 9 — 2026-03-25]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-omx-1775463912798-zi6w92|Session history — s5 / omx-1775463912798-zi6w92]] — - Lane: s5 *(verified 2026-04-07; s5)*
-- [[wiki/canon/handoff/s6/readme|S6. Dynamic Analysis 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s6)*
+- [[wiki/canon/handoff/s5/session-omx-1775722925405-bjvop8|Session history — s5 / omx-1775722925405-bjvop8]] — - Lane: s5 *(verified 2026-04-09; s5)*
+- [[wiki/canon/handoff/s6/readme|S6. Dynamic Analysis 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-09; s6)*
 - [[wiki/canon/handoff/s6/session-1|S6 세션 1 — 2026-03-28]] — 1. 코드베이스 전체 탐색 *(verified 2026-04-06; s6)*
 - [[wiki/canon/handoff/s6/session-2|S6 세션 2 — 2026-03-31]] — 1. 코드베이스 재탐색 (세션 인수인계) *(verified 2026-04-06; s6)*
 - [[wiki/canon/handoff/s6/session-3|S6 세션 3 — 2026-04-04]] — 1. 공통 공지 재확인 *(verified 2026-04-06; s6)*
-- [[wiki/canon/handoff/s7/architecture|S7 LLM Gateway — 아키텍처 상세]] — 이 문서는 Gateway 코드의 구조, 요청 처리 흐름, 환경변수, Observability를 상세히 기술한다. *(verified 2026-04-06; s7)*
-- [[wiki/canon/handoff/s7/llm-engine-ops|S7 LLM Engine — 운영 정보]] — DGX Spark에서 구동되는 LLM Engine(vLLM)의 접속, 기동, 성능, 트러블슈팅 정보. *(verified 2026-04-06; s7)*
-- [[wiki/canon/handoff/s7/readme|S7. LLM Gateway + LLM Engine 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-06; s7)*
+- [[wiki/canon/handoff/s7/architecture|S7 LLM Gateway — 아키텍처 상세]] — 이 문서는 Gateway 코드의 구조, 요청 처리 흐름, 환경변수, Observability를 상세히 기술한다. *(verified 2026-04-09; s7)*
+- [[wiki/canon/handoff/s7/llm-engine-ops|S7 LLM Engine — 운영 정보]] — DGX Spark에서 구동되는 LLM Engine(vLLM)의 접속, 기동, 성능, 트러블슈팅 정보. *(verified 2026-04-09; s7)*
+- [[wiki/canon/handoff/s7/readme|S7. LLM Gateway + LLM Engine 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-09; s7)*
 - [[wiki/canon/handoff/s7/session-1|Session 1 — S7 신설 (2026-03-19)]] — S3(Analysis Agent + LLM Gateway)에서 LLM Gateway + LLM Engine 관리를 S7으로 분리. *(verified 2026-04-06; s7)*
 - [[wiki/canon/handoff/s7/session-10|Session 10 — S7 handoff 문서 잔여 드리프트 정리 (2026-04-04)]] — - Session 9에서 Gateway 안정화 패치와 공용 .omx 메모 규칙 반영을 완료했다. *(verified 2026-04-06; s7)*
 - [[wiki/canon/handoff/s7/session-11|Session 11 — S7 담당 문서 일괄 정합화 (2026-04-04)]] — - 종료 전 S7 소유 문서를 다시 점검했다. *(verified 2026-04-06; s7)*
+- [[wiki/canon/handoff/s7/session-12|Session 12 — S7 담당 문서 전체 현행화 (2026-04-09)]] — - 전 세션(S7 대행, aegis-static-wiki MCP 에러 처리 개선) 이후 세션 정리 시점. *(verified 2026-04-09; s7)*
 - [[wiki/canon/handoff/s7/session-2|Session 2 — 122B 모델 전환 + Gateway 고도화 (2026-03-20)]] — - 모델 전환: Qwen/Qwen3.5-35B-A3B-FP8 -> Qwen/Qwen3.5-122B-A10B-GPTQ-Int4 (Qwen 공식) *(verified 2026-04-06; s7)*
 - [[wiki/canon/handoff/s7/session-3|Session 3 — 관측성 고도화 + vLLM 튜닝 + MCP 호환 (2026-03-21~24)]] — - 타임아웃 분리: 단일 120초 -> connect 10초 / read 호출자 주도 (X-Timeout-Seconds 헤더, 기본 1800초) *(verified 2026-04-06; s7)*
 - [[wiki/canon/handoff/s7/session-4|Session 4 — 외부 리뷰 피드백 개선 (2026-03-25)]] — - CORS 제한: alloworigins=[""] -> 환경변수 AEGISCORSALLOWORIGINS 기반 (기본 localhost:5173,3000) *(verified 2026-04-06; s7)*
@@ -174,12 +177,12 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## Roadmap
 
 - [[wiki/canon/roadmap/s1-roadmap|S1 Frontend — Roadmap]] — 마지막 업데이트: 2026-04-02 *(verified 2026-04-06; s1)*
-- [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-06; s2)*
-- [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — 다음 작업 + 장기 계획. README에서 분리. *(verified 2026-04-06; s3)*
-- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-04-06; s4)*
+- [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-09; s2)*
+- [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — S3 lane의 다음 작업과 최근 완료 사항. *(verified 2026-04-09; s3)*
+- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-04-09; s4)*
 - [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-07; s5)*
-- [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-06; s6)*
-- [[wiki/canon/roadmap/s7-roadmap|S7 Roadmap]] — 다음 작업 + 장기 계획 *(verified 2026-04-06; s7)*
+- [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-09; s6)*
+- [[wiki/canon/roadmap/s7-roadmap|S7 Roadmap]] — 다음 작업 + 장기 계획 *(verified 2026-04-09; s7)*
 
 ## Work requests
 
@@ -197,18 +200,24 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s1-qa-to-s1-untitled|프로젝트 대시보드 디자인 전면 개선 요청]] — - Kind: request *(verified 2026-04-07; frontend)*
 - [[wiki/canon/work-requests/s1-qa-to-s1-websocket-overviewpage|사이드바 + WebSocket + OverviewPage 에러 수정 요청]] — - Kind: request *(verified 2026-04-07; frontend)*
 - [[wiki/canon/work-requests/s1-qa-to-s2-aegis-58-design.md|AEGIS 디자인 시스템 선정 — 58개 DESIGN.md 전수 검토 결과 + 의견 요청]] — - Kind: question *(verified 2026-04-07; frontend)*
+- [[wiki/canon/work-requests/s1-to-s1-aegis-design.md-v2-v6|프론트엔드 전면 리스타일링 — AEGIS-DESIGN.md v2 + v6 디자인 레퍼런스 기반]] — - Kind: request *(verified 2026-04-09; frontend/design/css)*
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-qa-qa|S1-QA 종합 QA 요청 — 페르소나 기반 전면 검증]] — - Kind: request *(verified 2026-04-06; s1)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
+- [[wiki/canon/work-requests/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t|Follow-up: strengthen large SDK upload UX with sticky byte-level progress, stage transitions, and failure visibility]] — - Kind: request *(verified 2026-04-09; s1/s2/frontend/backend/sdk/websocket/ux/notifications)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh|Frontend follow-up for project-scoped SDK upload (archive / .bin / folder) and refreshed progress semantics]] — - Kind: request *(verified 2026-04-07; s1/s2/frontend/backend/sdk/websocket/notifications)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts|Frontend full-depth audit against refreshed S2 API/WebSocket contracts]] — - Kind: request *(verified 2026-04-07; s1/s2/frontend/backend/api-contract/websocket)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-ux-handoff-for-websocket-progress-completion-surfaces|Frontend UX handoff for WebSocket progress/completion surfaces]] — - Kind: request *(verified 2026-04-07; s1/s2)*
 - [[wiki/canon/work-requests/s2-to-s1-qa-reply-s2-opinion-on-aegis-design-system-choice-favors-ibm-carbon-as-canonical-ba|Reply: S2 opinion on AEGIS design-system choice favors IBM Carbon as canonical base]] — - Kind: reply *(verified 2026-04-07; s2/s1-qa/frontend/design)*
 - [[wiki/canon/work-requests/s2-to-s1-reply-ws-static-analysis-removed-ws-analysis-is-the-canonical-progress-channel|Reply: `/ws/static-analysis` removed; `/ws/analysis` is the canonical progress channel]] — - Kind: reply *(verified 2026-04-07; s1/s2/websocket/analysis)*
+- [[wiki/canon/work-requests/s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet|S2 backend project CRUD hardening landed on 2026-04-09 — please wire S1 edit/delete UI to stable PUT/DELETE semantics]] — - Kind: request *(verified 2026-04-09; s2/s1)*
 - [[wiki/canon/work-requests/s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec|S2 websocket recovery hardening landed on 2026-04-08; please validate S1 reconnect/progress UX]] — - Kind: request *(verified 2026-04-08; s2/s1/s1-qa/websocket/api-contract/frontend)*
 - [[wiki/canon/work-requests/s2-to-s1-sdk-upload-request-shape-examples-for-s1-archive-.bin-folder-with-relativepath|SDK upload request-shape examples for S1 (archive / .bin / folder with relativePath[])]] — - Kind: reply *(verified 2026-04-07; s1/s2/frontend/backend/sdk/multipart)*
+- [[wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-|Visible SDK upload progress bar needed for large .bin uploads (user-observed gap on 2026-04-09)]] — - Kind: request *(verified 2026-04-09; s1/s2/frontend/backend/sdk/websocket/ux)*
 - [[wiki/canon/work-requests/s2-to-s3-s2-handled-build-agent-analysis-agent-rollout-and-consumer-alignment-on-2026-04-|S2 handled build-agent/analysis-agent rollout and consumer alignment on 2026-04-08]] — - Kind: reply *(verified 2026-04-08; s2/s3/runtime/build-agent/analysis-agent/api-contract)*
+- [[wiki/canon/work-requests/s2-to-s3-s4-race-test-wr|race test wr]] — - Kind: request *(verified 2026-04-09; s2)*
 - [[wiki/canon/work-requests/s2-to-s4-clarify-migration-path-for-s4-build-sdk-contract-drift-currently-affecting-s2|Clarify migration path for S4 build/sdk contract drift currently affecting S2]] — - Kind: request *(verified 2026-04-07; s2/s4/backend/sast-runner/sdk-registry/build)*
 - [[wiki/canon/work-requests/s2-to-s5-s2-acknowledged-s5-project-memory-x-timeout-ms-clarification-on-2026-04-08|S2 acknowledged S5 project-memory X-Timeout-Ms clarification on 2026-04-08]] — - Kind: reply *(verified 2026-04-08; s2/s5/api-contract)*
+- [[wiki/canon/work-requests/s2-to-s6-s6-reactivation-for-dynamic-analysis-phase-2-prep-adapter-simulator-gap-inventor|S6 reactivation for dynamic-analysis phase-2 prep: adapter/simulator gap inventory and proposed first slice]] — - Kind: request *(verified 2026-04-09; s2/s6/dynamic-analysis/adapter/ecu-simulator/websocket)*
 - [[wiki/canon/work-requests/s3-to-s2-live-contract-audit-findings-build-agent-top-level-strict-fields-fixed-in-s3-rep|Live contract audit findings: build-agent top-level strict fields fixed in S3 repo; please align consumer/runtime rollout]] — - Kind: request *(verified 2026-04-08; s3/s2/build-agent/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-runtime-rollout-still-pending-as-of-2026-04-08-live-s3-services-continue-to-expo|Runtime rollout still pending as of 2026-04-08: live S3 services continue to expose stale contract and health surfaces]] — - Kind: request *(verified 2026-04-08; s3/s2/runtime/rollout/build-agent/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs|Inspect gateway-webserver findings drift in S4 logs]] — - Kind: request *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
@@ -239,7 +248,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/feedback/26.03.26/s5_etl_pipeline_feedback|S5 ETL Pipeline Overview 문서 상세 피드백]] — 검토 대상: (WR)S5etlpipelineoverview.md *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/agent_service_architecture_overview|외부 피드백: Agent Service 아키텍처 설계 개요]] — 일시: 2026-03-15 *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/readme_ecu_platform_docs|ECU Platform 작업 문서 패키지]] — 이 패키지는 다음 3개 역할에 대한 작업 지침서를 포함한다. *(verified 2026-04-06; platform)*
-- [[wiki/canon/feedback/s1_frontend_working_guide|S1 작업 지침서 — Frontend (Electron + React + TypeScript)]] — 이 문서는 S1이 담당하는 Frontend 영역의 책임 범위, 반드시 구현해야 할 기능, 협업 규칙, 기술적 제약, 완료 기준을 명확히 정의하기 위한 작업 지침서다. *(verified 2026-04-06; s1/platform)*
+- [[wiki/canon/feedback/s1_frontend_working_guide|S1 작업 지침서 — Frontend (React + TypeScript Web SPA)]] — 이 문서는 S1이 담당하는 Frontend 영역의 책임 범위, 반드시 구현해야 할 기능, 협업 규칙, 기술적 제약, 완료 기준을 명확히 정의하기 위한 작업 지침서다. *(verified 2026-04-09; s1/platform)*
 - [[wiki/canon/feedback/s2_backend_adapter_simulator_working_guide|S2 작업 지침서 — Backend + ECU Adapter + ECU Simulator]] — 이 문서는 S2가 담당하는 Backend, ECU Adapter, ECU Simulator 영역의 책임 범위, 필수 구현 항목, 아키텍처 원칙, 데이터 모델, 협업 규칙, 안전 요구사항을 명확히 정의하기 위한 작업 지침서다. *(verified 2026-04-06; s2/s6/platform)*
 - [[wiki/canon/feedback/s3_agentic_sast_design_feedback|S3 외부 피드백: Agentic SAST 설계 방향]] — 일시: 2026-03-12 *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/s3_llm_gateway_working_guide|S3 작업 지침서 — LLM-Gateway]] — 이 문서는 S3가 담당하는 LLM-Gateway 영역의 책임 범위, 반드시 구현해야 할 기능, 안전 요구사항, 구조화 출력 규칙, agent 확장 방향, 협업 규칙을 정의하기 위한 작업 지침서다. *(verified 2026-04-06; platform)*
