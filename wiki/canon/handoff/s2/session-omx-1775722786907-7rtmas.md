@@ -9,7 +9,7 @@ original_path: "mcp://record_session_history/s2/omx-1775722786907-7rtmas"
 last_verified: "2026-04-09"
 service_tags: ["s2"]
 decision_tags: ["session-history", "hook-policy"]
-related_pages: ["wiki/canon/work-requests/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t.md", "wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-.md"]
+related_pages: ["wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas.md"]
 migration_status: "canonicalized"
 ---
 
@@ -20,14 +20,13 @@ migration_status: "canonicalized"
 - Session ID: omx-1775722786907-7rtmas
 - Status: completed
 - Started at: 2026-04-09T08:19:46.922Z
-- Updated at: 2026-04-09T09:04:30Z
+- Updated at: 2026-04-09T09:12:00Z
 
 ## Summary
-Issued an additional strengthened S2->S1 canonical WR for large SDK upload UX. The follow-up makes the live user pain explicit, asks for a sticky determinate progress treatment with byte-level visibility and phase transitions, and clarifies that users should not need filesystem inspection to know whether a multi-GB upload is still progressing.
+Per explicit user instruction, committed the remaining uncommitted changes in both repositories as broad snapshot commits after the earlier targeted S2 commits. Final repository heads are AEGIS d51b899 and aegis-static-wiki e6883ef, and both working trees were verified clean immediately afterward.
 
 ## Related pages
-- [[wiki/canon/work-requests/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t.md]]
-- [[wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-.md]]
+- [[wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas.md]]
 
 ## Test evidence
 _No test evidence recorded yet._
