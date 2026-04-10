@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/architecture.md"
 original_path: "docs/s2-handoff/architecture.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-10"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -112,9 +112,10 @@ scripts/
 ├── stop.sh                       # 전체 서비스 통합 종료 (S2 소유)
 ├── start-backend.sh              # backend 단독 기동
 ├── backend/
-│   ├── reset-db.sh
-│   ├── db-stats.sh
-│   └── backup-db.sh
+│   ├── reset-db.sh               # SQLite 파일만 삭제 (uploads 미포함)
+│   ├── reset-runtime-state.sh    # SQLite + uploads 동시 초기화
+│   ├── db-stats.sh               # 핵심 21테이블 통계 + 전체 테이블 수 점검
+│   └── backup-db.sh              # sqlite .backup 기반 DB 백업
 └── common/reset-logs.sh
 ```
 
@@ -354,10 +355,17 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 | `scripts/start.sh` | 전체 기동 |
 | `scripts/stop.sh` | 전체 종료 |
 | `scripts/start-backend.sh` | backend 단독 watch 기동 |
-| `scripts/backend/db-stats.sh` | DB 테이블 건수/크기 조회 |
-| `scripts/backend/reset-db.sh` | DB 삭제 |
+| `scripts/backend/db-stats.sh` | 핵심 21테이블 건수/크기 조회 + 전체 테이블 수 drift 경고 |
+| `scripts/backend/reset-db.sh` | DB 파일(`aegis.db*`)만 삭제 |
+| `scripts/backend/reset-runtime-state.sh` | DB 파일 + `uploads/` 내부 전체 동시 초기화 |
 | `scripts/backend/backup-db.sh` | DB 백업 |
 | `scripts/common/reset-logs.sh` | JSONL 로그 초기화 |
+
+운영 메모:
+
+- `reset-db.sh` 는 **DB만** 초기화한다. orphaned uploads 정리까지 기대하면 안 된다.
+- 통합테스트 전 완전 초기 기준선이 필요하면 `reset-runtime-state.sh` 를 사용한다.
+- 두 reset 스크립트 모두 **실행 중 서비스/DB 점유를 먼저 확인**하고, `reset-runtime-state.sh` 는 기본적으로 확인 프롬프트를 요구한다.
 
 ### 환경변수
 

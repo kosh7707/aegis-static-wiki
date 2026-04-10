@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-10"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -206,6 +206,20 @@ S1 handoff 원칙:
   - `wiki/system/work-request-policy.md`
   - `wiki/system/migration-map.md`
   - `wiki/system/index.md`
+
+### 3-6. DB / uploads reset 운영 메모 (2026-04-10)
+
+- `scripts/backend/reset-db.sh`
+  - `aegis.db`, `aegis.db-wal`, `aegis.db-shm` 만 삭제한다.
+  - **`uploads/` 는 건드리지 않는다.**
+- `scripts/backend/reset-runtime-state.sh`
+  - DB 파일 + `uploads/` 내부 전체를 함께 비운다.
+  - 통합테스트 전 완전 초기 기준선이 필요할 때 이 스크립트를 사용한다.
+- `scripts/backend/backup-db.sh`
+  - `sqlite3 .backup` 기반 백업을 만든다.
+- `scripts/backend/db-stats.sh`
+  - 핵심 21개 테이블 통계와 전체 테이블 수(기대값 29)를 함께 출력한다.
+- reset 계열 스크립트는 모두 **실행 중 서비스/DB 점유가 없는 상태**를 전제로 사용한다.
 
 ### Durable (투자, 유지)
 

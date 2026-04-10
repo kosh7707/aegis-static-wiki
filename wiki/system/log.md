@@ -500,3 +500,8 @@ related_pages:
 - Moved layout-owned assets (Navbar, Sidebar, ErrorBoundary) under src/layouts
 - Promoted reusable UI and finding/detail views into src/shared
 - Moved page-local report/files/static/dynamic pieces under page-owned components and removed StatusBar
+
+## [2026-04-10] updated | s2-runtime-reset-scripts
+- Documented scripts/backend DB utility roles in S2 handoff docs.
+- Clarified reset-db.sh as DB-only and reset-runtime-state.sh as DB+uploads reset path.
+- Updated S2 handoff last_verified dates to 2026-04-10.
