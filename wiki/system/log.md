@@ -477,3 +477,26 @@ related_pages:
 ## [2026-04-10] canonical docs aligned to DashboardPage-based frontend contract | s1-frontend-docs-contract
 - Updated core-3 + architecture + qa-guide to match DashboardPage runtime reality, no mounted StatusBar, and no navbar search.
 - Codified page-per-directory, ownership split, and token→semantic→component CSS layering using DashboardPage as reference specimen.
+
+## [2026-04-10] Removed Electron shell and documented the web-only frontend architecture | services/frontend
+- deleted services/frontend/src/main runtime
+- removed electron dependency and desktop scripts
+- removed window.api/preload bridge fallback from renderer api core
+- updated canonical S1 docs and rebuilt wiki index
+
+## [2026-04-10] Removed Electron shell and finalized web-only frontend runtime | services/frontend
+- Deleted src/main runtime/preload files
+- Removed electron dependency and dev:main/build:main scripts
+- Removed window.api/preload bridge usage in renderer API core
+- Updated canonical S1 docs to reflect browser-native architecture
+- Verified typecheck/build/tests and Electron grep no-match
+
+## [2026-04-10] Flattened the frontend runtime tree under src and removed the legacy nested renderer path from code/config/docs | services/frontend
+- Moved runtime modules from src/renderer/** to src/**
+- Moved test bootstrap to src/test/setup.ts
+- Updated canonical S1 docs and local design/tooling references
+
+## [2026-04-10] Dismantled the generic src/components namespace and rehomed ownership into layouts/shared/page-local structure | services/frontend
+- Moved layout-owned assets (Navbar, Sidebar, ErrorBoundary) under src/layouts
+- Promoted reusable UI and finding/detail views into src/shared
+- Moved page-local report/files/static/dynamic pieces under page-owned components and removed StatusBar

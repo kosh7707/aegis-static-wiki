@@ -52,6 +52,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/readme|S1 Frontend 개발 인수인계서]] — 먼저 docs/AEGIS.md를 읽을 것. *(verified 2026-04-10; s1)*
 - [[wiki/canon/handoff/s1/session-019d7152-b615-7d82-8974-e53cdb0ac1db|Session history — s1 / 019d7152-b615-7d82-8974-e53cdb0ac1db]] — - Lane: s1 *(verified 2026-04-10; s1)*
 - [[wiki/canon/handoff/s1/session-019d757b-dff0-7cd0-b95d-e9830e502688|Session history — s1 / 019d757b-dff0-7cd0-b95d-e9830e502688]] — - Lane: s1 *(verified 2026-04-10; s1)*
+- [[wiki/canon/handoff/s1/session-019d75ae-21c0-7fa1-8527-3dd4d1d38d2a|Session history — s1 / 019d75ae-21c0-7fa1-8527-3dd4d1d38d2a]] — - Lane: s1 *(verified 2026-04-10; s1)*
+- [[wiki/canon/handoff/s1/session-019d7601-8725-7dc1-9d19-0eeac980db98|Session history — s1 / 019d7601-8725-7dc1-9d19-0eeac980db98]] — - Lane: s1 *(verified 2026-04-10; s1)*
+- [[wiki/canon/handoff/s1/session-019d7647-6a73-78c2-8e24-38b0abb85da3|Session history — s1 / 019d7647-6a73-78c2-8e24-38b0abb85da3]] — - Lane: s1 *(verified 2026-04-10; s1)*
 - [[wiki/canon/handoff/s1/session-1|S1 Session 1 — 2026-03-14]] — 1. ✅ CSS 폴리싱 — !important 13개 제거, 인라인 스타일 30개 → CSS 클래스 전환, transition 토큰화, 반응형 보강 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-10|S1 Session 10 — 2026-03-25]] — 44. ✅ 외부 리뷰 피드백 수신 및 검토 (docs/외부피드백/26.03.25/AEGISS1frontendQAreview.md) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-11|S1 Session 11 — 2026-03-26]] — 57. ✅ S2 WR 처리 (s2-to-s1-sdk-management-ui.md) — SDK 관리 UI 구현 *(verified 2026-04-06; s1)*
@@ -250,7 +253,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/feedback/26.03.26/s5_etl_pipeline_feedback|S5 ETL Pipeline Overview 문서 상세 피드백]] — 검토 대상: (WR)S5etlpipelineoverview.md *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/agent_service_architecture_overview|외부 피드백: Agent Service 아키텍처 설계 개요]] — 일시: 2026-03-15 *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/readme_ecu_platform_docs|ECU Platform 작업 문서 패키지]] — 이 패키지는 다음 3개 역할에 대한 작업 지침서를 포함한다. *(verified 2026-04-06; platform)*
-- [[wiki/canon/feedback/s1_frontend_working_guide|S1 작업 지침서 — Frontend (React + TypeScript Web SPA)]] — 이 문서는 S1이 담당하는 Frontend 영역의 책임 범위, 반드시 구현해야 할 구조 규칙, 협업 규칙, 기술적 제약, 완료 기준을 명확히 정의하기 위한 작업 지침서다. *(verified 2026-04-10; s1/platform)*
+- [[wiki/canon/feedback/s1_frontend_working_guide|S1 작업 지침서 — Frontend (React + TypeScript Web SPA)]] — 이 문서는 S1이 담당하는 Frontend 영역의 책임 범위, 구조 규칙, 협업 규칙, 기술적 제약, 완료 기준을 정의한다. *(verified 2026-04-10; s1/platform)*
 - [[wiki/canon/feedback/s2_backend_adapter_simulator_working_guide|S2 작업 지침서 — Backend + ECU Adapter + ECU Simulator]] — 이 문서는 S2가 담당하는 Backend, ECU Adapter, ECU Simulator 영역의 책임 범위, 필수 구현 항목, 아키텍처 원칙, 데이터 모델, 협업 규칙, 안전 요구사항을 명확히 정의하기 위한 작업 지침서다. *(verified 2026-04-06; s2/s6/platform)*
 - [[wiki/canon/feedback/s3_agentic_sast_design_feedback|S3 외부 피드백: Agentic SAST 설계 방향]] — 일시: 2026-03-12 *(verified 2026-04-06; platform)*
 - [[wiki/canon/feedback/s3_llm_gateway_working_guide|S3 작업 지침서 — LLM-Gateway]] — 이 문서는 S3가 담당하는 LLM-Gateway 영역의 책임 범위, 반드시 구현해야 할 기능, 안전 요구사항, 구조화 출력 규칙, agent 확장 방향, 협업 규칙을 정의하기 위한 작업 지침서다. *(verified 2026-04-06; platform)*
