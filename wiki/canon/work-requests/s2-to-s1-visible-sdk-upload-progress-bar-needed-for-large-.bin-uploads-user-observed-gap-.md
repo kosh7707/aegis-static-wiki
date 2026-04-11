@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-"
-last_verified: "2026-04-09"
+last_verified: "2026-04-10"
 service_tags: ["s1", "s2", "frontend", "backend", "sdk", "websocket", "ux"]
 decision_tags: ["sdk-upload", "progress-bar", "user-feedback", "ws-semantics"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/specs/backend.md", "wiki/canon/handoff/s2/readme.md", "wiki/canon/work-requests/s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh.md", "wiki/canon/work-requests/s2-to-s1-frontend-ux-handoff-for-websocket-progress-completion-surfaces.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-10T09:20:07.284Z","note":"Implemented visible SDK upload progress in Project Settings: determinate byte-level progress during `uploading`, sticky phase card/stepper continuity, navbar notification consumer with unread badge/dropdown, and live toast surfacing for incoming project notifications. Frontend binary picker now aligns with backend `.bin` artifact support."}]
 registered_at: "2026-04-09T08:33:33.775Z"
+completed_at: "2026-04-10T09:20:07.284Z"
 ---
 
 # Visible SDK upload progress bar needed for large .bin uploads (user-observed gap on 2026-04-09)

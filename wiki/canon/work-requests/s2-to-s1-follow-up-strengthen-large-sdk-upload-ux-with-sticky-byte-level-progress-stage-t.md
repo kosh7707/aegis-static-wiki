@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t"
-last_verified: "2026-04-09"
+last_verified: "2026-04-10"
 service_tags: ["s1", "s2", "frontend", "backend", "sdk", "websocket", "ux", "notifications"]
 decision_tags: ["sdk-upload", "progress-bar", "large-file-ux", "user-feedback", "post-upload-phases"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/specs/backend.md", "wiki/canon/handoff/s2/readme.md", "wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-.md", "wiki/canon/work-requests/s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh.md", "wiki/canon/work-requests/s2-to-s1-frontend-ux-handoff-for-websocket-progress-completion-surfaces.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-10T09:20:07.302Z","note":"Completed the stronger SDK UX follow-up on S1: byte-level determinate upload progress, filename/percent display, sticky post-upload phase visibility, and project-scoped notification visibility via navbar dropdown plus live toasts. A separate S1→S2 WR was filed for the remaining pre-registration upload_failed notification gap."}]
 registered_at: "2026-04-09T08:50:13.428Z"
+completed_at: "2026-04-10T09:20:07.302Z"
 ---
 
 # Follow-up: strengthen large SDK upload UX with sticky byte-level progress, stage transitions, and failure visibility

@@ -505,3 +505,33 @@ related_pages:
 - Documented scripts/backend DB utility roles in S2 handoff docs.
 - Clarified reset-db.sh as DB-only and reset-runtime-state.sh as DB+uploads reset path.
 - Updated S2 handoff last_verified dates to 2026-04-10.
+
+## [2026-04-10] mcp | register_wr | s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss.md
+
+## [2026-04-10] mcp | complete_wr | s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-10] mcp | complete_wr | s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-10] Implemented visible navbar notifications and sticky SDK upload progress; filed follow-up WR for pre-registration upload-failure notification gap | frontend-notification-progress-hardening
+- commit 8588f84
+- completed S2→S1 SDK progress WRs
+- new WR: s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss
+
+## [2026-04-10] Finalized navbar notification consumer + SDK progress hardening with reconnect dedupe and binary validation guard | frontend-notification-progress-hardening
+- commit 0b0d3b7
+- targeted tests 21/21
+- full frontend suite 429 tests passed
+
+## [2026-04-10] mcp | complete_wr | s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-10] mcp | register_wr | s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa.md
