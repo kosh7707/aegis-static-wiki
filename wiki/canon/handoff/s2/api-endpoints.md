@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -90,6 +90,7 @@ migration_status: "canonicalized"
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
 | GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source) |
+| GET | `/api/projects/:pid/sdk/:id/log` | SDK install log tail 조회 (`?tailLines=` optional, re-entry / reconnect recovery source) |
 | POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 multipart project-scoped upload; 단일 archive / 단일 `.bin` / multi-file folder upload 지원. 폴더 업로드는 클라이언트가 상대경로를 보존해서 보내야 함) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
@@ -102,7 +103,7 @@ migration_status: "canonicalized"
 | POST | `/api/projects/:pid/source/upload` | ZIP/tar.gz 소스 업로드 |
 | GET | `/api/projects/:pid/source/upload-status/:uploadId` | 업로드 상태 폴링 폴백 + re-entry recovery (`UploadStatus`: `phase/message/fileCount?/projectPath?/error?`) |
 | POST | `/api/projects/:pid/source/clone` | Git URL 클론 |
-| GET | `/api/projects/:pid/source/files` | 소스 파일 트리 (`?filter=source` 지원, `composition/totalFiles/totalSize/targetMapping` 포함) |
+| GET | `/api/projects/:pid/source/files` | 소스 파일 트리 (`?filter=source` 지원, `composition/totalFiles/totalSize/targetMapping` 포함). file-explorer/source-list output에서는 managed SDK subtree `uploads/{projectId}/sdk/**` 제외 |
 | GET | `/api/projects/:pid/source/file` | 파일 내용 읽기 (`?path=` 필수) |
 | DELETE | `/api/projects/:pid/source` | 소스 삭제 |
 | GET | `/api/projects/:pid/targets` | 빌드 타겟 목록 |
@@ -179,7 +180,7 @@ migration_status: "canonicalized"
 | WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 | `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId` |
 | WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 | `GET /api/projects/:pid/source/upload-status/:uploadId` |
 | WebSocket | `/ws/pipeline?projectId=` | 파이프라인 타겟 상태 스트림 | `GET /api/projects/:pid/pipeline/status` |
-| WebSocket | `/ws/sdk?projectId=` | SDK 업로드/설치/검증 진행률 (`uploading`,`uploaded`,`extracting`/`installing`,`extracted`/`installed`,`analyzing`,`verifying`,`ready`) | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id` |
+| WebSocket | `/ws/sdk?projectId=` | SDK 업로드/설치/검증 진행률 (`uploading`,`uploaded`,`extracting`/`installing`,`extracted`/`installed`,`analyzing`,`verifying`,`ready`) + install-log stream (`sdk-log`) | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id`, `GET /api/projects/:pid/sdk/:id/log` |
 
 운영 의미론:
 

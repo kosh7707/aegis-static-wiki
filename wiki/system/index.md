@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-04-10"
+last_verified: "2026-04-13"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -42,7 +42,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-09; s7)*
 - [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-09; s7)*
 - [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-09; s4)*
-- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-09; platform)*
+- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-13; platform)*
 
 ## Handoff
 
@@ -70,7 +70,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-7|S1 Session 7 — 2026-03-21]] — 16. ✅ 소스코드 트리 탐색 UI (S2 WR s2-to-s1-source-tree-ux.md 대응) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-8|S1 Session 8 — 2026-03-23]] — 21. ✅ Summary API 전환 (/api/static-analysis/summary → /api/analysis/summary) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-9|S1 Session 9 — 2026-03-24]] — 26. ✅ 업로드 엔드포인트 통합 — 파일 유형 분기 로직 제거, uploadSource 단일 엔드포인트 *(verified 2026-04-06; s1)*
-- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-09; s2)*
+- [[wiki/canon/handoff/s1/session-omx-1775909698732-mtzs0t|Session history — s1 / omx-1775909698732-mtzs0t]] — - Lane: s1 *(verified 2026-04-13; s1)*
+- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-13; s2)*
 - [[wiki/canon/handoff/s2/architecture|S2 아키텍처 상세]] — 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행/운영 메모 *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/readme|S2. AEGIS Core (Backend) 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/session-1|세션 1 — 문서-코드 감사]] — 날짜: 2026-03-17 *(verified 2026-04-06; s2)*
@@ -95,6 +96,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-omx-1775611563366-wajjae|Session history — s2 / omx-1775611563366-wajjae]] — - Lane: s2 *(verified 2026-04-09; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1775722786907-7rtmas|Session history — s2 / omx-1775722786907-7rtmas]] — - Lane: s2 *(verified 2026-04-09; s2)*
 - [[wiki/canon/handoff/s2/session-omx-20260410-s2-sdk-upload-failure-notification|Session history — s2 / omx-20260410-s2-sdk-upload-failure-notification]] — - Lane: s2 *(verified 2026-04-10; s2)*
+- [[wiki/canon/handoff/s2/session-omx-20260413-s2-sdk-source-isolation-observability|Session history — s2 / omx-20260413-s2-sdk-source-isolation-observability]] — - Lane: s2 *(verified 2026-04-13; s2)*
 - [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-04-09; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-10|세션 10: Build Agent 분리 + 프로젝트 메모리 (2026-03-24, 완료)]] — - Build Agent 서비스 분리 (:8003) *(verified 2026-04-06; s3)*
@@ -210,6 +212,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-qa-qa|S1-QA 종합 QA 요청 — 페르소나 기반 전면 검증]] — - Kind: request *(verified 2026-04-06; s1)*
 - [[wiki/canon/work-requests/s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss|Project-scoped SDK upload failures before job acceptance need notification emission for cross-page awareness]] — - Kind: request *(verified 2026-04-10; s1/s2/frontend/backend/sdk/notifications/websocket)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
+- [[wiki/canon/work-requests/s2-to-s1-consume-new-sdk-install-log-contract-and-live-observability-signals-for-project-|Consume new SDK install-log contract and live observability signals for project-scoped SDK registration]] — - Kind: request *(verified 2026-04-13; s1/s2/frontend/backend/sdk/websocket/observability)*
 - [[wiki/canon/work-requests/s2-to-s1-follow-up-strengthen-large-sdk-upload-ux-with-sticky-byte-level-progress-stage-t|Follow-up: strengthen large SDK upload UX with sticky byte-level progress, stage transitions, and failure visibility]] — - Kind: request *(verified 2026-04-10; s1/s2/frontend/backend/sdk/websocket/ux/notifications)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-follow-up-for-project-scoped-sdk-upload-archive-.bin-folder-and-refresh|Frontend follow-up for project-scoped SDK upload (archive / .bin / folder) and refreshed progress semantics]] — - Kind: request *(verified 2026-04-07; s1/s2/frontend/backend/sdk/websocket/notifications)*
 - [[wiki/canon/work-requests/s2-to-s1-frontend-full-depth-audit-against-refreshed-s2-api-websocket-contracts|Frontend full-depth audit against refreshed S2 API/WebSocket contracts]] — - Kind: request *(verified 2026-04-07; s1/s2/frontend/backend/api-contract/websocket)*
@@ -274,7 +277,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-10; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-13; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*

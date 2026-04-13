@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -555,6 +555,9 @@ Notes:
 - `filter=source` returns the backend's default C/C++ filtered set.
 - no `filter` returns the full file tree.
 - `targetMapping` is keyed by `relativePath` and contains `{ targetId, targetName }` when build targets exist.
+- file-explorer/source-list output excludes the managed SDK subtree `uploads/{projectId}/sdk/**`.
+  - this is a root-scoped managed-path rule, not a generic directory-name hide
+  - normal project paths such as `src/sdk/*` remain visible
 
 ## 3.4 Build-target surface
 
@@ -589,6 +592,7 @@ Validation enforced today:
 |---|---|---|---|---|
 | GET | `/api/projects/:pid/sdk` | - | `200 { success, data: { builtIn: SdkProfile[], registered: RegisteredSdk[] } }` | `200`, `404` |
 | GET | `/api/projects/:pid/sdk/:id` | - | `200 { success, data: RegisteredSdk }` | `200`, `404` |
+| GET | `/api/projects/:pid/sdk/:id/log` | `?tailLines=<n>` optional | `200 { success, data: { sdkId, logPath, content, truncated } }` | `200`, `404` |
 | POST | `/api/projects/:pid/sdk` | see note below | `202 { success, data: RegisteredSdk }` | `202`, `400`, `404` |
 | DELETE | `/api/projects/:pid/sdk/:id` | - | `200 { success: true }` | `200`, `404` |
 
@@ -599,6 +603,8 @@ Validation enforced today:
 - `localPath` is no longer the canonical/requested ingress
 - multiple uploaded files are treated as **folder upload** when the client preserves relative paths (for example via `webkitRelativePath`-derived filenames or explicit relative-path metadata)
 - returned `RegisteredSdk.status` is initially `"uploaded"`, then the async pipeline advances through upload materialization / analyze / verify terminal states
+- `.bin` installs materialize a canonical install log at `uploads/{projectId}/sdk/{sdkId}/install.log`
+- `GET /api/projects/:pid/sdk/:id/log` is the HTTP recovery/read surface for install-log tail content
 
 ### SDK profile lookup routes
 
@@ -963,6 +969,7 @@ Role and recovery:
 | `type` | Payload |
 |---|---|
 | `sdk-progress` | `{ sdkId, phase: "uploading" \| "uploaded" \| "extracting" \| "extracted" \| "installing" \| "installed" \| "analyzing" \| "verifying" \| "ready", message, percent?, uploadedBytes?, totalBytes?, fileName? }` |
+| `sdk-log` | `{ sdkId, timestamp, source: "aegis" \| "installer", kind: "lifecycle" \| "heartbeat" \| "output" \| "terminal", stream?: "stdout" \| "stderr", message, logPath? }` |
 | `sdk-complete` | `{ sdkId, profile, path? }` |
 | `sdk-error` | `{ sdkId, phase: "upload_failed" \| "extract_failed" \| "install_failed" \| "verify_failed", error, logPath? }` |
 
@@ -978,6 +985,14 @@ Role and recovery:
 - **Recovery / re-entry source of truth**:
   - `GET /api/projects/:pid/sdk/:id` for a single SDK
   - `GET /api/projects/:pid/sdk` for collection/list recovery
+  - `GET /api/projects/:pid/sdk/:id/log` for install-log tail recovery
+
+`sdk-log` semantics:
+
+- `source: "aegis"` = structured S2 lifecycle lines (upload stored/completed, install start, heartbeat, terminal events)
+- `source: "installer"` = installer stdout/stderr lines when observable
+- `kind: "heartbeat"` means the installer child process is still alive at emit time; it is **not** a progress-percentage claim
+- `logPath` points to the canonical install log file when the client needs follow-up fetch
 
 ### 4.6 Analysis WS — `/ws/analysis?analysisId=<analysisId>`
 

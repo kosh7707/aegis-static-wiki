@@ -535,3 +535,11 @@ related_pages:
 ## [2026-04-10] mcp | register_wr | s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa
 - Registered reply WR for s1
 - Path: wiki/canon/work-requests/s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s1-consume-new-sdk-install-log-contract-and-live-observability-signals-for-project-
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-consume-new-sdk-install-log-contract-and-live-observability-signals-for-project-.md
+
+## [2026-04-13] mcp | complete_wr | s2-to-s1-consume-new-sdk-install-log-contract-and-live-observability-signals-for-project-
+- Lane s1 completed recipient-side handling
+- Status: completed
