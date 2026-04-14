@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec"
-last_verified: "2026-04-08"
+last_verified: "2026-04-14"
 service_tags: ["s2", "s1", "s1-qa", "websocket", "api-contract", "frontend"]
 decision_tags: ["ws-contract", "recovery", "reconnect", "request"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1", "s1-qa"]
-completed_by: [{"lane":"s1","completed_at":"2026-04-08T07:55:17.849Z","note":"useUploadProgress.ts 버그 수정: WebSocket reconnect 시 onmessage 핸들러가 새 WS에 재등록되지 않는 문제 — wireWsHandlers 함수 추출 후 onReconnect에서 재호출하도록 수정 (useAnalysisWebSocket.ts 패턴과 동일). 코드 검증: 양쪽 훅 모두 (1) late-subscribe 즉시 스냅샷 정상 처리, (2) REST fallback 후 WS 스냅샷 중복 방지 가드 존재 (terminal state check), (3) reconnect 후 새 WS 핸들러 정상 등록. Build 0 errors, 392 tests pass."}]
+completed_by: [{"lane":"s1","completed_at":"2026-04-08T07:55:17.849Z","note":"useUploadProgress.ts 버그 수정: WebSocket reconnect 시 onmessage 핸들러가 새 WS에 재등록되지 않는 문제 — wireWsHandlers 함수 추출 후 onReconnect에서 재호출하도록 수정 (useAnalysisWebSocket.ts 패턴과 동일). 코드 검증: 양쪽 훅 모두 (1) late-subscribe 즉시 스냅샷 정상 처리, (2) REST fallback 후 WS 스냅샷 중복 방지 가드 존재 (terminal state check), (3) reconnect 후 새 WS 핸들러 정상 등록. Build 0 errors, 392 tests pass."},{"lane":"s1-qa","completed_at":"2026-04-14T05:09:18.438Z","note":"Administrative closure requested by user during cross-lane cleanup. Marked completed for recipient lane S1-QA without additional implementation or verification in this S7 session."}]
 registered_at: "2026-04-08T07:44:13.361Z"
+completed_at: "2026-04-14T05:09:18.438Z"
 ---
 
 # S2 websocket recovery hardening landed on 2026-04-08; please validate S1 reconnect/progress UX

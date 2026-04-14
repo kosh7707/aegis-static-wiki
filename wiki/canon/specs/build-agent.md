@@ -4,7 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "docs/specs/build-agent.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-api.md"]
@@ -13,16 +13,16 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-a
 # S3. Build Agent 기능 명세
 
 > **소유자**: S3
-> **최종 업데이트**: 2026-04-13
+> **최종 업데이트**: 2026-04-14
 
-Build Agent는 업로드된 프로젝트에 대해 **strict compile-first control plane** 으로 동작한다. 호출자가 선언한 서브프로젝트, 빌드 모드, 기대 산출물을 기준으로 preflight → phase0 → bounded repair → artifact validation을 수행한다.
+Build Agent는 업로드된 프로젝트에 대해 **strict compile-first control plane** 으로 동작한다. 호출자가 선언한 BuildTarget, 빌드 모드, 기대 산출물을 기준으로 preflight → phase0 → bounded repair → artifact validation을 수행한다.
 
 ---
 
 ## 1. 핵심 원칙
 
 1. **compile-first** — 실제 컴파일 성립 여부가 1차 책임이다.
-2. **caller intent 명시** — `subprojectPath`, `build.mode`, `expectedArtifacts`는 호출자가 선언한다.
+2. **caller intent 명시** — `buildTargetPath`, `build.mode`, `expectedArtifacts`는 호출자가 선언한다.
 3. **no fake success** — compile DB만 있거나 artifact mismatch면 성공이 아니다.
 4. **원본 프로젝트 불변** — 쓰기는 request-scoped `build-aegis-<requestIdPrefix>/` 하위만 허용한다.
 5. **bounded repair** — LLM은 build script 작성/복구만 담당한다.
@@ -51,7 +51,7 @@ Build Agent는 업로드된 프로젝트에 대해 **strict compile-first contro
 
 ---
 
-## 4. 현재 내부 아키텍처 (2026-04-09)
+## 4. 현재 내부 아키텍처
 
 ### Router / Handler 레이아웃
 
@@ -63,11 +63,6 @@ Build Agent는 업로드된 프로젝트에 대해 **strict compile-first contro
 | sdk-analyze handler | `services/build-agent/app/routers/sdk_analyze_handler.py` |
 | sdk-analyze support | `services/build-agent/app/routers/sdk_analyze_support.py` |
 
-의미:
-- `tasks.py`는 얇은 public router다.
-- 실제 task execution은 handler 모듈로 위임한다.
-- helper는 support 모듈로 분리되어 있다.
-
 ### 기타 핵심 컴포넌트
 
 | 역할 | 파일 |
@@ -76,9 +71,7 @@ Build Agent는 업로드된 프로젝트에 대해 **strict compile-first contro
 | agent loop | `services/build-agent/app/core/agent_loop.py` |
 | result assembly | `services/build-agent/app/core/result_assembler.py` |
 | tool router wrapper | `services/build-agent/app/tools/router.py` |
-| shared router core | `services/agent-shared/agent_shared/tools/router_core.py` |
-| shared budget | `services/agent-shared/agent_shared/budget/manager.py` |
-| shared termination | `services/agent-shared/agent_shared/policy/termination.py` |
+| shared caller / policy / router | `services/agent-shared/agent_shared/llm/caller.py`, `policy/termination.py`, `tools/router_core.py` |
 
 ---
 
@@ -97,7 +90,7 @@ POST /v1/tasks (build-resolve)
 - strict 필수 필드 존재 여부
 - `build.mode` 유효성
 - `sdk` 모드에서 `sdkId` / materialization source 존재 여부
-- `subprojectPath` scope 유효성
+- `buildTargetPath` scope 유효성
 - `expectedArtifacts` 구조 유효성
 
 ### bounded repair
@@ -132,9 +125,23 @@ LLM은 아래만 수행한다.
 - duplicate call 차단
 - build write-tool 성공 후 duplicate hash clear
 
+### 2026-04-14 S7 async ownership 소비
+Build Agent도 이제 tool 없는 LLM turn에서 S7의 async ownership surface를 우선 사용한다.
+
+적용 범위:
+- `services/build-agent/app/core/agent_loop.py`
+- `build-resolve`
+- `sdk-analyze`
+
+동작 원칙:
+- 새 async ownership surface 사용 시 submit → status poll → result fetch
+- surface가 unavailable이면 sync `/v1/chat`로 fallback
+- unsupported async surface(404/405/501)는 짧게 cooldown 캐시하여, 매 호출마다 같은 probe를 반복하지 않도록 한다
+- 이는 Build Agent outward API를 바꾸는 변화가 아니라 **internal consumer-side reliability hardening**이다.
+
 ---
 
-## 7. 현재 검증 기준 (2026-04-09)
+## 7. 현재 검증 기준 (2026-04-14)
 
 ### 핵심 테스트 축
 - `test_health.py`
@@ -144,17 +151,19 @@ LLM은 아래만 수행한다.
 - `test_result_assembler.py`
 - `test_tool_router.py`
 - `test_concurrency.py`
+- `test_agent_loop.py`
+- `test_sdk_analyze_handler.py`
+- `test_build_resolve_handler.py`
 
 ### 최근 검증 결과
-- build-agent 보호 surface 검증: **26 passed**
-- 더 넓은 split/regression 검증도 recent green 유지
-- live `/v1/health`: **PASS**
+- build-agent full suite: **237 passed**
+- build-agent protected/contract surface targeted reruns도 green 유지
 
 ---
 
 ## 8. 운영 메모
 
 - strict contract 의미는 리팩토링보다 우선한다.
-- `tasks.py`는 더 이상 giant file이 아니며 public router 역할만 맡는다.
-- 향후 내부 cleanup은 handler/support 모듈 내부에서 진행하고, public surface는 유지한다.
+- `tasks.py`는 public router 역할만 맡는다.
 - `build-resolve` 성공 응답은 기존 `buildResult`와 별도로 `buildPreparation` 번들을 반환한다. S2는 이를 explicit build-preparation step의 저장/전달 단위로 사용할 수 있다.
+- tool-less LLM turn의 async ownership 우선 사용과 unsupported-surface cooldown은 internal hardening일 뿐, outward Build Agent API shape를 바꾸지 않는다.

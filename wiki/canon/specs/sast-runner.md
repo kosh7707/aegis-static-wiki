@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -444,16 +444,21 @@ pattern-sanitizers:              # <- FP 감소
 
 ### `/v1/health` request-summary contract (v0.11.2)
 
-- `/v1/health?requestId=<scan-request-id>` 는 해당 요청의 최소 polling control signal을 반환한다
+- `/v1/health?requestId=<request-id>` 는 해당 요청의 최소 polling control signal을 반환한다
 - `activeRequestCount` 는 현재 `queued` / `running` 상태인 요청 수다
+- 같은 request-summary shape를 `/v1/scan`, `/v1/build`, `/v1/build-and-analyze`에 공통 적용한다
 - `requestSummary.state`
-  - `queued`: 세마포어 대기
+  - `queued`: 스캔 세마포어 대기 또는 요청 직후 아직 본 실행 단계로 들어가기 전 상태
   - `running`: 실행 중
   - `completed`: 정상 종료
   - `failed`: 비정상 종료
+- `requestSummary.localAckState`
+  - `phase-advancing`: scan progress/file progress/runtime-state 또는 build phase completion처럼 최근의 실제 로컬 진행 전이가 관측된 상태
+  - `transport-only`: build / build-and-analyze의 장시간 컴파일 구간처럼 프로세스 생존은 확인되지만 더 강한 로컬 진행 증거는 아직 없는 상태
+  - `ack-break`: 내부 build/scan 루프가 예외/정책실패/취소로 비정상 종료된 상태
 - `requestSummary.degraded=true` 는 기존 scan runtime의 degraded semantics를 그대로 반영한다
-- `requestSummary.ackStatus="broken"` + `blockedReason` 존재는 local ack break equivalent 이다
-- local ack source는 `semaphore-acquired`, `tool-progress`, `file-progress`, `runtime-state`, `terminal-result`
+- `requestSummary.ackStatus="broken"` + `localAckState="ack-break"` + `blockedReason` 존재는 local ack break equivalent 이다
+- local ack source는 `request-accepted`, `semaphore-acquired`, `build-started`, `tool-progress`, `file-progress`, `runtime-state`, `build-subprocess-alive`, `build-phase-complete`, `terminal-result`, `ack-break`
 - 전역 numeric stall threshold는 health contract에 노출하지 않는다. ack break는 내부 실행 흐름의 명시적 비정상 종료로만 판정한다
 
 ---

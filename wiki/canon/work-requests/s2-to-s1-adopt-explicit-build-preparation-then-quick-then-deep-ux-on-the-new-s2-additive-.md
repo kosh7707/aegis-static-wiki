@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s1", "s2"]
 decision_tags: ["ux", "quick-deep", "build-prep", "graphrag", "contract"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md", "wiki/canon/specs/backend.md", "wiki/canon/handoff/s2/readme.md", "wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-14T05:09:18.267Z","note":"Administrative closure requested by user during cross-lane cleanup. Marked completed for recipient lane S1 without additional implementation or verification in this S7 session."}]
 registered_at: "2026-04-13T09:50:55.030Z"
+completed_at: "2026-04-14T05:09:18.267Z"
 ---
 
 # adopt explicit build-preparation then Quick then Deep UX on the new S2 additive contract surfaces

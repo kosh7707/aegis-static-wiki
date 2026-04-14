@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s2", "s1"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/backend.md", "wiki/canon/handoff/s2/api-endpoints.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1", "s1-qa"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-14T05:09:18.315Z","note":"Administrative closure requested by user during cross-lane cleanup. Marked completed for recipient lane S1 without additional implementation or verification in this S7 session."},{"lane":"s1-qa","completed_at":"2026-04-14T05:09:18.415Z","note":"Administrative closure requested by user during cross-lane cleanup. Marked completed for recipient lane S1-QA without additional implementation or verification in this S7 session."}]
 registered_at: "2026-04-09T07:40:46.267Z"
+completed_at: "2026-04-14T05:09:18.415Z"
 ---
 
 # S2 backend project CRUD hardening landed on 2026-04-09 — please wire S1 edit/delete UI to stable PUT/DELETE semantics

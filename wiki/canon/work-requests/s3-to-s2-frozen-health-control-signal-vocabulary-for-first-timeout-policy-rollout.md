@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s2", "s3", "s4", "s7"]
 decision_tags: ["health", "timeout-policy", "ack-liveness", "orchestration"]
 related_pages: ["wiki/canon/specs/health-control-signal-rollout-v1.md", "wiki/canon/work-requests/s2-to-s3-pre-freeze-timeout-policy-redesign-impact-analysis-completed-on-s2-implementatio.md"]
 migration_status: "canonicalized"
 wr_id: "s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-14T03:24:16.592Z","note":"Processed on 2026-04-14. S2 implemented request-aware /health consumer handling: optional requestId pass-through to child /v1/health calls, normalized child control summaries, frozen pollDecision mapping, and canonical docs updates."}]
 registered_at: "2026-04-13T11:49:50.151Z"
+completed_at: "2026-04-14T03:24:16.592Z"
 ---
 
 # frozen /health control-signal vocabulary for first timeout-policy rollout

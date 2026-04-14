@@ -4,7 +4,7 @@ page_type: "canonical-api"
 canonical: true
 source_refs:
   - "docs/api/build-agent-api.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md"]
@@ -15,9 +15,9 @@ related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-13
+> **최종 업데이트**: 2026-04-14
 
-Build Agent의 public contract 문서다. 2026-04-13 기준 내부 router/handler 구조는 크게 정리되었지만, **strict contract와 public response 의미는 바뀌지 않았다.**
+Build Agent의 public contract 문서다. 내부 router/handler 구조와 internal downstream calling strategy는 계속 정리되었지만, **strict contract와 public response 의미는 유지된다.**
 
 ---
 
@@ -42,6 +42,8 @@ http://localhost:8003
 | POST | `/v1/tasks` | `build-resolve`, `sdk-analyze` |
 | GET | `/v1/health` | 상태 + agent config |
 
+> 2026-04-14 이후 Build Agent는 내부적으로 tool-less LLM turn에서 S7 async ownership surface를 우선 사용할 수 있지만, 이 변화는 Build Agent outward API shape를 바꾸지 않는다.
+
 ---
 
 ## POST /v1/tasks
@@ -60,7 +62,7 @@ http://localhost:8003
 ### 핵심 의미
 
 호출자는 아래를 명시해야 한다.
-1. 어느 서브프로젝트를 빌드할지
+1. 어느 BuildTarget을 빌드할지
 2. 어떤 빌드 모드(`native` / `sdk`)인지
 3. SDK 모드라면 어떤 materialization source를 쓸지
 4. 성공 산출물이 무엇인지
@@ -73,8 +75,8 @@ http://localhost:8003
 | `contractVersion = "build-resolve-v1"` | top-level | O |
 | `strictMode = true` | top-level | O |
 | `projectPath` | `context.trusted` | O |
-| `subprojectPath` | `context.trusted` | O |
-| `subprojectName` | `context.trusted` | O |
+| `buildTargetPath` | `context.trusted` | O |
+| `buildTargetName` | `context.trusted` | O |
 | `build.mode` | `context.trusted.build` | O |
 | `expectedArtifacts[]` | `context.trusted` | O |
 | `build.sdkId` | `context.trusted.build` | O when sdk |
@@ -87,7 +89,7 @@ http://localhost:8003
 - `contractVersion: "compile-first-v1"`
 
 ### strict 불변조건
-1. `subprojectPath` 누락 시 invalid contract
+1. `buildTargetPath` 누락 시 invalid contract
 2. undeclared native/sdk fallback 금지
 3. `expectedArtifacts` 미충족이면 성공 금지
 4. caller build script hint는 text-only / reference-only
@@ -100,23 +102,20 @@ http://localhost:8003
 성공 시 HTTP `200` + `status: "completed"`.
 
 핵심 필드:
-
-| 필드 | 설명 |
-|---|---|
-| `taskId`, `taskType`, `contractVersion`, `strictMode`, `status` | top-level 실행 결과 |
-| `modelProfile`, `promptVersion`, `schemaVersion` | 생성 메타데이터 |
-| `validation.valid` | 구조 검증 결과 |
-| `result.summary` | 빌드 결과 요약 |
-| `result.buildResult.success` | 성공 여부 |
-| `result.buildResult.declaredMode` | caller 선언 모드 |
-| `result.buildResult.sdkId` | sdk 모드면 사용된 sdk id |
-| `result.buildResult.buildCommand` | 재사용 가능한 빌드 명령 |
-| `result.buildResult.buildScript` | request-scoped script 경로 |
-| `result.buildResult.buildDir` | request-scoped build dir |
-| `result.buildResult.producedArtifacts` | 실제 산출물 목록 |
-| `result.buildResult.artifactVerification` | expectedArtifacts 충족 여부 |
-| `result.buildPreparation` | 다음 단계(S4 Quick / S3 Deep)에 넘길 explicit build-preparation 번들 |
-| `audit` | latency / tokenUsage / agentAudit |
+- `taskId`, `taskType`, `contractVersion`, `strictMode`, `status`
+- `modelProfile`, `promptVersion`, `schemaVersion`
+- `validation.valid`
+- `result.summary`
+- `result.buildResult.success`
+- `result.buildResult.declaredMode`
+- `result.buildResult.sdkId`
+- `result.buildResult.buildCommand`
+- `result.buildResult.buildScript`
+- `result.buildResult.buildDir`
+- `result.buildResult.producedArtifacts`
+- `result.buildResult.artifactVerification`
+- `result.buildPreparation`
+- `audit`
 
 ### `result.buildPreparation`
 
@@ -175,7 +174,7 @@ HTTP `200` + 실패 `status`.
 
 ## GET /v1/health
 
-2026-04-09 live 기준 예시:
+예시:
 
 ```json
 {
@@ -197,11 +196,13 @@ HTTP `200` + 실패 `status`.
 
 ---
 
-## 2026-04-09 구현 메모
+## 2026-04-14 구현 메모
 
-내부 구현은 다음처럼 분리되었지만 public contract는 동일하다.
+내부 구현은 다음처럼 정리/확장되었지만 public contract는 동일하다.
 - `tasks.py` → thin router
 - `build_resolve_handler.py`
 - `build_route_support.py`
 - `sdk_analyze_handler.py`
 - `sdk_analyze_support.py`
+- internal tool-less LLM turn에서 S7 async ownership surface 우선 사용 + sync fallback
+- unsupported async surface(404/405/501)는 짧은 cooldown으로 기억하여, 매 호출마다 같은 probe를 반복하지 않도록 internal fallback behavior를 완화

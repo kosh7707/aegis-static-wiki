@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -316,13 +316,18 @@ type AnalysisPhase =
   | "merging"
   | "complete"
   | "quick_sast"
+  | "quick_graphing"
+  | "quick_complete"
   | "deep_submitting"
   | "deep_analyzing"
+  | "deep_retrying"
   | "deep_complete";
 
 interface AnalysisProgress {
   analysisId: string;
   projectId: string;
+  buildTargetId?: string;
+  executionId?: string;
   status: AnalysisTrackerStatus;
   phase: AnalysisPhase;
   currentChunk: number;
@@ -660,9 +665,8 @@ Build-preparation note:
 
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
-| POST | `/api/analysis/run` | `{ projectId: string; targetIds?: string[]; mode?: "full" \| "subproject" }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400` |
-| POST | `/api/analysis/quick` | `{ projectId: string; targetIds?: string[]; mode?: "full" \| "subproject" }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400` |
-| POST | `/api/analysis/deep` | `{ projectId: string; quickAnalysisId: string }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400`, `404` |
+| POST | `/api/analysis/quick` | `{ projectId: string; buildTargetId: string }` | `202 { success, data: { analysisId, buildTargetId, executionId, status: "running" } }` | `202`, `400`, `404` |
+| POST | `/api/analysis/deep` | `{ projectId: string; buildTargetId: string; executionId: string }` | `202 { success, data: { analysisId, buildTargetId, executionId, status: "running" } }` | `202`, `400`, `404` |
 | GET | `/api/analysis/status` | - | `200 { success, data: AnalysisProgress[] }` | `200` |
 | GET | `/api/analysis/status/:analysisId` | - | `200 { success, data: AnalysisProgress }` | `200`, `404` |
 | POST | `/api/analysis/abort/:analysisId` | - | `200 { success, data: { analysisId, status: "aborted" } }` | `200`, `404` |
@@ -672,30 +676,20 @@ Build-preparation note:
 | GET | `/api/analysis/summary` | `?projectId=<id>&period=30d` | `200 { success, data: StaticAnalysisDashboardSummary }` | `200`, `400` |
 | POST | `/api/analysis/poc` | `{ projectId: string; findingId: string }` | `200 { success, data: { findingId, poc, audit } }` | `200`, `400`, `404`, `502` |
 
-Validation rules enforced on `POST /api/analysis/run`:
-
-- `projectId` required.
-- if `mode === "subproject"`, `targetIds` must be non-empty.
-- if `mode === "full"`, `targetIds` must be omitted/empty.
-- if `mode` is omitted, backend preserves existing targetIds-based behavior.
-
-Additional additive semantics:
-
-- `POST /api/analysis/run`
-  - legacy public alias of explicit Quick
-  - uses the same mode validation rules and accepted-response shape as `/api/analysis/quick`
 - `POST /api/analysis/quick`
-  - uses the same mode validation rules as legacy `/run`
-  - currently represents explicit Quick-only execution
-  - when target-scoped Quick is requested, build preparation is expected to have already produced `compile_commands`
+  - BuildTarget-only 실행 요청이다.
+  - `buildTargetId` 필수
+  - legacy `mode`, `targetIds`, project-only payload는 `400 INVALID_INPUT`
+  - 현재 runtime에서는 BuildTarget의 SDK choice가 명시적으로 확정(`sdk-selected` 또는 `sdk-none-explicit`)되지 않으면 Quick가 거부된다.
 - `POST /api/analysis/deep`
-  - requires `quickAnalysisId`
-  - currently bootstraps Deep from a prior Quick result plus KB graph stats
+  - `buildTargetId` 필수
+  - `executionId` 필수
+  - legacy `quickAnalysisId` payload는 `400 INVALID_INPUT`
+  - Deep는 해당 BuildTarget의 same-lineage Quick 3단계(build-prep, GraphRAG ingest, one S4 scan)가 모두 성공한 execution에서만 허용된다.
 
 Compatibility note:
-
-- `POST /api/analysis/run` remains mounted only as a **legacy Quick alias**, not as the old auto Quick→Deep chain.
-- `POST /api/analysis/quick` and `POST /api/analysis/deep` are additive explicit-step surfaces introduced during the migration.
+- `POST /api/analysis/run`은 cutover 후 더 이상 mounted되지 않는다.
+- Project는 실행 단위가 아니라 aggregate read scope일 뿐이며, analysis execution API는 BuildTarget identity 없이 호출할 수 없다.
 
 `GET /api/analysis/summary` notes:
 
@@ -893,22 +887,52 @@ Notable current behavior:
 
 ### Health surface
 
-`GET /health` returns a bare JSON object, not the default success envelope:
+`GET /health` returns a bare JSON object, not the default success envelope.
+`requestId` query parameter is optional; when present, S2 forwards it to downstream `/v1/health`
+surfaces and exposes normalized polling guidance for any request-aware summary fields.
 
 ```ts
+interface HealthControlSummary {
+  activeRequestCount: number | null;
+  requestId: string | null;
+  endpoint: string | null;
+  state: "idle" | "queued" | "running" | "failed";
+  localAckState: "phase-advancing" | "transport-only" | "ack-break" | null;
+  degraded: boolean;
+  degradeReasons: string[];
+  lastAckAt: number | null;
+  lastAckSource: string | null;
+  blockedReason: string | null;
+  pollDecision: "continue_waiting" | "chain_abort" | "no_active_request" | "inconclusive";
+  decisionReasons: string[];
+}
+
+interface ServiceHealth {
+  status: "ok" | "degraded" | "unreachable";
+  detail?: Record<string, unknown>;
+  control?: HealthControlSummary;
+}
+
 interface HealthResponse {
   service: string;
   status: "ok" | "degraded" | "unhealthy";
   version: string;
+  controlPolicyVersion?: "health-control-signal-rollout-v1";
+  requestIdQueried?: string;
   detail: { version: string; uptime: number };
-  llmGateway?: unknown;
-  analysisAgent?: unknown;
-  sastRunner?: unknown;
-  knowledgeBase?: unknown;
-  buildAgent?: unknown;
+  llmGateway?: ServiceHealth;
+  analysisAgent?: ServiceHealth;
+  sastRunner?: ServiceHealth;
+  knowledgeBase?: ServiceHealth;
+  buildAgent?: ServiceHealth;
   adapters: { total: number; connected: number };
 }
 ```
+
+Normalization note:
+- S2 keeps coarse service status (`ok | degraded | unreachable`) separate from request-aware control state.
+- When downstream health includes the frozen `requestSummary` fields, S2 computes `control.pollDecision`.
+- Legacy S4 `requestSummary.ackStatus="broken"` is normalized to `localAckState="ack-break"`.
 
 ---
 
@@ -1027,10 +1051,10 @@ Role and recovery:
 
 | `type` | Payload |
 |---|---|
-| `analysis-progress` | `{ analysisId, phase, message, targetName?, targetProgress?: { current, total } }` |
-| `analysis-quick-complete` | `{ analysisId, findingCount }` |
-| `analysis-deep-complete` | `{ analysisId, findingCount }` |
-| `analysis-error` | `{ analysisId, phase: "quick" \| "deep", error, retryable, partial? }` |
+| `analysis-progress` | `{ analysisId, buildTargetId?, executionId?, phase, message, targetName?, targetProgress?: { current, total } }` |
+| `analysis-quick-complete` | `{ analysisId, buildTargetId?, executionId?, findingCount }` |
+| `analysis-deep-complete` | `{ analysisId, buildTargetId?, executionId?, findingCount }` |
+| `analysis-error` | `{ analysisId, buildTargetId?, executionId?, phase: "quick" \| "deep", error, retryable, partial? }` |
 
 Current progress phases:
 

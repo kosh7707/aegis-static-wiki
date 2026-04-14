@@ -34,6 +34,11 @@ migration_status: "canonicalized"
 
 ## 최근 완료
 
+- ~~S3 wait-while-alive follow-up WR: build/build-and-analyze health coverage + localAckState mapping~~ — **완료** (2026-04-14)
+  - `/v1/health` request-summary coverage를 `/v1/scan` + `/v1/build` + `/v1/build-and-analyze`로 확장
+  - additive `localAckState` (`phase-advancing` / `transport-only` / `ack-break`) 노출
+  - build/build-and-analyze 장시간 컴파일 구간은 `build-subprocess-alive` 기반 `transport-only`로 표면화하고, build failure 경로는 `ack-break`로 정렬
+  - S3 회신 WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif.md`
 - ~~S3 follow-up WR: live `/v1/health` request-summary drift clarification~~ — **완료** (2026-04-14)
   - canonical code/docs와 live runtime이 어긋난 원인을 runtime/deploy lag 또는 stale transient instance로 정리
   - 현재 worktree는 request-summary fields를 포함하지만 live `localhost:9000` 는 재기동 전 coarse-only shape 또는 no-listener 상태일 수 있음을 명시

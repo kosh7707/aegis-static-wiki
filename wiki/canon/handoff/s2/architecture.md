@@ -42,7 +42,7 @@ services/backend/
 └── src/
     ├── index.ts                  # 앱 진입점
     ├── config.ts                 # 환경변수 중앙화
-    ├── db.ts                     # SQLite 초기화 + 29개 테이블 스키마 + FK enforcement
+    ├── db.ts                     # SQLite 초기화 + 30개 테이블 스키마 + FK enforcement
     ├── composition.ts            # DI/AppContext 구성
     ├── router-setup.ts           # 전 라우터 마운트
     ├── bootstrap.ts              # 기동 시 admin 시딩
@@ -212,7 +212,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 6. 결과 정규화 → Run/Finding/EvidenceRef/Gate
 7. `/ws/analysis` 진행률 브로드캐스트
 
-#### 2) 소스 업로드 / 빌드 타겟 / 서브프로젝트 파이프라인
+#### 2) 소스 업로드 / 빌드 타겟 / BuildTarget 파이프라인
 
 - `project-source.service.ts`
 - `project-deletion.service.ts`
@@ -284,7 +284,7 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 - connection 생성 시 `PRAGMA foreign_keys = ON`
 - 현재 프로젝트 삭제는 schema-level FK cascade만 믿지 않고, `ProjectDeletionService`의 explicit delete manifest + uploads quarantine으로 안전성을 확보한다.
 
-### 현재 테이블 29개
+### 현재 테이블 30개
 
 | 테이블 | 용도 |
 |--------|------|
@@ -303,7 +303,7 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 | `evidence_refs` | 증적 참조 |
 | `gate_results` | Quality Gate 결과 |
 | `approvals` | 승인 요청 |
-| `build_targets` | 서브프로젝트/빌드 타겟 |
+| `build_targets` | BuildTarget |
 | `notifications` | 프로젝트 알림 |
 | `users` | 사용자 |
 | `sessions` | 로그인 세션 |
@@ -316,7 +316,7 @@ SQLite(`better-sqlite3`), WAL 모드. DB 파일 기본값은 `services/backend/a
 | `build_requests` | build request ledger |
 | `build_attempt_projections` | build attempt projection |
 | `build_snapshot_projections` | build snapshot projection |
-| `subproject_assets` | subproject asset mapping |
+| `build_target_assets` | BuildTarget asset mapping |
 
 ### build/snapshot persistence seam 메모
 

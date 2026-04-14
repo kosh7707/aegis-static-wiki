@@ -21,39 +21,71 @@ migration_status: "canonicalized"
 
 ## 즉시 다음 작업
 
-### 1) strict JSON mode runtime rollout 마무리
+### 1) strict JSON + request-aware health + async ownership runtime rollout 마무리
 
-- 2026-04-14 repo 기준 `/v1/chat` opt-in strict JSON mode 구현 완료
+- 2026-04-14 repo 기준 `/v1/chat` opt-in strict JSON mode, `/v1/health` request-aware control-signal summary, 그리고 phase-2 async ownership surface 구현 완료
 - 다음 세션의 최우선 작업은 **실제 떠 있는 S7 gateway 프로세스가 새 코드로 재기동/rollout 되었는지 확인**하는 것
 - 완료 기준:
   - live `http://localhost:8000/v1/chat`에 `X-AEGIS-Strict-JSON: true` 요청 시 응답 헤더 `X-AEGIS-Strict-JSON: applied` 확인
   - strict mode 성공 케이스에서 `choices[0].message.content` compact JSON + `reasoning: null` 확인
   - strict mode 실패 케이스에서 502 명확 실패 확인
+  - live `http://localhost:8000/v1/health?requestId=<active-id>`에서 `activeRequestCount` / `requestSummary` / `localAckState` / `phase`가 additive하게 노출되는지 확인
+  - live async submit/status/result/cancel smoke로:
+    - durable `requestId` 발급
+    - wrapped final `response`
+    - explicit not-ready / expired behavior
+    - 15분 retention metadata (`expiresAt`)
+    를 확인
 
 ### 2) caller guidance 안정화
 
 - S3/S2 호출자에게 현재 지원 계약을 유지:
   - strict JSON이 필요하면 `X-AEGIS-Strict-JSON: true`
   - 응답은 OpenAI envelope 유지, **`choices[0].message.content`만 JSON으로 파싱**
+  - active request polling이 필요하면 `GET /v1/health?requestId=<X-Request-Id>`를 사용
+  - stronger no-result-loss semantics가 필요하면 `/v1/chat` 대신 `POST /v1/async-chat-requests`와 status/result/cancel 흐름을 사용
 - runtime rollout 후 실제 live smoke 결과를 바탕으로 추가 문서 drift가 없는지 재점검
+- stronger no-result-loss semantics가 필요하면 `/v1/chat`가 아니라 별도 async surface 후보로 연결
+
+### 3) next-step wait-while-alive contract 정리
+
+- 2026-04-14 S7 phase-2 decision: **Option C — `/v1/chat`를 stretch하지 말고, stronger no-result-loss semantics는 별도 async request-ownership surface로 분리**
+- 이유:
+  - `/v1/chat`는 OpenAI-compatible synchronous compatibility surface로 유지하는 편이 경계가 명확하다
+  - active lifetime / terminal retention / final result fetch 규칙은 detached async surface에서 더 명시적으로 정의할 수 있다
+  - `/v1/chat`에 resumable/detached ownership을 얹으면 현재 proxy contract와 caller expectations가 과도하게 섞인다
+- 따라서 다음 설계 작업은:
+  - submitted async ownership surface를 실제 S3/S2 consumer flow에 맞춰 다듬기
+  - 필요 시 `Idempotency-Key`, `retryAfterMs`, priority hint 같은 additive fields를 검토하기
+  - 현재 in-memory retention에서 durable store 필요 시점(재기동 후에도 보존할지) 결정하기
 
 ### 최신 확인 상태
 
-- 2026-04-14 strict JSON mode 반영:
+- 2026-04-14 strict JSON + request-aware health + async ownership 반영:
   - `X-AEGIS-Strict-JSON` 헤더 도입
   - `response_format=json_object` + `enable_thinking=false` 강제
   - strict 응답 검증/정규화 + `reasoning` scrub + 502 fail-closed
+  - `/v1/health` additive `activeRequestCount` + `requestSummary`
+  - `requestId` query targeting
+  - `llm-inference` 중 `localAckState="transport-only"` 노출
+  - `POST /v1/async-chat-requests`
+  - `GET /v1/async-chat-requests/{requestId}`
+  - `GET /v1/async-chat-requests/{requestId}/result`
+  - `DELETE /v1/async-chat-requests/{requestId}`
+  - final `/v1/chat` payload wrapped under `response`
+  - `traceRequestId`, `resultReady`, `expiresAt` surfaced for ownership path
+  - phase-2 방향은 Option C(새 async surface)로 정리
 - 검증 상태:
-  - 타깃 회귀 테스트 28 passed
-  - 전체 S7 테스트 188 passed (`.venv/bin/python3 -m pytest -q`)
-  - in-process strict JSON smoke pass
+  - 타깃 회귀 테스트 47 passed (`tests/test_contract_endpoints.py`, `tests/test_async_chat_manager.py`, `tests/test_contract_input_validation.py`)
+  - 전체 S7 테스트 205 passed (`.venv/bin/python3 -m pytest -q`)
 - 운영 메모:
   - 2026-04-04부터 공용 `.omx`에는 cross-lane durable 정보만 남기고,
     S7 전용 장문 메모/세부 TODO는 `wiki/canon/handoff/s7/` 또는 session state에 기록
 
 ### 관측된 운영 이슈/개선 기회
 
-- 2026-04-14 live localhost smoke에서 strict header가 아직 반영되지 않아 **runtime restart pending**으로 판단
+- 2026-04-14 기준 repo 구현은 green이지만 live localhost rollout 여부는 아직 미확인이라 **runtime restart / smoke verification pending**
+- async ownership surface는 현재 **in-memory** ownership/retention이다. 서비스 재기동 이후에도 durable ownership이 필요해지면 별도 저장소가 필요하다
 - 2026-03-31 기준 통합 테스트 2회 로그 분석에서는 S7 에러 0건
 
 ### 관측된 모델 한계 (개선 기회)

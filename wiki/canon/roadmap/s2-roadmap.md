@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/roadmap.md"
 original_path: "docs/s2-handoff/roadmap.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -29,9 +29,8 @@ migration_status: "canonicalized"
 - `POST /api/projects/:pid/pipeline/prepare/:targetId`
 - `POST /api/analysis/quick`
 - `POST /api/analysis/deep`
-- `POST /api/analysis/run` → legacy Quick alias
 - `/ws/analysis` phase에 `quick_graphing` 추가
-- target-scoped Quick는 prepared `compile_commands` prerequisite 적용
+- BuildTarget-scoped Quick는 prepared `compile_commands` prerequisite 적용
 - Quick 직후 S5 GraphRAG readiness 확인 후에만 다음 단계 컨텍스트로 승격
 
 아직 남은 cleanup:
@@ -48,14 +47,14 @@ S3 notice 기준 첫 rollout boundary:
 - no result payload redesign in this phase
 
 S2 pre-freeze 결론:
-- 지금은 **구현이 아니라 영향분석만** 한다.
-- contract freeze 전까지는 caller-side polling/chained-abort 동작을 코드로 고정하지 않는다.
+- 이 문단은 historical note다.
+- freeze 전까지는 영향분석만 했고, post-freeze 구현은 아래 항목에 별도 반영됐다.
 
 현재 확인된 S2 영향 포인트:
 - `services/backend/src/controllers/health.controller.ts`
-  - child health를 `ok | degraded | unreachable` 로만 축약 집계
+  - **2026-04-14 구현 완료**: child health raw detail 유지 + normalized `control.pollDecision`
 - `services/backend/src/services/{agent-client,build-agent-client,sast-client,kb-client,llm-task-client}.ts`
-  - one-shot `checkHealth()` 만 존재, orchestration polling loop 부재
+  - **2026-04-14 구현 완료**: `checkHealth(requestId?)`
 - `services/backend/src/services/{analysis-orchestrator,pipeline-orchestrator}.ts`
   - request retry / timeout / abort signal 은 있으나
     ack-break 기반 chained-abort policy 는 아직 없음
@@ -84,8 +83,46 @@ freeze된 first-rollout contract 요약:
 
 세션 종료 시점 상태:
 - freeze 전 영향분석 / 문서 반영 / S3 reply WR 발행 완료
-- freeze 후 implementation은 아직 미착수
-- 다음 세션에서 `/health` polling interpreter + chained-abort handling 구현 착수 필요
+- freeze 후 `/health` consumer surface 구현 완료
+  - `/health?requestId=` pass-through
+  - frozen `requestSummary` normalization
+  - `controlPolicyVersion: "health-control-signal-rollout-v1"`
+  - legacy S4 `ackStatus=broken` → `localAckState=ack-break`
+- orchestration gap remains:
+  - timeout-shaped transport failures after synchronous downstream calls still do not automatically continue via lower `/health` polling
+  - current repo has the interpreter surface, but not the full continuation loop
+
+### timeout-coded terminal branch inventory (2026-04-14)
+
+현재 repo-grounded inventory:
+
+- `AgentClient.submitTask()` → `AgentTimeoutError` / `AgentUnavailableError`
+  - consumer: `AnalysisOrchestrator.runSingleAnalysis()` Deep phase
+- `BuildAgentClient.submitTask()` → `BuildAgentTimeoutError` / `BuildAgentUnavailableError`
+  - consumer: `PipelineOrchestrator.prepareTarget()` build-resolve phase
+- `SastClient.scan()` / `SastClient.build()` → `SastTimeoutError` / `SastUnavailableError`
+  - consumer: `AnalysisOrchestrator.runSingleAnalysis()` Quick phase
+  - consumer: `PipelineOrchestrator.prepareTarget()` build/scan phase
+- `LlmTaskClient.doFetch()` → `LlmTimeoutError` / `LlmUnavailableError`
+  - consumer: `DynamicAnalysisService`, `DynamicTestService`
+- `KbClient.ingestCodeGraph()` currently has `KbUnavailableError` / `KbHttpError`
+  - explicit `KB_TIMEOUT` code branch는 아직 별도 클래스가 없다
+
+현재 `/health` polling 현황:
+- **이미 polling 하는 execution loop는 없음**
+- 구현 완료된 것은 **request-aware health fetch + normalized interpretation surface**
+- 따라서 timeout-shaped failure는 아직 orchestration 내부에서 continue-waiting로 자동 승격되지 않고,
+  implementation-lag transport outcome으로만 남아 있다
+
+### S5 runtime semantics notice 처리 (2026-04-14)
+
+S5 notice 기준 S2 쪽 후속 정리:
+- `KbClient` error handling을 S5의 current runtime semantics에 맞춰 정리
+  - `503` 로그 메시지에서 old overload wording 제거
+  - `408 TIMEOUT` payload를 그대로 드러내도록 테스트 추가
+- `PipelineOrchestrator`는 `/v1/ready`를 code-graph ingest pre-gate로 더 이상 쓰지 않음
+  - code GraphRAG readiness는 ingest 응답(`status + readiness.graphRag`)만 authoritative
+- `/v1/graph/stats` mixed-graph totals change는 현재 S2 runtime path에 직접 영향 없음
 
 ### 대기 중인 작업 요청 / 참고 자료 (2026-04-06 기준)
 
@@ -227,12 +264,12 @@ src/
 
 ### 즉시 다음 작업 (Next S2 Session)
 
-1. **timeout-policy redesign post-freeze implementation 착수**
-   - frozen `/health` summary field/state 해석기 도입
-   - `analysis-orchestrator`, `pipeline-orchestrator`에 chained-abort 적용 범위 설계/구현
-   - health aggregation / polling semantics를 canonical docs + tests로 잠그기
-2. **explicit-step migration final cleanup**
-   - legacy `/api/analysis/run` 관련 hidden auto-chain 흔적 제거/정리
+1. **timeout-policy redesign execution gap 후속**
+   - `analysis-orchestrator`, `pipeline-orchestrator`에 lower `/health` polling continuation / chained-abort loop 적용
+   - timeout-shaped transport failure를 lower `/health` verdict와 합성하는 error policy 정리
+   - health aggregation / polling semantics를 canonical docs + tests로 추가 고정
+2. **execution naming / cutover drift cleanup**
+   - BuildTarget-only / executionId terminology를 backend/docs/test surface에 일관되게 고정
    - analysis WS/status/documentation 정합성 마감
 3. **shared/public contract 최종 정리**
    - `wiki/canon/api/shared-models.md`

@@ -30,13 +30,15 @@ services/llm-gateway/
 │   ├── context.py                # contextvars 기반 요청 컨텍스트 (requestId)
 │   ├── errors.py                 # GatewayError 계층 (LlmTimeoutError, LlmUnavailableError, LlmHttpError, LlmCircuitOpenError)
 │   ├── circuit_breaker.py        # CircuitBreaker (CLOSED->OPEN->HALF_OPEN 상태 전이)
+│   ├── request_tracker.py        # in-flight `/v1/tasks` / `/v1/chat` control-signal tracker (`activeRequestCount`, `requestSummary`)
+│   ├── async_chat_manager.py     # async ownership surface manager (`submit/status/result/cancel`, retention, expiry)
 │   ├── types.py                  # TaskType, TaskStatus, FailureCode StrEnum
 │   ├── clients/
 │   │   ├── base.py               # LlmClient ABC
 │   │   └── real.py               # RealLlmClient (OpenAI-compatible, vLLM 대상, httpx connection pooling, thinking 제어, 토큰 캡처, structured output, LLM 교환 전문 로깅)
 │   ├── schemas/
-│   │   ├── request.py            # TaskRequest, EvidenceRef, Context, Constraints, RequestMetadata
-│   │   └── response.py           # TaskSuccessResponse, TaskFailureResponse, AssessmentResult, Claim(location 포함), TestPlan, AuditInfo, TokenUsage
+│   │   ├── request.py            # TaskRequest + AsyncChatSubmitRequest
+│   │   └── response.py           # Task responses + async accepted/status/result responses
 │   ├── registry/
 │   │   ├── prompt_registry.py    # PromptEntry + PromptRegistry (5개 task type 등록)
 │   │   └── model_registry.py     # ModelProfile + ModelProfileRegistry (Settings 기반)
@@ -57,7 +59,7 @@ services/llm-gateway/
 │   ├── mock/
 │   │   └── dispatcher.py         # V1MockDispatcher (taskType enum 기반)
 │   └── routers/
-│       └── tasks.py              # POST /v1/tasks, /v1/chat(opt-in strict JSON), GET /v1/health, /v1/usage, /v1/models, /v1/prompts, /metrics
+│       └── tasks.py              # POST /v1/tasks, /v1/chat(opt-in strict JSON), POST/GET/DELETE async ownership endpoints, GET /v1/health, /v1/usage, /v1/models, /v1/prompts, /metrics
 ├── scripts/
 │   └── threat-db/                # 위협 지식 DB ETL 파이프라인 (S4 이식)
 │       ├── build.py              # ETL 오케스트레이터 (다운로드 -> 파싱 -> 교차참조 -> Qdrant 적재)
@@ -75,7 +77,7 @@ services/llm-gateway/
 │       └── requirements.txt      # ETL 전용 의존성
 ├── data/
 │   └── qdrant/                   # Qdrant 파일 기반 벡터 DB (ETL 빌드 산출물, git 추적 제외)
-├── tests/                        # 188 tests total (2026-04-14 기준)
+├── tests/                        # 205 tests total (2026-04-14 기준)
 │   ├── conftest.py               # 공통 fixture: TestClient(client_live, client+mock_pipeline), 요청 빌더
 │   ├── test_response_parser.py   # 12 tests
 │   ├── test_evidence_validator.py # 5 tests
@@ -88,11 +90,13 @@ services/llm-gateway/
 │   ├── test_context_enricher.py  # 11 tests (ruleMatches fallback, min_score 전달 포함)
 │   ├── test_pipeline_retry.py   # 13 tests (재시도 성공/소진/HTTP에러/토큰누적/CB OPEN)
 │   ├── test_circuit_breaker.py        # 10 tests (상태 전이, 복구, snapshot)
+│   ├── test_request_tracker.py       # 4 tests (idle/oldest/targeted request summary, clear semantics)
+│   ├── test_async_chat_manager.py    # 3 tests (submit/complete, cancel, expiry)
 │   ├── test_token_tracker.py         # 7 tests (누적 집계, endpoint별, taskType별)
-│   ├── test_contract_endpoints.py      # 28 tests (GET /v1/health, /models, /prompts, /usage, /metrics, chat proxy + strict JSON mode)
+│   ├── test_contract_endpoints.py      # 36 tests (health request-aware summary, chat proxy strict JSON, async ownership endpoints)
 │   ├── test_contract_task_success.py   # 17 tests (POST /v1/tasks 성공 응답 JSON 계약 검증)
 │   ├── test_contract_task_failure.py   # 22 tests (실패 응답 구조, retryable, 500 형식, failureCode*status)
-│   └── test_contract_input_validation.py # 6 tests (422 입력 검증: taskType/필드 누락/maxTokens 범위)
+│   └── test_contract_input_validation.py # 8 tests (422 입력 검증: taskType/필드 누락/maxTokens 범위 + async chat messages 검증)
 ```
 
 ---
@@ -101,6 +105,7 @@ services/llm-gateway/
 
 ```
 S2 요청 -> tasks.py (POST /v1/tasks)
+  -> RequestTracker에 queued request 등록
   -> PromptRegistry에서 prompt 조회
   -> ModelProfileRegistry에서 profile 조회
   -> [RAG] ContextEnricher로 위협 지식 DB 검색 + 컨텍스트 조립 (선택적)
@@ -109,6 +114,7 @@ S2 요청 -> tasks.py (POST /v1/tasks)
       -> LLM 호출 (Semaphore(N)으로 동시성 제어, 기본 4)
           mock: V1MockDispatcher
           real: RealLlmClient (/v1/chat/completions, vLLM 대상, connection pooling)
+          -> RequestTracker는 `prompt-build -> llm-inference(queue/running) -> validation` phase를 갱신하고, 장시간 non-streaming wait는 `localAckState=transport-only`로 노출
           -> LLM 교환 전문을 logs/llm-exchange.jsonl에 기록
       -> V1ResponseParser로 Assessment JSON 파싱
       -> SchemaValidator로 구조 검증
@@ -122,7 +128,30 @@ S2 요청 -> tasks.py (POST /v1/tasks)
           - LlmInputTooLargeError -> INPUT_TOO_LARGE (non-retryable)
   -> ConfidenceCalculator로 신뢰도 산출 (자체 계산, ragCoverage 반영)
   -> TaskSuccessResponse 또는 TaskFailureResponse 반환
+  -> terminal 응답 후 RequestTracker에서 active request 제거
 ```
+
+---
+
+## 요청 처리 흐름 (phase-2 async ownership)
+
+```
+S3/S2 submit -> tasks.py (POST /v1/async-chat-requests)
+  -> AsyncChatRequestManager가 durable `requestId` 발급
+  -> submit response는 `accepted` + status/result/cancel URLs 반환
+  -> RequestTracker에 `endpoint=async-chat` active request 등록
+  -> background task가 동일 LLM backend 호출을 수행
+      -> queue exit / running / transport-only / terminal 상태를 manager + RequestTracker에 반영
+      -> 성공 시 `/v1/chat` success payload를 `response` 아래에 저장
+      -> 실패/취소 시 explicit terminal state 저장
+  -> status endpoint: ownership metadata + `resultReady` + `expiresAt`
+  -> result endpoint: wrapped final response or explicit not-ready/failed/expired
+  -> cancel endpoint: best-effort cancel
+```
+
+핵심 분리:
+- `/v1/chat` = finite synchronous proxy
+- async ownership surface = durable ownership / retention / reconnect-safe result retrieval
 
 ---
 
@@ -213,6 +242,20 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 - Circuit Breaker OPEN 시 `LlmCircuitOpenError` -> `FailureCode.LLM_CIRCUIT_OPEN` (`retryable: true`)
 - 기타 HTTP 에러 -> `FailureCode.MODEL_UNAVAILABLE` (`retryable: false`)
 - `TaskFailureResponse`에 `retryable: bool` 필드로 S2에 전달
+
+## `/v1/health` request-aware control signal (2026-04-14)
+
+- `RequestTracker`가 현재 active `/v1/tasks`, `/v1/chat`, `/v1/async-chat-requests` request를 compact하게 추적한다.
+- `/v1/health`는 기존 coarse service health에 더해:
+  - `activeRequestCount`
+  - `requestSummary`
+  - optional `requestId` query targeting
+  을 additive하게 제공한다.
+- `requestSummary`는 full history dump가 아니라 현재 in-flight request 하나의 control signal이며, active request가 없으면 `state=\"idle\"` summary로 접힌다.
+- 현재 S7에서 true local ack source로 취급하는 것은 queue exit / phase transition / terminal transition이다.
+- non-streaming `llm-inference` 구간은 세부 progress proof가 없으므로 `localAckState=\"transport-only\"`로 노출한다.
+- 현재 `/v1/chat`의 finite transport timeout은 그대로 유지되므로 timeout이 발생한 transport attempt는 terminal failure이고, `/health`는 완료/실패 history를 보존하지 않는다.
+- async ownership surface가 활성인 경우 `requestSummary.endpoint`는 `async-chat`이 될 수 있다. 다만 `/health`는 여전히 summary-only이며 terminal result retrieval authority는 아니다.
 
 ---
 

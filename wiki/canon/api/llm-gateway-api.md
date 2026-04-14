@@ -119,6 +119,142 @@ strict JSON 모드에서 이 계약을 만족하지 못하면 Gateway는 backend
 - Circuit Breaker가 연속 장애를 감지하면 즉시 503을 반환한다 (타임아웃 대기 없이 빠른 실패)
 - `X-Request-Id` 헤더를 LLM Engine에 전파한다
 - strict JSON이 필요하면 caller는 `X-AEGIS-Strict-JSON: true`를 보내고, 응답 body는 `choices[0].message.content`만 JSON으로 파싱해야 한다
+- 장시간 요청의 현재 in-flight 상태는 additive `/v1/health?requestId=...` control-signal summary로 조회할 수 있다
+- **중요**: 현재 `/v1/chat`의 `X-Timeout-Seconds` 기반 finite timeout은 여전히 canonical이다. transport timeout이 발생한 해당 HTTP 요청은 terminal failure로 간주하며, `/health`는 active request summary만 제공하고 완료/실패 history를 보존하지 않는다
+- **Phase-2 direction (2026-04-14 decision)**: stronger no-result-loss / recoverable wait-while-alive semantics는 `/v1/chat`를 stretch해서 구현하지 않고, 별도 async request-ownership surface에서 다루는 것이 S7의 선호 방향이다. 따라서 `/v1/chat`는 장기적으로도 synchronous/finite compatibility surface로 유지하는 쪽을 기본 가정으로 둔다
+
+---
+
+### POST /v1/async-chat-requests
+
+Long-lived inference ownership submit endpoint. This is the **phase-2 async surface** for stronger reconnect-safe / no-result-loss semantics. `/v1/chat` remains synchronous; this endpoint gives the caller a durable ownership `requestId`.
+
+#### 요청
+
+OpenAI-compatible chat completion body를 거의 그대로 받는다. `model`은 optional이며, Gateway가 실제 운영 모델로 오버라이드한다.
+
+```json
+{
+  "model": "ignored-by-gateway",
+  "messages": [
+    {"role": "system", "content": "..."},
+    {"role": "user", "content": "..."}
+  ],
+  "max_tokens": 4096,
+  "temperature": 0.3,
+  "tools": [...],
+  "tool_choice": "auto"
+}
+```
+
+규칙:
+- `messages`는 필수이며 비어 있으면 안 된다
+- `X-Request-Id`는 원래 trace/correlation ID로 유지된다
+- async surface의 durable ownership ID는 별도의 `requestId`다
+- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 strict JSON 제어를 적용한 결과를 생성한다
+
+#### 응답
+
+성공 시 `202 Accepted`:
+
+```json
+{
+  "requestId": "acr_01abc...",
+  "traceRequestId": "gw-trace-001",
+  "status": "accepted",
+  "statusUrl": "/v1/async-chat-requests/acr_01abc...",
+  "resultUrl": "/v1/async-chat-requests/acr_01abc.../result",
+  "cancelUrl": "/v1/async-chat-requests/acr_01abc...",
+  "acceptedAt": "2026-04-14T03:30:00+00:00",
+  "expiresAt": "2026-04-14T03:45:00+00:00"
+}
+```
+
+중요:
+- `accepted`는 **submit response에만** 나타난다
+- status polling에서는 `accepted`를 long-lived state로 사용하지 않고 바로 `queued`/`running` 계열로 좁힌다
+- `expiresAt`은 현재 S7이 알고 있는 ownership/retention expiry 시각이다. terminal 시점에 연장될 수 있다
+
+### GET /v1/async-chat-requests/{requestId}
+
+Durable ownership 상태 조회 엔드포인트.
+
+```json
+{
+  "requestId": "acr_01abc...",
+  "traceRequestId": "gw-trace-001",
+  "state": "running",
+  "localAckState": "transport-only",
+  "phase": "llm-inference",
+  "degraded": false,
+  "degradeReasons": [],
+  "lastAckAt": 1776151200000,
+  "lastAckSource": "queue-exit",
+  "blockedReason": null,
+  "resultReady": false,
+  "acceptedAt": "2026-04-14T03:30:00+00:00",
+  "startedAt": "2026-04-14T03:30:01+00:00",
+  "endedAt": null,
+  "expiresAt": "2026-04-14T03:45:00+00:00",
+  "statusUrl": "/v1/async-chat-requests/acr_01abc...",
+  "resultUrl": "/v1/async-chat-requests/acr_01abc.../result",
+  "cancelUrl": "/v1/async-chat-requests/acr_01abc..."
+}
+```
+
+`state` allowlist:
+- `queued`
+- `running`
+- `completed`
+- `failed`
+- `cancelled`
+- `expired`
+
+`localAckState` guidance:
+- `queued` / `running` → meaningful (`phase-advancing` or `transport-only`)
+- `completed` → `null`
+- `failed` / `cancelled` → `ack-break`
+- `expired` → `null`
+
+### GET /v1/async-chat-requests/{requestId}/result
+
+Final result retrieval endpoint.
+
+성공 시 `200 OK`:
+
+```json
+{
+  "requestId": "acr_01abc...",
+  "traceRequestId": "gw-trace-001",
+  "state": "completed",
+  "completedAt": "2026-04-14T03:30:42+00:00",
+  "expiresAt": "2026-04-14T03:45:42+00:00",
+  "response": {
+    "choices": [...],
+    "usage": {...}
+  }
+}
+```
+
+규칙:
+- `response`는 가능한 한 current `/v1/chat` success payload shape를 유지한다
+- result not ready → explicit non-ready response (`409`)
+- failed/cancelled → explicit terminal non-success response (`409`)
+- expired/not retained → explicit expired response (`410`)
+- idle/empty ambiguity는 허용하지 않는다
+
+### DELETE /v1/async-chat-requests/{requestId}
+
+Best-effort cancel endpoint.
+
+응답은 현재 ownership status shape를 돌려준다. 이미 terminal이면 그 terminal 상태를 그대로 돌려준다.
+
+### async ownership semantics
+
+- `/v1/chat`는 여전히 finite synchronous compatibility surface다
+- stronger no-result-loss semantics는 이 async ownership surface에서만 제공한다
+- `X-Timeout-Seconds`는 `/v1/chat`에는 canonical이지만, async ownership path에서는 **superseded** 된다
+- terminal retention은 현재 최소 **15분**
 
 ---
 
@@ -574,7 +710,12 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 
 ### GET /v1/health
 
-서비스 상태 확인.
+서비스 상태 확인. 기존 coarse service health를 유지하면서, 첫 rollout부터 **request-aware control-signal summary**를 additive하게 제공한다.
+
+- query parameter: `requestId` (optional)
+  - 지정 시 해당 active request의 summary를 우선 반환
+  - 미지정 시 현재 active request 중 가장 오래된 request의 summary를 반환
+  - active request가 없거나 지정한 requestId가 현재 active set에 없으면 idle summary를 반환
 
 ```json
 {
@@ -601,6 +742,21 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
     "endpoint": "http://10.126.37.19:8000"
   },
   "llmConcurrency": 4,
+  "activeRequestCount": 1,
+  "requestSummary": {
+    "requestId": "acr_01abc...",
+    "endpoint": "async-chat",
+    "taskType": null,
+    "state": "running",
+    "localAckState": "transport-only",
+    "degraded": false,
+    "degradeReasons": [],
+    "lastAckAt": 1776151200000,
+    "lastAckSource": "queue-exit",
+    "blockedReason": null,
+    "phase": "llm-inference",
+    "elapsedMs": 18432
+  },
   "rag": {
     "enabled": true,
     "kbEndpoint": "http://localhost:8002",
@@ -611,6 +767,12 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 
 - `circuitBreaker` 필드는 항상 포함. `state`는 `"closed"` (정상), `"open"` (장애 차단), `"half_open"` (복구 탐침 중).
 - `real` 모드일 때 `llmBackend`, `llmConcurrency` 필드가 포함되며, vLLM 백엔드 연결 상태와 동시 처리 가능 수를 보고한다.
+- `activeRequestCount`는 현재 `queued` 또는 `running` 상태 request 수다.
+- `requestSummary`는 full request dump가 아니라 polling caller용 compact control signal이다.
+- `requestSummary.localAckState`는 `phase-advancing | transport-only | ack-break | null(idle)` 중 하나다.
+- async ownership surface가 활성일 때 `requestSummary.endpoint`는 `async-chat`이 될 수 있다.
+- 장시간 비스트리밍 `llm-inference` 구간에서 S7은 보통 `localAckState="transport-only"`만 보고할 수 있다. 이는 **alive but progress-unproven** 을 의미하며, elapsed time alone으로 abort하면 안 된다.
+- 반대로 현재 `/v1/chat` transport timeout이 실제로 발생하면 그 transport attempt는 terminal failure이며, S7은 해당 active request를 `/health` history로 유지하지 않는다.
 - `rag` 필드는 항상 포함. `status`가 `"ok"`이면 RAG 활성 상태(S5 KB 연결 확인), `"disabled"`이면 비활성 (설정 off 또는 S5 미연결).
 - S7 Gateway health 자체는 백엔드/RAG 장애와 무관하게 `"ok"`를 반환한다.
 
@@ -630,7 +792,8 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
   },
   "byEndpoint": {
     "tasks": { "prompt": 45000, "completion": 15000, "count": 30, "errors": 1 },
-    "chat": { "prompt": 18000, "completion": 6000, "count": 12, "errors": 1 }
+    "chat": { "prompt": 18000, "completion": 6000, "count": 12, "errors": 1 },
+    "async_chat": { "prompt": 9000, "completion": 3000, "count": 4, "errors": 0 }
   },
   "byTaskType": {
     "static-explain": { "prompt": 30000, "completion": 10000, "count": 20 },

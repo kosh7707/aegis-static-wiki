@@ -47,6 +47,12 @@ migration_status: "canonicalized"
 (:Project)-[:HAS_MEMORY]->(:Memory)
 ```
 
+### 2026-04-14 운영 메모
+
+- threat graph 통계(`/v1/graph/stats`)는 이제 **위협 노드/관계만** 집계한다. `Function/CALLS`, `Project/HAS_MEMORY`가 섞이지 않는다.
+- code graph ingest는 active project graph를 바로 덮지 않고, **staging project scope**에 먼저 Neo4j/Qdrant를 적재한 뒤 활성 project로 승격한다.
+- staging/activation 중 timeout이 발생하면 이전 active graph/vector를 복원하고, 이전 상태가 없으면 partial write를 제거한다.
+
 ---
 
 ## 2. 파일 구조

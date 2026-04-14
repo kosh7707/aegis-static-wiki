@@ -820,3 +820,197 @@ related_pages:
 ## [2026-04-14] refreshed session-closing S2 handoff docs before whole-tree commit/push | s2
 - Updated S2 handoff readme and roadmap to record the frozen timeout-policy rollout WR as the next active post-freeze task.
 - User requested whole-tree commit/push across both AEGIS and aegis-static-wiki, including non-S2-owned dirty changes.
+
+## [2026-04-14] mcp | register_wr | s3-to-s4-follow-up-request-clarify-next-step-wait-while-alive-contract-for-s4-build-scan-
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-follow-up-request-clarify-next-step-wait-while-alive-contract-for-s4-build-scan-.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s7-follow-up-request-define-next-step-wait-while-alive-contract-for-s7-v1-chat-afte
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-follow-up-request-define-next-step-wait-while-alive-contract-for-s7-v1-chat-afte.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s2-follow-up-request-keep-s2-orchestration-aligned-with-s3-timeout-inventory-while-
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-follow-up-request-keep-s2-orchestration-aligned-with-s3-timeout-inventory-while-.md
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-reply-s7-health-request-summary-is-now-implemented-in-repo-first-rollout-v1-chat
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-s7-health-request-summary-is-now-implemented-in-repo-first-rollout-v1-chat.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s7-follow-up-request-define-next-step-wait-while-alive-contract-for-s7-v1-chat-afte
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s4-follow-up-request-clarify-next-step-wait-while-alive-contract-for-s4-build-scan-
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] Implemented wait-while-alive follow-up coverage for build surfaces | s4-sast-runner
+- Extended `/v1/health` request-summary tracking across `/v1/scan`, `/v1/build`, and `/v1/build-and-analyze`.
+- Added additive `localAckState` semantics (`phase-advancing`, `transport-only`, `ack-break`) and build subprocess aliveness signaling.
+- Completed S3 follow-up WR and sent reply WR with verification evidence (67 focused tests, 385 full tests).
+
+## [2026-04-14] mcp | register_wr | s2-to-s3-reply-s2-implemented-request-aware-health-interpretation-and-inventoried-timeout
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-reply-s2-implemented-request-aware-health-interpretation-and-inventoried-timeout.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s7-phase-2-decision-needed-how-should-s7-support-recoverable-wait-while-alive-beyon
+- Registered question WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-phase-2-decision-needed-how-should-s7-support-recoverable-wait-while-alive-beyon.md
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-reply-s7-health-request-summary-is-now-implemented-in-repo-first-rollout-v1-chat
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s3-to-s2-follow-up-request-keep-s2-orchestration-aligned-with-s3-timeout-inventory-while-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s3-reply-s2-implemented-request-aware-health-interpretation-and-inventoried-timeout
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-reply-s7-chooses-option-c-for-phase-2-no-result-loss-semantics-keep-v1-chat-fini
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-s7-chooses-option-c-for-phase-2-no-result-loss-semantics-keep-v1-chat-fini.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s7-phase-2-decision-needed-how-should-s7-support-recoverable-wait-while-alive-beyon
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-phase-2-proposal-new-async-ownership-surface-for-no-result-loss-inference-path-p
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-phase-2-proposal-new-async-ownership-surface-for-no-result-loss-inference-path-p.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s7-s3-review-approve-separate-async-ownership-surface-with-narrow-contract-adjustme
+- Registered reply WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-review-approve-separate-async-ownership-surface-with-narrow-contract-adjustme.md
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-reply-s7-chooses-option-c-for-phase-2-no-result-loss-semantics-keep-v1-chat-fini
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-phase-2-proposal-new-async-ownership-surface-for-no-result-loss-inference-path-p
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s5-to-s2-s3-s5-runtime-semantics-aligned-on-2026-04-14-real-timeout-enforcement-kb_not_ready
+- Registered notice WR for s2, s3
+- Path: wiki/canon/work-requests/s5-to-s2-s3-s5-runtime-semantics-aligned-on-2026-04-14-real-timeout-enforcement-kb_not_ready.md
+
+## [2026-04-14] mcp | complete_wr | s5-to-s2-s3-s5-runtime-semantics-aligned-on-2026-04-14-real-timeout-enforcement-kb_not_ready
+- Lane s3 completed recipient-side handling
+- Status: open
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-reply-async-ownership-surface-implemented-in-s7-repo-with-reviewed-state-model-a
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-async-ownership-surface-implemented-in-s7-repo-with-reviewed-state-model-a.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s7-s3-review-approve-separate-async-ownership-surface-with-narrow-contract-adjustme
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s1-qa-to-s1-s1-qa-deep-design-review-of-design-reference-v3-v4-reject-v3-baseline-treat-v4-a
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet
+- Lane s1 completed recipient-side handling
+- Status: open
+
+## [2026-04-14] mcp | complete_wr | s1-qa-to-s1-qa-qa-stitch-mcp
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s1-to-s1-qa-s1-qa-qa
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-qa-reply-s2-opinion-on-aegis-design-system-choice-favors-ibm-carbon-as-canonical-ba
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-reply-async-ownership-surface-implemented-in-s7-repo-with-reviewed-state-model-a
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s3-to-s2-no-new-s3-public-api-contract-delta-in-the-latest-s3-slices-recent-changes-are-i
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-no-new-s3-public-api-contract-delta-in-the-latest-s3-slices-recent-changes-are-i.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s2-s3-timeout-policy-no-result-loss-internal-rollout-is-repo-complete-outward-s3-co
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-timeout-policy-no-result-loss-internal-rollout-is-repo-complete-outward-s3-co.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s2-no-new-s3-public-api-contract-delta-in-the-latest-s3-slices-recent-changes-are-i
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s3-to-s2-s3-timeout-policy-no-result-loss-internal-rollout-is-repo-complete-outward-s3-co
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | register_wr | s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a
+- Registered request WR for s1, s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a.md
+
+## [2026-04-14] mcp | register_wr | s2-to-s1-qa-validate-buildtarget-only-analysis-recovery-lineage-and-rejection-matrix-against
+- Registered request WR for s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-qa-validate-buildtarget-only-analysis-recovery-lineage-and-rejection-matrix-against.md
+
+## [2026-04-14] mcp | register_wr | s2-to-s1-audit-remaining-s1-consumer-surfaces-for-buildtarget-only-analysis-lineage-and-r
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-audit-remaining-s1-consumer-surfaces-for-buildtarget-only-analysis-lineage-and-r.md
+
+## [2026-04-14] completed BuildTarget-only analysis cutover | s2
+- Final backend verification: 25 files / 458 tests passed
+- Final frontend verification: 71 files / 499 tests passed
+- Architect review approved; S1 and S1-QA handoff WRs issued.
+
+## [2026-04-14] mcp | register_wr | s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat
+- Registered notice WR for s1, s1-qa
+- Path: wiki/canon/work-requests/s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat.md
+
+## [2026-04-14] mcp | register_wr | s2-to-s3-build-agent-canonical-target-locator-fields-are-now-buildtargetpath-buildtargetn
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-build-agent-canonical-target-locator-fields-are-now-buildtargetpath-buildtargetn.md
+
+## [2026-04-14] mcp | complete_wr | s2-to-s3-build-agent-canonical-target-locator-fields-are-now-buildtargetpath-buildtargetn
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-audit-remaining-s1-consumer-surfaces-for-buildtarget-only-analysis-lineage-and-r
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a
+- Lane s1 completed recipient-side handling
+- Status: open
+
+## [2026-04-14] mcp | complete_wr | s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat
+- Lane s1 completed recipient-side handling
+- Status: open

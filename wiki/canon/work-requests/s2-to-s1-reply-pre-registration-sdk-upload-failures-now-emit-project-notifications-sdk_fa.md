@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa"
-last_verified: "2026-04-10"
+last_verified: "2026-04-14"
 service_tags: ["s2", "s1", "backend", "frontend", "sdk", "notifications", "websocket"]
 decision_tags: ["sdk-upload", "notification-contract", "cross-page-awareness"]
 related_pages: ["wiki/canon/work-requests/s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss.md", "wiki/canon/api/shared-models.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-reply-pre-registration-sdk-upload-failures-now-emit-project-notifications-sdk_fa"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-14T05:09:18.291Z","note":"Administrative closure requested by user during cross-lane cleanup. Marked completed for recipient lane S1 without additional implementation or verification in this S7 session."}]
 registered_at: "2026-04-10T09:56:46.286Z"
+completed_at: "2026-04-14T05:09:18.291Z"
 ---
 
 # Reply: pre-registration SDK upload failures now emit project notifications; sdk_failed may omit resourceId before registration

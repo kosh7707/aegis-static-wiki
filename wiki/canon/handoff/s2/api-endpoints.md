@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-13"
+last_verified: "2026-04-14"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -29,7 +29,7 @@ migration_status: "canonicalized"
 
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
-| GET | `/health` | 헬스체크 (LLM Gateway, S3 Agent, S4 SAST Runner, S5 KB, Build Agent, Adapter 상태 확인) |
+| GET | `/health` | 헬스체크 (`?requestId=` optional). LLM Gateway, S3 Agent, S4 SAST Runner, S5 KB, Build Agent, Adapter 상태를 집계하고, downstream `requestSummary`가 있으면 normalized `control.pollDecision`을 함께 반환 |
 | POST | `/api/projects` | 프로젝트 생성 |
 | GET | `/api/projects` | 프로젝트 목록 |
 | GET | `/api/projects/:id` | 프로젝트 상세 |
@@ -57,6 +57,24 @@ migration_status: "canonicalized"
     - active pipeline targets
   - blocker가 있으면 `409 CONFLICT` + `errorDetail.blockers`
   - success path는 `uploads/{projectId}` quarantine 후 project-scoped DB row delete를 수행하고, DB 실패 시 quarantined root를 restore한다.
+
+Health control-signal 메모 (2026-04-14):
+
+- `GET /health?requestId=<rid>`
+  - S2는 child `/v1/health?requestId=<rid>` 를 호출한다.
+  - 응답 top-level에는 `controlPolicyVersion: "health-control-signal-rollout-v1"` 와 `requestIdQueried` 가 additive하게 포함된다.
+  - 각 child service entry(`llmGateway`, `analysisAgent`, `sastRunner`, `knowledgeBase`, `buildAgent`)는
+    - coarse `status: ok | degraded | unreachable`
+    - raw child payload `detail`
+    - frozen request-aware 필드가 있을 때 normalized `control`
+      (`state`, `localAckState`, `blockedReason`, `pollDecision`, `decisionReasons`)
+    를 포함할 수 있다.
+- S2 현재 normalize 규칙:
+  - `queued` → `continue_waiting`
+  - `running + phase-advancing` → `continue_waiting`
+  - `running + transport-only` → `continue_waiting`
+  - `blockedReason != null`, `state=failed`, `localAckState=ack-break` → `chain_abort`
+  - legacy S4 `ackStatus=broken` → `localAckState=ack-break`
 
 ### 프로젝트 설정 / 활동 / 알림 / 인증
 
@@ -117,11 +135,10 @@ migration_status: "canonicalized"
 | POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |
 | POST | `/api/projects/:pid/pipeline/run/:targetId` | 단일 타겟 파이프라인 재실행 (`202 { pipelineId, targetId, status: "running" }`) |
 | GET | `/api/projects/:pid/pipeline/status` | 프로젝트 파이프라인 상태 |
-| POST | `/api/analysis/run` | legacy Quick alias (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
-| POST | `/api/analysis/quick` | explicit Quick-only 실행 (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
-| POST | `/api/analysis/deep` | explicit Deep-only 실행 (`202`, body: `{ projectId, quickAnalysisId }`) |
+| POST | `/api/analysis/quick` | BuildTarget-only Quick 실행 (`202`, body: `{ analysisId, buildTargetId, executionId, status }`) |
+| POST | `/api/analysis/deep` | BuildTarget-only Deep 실행 (`202`, body: `{ analysisId, buildTargetId, executionId, status }`) |
 | GET | `/api/analysis/status` | 모든 진행 중 분석 |
-| GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 (disconnect/re-entry recovery source while running) |
+| GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 (`buildTargetId`, `executionId` 포함; disconnect/re-entry recovery source while running) |
 | POST | `/api/analysis/abort/:analysisId` | 분석 중단 |
 | GET | `/api/analysis/results` | 결과 목록 (`?projectId=` 지원) |
 | GET | `/api/analysis/results/:analysisId` | 결과 상세 |

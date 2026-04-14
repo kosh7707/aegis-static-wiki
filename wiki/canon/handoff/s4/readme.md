@@ -76,13 +76,14 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
 - explicit Quick는 `/v1/build` ready 이후 `compileCommands` 를 포함한 `/v1/scan` one-shot 호출로 취급하며, Deep 자동 연쇄를 전제하지 않음
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
-- `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`, `activeRequestCount`, `requestSummary`를 노출
-- `/v1/health?requestId=...` 로 queued/running/degraded/ack-break equivalent를 polling-friendly summary로 조회 가능
+- `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`, `activeRequestCount`, `requestSummary`를 노출하며, additive `localAckState`로 `phase-advancing` / `transport-only` / `ack-break`를 함께 제공
+- `/v1/health?requestId=...` 로 `scan` / `build` / `build-and-analyze` 요청의 queued/running/degraded/ack-break equivalent를 polling-friendly summary로 조회 가능
 - **운영 메모 (2026-04-14):** canonical code/docs는 request-summary contract를 포함하지만, live `localhost:9000` 인스턴스는 재기동 전까지 coarse-only shape 또는 no-listener 상태일 수 있다. live rollout readiness 판단은 실제 프로세스 재기동 여부를 함께 확인해야 한다.
 - `/v1/build-and-analyze`는 convenience / transitional surface로 유지
 - S2 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md`
 - S3 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md`
 - S3 follow-up reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m.md`
+- S3 wait-while-alive follow-up reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif.md`
 - 현재 오픈 WR 없음 (`list_my_open_wrs(lane="s4", include_to_all=true)` 기준, 2026-04-14 처리 후 재확인)
 
 ### 6개 SAST 도구
