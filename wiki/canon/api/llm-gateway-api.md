@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -35,6 +35,7 @@ http://localhost:8000
 | `X-Timeout-Seconds` | 요청 | `/v1/chat` 전용. 호출자가 원하는 read timeout (초). Gateway가 LLM Engine 호출 시 이 값을 적용. 미전달 시 기본 1800초. 상한 1800초. |
 | `X-Model` | 응답 | `/v1/chat` 전용. Gateway가 실제 사용한 모델명 (오버라이드 후). 호출자가 어떤 모델명을 보냈든 실제 적용된 모델을 확인할 수 있다. |
 | `X-Gateway-Latency-Ms` | 응답 | `/v1/chat` 전용. Gateway 측정 지연시간 (밀리초). LLM Engine 호출 + 전후 처리 포함. |
+| `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 전용 opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용하고, 응답에는 `applied`를 돌려준다. |
 
 ---
 
@@ -42,7 +43,7 @@ http://localhost:8000
 
 ### POST /v1/chat
 
-LLM Engine 프록시 — OpenAI-compatible chat completion 요청을 LLM Engine(vLLM)에 전달하고 응답을 그대로 반환한다.
+LLM Engine 프록시 — OpenAI-compatible chat completion 요청을 LLM Engine(vLLM)에 전달한다. 기본 모드는 pass-through이며, opt-in strict JSON 모드에서는 Gateway가 JSON object 응답 계약을 더 강하게 강제한다.
 
 S3 Agent의 멀티턴 에이전트 루프, 또는 향후 다른 서비스의 LLM 호출에 사용. **모든 LLM 호출은 이 엔드포인트를 경유한다.**
 
@@ -66,11 +67,24 @@ OpenAI chat completion 포맷을 그대로 수용한다:
 }
 ```
 
-**모델 오버라이드**: 요청의 `model` 필드는 Gateway가 실제 운영 모델로 교체한다. 호출자는 어떤 모델명을 보내도 되며, Gateway가 현재 Engine에 배포된 모델로 자동 매핑한다. 그 외 필드는 LLM Engine에 그대로 전달된다.
+**모델 오버라이드**: 요청의 `model` 필드는 Gateway가 실제 운영 모델로 교체한다. 호출자는 어떤 모델명을 보내도 되며, Gateway가 현재 Engine에 배포된 모델로 자동 매핑한다. 그 외 필드는 기본적으로 LLM Engine에 그대로 전달된다.
+
+#### opt-in strict JSON 모드
+
+요청 헤더 `X-AEGIS-Strict-JSON: true`(또는 `1`/`yes`/`on`)를 보내면 Gateway가 strict JSON 모드를 적용한다.
+
+strict JSON 모드에서 Gateway는 다음을 보장하려고 시도한다:
+- 요청 body에 `response_format={"type":"json_object"}`를 강제로 적용
+- 요청 body의 `chat_template_kwargs.enable_thinking=false`를 강제로 적용
+- 성공 응답(200)에서 `choices[0].message.content`가 **JSON object 문자열**인지 검증
+- 유효한 경우 `message.content`를 compact JSON 문자열로 정규화
+- backend-specific `message.reasoning` 필드는 `null`로 scrub
+
+strict JSON 모드에서 이 계약을 만족하지 못하면 Gateway는 backend payload를 그대로 통과시키지 않고 `502`로 명확히 실패시킨다.
 
 #### 응답
 
-LLM Engine(vLLM)의 OpenAI-compatible 응답을 그대로 반환:
+기본 모드에서는 LLM Engine(vLLM)의 OpenAI-compatible 응답을 그대로 반환한다. strict JSON 모드에서는 동일한 envelope를 유지하되 `choices[0].message.content`를 검증/정규화하고 `reasoning`을 scrub한다:
 
 ```json
 {
@@ -95,6 +109,7 @@ LLM Engine(vLLM)의 OpenAI-compatible 응답을 그대로 반환:
 | 503 | LLM Engine 연결 실패 | `true` |
 | 503 | Circuit Breaker OPEN (연속 장애로 회로 차단) | `true` |
 | 504 | LLM Engine 응답 타임아웃 (`X-Timeout-Seconds` 기반, 기본 1800초) | `true` |
+| 502 | strict JSON 모드에서 응답이 JSON object 계약을 만족하지 않음 | `true` |
 | 4xx/5xx | LLM Engine 원본 에러 코드 그대로 전달 | 상황별 |
 
 #### 비고
@@ -103,6 +118,7 @@ LLM Engine(vLLM)의 OpenAI-compatible 응답을 그대로 반환:
 - 교환 로그(`logs/llm-exchange.jsonl`)에 모든 호출이 기록된다
 - Circuit Breaker가 연속 장애를 감지하면 즉시 503을 반환한다 (타임아웃 대기 없이 빠른 실패)
 - `X-Request-Id` 헤더를 LLM Engine에 전파한다
+- strict JSON이 필요하면 caller는 `X-AEGIS-Strict-JSON: true`를 보내고, 응답 body는 `choices[0].message.content`만 JSON으로 파싱해야 한다
 
 ---
 

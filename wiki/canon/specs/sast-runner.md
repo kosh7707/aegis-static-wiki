@@ -1,19 +1,19 @@
 ---
-title: "S4. SAST Runner 기능 명세 (v0.11.0)"
+title: "S4. SAST Runner 기능 명세 (v0.11.2)"
 page_type: "canonical-spec"
 canonical: true
 source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
 migration_status: "canonicalized"
 ---
 
-# S4. SAST Runner 기능 명세 (v0.11.0)
+# S4. SAST Runner 기능 명세 (v0.11.2)
 
 > SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 **결정론적 전처리**를 담당하는 서비스다.
 > 6개 SAST 도구 병렬 실행, SCA(라이브러리 식별 + upstream diff), 코드 구조 추출,
@@ -38,9 +38,9 @@ migration_status: "canonicalized"
 | 위치 | `services/sast-runner/` |
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
-| 버전 | v0.11.0 |
+| 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 376개 (23 files, 2026-04-09 재검증) |
+| 테스트 | 382개 (24 files, 2026-04-13 재검증) |
 
 ---
 
@@ -53,10 +53,10 @@ migration_status: "canonicalized"
 | `POST /v1/includes` | gcc -E -M -> 인클루드 트리 |
 | `POST /v1/metadata` | gcc -E -dM -> 타겟 매크로/아키텍처 |
 | `POST /v1/libraries` | 라이브러리 식별 + upstream diff (CVE는 S5로 이관) |
-| `POST /v1/build` | caller가 완전히 materialize한 build command/environment를 그대로 실행. **structured `buildEvidence` + `failureDetail`** 반환 |
+| `POST /v1/build` | caller가 완전히 materialize한 build command/environment를 그대로 실행. **structured `buildEvidence` + `readiness` + `failureDetail`** 반환 |
 | `POST /v1/build-and-analyze` | explicit build command/environment로 빌드 후 나머지 분석 수행. **convenience surface** |
 | `POST /v1/discover-targets` | 프로젝트 내 빌드 타겟 자동 탐색 (파일시스템 스캔) |
-| `GET /v1/health` | 6개 도구 상태 + 버전 + backward-compatible health policy surface |
+| `GET /v1/health` | 6개 도구 상태 + 버전 + backward-compatible health policy surface + request-aware summary |
 
 ---
 
@@ -305,8 +305,19 @@ S5 ingest 후 유용성을 결정하는 보조 지표:
 - `wrapWithBear`: 기본 true. false면 bear 없이 순수 빌드 실행
 - `userEntries` 필드: CMakeFiles/ 임시 항목 자동 필터링
 - `exitCode != 0` → 항상 `success: false`
+- `readiness` 필드가 canonical build-preparation contract다
+- `readiness.status="ready"` 는 `userEntries > 0` 이고 `exitCode == 0` 인 경우에만 성립한다
+- `readiness.status="partial"` 는 일부 user-target compile entry가 있어도 build가 실패한 상태다. canonical Quick 입력으로 사용하지 않는다
+- `compile_commands.json` 이 존재해도 user-target entry가 하나도 없으면 `compile-commands-no-user-entries` 로 실패한다
 - caller input이 잘못되면 S4는 추론/보정하지 않고 그대로 실패를 반환
 - `/v1/scan` 응답: `response_model_exclude_none` — null 필드는 JSON에서 생략
+
+### explicit Quick contract
+
+- canonical Quick는 `/v1/build` 성공 후 `readiness.compileCommandsReady=true` 를 확인하고,
+  해당 `buildEvidence.compileCommandsPath` 를 `POST /v1/scan` 의 `compileCommands` 입력으로 넘기는 one-shot 호출이다
+- S4는 Quick 호출이 Deep으로 자동 이어진다고 가정하지 않는다
+- Quick authoritative output은 `/v1/scan` 의 `findings`, `stats`, `execution`, `provenance` 다
 
 ---
 
@@ -367,7 +378,7 @@ pattern-sanitizers:              # <- FP 감소
 
 ---
 
-## 12-1. NDJSON 스트리밍 진행 지표 (v0.11.0)
+## 12-1. NDJSON 스트리밍 진행 지표 (v0.11.1)
 
 `POST /v1/scan`의 NDJSON 스트리밍 모드에서 heartbeat에 진행 상태를 포함한다.
 
@@ -402,7 +413,7 @@ pattern-sanitizers:              # <- FP 감소
 | 요청 추적 | `contextvars` 기반 `requestId` 전 레이어 전파 |
 | X-Request-Id | 수신 -> 로그 기록 -> 응답 헤더 반환 |
 | 실행 보고서 | 응답 `execution` 필드에 도구별 상태/시간/버전/스킵 사유 + degraded/file-budget 메타데이터 |
-| health backward compatibility | `/v1/health`는 top-level `semgrep` 필드를 유지하면서 `tools` + policy 필드를 추가 노출 |
+| health backward compatibility | `/v1/health`는 top-level `semgrep` 필드를 유지하면서 `tools` + policy 필드 + `requestSummary` 를 추가 노출 |
 
 `wiki/canon/specs/observability.md` 준수.
 
@@ -430,6 +441,20 @@ pattern-sanitizers:              # <- FP 감소
 - `"partial"`: 파일별 실행 도구(gcc-fanalyzer, scan-build)에서 일부 파일이 timeout되었으나 나머지는 정상 완료
 - `timedOutFiles` / `failedFiles`: `"partial"` 상태일 때 timeout/실패한 파일 수 (그 외 상태에서는 `null`)
 - `filesAttempted`, `batchCount`, `timeoutBudgetSeconds`, `perFileTimeoutSeconds`, `budgetWarning`, `degraded`, `degradeReasons`: heavy analyzer long-run 상태를 설명하는 추가 메타데이터
+
+### `/v1/health` request-summary contract (v0.11.2)
+
+- `/v1/health?requestId=<scan-request-id>` 는 해당 요청의 최소 polling control signal을 반환한다
+- `activeRequestCount` 는 현재 `queued` / `running` 상태인 요청 수다
+- `requestSummary.state`
+  - `queued`: 세마포어 대기
+  - `running`: 실행 중
+  - `completed`: 정상 종료
+  - `failed`: 비정상 종료
+- `requestSummary.degraded=true` 는 기존 scan runtime의 degraded semantics를 그대로 반영한다
+- `requestSummary.ackStatus="broken"` + `blockedReason` 존재는 local ack break equivalent 이다
+- local ack source는 `semaphore-acquired`, `tool-progress`, `file-progress`, `runtime-state`, `terminal-result`
+- 전역 numeric stall threshold는 health contract에 노출하지 않는다. ack break는 내부 실행 흐름의 명시적 비정상 종료로만 판정한다
 
 ---
 
@@ -493,7 +518,7 @@ Phase 2 (LLM 해석):
   S3 -> S7 Gateway (:8000) -> LLM Engine -> 판단/분류
 ```
 
-## 16-1. Build Snapshot consumer seam (implemented in v0.11.0)
+## 16-1. Build Snapshot consumer seam (implemented in v0.11.1)
 
 S2/S3가 Build Snapshot reference-first seam을 열면,
 S4의 역할은 여전히 **결정론적 build/scan execution authority** 다.
@@ -537,7 +562,7 @@ snapshot-first architecture에서는 `/v1/build-and-analyze`를
 ### 실제 `/v1` contract 핵심
 
 - build/scan/build-and-analyze 요청은 nested `provenance` object를 수용한다
-- `/v1/build`는 `buildEvidence`와 `failureDetail`을 구조화해서 반환한다
+- `/v1/build`는 `buildEvidence`, `readiness`, `failureDetail`을 구조화해서 반환한다
 - `/v1/build`는 `sdkId`를 받지 않고 `buildCommand` 자동 감지도 하지 않는다
 - `/v1/scan` heartbeat/final execution은 degraded long-run을 구분할 수 있는 필드를 포함한다
 

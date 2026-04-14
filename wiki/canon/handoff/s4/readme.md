@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/README.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-04-09**
+> **마지막 업데이트: 2026-04-14**
 
 ---
 
@@ -64,19 +64,26 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 위치 | `services/sast-runner/` (monorepo 내, WSL2 로컬) |
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
-| 버전 | **v0.11.0** |
-| 테스트 | **376개 수집 / 376개 통과 (2026-04-09 재검증)** |
+| 버전 | **v0.11.2** |
+| 테스트 | **382개 수집 / 382개 통과 (2026-04-13 재검증)** |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
 현재 `/v1` 계약의 핵심:
 - build / scan / build-and-analyze가 nested `provenance` 입력을 받음
-- `/v1/build`는 structured `buildEvidence` + `failureDetail` 반환
+- `/v1/build`는 structured `buildEvidence` + `readiness` + `failureDetail` 반환
+- build preparation의 canonical ready 조건은 `readiness.compileCommandsReady=true` + `buildEvidence.userEntries>0` + `buildEvidence.exitCode==0`
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
+- explicit Quick는 `/v1/build` ready 이후 `compileCommands` 를 포함한 `/v1/scan` one-shot 호출로 취급하며, Deep 자동 연쇄를 전제하지 않음
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
-- `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`를 노출
+- `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`, `activeRequestCount`, `requestSummary`를 노출
+- `/v1/health?requestId=...` 로 queued/running/degraded/ack-break equivalent를 polling-friendly summary로 조회 가능
+- **운영 메모 (2026-04-14):** canonical code/docs는 request-summary contract를 포함하지만, live `localhost:9000` 인스턴스는 재기동 전까지 coarse-only shape 또는 no-listener 상태일 수 있다. live rollout readiness 판단은 실제 프로세스 재기동 여부를 함께 확인해야 한다.
 - `/v1/build-and-analyze`는 convenience / transitional surface로 유지
-- 현재 오픈 WR 없음 (`list_my_open_wrs(lane="s4", include_to_all=true)` 기준, 2026-04-09 재확인)
+- S2 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md`
+- S3 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md`
+- S3 follow-up reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m.md`
+- 현재 오픈 WR 없음 (`list_my_open_wrs(lane="s4", include_to_all=true)` 기준, 2026-04-14 처리 후 재확인)
 
 ### 6개 SAST 도구
 
@@ -94,7 +101,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 ```text
 services/sast-runner/
 ├── app/
-│   ├── main.py              — FastAPI v0.11.0, JSON 로깅
+│   ├── main.py              — FastAPI v0.11.2, JSON 로깅
 │   ├── config.py            — pydantic-settings (SAST_ prefix)
 │   ├── context.py           — contextvars requestId 전파
 │   ├── errors.py            — 커스텀 에러 4종
@@ -124,7 +131,7 @@ services/sast-runner/
 │       └── library_hasher.py
 ├── rules/automotive/        — 커스텀 Semgrep 룰 39개 (9 YAML)
 ├── benchmark/               — Juliet 벤치마크 러너 + 코드그래프 품질 평가
-├── tests/                   — 376개 테스트 (23개 파일)
+├── tests/                   — 382개 테스트 (24개 파일)
 └── requirements.txt
 ```
 

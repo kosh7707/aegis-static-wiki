@@ -4,18 +4,18 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s3-handoff/README.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s3"]
-decision_tags: []
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract"]
 related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-04-09**
+> **마지막 업데이트: 2026-04-14**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-09 기준 최신 내부 리팩토링 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-14 기준 최신 contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
@@ -63,7 +63,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 문서 갱신 원칙:
 - canonical wiki를 먼저 갱신한다.
 - `docs/**`는 migration/compatibility surface일 뿐 canonical source가 아니다.
-- 다른 lane 코드 동작은 API 계약서로만 이해한다.
+- 다른 lane 코드 동작은 API 계약서와 WR로만 이해한다.
 
 ---
 
@@ -87,7 +87,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 
 ---
 
-## 4. 현재 아키텍처 상태 (2026-04-09)
+## 4. 현재 아키텍처 상태 (2026-04-14)
 
 ### Analysis Agent 현재 구조
 
@@ -116,6 +116,14 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | agent loop | `services/analysis-agent/app/core/agent_loop.py` |
 | result assembly | `services/analysis-agent/app/core/result_assembler.py` |
 
+#### 2026-04-13 contract 정렬 포인트
+- preferred Deep 입력은 flat 필드 나열보다 `buildPreparation` / `quickContext` / `graphContext` 같은 explicit-step bundle이다.
+- Analysis Agent는 위 nested alias를 읽지만, 기존 flat `buildCommand`, `buildEnvironment`, `buildProfile`, `provenance`, `sastFindings`, `scaLibraries`도 compatibility를 위해 계속 읽는다.
+- `quickContext.sastFindings` / `quickContext.scaLibraries`가 있으면 Phase 1 재실행을 줄이고 precomputed 결과를 사용할 수 있다.
+- 첫 `/health` control-signal rollout에서 Analysis Agent는 additive `activeRequestCount` + `requestSummary` block을 제공한다.
+- S3 local ack source 예시는 `phase-one-complete`, `tool-complete`, `turn-complete`, `result-assembled`, `terminal-result`, `ack-break`다.
+- 2026-04-14 기준으로 S3는 S7 `/v1/chat` live limitation 대응을 위해, 도구 없는 chat 호출에 `X-AEGIS-Strict-JSON: true` caller guard를 추가했다.
+
 ### Build Agent 현재 구조
 
 #### 공개 surface
@@ -136,6 +144,11 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | phase0 | `services/build-agent/app/core/phase_zero.py` |
 | agent loop | `services/build-agent/app/core/agent_loop.py` |
 | result assembly | `services/build-agent/app/core/result_assembler.py` |
+
+#### 2026-04-13 contract 정렬 포인트
+- `build-resolve` 성공 응답은 기존 `result.buildResult`를 유지한다.
+- 동시에 S2 orchestration용 explicit 후속 번들 `result.buildPreparation`을 반환한다.
+- 현재 `buildPreparation` 주요 필드는 `declaredMode`, `sdkId`, `buildCommand`, `buildScript`, `buildDir`, `buildEnvironment`, `provenance`, `expectedArtifacts`, `producedArtifacts`다.
 
 ### agent-shared 현재 구조
 
@@ -162,61 +175,71 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 4. `/v1/tasks` request/response top-level shape
 5. Analysis Agent legacy task rejection semantics
 
+보충 메모:
+- `result.buildPreparation` 추가는 기존 protected surface를 깨지 않는 **확장**으로 취급한다.
+- Analysis Agent의 nested explicit-step alias 지원도 legacy flat 입력 제거가 아니라 **compatibility-preserving alias 추가**다.
+
 ---
 
-## 6. 2026-04-09 기준 리팩토링 상태
+## 6. 2026-04-14 기준 최신 상태
 
-### 완료된 내부 정리
+### 완료된 내부/계약 정렬
 - shared `TerminationPolicy` 공통화
 - shared `BudgetManager` 공통화
 - shared `ToolRouter` core 공통화
 - Build Agent `tasks.py` thin-router 분리 완료
 - Analysis Agent `tasks.py` thin-router 분리 완료
 - Analysis `phase_one.py`를 façade 수준까지 분해
-
-### 현재 크기(대략)
-- `services/build-agent/app/routers/tasks.py`: **86 LOC**
-- `services/analysis-agent/app/routers/tasks.py`: **185 LOC**
-- `services/analysis-agent/app/core/phase_one.py`: **14 LOC** compatibility surface
+- Build Agent `build-resolve` 성공 응답에 `result.buildPreparation` 추가
+- Analysis Agent `deep-analyze`에 `buildPreparation` / `quickContext` / `graphContext` alias 입력 추가
+- Analysis Agent `/v1/health`에 request-aware control-signal summary (`activeRequestCount`, `requestSummary`) 추가
+- S2 / S4 / S7 회신을 수렴해 first-rollout freeze artifact `wiki/canon/specs/health-control-signal-rollout-v1.md` 발행
+- S2에 post-freeze narrowed reply 송신
+- S7 `/v1/chat` current pass-through limitation WR 검토 후, S3 caller-side strict JSON opt-in guard 반영
+- S2 WR 2건 recipient-side 처리 및 reply WR 송신 완료
 
 ### 의미
 - public surface는 유지
-- 내부는 handler / flow / helper / type 단위로 분리
-- 향후 수정 시 drift 위험이 크게 줄어든 상태
+- explicit build-preparation → Quick → Deep 여정에 맞는 contract split이 시작됨
+- S2는 이제 Build Agent 결과를 `buildPreparation` 중심으로 저장/전달할 수 있음
+- Deep은 legacy flat 입력도 계속 받으면서 점진적으로 explicit-step bundle 중심으로 이동 가능함
 
 ---
 
-## 7. 최신 검증 상태 (2026-04-09)
+## 7. 최신 검증 상태 (2026-04-14)
 
-### Analysis Agent
-- `test_phase_one.py`
-- `test_generate_poc_handler.py`
-- `test_skeleton_smoke.py`
-- 최근 합산 검증: **43 passed**
+### targeted verification
+- `services/build-agent/.venv/bin/python -m pytest tests/test_result_assembler.py -q` → **16 passed**
+- `services/analysis-agent/.venv/bin/python -m pytest tests/test_phase_one.py -q` → **34 passed**
+- `services/analysis-agent/.venv/bin/python -m pytest tests/test_health_request_summary.py tests/test_skeleton_smoke.py tests/test_generate_poc_handler.py tests/test_agent_loop.py -q` → **26 passed**
+- `services/analysis-agent/.venv/bin/python -m pytest tests/test_llm_caller.py tests/test_generate_poc_handler.py tests/test_agent_loop.py -q` → **33 passed**
+- `services/analysis-agent/.venv/bin/python -m pytest -q` → **293 passed**
 
-### Build Agent
-- `test_health.py`
-- `test_build_request_contract.py`
-- `test_tool_router.py`
-- `test_concurrency.py`
-- 최근 합산 검증: **26 passed**
+### 무엇을 검증했는가
+- Build Agent success 응답에 `buildPreparation` 번들이 포함되는지
+- `buildPreparation`에 `buildEnvironment`, `provenance`, `expectedArtifacts`, `producedArtifacts`가 실리는지
+- Analysis Agent가 top-level `buildCommand` 없이도 `buildPreparation.buildCommand`로 build-and-analyze 경로를 타는지
+- Analysis Agent가 `quickContext.sastFindings` / `quickContext.scaLibraries`를 precomputed 입력으로 받아 결정론적 재실행을 건너뛰는지
+- Analysis Agent `/v1/health`가 idle / running / ack-break summary를 additive하게 노출하는지
+- `completed` history가 기본 `/v1/health` summary로 새지 않고 idle로 접히는지
+- S7 strict JSON opt-in caller guard(`X-AEGIS-Strict-JSON`) 추가 후 LlmCaller / Analysis Agent 회귀가 유지되는지
 
-### Live health
-- `http://localhost:8001/v1/health` → PASS
-- `http://localhost:8003/v1/health` → PASS
+세션 evidence는 `wiki/canon/handoff/s3/session-omx-1776067037145-ct82s1.md`에 기록되어 있다.
 
 ---
 
 ## 8. 다음 세션에서 바로 이어갈 수 있는 것
 
-1. 내부 추가 cleanup
-   - handler 내부 추가 분해
-   - phase-one helper naming 정리
+1. explicit-step contract 후속 정리
+   - S2/S4/S5와 bundle 필드 의미 추가 정렬
+   - 필요 시 `buildPreparation` / `quickContext` / `graphContext` schema 명문화
 2. broader live smoke
    - `deep-analyze`
    - `generate-poc`
    - `build-resolve`
 3. 문서/세션 기록 유지
-   - major internal structure 변화 시 spec/handoff/roadmap 동시 갱신
+   - major contract 변화 시 handoff / roadmap / spec / API 동시 갱신
+4. legacy drift 관리
+   - mounted backend / orchestration wording 중 legacy Quick→Deep 자동 후속 표현 추적
 
-현재 상태는 **public contract를 유지한 채 내부 구조를 정리하는 작업이 거의 안정권에 들어온 상태**다.
+현재 상태는 **public contract를 유지한 채 explicit build-preparation → Quick → Deep 계약 분리를 시작한 상태**다.

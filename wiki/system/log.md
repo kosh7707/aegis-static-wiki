@@ -543,3 +543,280 @@ related_pages:
 ## [2026-04-13] mcp | complete_wr | s2-to-s1-consume-new-sdk-install-log-contract-and-live-observability-signals-for-project-
 - Lane s1 completed recipient-side handling
 - Status: completed
+
+## [2026-04-13] mcp | register_wr | s3-to-s2-confirm-explicit-build-agent-ux-step
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-confirm-explicit-build-agent-ux-step.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s3-reply-canonical-analysis-user-journey-now-uses-explicit-build-preparation-before
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-reply-canonical-analysis-user-journey-now-uses-explicit-build-preparation-before.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s1-align-future-analysis-ux-copy-and-flow-with-explicit-build-preparation-then-quic
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-align-future-analysis-ux-copy-and-flow-with-explicit-build-preparation-then-quic.md
+
+## [2026-04-13] mcp | complete_wr | s3-to-s2-confirm-explicit-build-agent-ux-step
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] canonical analysis user journey rewritten around explicit build-preparation and explicit Deep request | s2
+- Updated technical-overview, backend spec, end-to-end scenarios, and S2 handoff docs to describe source upload + SDK upload + explicit build-preparation + explicit Quick + explicit Deep.
+- Replied to S3 WR about the build-agent UX step and issued S1 alignment WR.
+- Marked S3->S2 build-agent UX WR completed from the S2 recipient perspective.
+
+## [2026-04-13] canonical analysis journey corrected to include Quick-stage S5 GraphRAG formation | s2
+- Patched the 2026-04-13 canonical user journey rewrite to add the omitted S5 GraphRAG/code-graph formation step inside Quick.
+- Updated both the S3 reply WR and the S1 alignment WR so downstream lanes receive the corrected flow.
+
+## [2026-04-13] mcp | register_wr | s2-to-s4-prepare-explicit-build-preparation-and-one-shot-quick-scan-contract-for-the-new-
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s2-to-s4-prepare-explicit-build-preparation-and-one-shot-quick-scan-contract-for-the-new-.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s5-prepare-quick-stage-code-graph-and-graphrag-capability-contract-for-the-new-anal
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s2-to-s5-prepare-quick-stage-code-graph-and-graphrag-capability-contract-for-the-new-anal.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s3-prepare-build-agent-and-analysis-agent-contract-split-for-explicit-build-prep-th
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-prepare-build-agent-and-analysis-agent-contract-split-for-explicit-build-prep-th.md
+
+## [2026-04-13] mcp | register_wr | s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared.md
+
+## [2026-04-13] mcp | complete_wr | s2-to-s5-prepare-quick-stage-code-graph-and-graphrag-capability-contract-for-the-new-anal
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] Implemented explicit build-preparation readiness contract for Quick orchestration | S4
+- Added /v1/build readiness contract (ready/partial/not-ready) and surfaced it in BuildResponse.
+- compile_commands.json without user-target entries now fails with category compile-commands-no-user-entries.
+- Refreshed S4 canon docs to define explicit Quick as /v1/build ready -> /v1/scan one-shot.
+
+## [2026-04-13] mcp | complete_wr | s2-to-s4-prepare-explicit-build-preparation-and-one-shot-quick-scan-contract-for-the-new-
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | register_wr | s3-to-s2-build-prep-and-deep-contract-split-implemented-for-explicit-step-flow
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-build-prep-and-deep-contract-split-implemented-for-explicit-step-flow.md
+
+## [2026-04-13] mcp | complete_wr | s2-to-s3-prepare-build-agent-and-analysis-agent-contract-split-for-explicit-build-prep-th
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s2-to-s3-reply-canonical-analysis-user-journey-now-uses-explicit-build-preparation-before
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | register_wr | s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md
+
+## [2026-04-13] Sent S4→S2 reply WR for explicit build-preparation/Quick contract | S4
+- Registered reply WR wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md.
+- Updated S4 handoff/readme and roadmap to point to the reply WR and confirm no open WRs remain.
+
+## [2026-04-13] Updated canonical handoff/roadmap for explicit build-preparation contract split | S3
+- Refreshed wiki/canon/handoff/s3/readme.md to document buildPreparation and Deep explicit-step aliases.
+- Refreshed wiki/canon/roadmap/s3-roadmap.md with 2026-04-13 completed work and next priorities.
+
+## [2026-04-13] mcp | complete_wr | s3-to-s2-build-prep-and-deep-contract-split-implemented-for-explicit-step-flow
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] S2 additive explicit-step migration advanced with build-preparation endpoints and quick graphing phase | s2
+- Added additive build-preparation endpoints on the pipeline surface and kept legacy run behavior intact.
+- Explicit Quick now expects prepared compile_commands for target-scoped runs, and analysis progress now exposes quick_graphing while S5 graph context is ingested.
+
+## [2026-04-13] S2 legacy /analysis/run now behaves as a Quick alias during explicit-step migration | s2
+- Changed /api/analysis/run to dispatch the explicit Quick path rather than the old public auto Quick→Deep chain.
+- Kept additive /pipeline/prepare*, /analysis/quick, /analysis/deep surfaces and verified them with fresh targeted + full backend tests.
+
+## [2026-04-13] mcp | register_wr | s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-.md
+
+## [2026-04-13] S2 closing-doc polish removed remaining explicit-step wording drift in analysis recovery docs | s2
+- Updated the shared-models recovery matrix to say explicit Quick / explicit Deep analysis.
+- Updated S2 api-endpoints WS row and end-to-end scenario wording to stop implying the old Quick→Deep auto-follow-up model.
+
+## [2026-04-13] mcp | register_wr | s3-to-s4-define-s4-health-request-summary-mapping-for-local-ack-control-rollout
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-define-s4-health-request-summary-mapping-for-local-ack-control-rollout.md
+
+## [2026-04-13] mcp | register_wr | s3-to-s7-define-s7-health-request-summary-semantics-for-local-ack-control-rollout
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-define-s7-health-request-summary-semantics-for-local-ack-control-rollout.md
+
+## [2026-04-13] mcp | register_wr | s3-to-s2-first-rollout-of-timeout-policy-redesign-is-health-only-with-polling-semantics
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-first-rollout-of-timeout-policy-redesign-is-health-only-with-polling-semantics.md
+
+## [2026-04-13] mcp | register_wr | s7-to-s3-s7-health-request-summary-semantics-response-to-s3-rollout-request
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-health-request-summary-semantics-response-to-s3-rollout-request.md
+
+## [2026-04-13] mcp | complete_wr | s3-to-s2-first-rollout-of-timeout-policy-redesign-is-health-only-with-polling-semantics
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s3-to-s7-define-s7-health-request-summary-semantics-for-local-ack-control-rollout
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] processed timeout-policy redesign notice as pre-freeze impact analysis only | s2
+- Verified current S2 /health aggregation collapses child responses into ok/degraded/unreachable.
+- Verified service clients only expose point-in-time checkHealth() with no orchestration polling loop.
+- Verified analysis/pipeline orchestration lacks ack-break chained-abort handling and documented deferred implementation until contract freeze.
+
+## [2026-04-13] mcp | register_wr | s3-to-s7-clarify-s7-health-reply-on-local-ack-vs-transport-liveness-and-abort-semantics
+- Registered question WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-clarify-s7-health-reply-on-local-ack-vs-transport-liveness-and-abort-semantics.md
+
+## [2026-04-13] mcp | register_wr | s2-to-s3-pre-freeze-timeout-policy-redesign-impact-analysis-completed-on-s2-implementatio
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-pre-freeze-timeout-policy-redesign-impact-analysis-completed-on-s2-implementatio.md
+
+## [2026-04-13] mcp | register_wr | s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics.md
+
+## [2026-04-13] mcp | complete_wr | s3-to-s7-clarify-s7-health-reply-on-local-ack-vs-transport-liveness-and-abort-semantics
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] processed S3 follow-up WR on /health local-ack semantics | s7
+- Bootstrapped S7 lane from docs + canonical wiki and verified current gateway code shape before replying.
+- Registered reply WR: wiki/canon/work-requests/s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics.md.
+- Marked recipient-side completion for wiki/canon/work-requests/s3-to-s7-clarify-s7-health-reply-on-local-ack-vs-transport-liveness-and-abort-semantics.md.
+- Clarified that elapsedMs is informational only and first rollout cannot prove fine-grained progress inside non-streaming llm-inference.
+
+## [2026-04-13] mcp | register_wr | s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md
+
+## [2026-04-13] mcp | complete_wr | s3-to-s4-define-s4-health-request-summary-mapping-for-local-ack-control-rollout
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] Implemented /health request-summary control signal and replied to S3 WR | S4
+- Added additive /v1/health requestSummary + activeRequestCount contract mapped from existing scan lifecycle/runtime callbacks.
+- Sent reply WR wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md and completed the originating S3→S4 WR.
+
+## [2026-04-13] mcp | register_wr | s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout.md
+
+## [2026-04-13] mcp | complete_wr | s2-to-s3-pre-freeze-timeout-policy-redesign-impact-analysis-completed-on-s2-implementatio
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s7-to-s3-s7-health-request-summary-semantics-response-to-s3-rollout-request
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] mcp | complete_wr | s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-13] Implemented Analysis Agent /health request-summary control signal for rollout v1 | S3
+- Added additive activeRequestCount/requestSummary control-signal block to Analysis Agent /v1/health.
+- Mapped S3 local progress events into health summary tracking and aligned docs/spec/handoff/roadmap with the frozen rollout contract.
+
+## [2026-04-14] mcp | register_wr | s3-to-s7-investigate-live-v1-chat-json-only-control-leak-seen-in-s3-smoke
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-investigate-live-v1-chat-json-only-control-leak-seen-in-s3-smoke.md
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-reply-live-v1-chat-json-only-control-leak-is-current-pass-through-limitation-not
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-live-v1-chat-json-only-control-leak-is-current-pass-through-limitation-not.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s7-investigate-live-v1-chat-json-only-control-leak-seen-in-s3-smoke
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] processed S3 WR on live /v1/chat JSON-only leak behavior | s7
+- Verified current /v1/chat implementation is pass-through and does not enforce JSON-only mode or disable thinking by itself.
+- Reproduced the reported reasoning leak against the live gateway, then verified a caller-controlled success case with response_format=json_object + enable_thinking=false.
+- Registered reply WR wiki/canon/work-requests/s7-to-s3-reply-live-v1-chat-json-only-control-leak-is-current-pass-through-limitation-not.md and completed the originating S3->S7 WR.
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-reply-live-v1-chat-json-only-control-leak-is-current-pass-through-limitation-not
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] Reviewed S7 live /v1/chat reply and accepted current pass-through limitation contract | S3
+- Confirmed the live JSON-only control leak is not a /health rollout regression.
+- Accepted S7 guidance: prefer /v1/tasks for strict structured output, or explicitly set response_format=json_object + enable_thinking=false on /v1/chat and parse message.content only.
+
+## [2026-04-14] mcp | register_wr | s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat.md
+
+## [2026-04-14] mcp | register_wr | s3-to-s4-clarify-why-live-s4-v1-health-does-not-expose-request-summary-fields-yet
+- Registered question WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-clarify-why-live-s4-v1-health-does-not-expose-request-summary-fields-yet.md
+
+## [2026-04-14] mcp | register_wr | s7-to-s3-reply-opt-in-strict-json-mode-implemented-for-v1-chat-in-repo-runtime-rollout-st
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-opt-in-strict-json-mode-implemented-for-v1-chat-in-repo-runtime-rollout-st.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] implemented opt-in strict JSON mode for /v1/chat | s7
+- Added X-AEGIS-Strict-JSON activation in services/llm-gateway/app/routers/tasks.py.
+- Strict mode now forces response_format=json_object and enable_thinking=false, validates/normalizes message.content, scrubs reasoning, and returns 502 on strict-contract violations.
+- Updated canonical S7 API/spec docs and replied to the S3 implementation WR.
+- Live localhost gateway still showed stale pre-restart behavior, so runtime rollout/restart remains pending.
+
+## [2026-04-14] refreshed S7 handoff docs for session end | s7
+- Updated wiki/canon/handoff/s7/readme.md with 2026-04-14 strict JSON mode status, 188-test baseline, and runtime restart pending note.
+- Updated wiki/canon/handoff/s7/architecture.md with strict JSON mode architecture notes, test count refresh, and X-AEGIS-Strict-JSON observability mention.
+- Updated wiki/canon/roadmap/s7-roadmap.md so the next-session top priority is live gateway rollout/restart verification for strict JSON mode.
+
+## [2026-04-14] mcp | register_wr | s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m.md
+
+## [2026-04-14] mcp | complete_wr | s3-to-s4-clarify-why-live-s4-v1-health-does-not-expose-request-summary-fields-yet
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] Clarified live /v1/health drift as runtime lag and replied to S3 follow-up WR | S4
+- Confirmed current S4 worktree/canonical contract includes activeRequestCount + requestSummary and full pytest still passes.
+- Fresh runtime evidence from this workspace showed no current localhost:9000 listener and logs contained live-smoke-s4-001 completion followed by SAST Runner shutting down.
+
+## [2026-04-14] Refreshed S4 handoff docs for session end | S4
+- Updated S4 handoff/readme and roadmap last_verified + last update dates to 2026-04-14.
+- Confirmed S4 open WR count remains zero at session end.
+
+## [2026-04-14] Updated S3 canonical docs for /health rollout and caller-side strict JSON guard | S3
+- Refreshed analysis-agent API/spec plus S3 handoff/roadmap to 2026-04-14 state.
+- Recorded freeze artifact publication, S3 /health request-summary rollout, and S7 strict JSON opt-in caller guard follow-up.
+
+## [2026-04-14] mcp | complete_wr | s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] mcp | complete_wr | s7-to-s3-reply-opt-in-strict-json-mode-implemented-for-v1-chat-in-repo-runtime-rollout-st
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-14] refreshed session-closing S2 handoff docs before whole-tree commit/push | s2
+- Updated S2 handoff readme and roadmap to record the frozen timeout-policy rollout WR as the next active post-freeze task.
+- User requested whole-tree commit/push across both AEGIS and aegis-static-wiki, including non-S2-owned dirty changes.

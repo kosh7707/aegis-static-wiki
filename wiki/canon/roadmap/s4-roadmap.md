@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/roadmap.md"
 original_path: "docs/s4-handoff/roadmap.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -16,13 +16,13 @@ migration_status: "canonicalized"
 # S4 SAST Runner — 로드맵
 
 > 다음 작업 + 후순위 계획. README.md에서 분리.
-> **마지막 업데이트: 2026-04-09**
+> **마지막 업데이트: 2026-04-14**
 
 ---
 
 ## 즉시 다음
 
-현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-04-09 재확인)
+현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-04-14 처리 후 재확인)
 
 후속 후보:
 - downstream(S2/S3) build-path adaptation feedback 수신 시 contract drift 보정
@@ -34,6 +34,20 @@ migration_status: "canonicalized"
 
 ## 최근 완료
 
+- ~~S3 follow-up WR: live `/v1/health` request-summary drift clarification~~ — **완료** (2026-04-14)
+  - canonical code/docs와 live runtime이 어긋난 원인을 runtime/deploy lag 또는 stale transient instance로 정리
+  - 현재 worktree는 request-summary fields를 포함하지만 live `localhost:9000` 는 재기동 전 coarse-only shape 또는 no-listener 상태일 수 있음을 명시
+  - S3 회신 WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m.md`
+- ~~S3 WR: `/health` request-summary mapping for local-ack control rollout~~ — **완료** (2026-04-13)
+  - `/v1/health`에 `activeRequestCount` + `requestSummary` 추가
+  - `requestId` query 기준으로 queued / running / degraded / ack-break equivalent를 최소 summary로 조회 가능하게 정렬
+  - full per-request dump 없이 polling caller가 abort 판단 가능한 contract를 문서/코드/테스트에 반영
+  - S3 회신 WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md`
+- ~~S2 WR: explicit build-preparation + one-shot Quick contract 명시화~~ — **완료** (2026-04-13, session omx-1776068296251-abnt8x)
+  - `/v1/build`에 `readiness` contract 추가 (`ready` / `partial` / `not-ready`)
+  - `compile_commands.json` 가 존재해도 user-target entry가 없으면 `compile-commands-no-user-entries` 로 실패하도록 정렬
+  - canonical docs/api/spec/readme를 explicit Quick (`/v1/build` ready → `/v1/scan`) 기준으로 refresh
+  - S2 회신 WR 발송 완료: `wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md`
 - ~~S4 소유 문서 전체 refresh~~ — **완료** (2026-04-09, session-omx-1775611621885-coij9e)
   - `readme`, `roadmap`, `spec`, `api`, `build-snapshot-consumer-seam`을 현재 코드/테스트 기준으로 재검토
   - 규칙 수(39/9 YAML), 테스트 수(376/23 files), `/v1/health` backward-compatible 필드, build path execution-only 경계 문구를 정렬
@@ -66,6 +80,7 @@ migration_status: "canonicalized"
 
 ## 알려진 이슈
 
+- live `localhost:9000` runtime이 v0.11.2 worktree로 재기동되지 않으면 `/v1/health` request-summary additive fields가 실제 surface에 반영되지 않을 수 있음 (2026-04-14 follow-up WR에서 runtime/deploy lag로 확인)
 - tinydtls 버전: `libcoap/ext/tinydtls`에 configure.ac 없음 → 버전 미탐지
 - wakaama 버전: 하위 tinydtls의 configure.ac를 잡아서 오탐
 - clang-tidy + compile_commands.json: `-p` 연동 불안정

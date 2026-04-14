@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/architecture.md"
 original_path: "docs/s5-handoff/architecture.md"
-last_verified: "2026-04-07"
+last_verified: "2026-04-14"
 service_tags: ["s5"]
 decision_tags: []
 related_pages: []
@@ -97,15 +97,16 @@ services/knowledge-base/
 │   └── threat-db-raw/             # ETL 다운로드 캐시
 ├── requirements.txt               # fastapi, uvicorn, pydantic, neo4j, qdrant-client, fastembed, httpx
 ├── .env                           # Neo4j + Qdrant + NVD API 키
-└── tests/                              # 163 tests
+└── tests/                              # 233 tests
     ├── test_neo4j_graph.py             # 7 tests
-    ├── test_code_graph_service.py      # 17 tests
+    ├── test_code_graph_service.py      # 18 tests
     ├── test_code_vector_search.py      # 12 tests
     ├── test_code_graph_assembler.py    # 10 tests
     ├── test_knowledge_assembler.py     # 15 tests
     ├── test_nvd_client.py              # 37 tests
     ├── test_project_memory_service.py  # 23 tests
     ├── test_api_error_responses.py     # 15 tests
+    ├── test_api_contract.py            # 69 tests
     ├── test_qdrant_modes.py            # 5 tests
     ├── test_benchmark_metrics.py       # 15 tests
     └── test_benchmark_artifacts.py     # 7 tests (validation set + sweep + compare + oracle)
@@ -152,7 +153,8 @@ threat search는 이제 **Qdrant + Neo4j 둘 다 필요**하다:
 - project memory create/list도 같은 provenance 메타데이터를 수용/반환한다.
 - 현재 단계는 **프로젝트당 활성 code graph 1개**를 유지하며, provenance는 future snapshot-aware 확장을 위한 **metadata/filter seam**이다.
 - 2026-04-07 수정으로, legacy 노드에 provenance property key가 없는 경우에도 read/query 경로가 `properties(node)['build_snapshot_id']` 형태의 map access를 사용한다. 따라서 optional provenance seam은 유지하면서도 Neo4j `01N52 property key does not exist` warning noise를 줄인다.
-- 외부 lane 통지는 `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md`에 정리되어 있다. `docs/work-requests/**`는 archive-only이며 WR MCP 런타임 대상이 아니다.
+- 외부 lane 통지는 `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md`, `wiki/canon/work-requests/s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared.md`에 정리되어 있다. `docs/work-requests/**`는 archive-only이며 WR MCP 런타임 대상이 아니다.
+- 2026-04-13 기준 code graph ingest는 repeatable replace surface이며, 응답에서 `operation`, `status`(`ready`/`partial`/`empty`), `readiness.graphRag`, `warnings`를 반환해 caller가 Quick-stage graph readiness를 판정할 수 있다.
 
 ---
 

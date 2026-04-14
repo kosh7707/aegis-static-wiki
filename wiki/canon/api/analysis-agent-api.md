@@ -4,7 +4,7 @@ page_type: "canonical-api"
 canonical: true
 source_refs:
   - "docs/api/analysis-agent-api.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md"]
@@ -15,9 +15,9 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3
 > **포트**: 8001
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-09
+> **최종 업데이트**: 2026-04-14
 
-Analysis Agent의 public contract 문서다. 2026-04-09 기준 내부 구현은 크게 분리되었지만, **이 문서의 public API 의미는 변하지 않았다.**
+Analysis Agent의 public contract 문서다. 2026-04-13 기준 내부 구현은 크게 분리되었지만, **이 문서의 public API 의미는 변하지 않았다.**
 
 ---
 
@@ -86,9 +86,20 @@ http://localhost:8001
 | `thirdPartyPaths` | string[] | X | S4 heavy analyzer 제외 대상 |
 | `sastTools` | string[] \| null | X | S4 도구 subset 선택 |
 
+### preferred explicit-step aliases (2026-04-13)
+
+명시적 build-preparation → Quick → Deep 여정에 맞춰, `deep-analyze`는 아래 nested alias도 읽는다.
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `buildPreparation` | object | Build Agent 성공 응답에서 전달받은 build bundle. `buildCommand`, `buildEnvironment`, `buildProfile`, `provenance` alias로 사용 |
+| `quickContext` | object | Quick 단계 결과 bundle. `sastFindings`, `scaLibraries`, `thirdPartyPaths`, `sastTools`, `projectId`, `provenance` alias로 사용 |
+| `graphContext` | object | graph/ready 상태 bundle. `projectId`, `provenance`, `revisionHint`, `commitSha` alias로 사용 |
+
 규칙:
 - `projectPath`와 `files` 중 최소 하나는 있어야 한다.
 - `buildCommand`가 있으면 build-and-analyze를 시도하고, 없으면 individual tools로 fallback한다.
+- 위 nested alias는 **preferred future path** 이고, 기존 flat `buildCommand`/`buildEnvironment`/`buildProfile`/`provenance`/`sastFindings`/`scaLibraries` 필드는 compatibility를 위해 계속 읽는다.
 
 ### `generate-poc`용 `context.trusted`
 
@@ -150,6 +161,13 @@ HTTP `200` + 실패 `status`.
 
 ## GET /v1/health
 
+`/v1/health`는 기존 coarse service health를 유지하면서, 첫 rollout부터 **request-aware control-signal summary**를 additive하게 제공한다.
+
+- query parameter: `requestId` (optional)
+  - 지정 시 해당 request의 summary를 우선 조회
+  - 미지정 시 현재 active request 중 대표 summary(없으면 idle summary)를 반환
+  - 완료된 request는 `/health` control surface에서 history로 노출하지 않고 idle summary로 접는다
+
 2026-04-09 live 기준 예시:
 
 ```json
@@ -168,6 +186,18 @@ HTTP `200` + 실패 `status`.
     "maxCompletionTokens": 20000,
     "toolBudget": {"cheap": 6, "medium": 4, "expensive": 1}
   },
+  "activeRequestCount": 1,
+  "requestSummary": {
+    "requestId": "req-deep-001",
+    "endpoint": "tasks",
+    "state": "running",
+    "localAckState": "phase-advancing",
+    "degraded": false,
+    "degradeReasons": [],
+    "lastAckAt": 1776081000000,
+    "lastAckSource": "tool-complete",
+    "blockedReason": null
+  },
   "llmBackend": {
     "status": "ok",
     "gateway": "http://localhost:8000"
@@ -184,6 +214,44 @@ HTTP `200` + 실패 `status`.
 보호 의미:
 - `activePromptVersions` key 집합은 `{deep-analyze, generate-poc}` 유지
 - health는 내부 파일 분할과 무관하게 동일 의미를 유지해야 함
+- 새 `activeRequestCount` / `requestSummary`는 additive control-signal block이다
+
+### request-aware summary semantics
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `activeRequestCount` | int | 현재 `queued` 또는 `running` 상태 request 수 |
+| `requestSummary.requestId` | string \| null | 대표 request ID |
+| `requestSummary.endpoint` | string | 현재는 `\"tasks\"` |
+| `requestSummary.state` | string | `idle`, `queued`, `running`, `failed` |
+| `requestSummary.localAckState` | string \| null | `phase-advancing`, `transport-only`, `ack-break`, idle일 때 `null` |
+| `requestSummary.degraded` | bool | reduced/partial 조건 여부 |
+| `requestSummary.degradeReasons` | string[] | degraded 이유 목록 |
+| `requestSummary.lastAckAt` | int \| null | 마지막 유효 local ack 시각 (epoch ms) |
+| `requestSummary.lastAckSource` | string \| null | 마지막 ack source |
+| `requestSummary.blockedReason` | string \| null | abort-driving blocked reason |
+
+S3의 첫 rollout local ack source 예시:
+- `deep-analyze-start`
+- `phase-one-complete`
+- `tool-complete`
+- `turn-complete`
+- `result-assembled`
+- `terminal-result`
+- `ack-break`
+
+### S7 strict JSON opt-in caller guard (2026-04-14)
+
+Analysis Agent가 `agent_shared.llm.caller.LlmCaller` 또는 `app.clients.real.RealLlmClient`를 통해
+S7 `/v1/chat`를 **도구 없이** 호출할 때는, strict downstream JSON 소비를 위해 다음 caller-side guard를 함께 사용한다.
+
+- `response_format = {"type":"json_object"}`
+- `chat_template_kwargs.enable_thinking = false`
+- `X-AEGIS-Strict-JSON: true`
+
+해석 규칙:
+- strict JSON payload는 **OpenAI-style envelope 전체가 아니라** `choices[0].message.content`만 파싱 대상으로 본다.
+- 이는 S7이 2026-04-14 WR에서 확인한 current `/v1/chat` pass-through limitation에 대한 S3 측 즉시 완화책이다.
 
 ---
 

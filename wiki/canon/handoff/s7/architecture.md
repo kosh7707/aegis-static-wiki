@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -57,7 +57,7 @@ services/llm-gateway/
 │   ├── mock/
 │   │   └── dispatcher.py         # V1MockDispatcher (taskType enum 기반)
 │   └── routers/
-│       └── tasks.py              # POST /v1/tasks, /v1/chat, GET /v1/health, /v1/usage, /v1/models, /v1/prompts, /metrics
+│       └── tasks.py              # POST /v1/tasks, /v1/chat(opt-in strict JSON), GET /v1/health, /v1/usage, /v1/models, /v1/prompts, /metrics
 ├── scripts/
 │   └── threat-db/                # 위협 지식 DB ETL 파이프라인 (S4 이식)
 │       ├── build.py              # ETL 오케스트레이터 (다운로드 -> 파싱 -> 교차참조 -> Qdrant 적재)
@@ -75,7 +75,7 @@ services/llm-gateway/
 │       └── requirements.txt      # ETL 전용 의존성
 ├── data/
 │   └── qdrant/                   # Qdrant 파일 기반 벡터 DB (ETL 빌드 산출물, git 추적 제외)
-├── tests/                        # 185 tests total (2026-04-03 기준)
+├── tests/                        # 188 tests total (2026-04-14 기준)
 │   ├── conftest.py               # 공통 fixture: TestClient(client_live, client+mock_pipeline), 요청 빌더
 │   ├── test_response_parser.py   # 12 tests
 │   ├── test_evidence_validator.py # 5 tests
@@ -89,7 +89,7 @@ services/llm-gateway/
 │   ├── test_pipeline_retry.py   # 13 tests (재시도 성공/소진/HTTP에러/토큰누적/CB OPEN)
 │   ├── test_circuit_breaker.py        # 10 tests (상태 전이, 복구, snapshot)
 │   ├── test_token_tracker.py         # 7 tests (누적 집계, endpoint별, taskType별)
-│   ├── test_contract_endpoints.py      # 25 tests (GET /v1/health, /models, /prompts, /usage, /metrics, chat proxy)
+│   ├── test_contract_endpoints.py      # 28 tests (GET /v1/health, /models, /prompts, /usage, /metrics, chat proxy + strict JSON mode)
 │   ├── test_contract_task_success.py   # 17 tests (POST /v1/tasks 성공 응답 JSON 계약 검증)
 │   ├── test_contract_task_failure.py   # 22 tests (실패 응답 구조, retryable, 500 형식, failureCode*status)
 │   └── test_contract_input_validation.py # 6 tests (422 입력 검증: taskType/필드 누락/maxTokens 범위)
@@ -182,6 +182,7 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 - 로그 파일: `logs/aegis-llm-gateway.jsonl`
 - X-Request-Id: 수신 시 전파, 미전달 시 `gw-` 접두사로 자동 생성, 모든 응답에 포함
 - `/v1/chat`: `X-Timeout-Seconds` 헤더로 호출자 주도 타임아웃 지원
+- `/v1/chat`: `X-AEGIS-Strict-JSON` 헤더로 opt-in strict JSON mode 지원
 
 ### 로그 파일
 
@@ -214,6 +215,16 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 - `TaskFailureResponse`에 `retryable: bool` 필드로 S2에 전달
 
 ---
+
+## `/v1/chat` opt-in strict JSON mode (2026-04-14)
+
+- 활성화 헤더: `X-AEGIS-Strict-JSON: true` (`1`/`yes`/`on`도 허용)
+- 기본 `/v1/chat`은 기존과 동일한 pass-through 동작 유지
+- strict mode일 때 Gateway가 `response_format={"type":"json_object"}`와 `chat_template_kwargs.enable_thinking=false`를 강제로 주입
+- 성공 응답에서는 `choices[0].message.content`가 JSON object 문자열인지 검증하고 compact JSON으로 정규화
+- backend가 `message.reasoning`을 포함해도 strict mode 응답에서는 `null`로 scrub
+- strict mode 계약 불만족 시 backend 200을 그대로 반환하지 않고 **502**로 명확히 실패
+- 2026-04-14 검증 시 repo/in-process 경로는 green이었고, 이미 떠 있는 localhost runtime은 재시작 전 코드로 보이는 stale behavior가 남아 있어 rollout restart가 필요
 
 ## Thinking 모드 제어
 

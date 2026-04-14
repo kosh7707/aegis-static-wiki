@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-gateway.md"
 original_path: "docs/specs/llm-gateway.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -17,7 +17,7 @@ migration_status: "canonicalized"
 
 > S7은 AEGIS 플랫폼의 **LLM 단일 관문(Gateway)** 이자 **LLM Engine 운영자**이다.
 > 모든 LLM 호출은 S7(Gateway)을 경유한다. LLM Engine을 직접 호출하지 않는다.
-> **마지막 업데이트: 2026-04-09**
+> **마지막 업데이트: 2026-04-14**
 
 ---
 
@@ -242,14 +242,14 @@ GET  /metrics           # Prometheus 메트릭
 |------|-------------|------------|
 | **용도** | S2 구조화 분석 요청 (5개 taskType) | S3 Agent 멀티턴 LLM 호출 |
 | **입력** | TaskRequest (taskType + context + evidence) | OpenAI chat completion 포맷 |
-| **출력** | 구조화 Assessment (검증 완료) | LLM Engine 응답 투명 전달 |
-| **검증** | Schema + Evidence + Confidence 산출 | 없음 (프록시) |
+| **출력** | 구조화 Assessment (검증 완료) | 기본은 LLM Engine 응답 투명 전달, opt-in strict JSON 모드에서는 `message.content` JSON object 검증/정규화 |
+| **검증** | Schema + Evidence + Confidence 산출 | 기본은 없음, strict JSON opt-in 시 `choices[0].message.content` JSON object 검증 수행 |
 | **모델 선택** | ModelProfileRegistry 기반 | 모델명 오버라이드 (Gateway가 실제 모델로 교체) |
 | **메타데이터** | 응답 body에 audit/validation/confidence 포함 | 응답 헤더에 `X-Model`, `X-Gateway-Latency-Ms` |
 | **타임아웃** | Gateway 설정 (connect 10s / read 600s) | 호출자 주도 (`X-Timeout-Seconds` 헤더, 상한 1800s) |
 | **정책 방향** | AEGIS 본체 중심 (장기 핵심) | Agent/호환/디버깅 계층 |
 
-**원칙**: 자유 텍스트 엔드포인트를 만들지 않는다. `/v1/tasks`는 taskType 기반으로 라우팅되며, `/v1/chat`은 LLM Engine의 OpenAI API를 투명하게 중계한다.
+**원칙**: 자유 텍스트 엔드포인트를 만들지 않는다. `/v1/tasks`는 taskType 기반으로 라우팅되며, `/v1/chat`은 기본적으로 LLM Engine의 OpenAI API를 투명하게 중계한다. 다만 2026-04-14부터 caller가 `X-AEGIS-Strict-JSON: true`를 보내면 Gateway가 opt-in strict JSON 모드를 적용해 `response_format=json_object`, `enable_thinking=false`, JSON object 응답 검증/정규화, `reasoning` scrub을 수행한다.
 
 ### 5.3 응답 구조 원칙
 

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/roadmap.md"
 original_path: "docs/s2-handoff/roadmap.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -21,6 +21,71 @@ migration_status: "canonicalized"
 ---
 
 ## 10. 알려진 이슈 / 로드맵 / 세션 로그
+
+### explicit-step migration 상태 (2026-04-13)
+
+완료된 additive slice:
+- `POST /api/projects/:pid/pipeline/prepare`
+- `POST /api/projects/:pid/pipeline/prepare/:targetId`
+- `POST /api/analysis/quick`
+- `POST /api/analysis/deep`
+- `POST /api/analysis/run` → legacy Quick alias
+- `/ws/analysis` phase에 `quick_graphing` 추가
+- target-scoped Quick는 prepared `compile_commands` prerequisite 적용
+- Quick 직후 S5 GraphRAG readiness 확인 후에만 다음 단계 컨텍스트로 승격
+
+아직 남은 cleanup:
+- legacy 내부 auto-chain 흔적 추가 제거
+- shared/public contract 최종 정리
+- S1 최종 explicit-step UX handoff / WR 정리
+
+### timeout-policy redesign pre-freeze 상태 (2026-04-13)
+
+S3 notice 기준 첫 rollout boundary:
+- **`/health` 전용**
+- polling-based propagation
+- no new primary endpoint
+- no result payload redesign in this phase
+
+S2 pre-freeze 결론:
+- 지금은 **구현이 아니라 영향분석만** 한다.
+- contract freeze 전까지는 caller-side polling/chained-abort 동작을 코드로 고정하지 않는다.
+
+현재 확인된 S2 영향 포인트:
+- `services/backend/src/controllers/health.controller.ts`
+  - child health를 `ok | degraded | unreachable` 로만 축약 집계
+- `services/backend/src/services/{agent-client,build-agent-client,sast-client,kb-client,llm-task-client}.ts`
+  - one-shot `checkHealth()` 만 존재, orchestration polling loop 부재
+- `services/backend/src/services/{analysis-orchestrator,pipeline-orchestrator}.ts`
+  - request retry / timeout / abort signal 은 있으나
+    ack-break 기반 chained-abort policy 는 아직 없음
+
+freeze 후 즉시 다음 작업:
+1. polling 해석기 도입 범위 확정 (`/health` only)
+2. progress-capable / blocked / ack-break summary state를 S2가 어떻게 표준화할지 결정
+3. chained-abort handling 을 analysis / pipeline orchestration 에 순차 적용
+
+### timeout-policy redesign post-freeze 입력 도착 (2026-04-14)
+
+새 active WR:
+- `s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout`
+
+freeze된 first-rollout contract 요약:
+- producer `/health` additive semantic fields:
+  - `activeRequestCount`
+  - `requestSummary.{requestId, endpoint, state, localAckState, degraded, degradeReasons, lastAckAt, lastAckSource, blockedReason}`
+- canonical states:
+  - `state`: `idle | queued | running | failed`
+  - `localAckState`: `phase-advancing | transport-only | ack-break`
+- S2 caller mandatory chain-abort:
+  - `localAckState = ack-break`
+  - `state = failed`
+  - `blockedReason != null`
+
+세션 종료 시점 상태:
+- freeze 전 영향분석 / 문서 반영 / S3 reply WR 발행 완료
+- freeze 후 implementation은 아직 미착수
+- 다음 세션에서 `/health` polling interpreter + chained-abort handling 구현 착수 필요
 
 ### 대기 중인 작업 요청 / 참고 자료 (2026-04-06 기준)
 
@@ -162,17 +227,20 @@ src/
 
 ### 즉시 다음 작업 (Next S2 Session)
 
-1. **S1 / S1-QA frontend 프로젝트 CRUD wiring**
-   - rename / description edit UI
-   - delete confirmation UI
-   - `409` blocker reason 표시
-2. **Project delete semantics 문서/계약 후속 정리**
-   - backend/api/handoff 문서 sync 유지
-   - delete blocker authority 변경 시 shared-models + api-endpoints 동시 갱신
-3. **Build Snapshot / BuildAttempt 협의 상태 재평가**
-   - archived reference: `docs/work-requests/` 및 관련 session logs
-   - code 기준: `services/backend/src/db.ts`, 관련 build/snapshot DAO, shared projection 타입
-   - 현재 기준 S2 입장은 “schema/persistence seam은 존재, runtime orchestration 확대는 별도 판단 필요”
+1. **timeout-policy redesign post-freeze implementation 착수**
+   - frozen `/health` summary field/state 해석기 도입
+   - `analysis-orchestrator`, `pipeline-orchestrator`에 chained-abort 적용 범위 설계/구현
+   - health aggregation / polling semantics를 canonical docs + tests로 잠그기
+2. **explicit-step migration final cleanup**
+   - legacy `/api/analysis/run` 관련 hidden auto-chain 흔적 제거/정리
+   - analysis WS/status/documentation 정합성 마감
+3. **shared/public contract 최종 정리**
+   - `wiki/canon/api/shared-models.md`
+   - `wiki/canon/handoff/s2/api-endpoints.md`
+   - `services/shared/src/dto.ts`
+4. **S1 explicit-step UX handoff**
+   - build-prep → Quick → Deep 단계 UX 반영 WR 발행
+   - `quick_graphing` / `pipeline/prepare*` / `analysis/quick` / `analysis/deep` 소비 지침 전달
 
 ### 후순위
 

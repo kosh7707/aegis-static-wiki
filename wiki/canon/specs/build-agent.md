@@ -4,7 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "docs/specs/build-agent.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-api.md"]
@@ -13,7 +13,7 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-a
 # S3. Build Agent 기능 명세
 
 > **소유자**: S3
-> **최종 업데이트**: 2026-04-09
+> **최종 업데이트**: 2026-04-13
 
 Build Agent는 업로드된 프로젝트에 대해 **strict compile-first control plane** 으로 동작한다. 호출자가 선언한 서브프로젝트, 빌드 모드, 기대 산출물을 기준으로 preflight → phase0 → bounded repair → artifact validation을 수행한다.
 
@@ -157,3 +157,4 @@ LLM은 아래만 수행한다.
 - strict contract 의미는 리팩토링보다 우선한다.
 - `tasks.py`는 더 이상 giant file이 아니며 public router 역할만 맡는다.
 - 향후 내부 cleanup은 handler/support 모듈 내부에서 진행하고, public surface는 유지한다.
+- `build-resolve` 성공 응답은 기존 `buildResult`와 별도로 `buildPreparation` 번들을 반환한다. S2는 이를 explicit build-preparation step의 저장/전달 단위로 사용할 수 있다.

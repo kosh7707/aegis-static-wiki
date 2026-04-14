@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/build-snapshot-consumer-seam.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/readme.md"]
@@ -13,7 +13,7 @@ related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runn
 # S4 Build Snapshot Consumer Seam 설계 메모
 
 > 상태: **구현 완료 / `/v1` 계약 반영**
-> 마지막 업데이트: **2026-04-09**
+> 마지막 업데이트: **2026-04-13**
 >
 > 이 문서는 S3/S2가 Build Snapshot reference-first seam을 도입할 때,
 > S4가 어떤 입력/출력/provenance 경계를 가져가야 하는지 S4 관점에서 정리한 설계 메모다.
@@ -30,7 +30,7 @@ related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runn
 - analysis path: `compileCommands`, `buildProfile`, `thirdPartyPaths`
 
 핵심 출력:
-- `/v1/build`: `buildEvidence`, `failureDetail`
+- `/v1/build`: `buildEvidence`, `readiness`, `failureDetail`
 - `/v1/scan`: findings + `execution`
 - `/v1/build-and-analyze`: build 결과 + scan/codeGraph/libraries/metadata
 - `/v1/discover-targets`: `relativePath`, `buildSystem`, `buildFile`
@@ -86,6 +86,7 @@ S4가 직접 생산/검증하는 evidence:
 - build `exitCode`
 - `buildOutput`
 - `entries`, `userEntries`
+- build readiness (`ready` / `partial` / `not-ready`)
 - scan execution metadata (`toolsRun`, `toolResults`, filtering)
 - 필요 시 produced artifacts 탐지 결과
 

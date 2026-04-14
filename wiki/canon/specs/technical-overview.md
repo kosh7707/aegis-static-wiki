@@ -4,7 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "docs/specs/technical-overview.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -106,7 +106,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 
 - 프로젝트 생성/조회/수정/삭제
 - 소스코드 업로드 (ZIP/Git clone)
-- Quick→Deep 분석 진행률 실시간 표시
+- 소스/SDK 준비 이후 빌드 준비 → Quick → Deep 단계 상태 표시
 - Finding triage (7-state 라이프사이클)
 - 취약점 상세 조회 (심각도, 증적, 코드 위치, 수정 가이드)
 - Quality Gate / Approval 워크플로우
@@ -118,7 +118,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 **플랫폼 오케스트레이터**. S1에게 REST API를 제공하고, S3/S4/S5/S6를 호출하는 중추.
 
 - 프로젝트 CRUD + 소스코드 관리 (ZIP/Git → `uploads/{projectId}/`, delete는 quarantine-first teardown)
-- Quick→Deep 분석 오케스트레이션 (`AnalysisOrchestrator`)
+- 분석 오케스트레이션 (`AnalysisOrchestrator`)
 - 코어 도메인: Run, Finding (7-state FSM), EvidenceRef, AuditLog
 - Quality Gate 정책 엔진 + Approval 워크플로우
 - ResultNormalizer (SAST findings + Agent claims → 통합 Finding)
@@ -180,7 +180,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 |------|----|---------|------|------|
 | S1 → S2 | HTTP REST | 분석 요청/응답, CRUD | S1의 유일한 서버 통신 대상 |
 | S1 ↔ S2 | WebSocket | 분석/업로드/파이프라인/SDK foreground progress + notifications background completion awareness | 7개 broadcaster |
-| S2 → S3 | HTTP REST | `POST /v1/tasks` (deep-analyze 위임) | 분석 위임 |
+| S2 → S3 | HTTP REST | `POST /v1/tasks` (deep-analyze 위임), Build Agent 호출 | 명시적 Deep 분석 / 빌드 준비 |
 | S2 → S4 | HTTP REST | `POST /v1/scan` (직접 SAST 요청) | 사용자 트리거 Quick |
 | S2 → S5 | HTTP REST | `POST /v1/search` (지식 조회) | Finding 상세 등 |
 | S2 → S6 | WebSocket | CAN 프레임 실시간 스트리밍 | 동적 분석/테스트 |
@@ -229,28 +229,40 @@ ARM 등 크로스컴파일 타겟은 **QEMU user-mode**로 실행:
 
 ## 6. 검증 모듈
 
-### 6.1 Quick → Deep 파이프라인 (정적 분석)
+### 6.1 빌드 준비 → Quick → Deep 파이프라인 (정적 분석)
 
 ```
-사용자: 소스코드 업로드 (ZIP/Git) → "분석 실행"
+사용자: 소스코드 업로드 (ZIP/Git) + SDK 업로드
 
-  [Quick] S2 → S4 SAST Runner (~30초)
-    S4: 빌드 자동화 → compile_commands.json → 6개 SAST 도구 병렬 실행
+  [Build 준비] 사용자가 빌드 준비를 명시적으로 요청
+    S2 → S3 Build Agent
+    S3: buildCommand / buildProfile 후보 생성
+    S2 → S4 SAST Runner
+    S4: compile_commands.json 생성
+    S2: build material 저장 / 이후 Quick 입력으로 사용
+
+  [Quick] 사용자가 Quick 분석을 명시적으로 요청 (~30초)
+    S2 → S4 SAST Runner (1회성 호출)
+    S4: compile_commands.json 기반 6개 SAST 도구 병렬 실행
+    S2 → S5 Knowledge Base
+    S5: GraphRAG / 코드그래프 형성 및 적재
     S2: SastFinding[] → Vulnerability[] → AnalysisResult 저장
         → ResultNormalizer → Run + Finding[] + EvidenceRef[]
     WS: quick-complete → S1 즉시 표시
 
-  [Deep] S2 → S3 Agent (~3분, 백그라운드)
-    S2: projectPath 전달 (S3가 자체적으로 파일 수집/빌드/SAST/KB/LLM)
+  [Deep] 사용자가 Deep 분석을 명시적으로 요청 (~3분)
+    S2 → S3 Agent
+    S2: projectPath + Quick/build material 전달
     S3: Phase 1(결정론적) + Phase 2(LLM 2턴) → claims[]
     S2: claims[] → Vulnerability[] → AnalysisResult 저장
         → ResultNormalizer → Run + Finding[] + EvidenceRef[]
     WS: deep-complete → S1 보강 표시
 ```
 
-- **Quick**: S4가 빌드 + SAST 6도구 실행. 결정론적 findings 즉시 반환.
-- **Deep**: S3 Agent가 Phase 1(결정론적) + Phase 2(LLM 판정). 핵심 취약점만 claim.
-- **S2 역할**: `projectPath`만 전달. 빌드/파일수집/SAST는 S3/S4가 처리.
+- **Build 준비**: 사용자에게 별도 단계로 드러나는 준비 단계다. Build Agent가 build material을 만들고, S4가 `compile_commands.json`을 생성한다.
+- **Quick**: S4에 대한 1회성 호출이지만, 결과를 보여주기 전에 S5로 GraphRAG/코드그래프 형성도 함께 수행한다. build material이 준비된 이후 결정론적 findings와 graph context를 만든다.
+- **Deep**: 자동 후속 단계가 아니라 사용자의 명시적 요청으로만 시작한다. S3 Agent가 Phase 1(결정론적) + Phase 2(LLM 판정)를 수행한다.
+- **S2 역할**: 소스/SDK/빌드 material을 연결하고, Quick 결과를 정규화한 뒤 Deep 진입 여부를 사용자 선택으로 분기한다.
 - **정규화**: Quick → `normalizeAnalysisResult()`, Deep → `normalizeAgentResult()` (claims→Finding)
 
 ### 6.2 동적 분석 (CAN 모니터링)
@@ -353,18 +365,27 @@ BuildProfile               빌드 설정
 
 ## 8. 데이터 흐름
 
-### 8.1 정적 분석 (Quick → Deep)
+### 8.1 정적 분석 (빌드 준비 → Quick → Deep)
 
 ```
-사용자 → [S1] 소스코드 업로드 (ZIP/Git) + "분석 실행"
-         [S1] → POST /api/analysis/run → [S2]
-                [S2] Quick: POST /v1/scan → [S4]
-                      [S4] 빌드 + SAST 6도구 → SastFinding[]
+사용자 → [S1] 소스코드 업로드 (ZIP/Git) + SDK 업로드
+         [S1] → Build 준비 요청 → [S2]
+                [S2] → Build Agent → [S3]
+                      [S3] buildCommand/buildProfile 후보 생성
+                [S2] → build-only / compile preparation → [S4]
+                      [S4] compile_commands.json 생성
+                [S2] build material 저장
+
+         [S1] → Quick 실행 요청 → [S2]
+                [S2] → POST /v1/scan → [S4]
+                      [S4] 1회성 SAST 실행 → SastFinding[]
+                [S2] → Graph ingest / GraphRAG formation → [S5]
                 [S4] → Response → [S2]
                 [S2] 정규화 + DB 저장
          [S2] → WS quick-complete → [S1] 즉시 표시
 
-                [S2] Deep: POST /v1/tasks → [S3]
+         [사용자] 결과를 본 뒤 명시적으로 Deep 요청
+                [S2] → POST /v1/tasks → [S3]
                       [S3] Phase 1: → [S4] SAST + [S5] KB + 코드그래프 + SCA
                       [S3] Phase 2: → [S7] → LLM Engine → 판정
                       [S3] claims[] → [S2]
@@ -427,15 +448,15 @@ ECU Simulator → [S6 Adapter] → WS → [S2]
 - [x] **7인 체제 재편** — S4(SAST Runner), S5(Knowledge Base), S6(Dynamic Analysis), S7(LLM Gateway+Engine) 신설
 - [x] **DGX Spark LLM Engine** — Qwen3.5-122B-A10B-GPTQ-Int4 전환 완료 (S7 관리)
 - [x] **S3 Agent 통합** — 311 tests pass, RE100 통합 테스트 완료 (49 SAST findings + 3 Agent claims)
-- [x] **Quick→Deep 파이프라인** — AgentClient, SastClient, AnalysisOrchestrator, ProjectSourceService 구현
+- [x] **분석 파이프라인 기반** — AgentClient, SastClient, AnalysisOrchestrator, ProjectSourceService 구현
 - [x] **소스코드 업로드** — ZIP/Git → `uploads/{projectId}/` 파일시스템 관리
 - [x] **프로젝트 CRUD hardening** — blank-name validation + blocker-aware safe delete (`uploads/{projectId}` quarantine / restore)
-- [x] **프론트엔드 개편** — 동적 분석 UI 숨김, 소스 업로드 UI, Quick→Deep 진행률
+- [x] **프론트엔드 개편 기반** — 동적 분석 UI 숨김, 소스 업로드 UI, 분석 진행률 UI
 - [x] **BuildTarget + 서브 프로젝트 파이프라인** — 16-state FSM, 물리적 복사 격리, 빌드→스캔→코드그래프 순차 실행
 - [x] **Build Agent 연동** — S3(Build Agent :8003) build-resolve 파이프라인 통합
 - [x] **S1 요청 API 10건** — 벌크 상태, Finding 이력, 활동 타임라인, Approval 카운트, Finding 검색/정렬 확장
 - [x] **코드 고도화** — AppError 타입화(KB/Pipeline), 쿼리 검증, silent catch 로깅
-- [ ] **E2E 통합 테스트** — 전체 파이프라인 (업로드→Quick→Deep→Finding) 검증
+- [ ] **E2E 통합 테스트** — 전체 파이프라인 (소스/SDK 업로드→빌드 준비→Quick→명시적 Deep→Finding) 검증
 
 ### v1 — 완전 자동화
 

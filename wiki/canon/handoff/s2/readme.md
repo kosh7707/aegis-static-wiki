@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-10"
+last_verified: "2026-04-13"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-09**
+> **마지막 업데이트: 2026-04-14**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -55,9 +55,10 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 ### 보안 검증 구조
 
 ```
-사용자: 소스코드 업로드 (ZIP/Git) → "분석 실행"
-  → [Quick] S2 → S4 SAST Runner: 빌드 + 6도구 (~30초)
-  → [Deep]  S2 → S3 Agent: SAST + 코드그래프 + SCA + KB + LLM (~3분)
+사용자: 소스코드 업로드 + SDK 업로드
+  → [Build 준비] S2 → S3 Build Agent → S4 compile_commands.json 준비
+  → [Quick] 사용자가 명시적으로 요청한 1회성 S4 호출 + S5 GraphRAG 형성 (~30초)
+  → [Deep]  사용자가 명시적으로 요청한 S3 Agent 심층 분석 (~3분)
 ```
 
 ---
@@ -108,19 +109,108 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 
 ---
 
-## 3. 현재 상태 (2026-04-09)
+## 3. 현재 상태 (2026-04-13)
 
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **403개 통과** (vitest, 2026-04-09 project CRUD hardening backend slice 반영 후 재검증) |
+| 테스트 | **429개 통과** (vitest, 2026-04-13 explicit-step migration additive slices 반영 후 재검증) |
 | DB 테이블 | **29개** (SQLite, WAL) — 기존 21개 활성 표면 + snapshot/build persistence seam 포함 |
-| API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 |
+| API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 (`/pipeline/prepare*`, `/analysis/quick`, `/analysis/deep`, legacy `/analysis/run` quick alias 포함) |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
 | 에러 클래스 | 18개 (AppError 계층, 21개 에러코드) |
 | 외부 클라이언트 | SastClient(S4), AgentClient(S3), BuildAgentClient(S3:8003), KbClient(S5), AdapterClient(S6), LlmTaskClient(S7) |
 
-### 3-0. 프로젝트 CRUD hardening 메모 (2026-04-09)
+### 3-0. explicit-step migration 메모 (2026-04-13)
+
+현재 S2는 새 canonical 분석 여정으로 단계적으로 이동 중이다.
+
+목표 user journey:
+- 소스 업로드
+- SDK 업로드
+- 명시적 build-preparation
+- 명시적 Quick
+- Quick 중 S5 GraphRAG / code-graph 형성
+- 명시적 Deep
+
+현재 additive runtime surface:
+- `POST /api/projects/:pid/pipeline/prepare`
+- `POST /api/projects/:pid/pipeline/prepare/:targetId`
+- `POST /api/analysis/quick`
+- `POST /api/analysis/deep`
+- `POST /api/analysis/run` → **legacy Quick alias**
+
+현재 additive WS/progress semantics:
+- `/ws/analysis`
+  - `quick_sast`
+  - `quick_graphing`
+  - `quick_complete`
+  - `deep_submitting`
+  - `deep_analyzing`
+  - `deep_retrying`
+  - `deep_complete`
+
+현재 구현 메모:
+- target-scoped Quick는 **prepared `compile_commands`가 있어야** 진행된다.
+- Quick에서 S5 GraphRAG readiness가 확보되지 않으면 다음 단계로 넘기지 않는다.
+- Deep는 prior Quick result + KB graph stats를 바탕으로 명시적으로 시작한다.
+- `/api/analysis/run`는 더 이상 public auto Quick→Deep chain이 아니라, 호환성 유지용 Quick alias다.
+
+### 3-0a. timeout-policy redesign 사전 영향분석 메모 (2026-04-13)
+
+S3 notice 기준 현재 승인된 첫 rollout은 **`/health` 전용 + polling semantics** 다.
+이 단계에서는 S2가 새 primary endpoint를 추가하지 않고, downstream `/health` 를 polling 하며
+progress-capable / blocked / ack-break 요약 상태를 해석하는 방향으로 준비해야 한다.
+
+현재 S2 영향 포인트:
+- `services/backend/src/controllers/health.controller.ts`
+  - child `/health` 응답을 현재 `ok | degraded | unreachable` 로만 집계한다.
+  - ack/progress 계열 summary state는 top-level S2 health semantics로 아직 승격하지 않는다.
+- `AgentClient`, `BuildAgentClient`, `SastClient`, `KbClient`, `LlmTaskClient`
+  - 현재는 point-in-time `checkHealth()` 만 제공한다.
+  - long-running orchestration 중 polling-based 해석이나 chained-abort policy는 아직 없다.
+- `AnalysisOrchestrator`, `PipelineOrchestrator`
+  - 현재는 request retry / abort signal / wall-clock timeout 성격의 제어가 중심이다.
+  - local ack break 를 먼저 실패로 판정하고 상위로 연쇄 abort 하는 모델은 아직 미구현이다.
+
+현재 결론:
+- **contract freeze 전에는 구현하지 않는다.**
+- S2는 지금 단계에서 영향분석과 문서 반영만 수행하고,
+  freeze 후에 polling interpreter / chained-abort handling 을 구현한다.
+
+### 3-0b. timeout-policy redesign freeze 후속 메모 (2026-04-14)
+
+S3가 first-rollout `/health` control-signal vocabulary를 freeze 했고,
+현재 S2에는 아래 follow-up WR이 **open** 상태다.
+
+- `s3-to-s2-frozen-health-control-signal-vocabulary-for-first-timeout-policy-rollout`
+
+현재 freeze된 caller interpretation 핵심:
+- S2가 `/health` 에서 해석해야 할 additive field
+  - `activeRequestCount`
+  - `requestSummary.requestId`
+  - `requestSummary.endpoint`
+  - `requestSummary.state`
+  - `requestSummary.localAckState`
+  - `requestSummary.degraded`
+  - `requestSummary.degradeReasons`
+  - `requestSummary.lastAckAt`
+  - `requestSummary.lastAckSource`
+  - `requestSummary.blockedReason`
+- canonical state naming
+  - `state`: `idle | queued | running | failed`
+  - `localAckState`: `phase-advancing | transport-only | ack-break`
+- mandatory chained-abort trigger
+  - `localAckState = ack-break`
+  - `state = failed`
+  - `blockedReason != null`
+
+현재 세션 종료 시점 기준 판단:
+- freeze 전 notice 처리(영향분석)는 완료
+- freeze 후 implementation은 **아직 미착수**
+- 다음 S2 세션은 timeout-policy rollout을 즉시 다음 작업으로 다뤄야 한다
+
+### 3-1. 프로젝트 CRUD hardening 메모 (2026-04-09)
 
 - `PUT /api/projects/:id`
   - `name`이 빈 문자열/공백만 들어오면 `400 { success: false, error: "name is required" }`
@@ -142,7 +232,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
   - active pipeline targets
 - conflict 응답은 `409`이며, `errorDetail.blockers`에 구조화된 blocker 정보를 포함한다.
 
-### 3-1. Progress / completion UX 계약 메모 (2026-04-07)
+### 3-2. Progress / completion UX 계약 메모 (2026-04-07)
 
 현재 S2는 WebSocket을 단순 transport가 아니라 **비동기 작업의 진행/완료 인지 표면**으로 본다.
 
@@ -170,7 +260,7 @@ S1 handoff 원칙:
 - 화면별 활용 방식은 **advisory**
 - 즉 S2는 exact contract를 주고, S1은 그 위에 UX를 설계한다
 
-### 3-2. 최근 계약 회귀 잠금 메모 (2026-04-04)
+### 3-3. 최근 계약 회귀 잠금 메모 (2026-04-04)
 
 - S1↔S2 canonical contract 재작성 후, S2 backend 테스트 하네스는 다음 semantics를 **회귀 테스트로 고정**했다.
   - `POST /api/projects/:pid/targets/discover` → `data: { discovered, created, targets, elapsedMs }`
@@ -180,7 +270,7 @@ S1 handoff 원칙:
 - build-target update는 현재도 `includedPaths` 변경을 지원하지 않으며, backend는 이를 **명시적 에러**로 거부한다.
 - SDK analyzed profile 연동에서 canonical 필드명은 `environmentSetup`이며, S2 로컬 SDK 검증도 해당 이름을 기준으로 경로 존재/경계 검증을 수행한다.
 
-### 3-3. 테스트/문서 동기화 메모 (2026-04-04)
+### 3-4. 테스트/문서 동기화 메모 (2026-04-04)
 
 - backend contract test harness (`services/backend/src/test/create-test-app.ts`) 는 이제 다음 surface를 직접 검증 가능하게 맞춰져 있다.
   - `/api/projects/:pid/targets/discover`
@@ -198,7 +288,7 @@ S1 handoff 원칙:
   - `wiki/canon/handoff/s2/architecture.md`
   - `wiki/canon/handoff/s2/session-omx-*.md`
 
-### 3-4. WR / handoff 운영 메모 (2026-04-06)
+### 3-5. WR / handoff 운영 메모 (2026-04-06)
 
 - canonical WR runtime model은 `wiki/canon/work-requests/` 기준으로만 동작한다.
 - archived `docs/work-requests/`는 historical reference만 남는 경로이며, `list_my_open_wrs` / `register_wr` / `complete_wr`의 입력이 아니다.
@@ -225,7 +315,7 @@ S1 handoff 원칙:
 
 | 영역 | 핵심 파일 |
 |------|---------|
-| Quick→Deep 오케스트레이션 | `analysis-orchestrator.ts`, `analysis.controller.ts` |
+| explicit Quick/Deep 오케스트레이션 + legacy `/api/analysis/run` alias | `analysis-orchestrator.ts`, `analysis.controller.ts` |
 | 서브 프로젝트 파이프라인 | `pipeline-orchestrator.ts`, `pipeline.controller.ts` |
 | 소스코드 업로드/관리 | `project-source.service.ts`, `project-source.controller.ts` |
 | 빌드 타겟 관리 | `build-target.service.ts`, `build-target.controller.ts` |

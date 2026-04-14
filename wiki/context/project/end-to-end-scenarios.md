@@ -126,37 +126,35 @@ related_pages: ["wiki/canon/specs/technical-overview.md", "wiki/canon/specs/back
 
 ---
 
-## 시나리오 4. Quick → Deep 분석 실행 → 결과 조회
+## 시나리오 4. 소스 + SDK 업로드 → 빌드 준비 → Quick → 명시적 Deep
 
 ### 목표
-사용자가 프로젝트 또는 특정 타겟에 대해 정적 분석 + 에이전트 심층 분석을 실행하고, 결과를 조회한다.
+사용자가 프로젝트 소스와 SDK를 준비한 뒤 빌드 material을 먼저 만들고, Quick 결과를 확인한 다음 필요할 때만 Deep 분석을 명시적으로 요청한다.
 
 ### 참여자
 - 사용자
 - S1 Frontend
 - S2 Backend
+- S3 Build Agent
 - S4 SAST Runner
 - S3 Analysis Agent
 - S5 Knowledge Base
 - S7 LLM Gateway
 
 ### 주 흐름
-1. 사용자가 분석 실행을 요청한다.
-2. S1이 `POST /api/analysis/run` 을 호출한다.
-3. S2가 분석 추적을 시작하고 `/ws/analysis?analysisId=` 로 진행 상황을 push 한다.
-4. **Quick phase**
-   - S2 → S4 `POST /v1/scan`
-   - S4가 deterministic scan/build 결과를 반환
-   - S2가 결과를 정규화/저장
-   - S2 → S1 `analysis-quick-complete`
-5. **Deep phase**
-   - S2 → S3 `POST /v1/tasks`
-   - S3가 내부적으로 S4/S5/S7 를 활용해 분석한다.
-   - S3 결과를 S2가 정규화/저장한다.
-   - S2 → S1 `analysis-deep-complete`
-6. 사용자는 결과 화면에서 findings / summary / evidence 를 조회한다.
+1. 사용자가 프로젝트에 소스를 업로드한다.
+2. 사용자가 프로젝트에 SDK를 업로드한다.
+3. 사용자가 **빌드 준비 단계**를 명시적으로 시작한다.
+4. S2가 S3 Build Agent를 호출해 buildCommand/buildProfile 후보를 준비하고, S4가 `compile_commands.json` 을 생성할 수 있는 build material을 만든다.
+5. 사용자가 **Quick 분석**을 명시적으로 요청한다.
+6. S2가 S4를 **1회성으로** 호출해 Quick 결과를 만들고, 이어서 S5에 GraphRAG/코드그래프 형성을 요청한다.
+7. S2가 Quick 결과와 graph context를 정규화/저장한 뒤 `analysis-quick-complete` 를 보낸다.
+8. 사용자는 Quick 결과를 본 뒤, 필요할 때만 **Deep 분석**을 명시적으로 요청한다.
+9. S2가 S3 Analysis Agent를 호출하고, S3가 S4/S5/S7를 활용해 심층 분석한 결과를 S2가 정규화/저장한 뒤 `analysis-deep-complete` 를 보낸다.
+10. 사용자는 결과 화면에서 findings / summary / evidence 를 조회한다.
 
 ### 실패 / 복구
+- 현재 implementation/endpoint surface에는 아직 호환성용 legacy alias가 남아 있을 수 있다. 이 문서는 **canonical explicit-step user journey intent** 를 설명한다.
 - 진행 중 reconnect 시 authoritative recovery path:
   - `GET /api/analysis/status/:analysisId`
 - 완료 후 source of truth:
@@ -168,6 +166,7 @@ related_pages: ["wiki/canon/specs/technical-overview.md", "wiki/canon/specs/back
 ### 관련 canonical 문서
 - [[wiki/canon/specs/technical-overview|기술 명세 - 전체 개요]]
 - [[wiki/canon/specs/backend|S2. Core Service 기능 명세]]
+- [[wiki/canon/api/build-agent-api|Build Agent API 명세]]
 - [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]]
 - [[wiki/canon/api/sast-runner-api|SAST Runner API 명세]]
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]]

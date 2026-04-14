@@ -172,7 +172,7 @@ Controller → Service → DAO → SQLite
 |---|---|---|---|---|
 | `upload` | 소스 업로드 live progress | `upload-complete`, `upload-error` | `/api/projects/:pid/source/upload-status/:uploadId` | foreground |
 | `sdk` | SDK 등록/검증 state machine | `sdk-complete`, `sdk-error` | `/api/projects/:pid/sdk`, `/api/projects/:pid/sdk/:id` | foreground |
-| `analysis` | Quick→Deep 분석 live progress | `analysis-quick-complete`, `analysis-deep-complete`, `analysis-error` | `/api/analysis/status/:analysisId`, `/api/analysis/results/:analysisId` | foreground |
+| `analysis` | explicit Quick/Deep 분석 live progress | `analysis-quick-complete`, `analysis-deep-complete`, `analysis-error` | `/api/analysis/status/:analysisId`, `/api/analysis/results/:analysisId` | foreground |
 | `pipeline` | 타겟별 build/scan/graph lifecycle | `pipeline-complete`, `pipeline-error` | `/api/projects/:pid/pipeline/status` | foreground |
 | `notifications` | completion/failure awareness after navigation | `notification` | `/api/projects/:pid/notifications` | background |
 
@@ -196,7 +196,7 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 
 ### 코어 기능 묶음
 
-#### 1) Quick→Deep 분석
+#### 1) 분석 파이프라인 (build-prep → Quick → explicit Deep)
 
 - `analysis-orchestrator.ts`
 - `analysis.controller.ts`
@@ -204,11 +204,13 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 
 흐름:
 
-1. 소스/타겟 확인
-2. S4 Quick scan
-3. S3 deep-analyze
-4. 결과 정규화 → Run/Finding/EvidenceRef/Gate
-5. `/ws/analysis` 진행률 브로드캐스트
+1. 소스 + SDK 준비
+2. S3 Build Agent / S4 build preparation으로 `compile_commands.json` 준비
+3. 사용자가 Quick를 명시적으로 요청하면 S4 Quick scan 1회 수행
+4. Quick 직후 S5 code-graph / GraphRAG 형성 수행
+5. 사용자가 Deep를 명시적으로 요청하면 S3 deep-analyze 수행
+6. 결과 정규화 → Run/Finding/EvidenceRef/Gate
+7. `/ws/analysis` 진행률 브로드캐스트
 
 #### 2) 소스 업로드 / 빌드 타겟 / 서브프로젝트 파이프라인
 

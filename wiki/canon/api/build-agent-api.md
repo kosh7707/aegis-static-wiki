@@ -4,7 +4,7 @@ page_type: "canonical-api"
 canonical: true
 source_refs:
   - "docs/api/build-agent-api.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-13"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md"]
@@ -15,9 +15,9 @@ related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-09
+> **최종 업데이트**: 2026-04-13
 
-Build Agent의 public contract 문서다. 2026-04-09 기준 내부 router/handler 구조는 크게 정리되었지만, **strict contract와 public response 의미는 바뀌지 않았다.**
+Build Agent의 public contract 문서다. 2026-04-13 기준 내부 router/handler 구조는 크게 정리되었지만, **strict contract와 public response 의미는 바뀌지 않았다.**
 
 ---
 
@@ -115,7 +115,28 @@ http://localhost:8003
 | `result.buildResult.buildDir` | request-scoped build dir |
 | `result.buildResult.producedArtifacts` | 실제 산출물 목록 |
 | `result.buildResult.artifactVerification` | expectedArtifacts 충족 여부 |
+| `result.buildPreparation` | 다음 단계(S4 Quick / S3 Deep)에 넘길 explicit build-preparation 번들 |
 | `audit` | latency / tokenUsage / agentAudit |
+
+### `result.buildPreparation`
+
+`build-resolve` 성공 응답은 기존 `result.buildResult`를 유지하면서, 다음 단계 orchestration을 위한 명시적 번들을 추가로 반환한다.
+
+주요 필드:
+- `declaredMode`
+- `sdkId`
+- `buildCommand`
+- `buildScript`
+- `buildDir`
+- `buildEnvironment`
+- `provenance`
+- `expectedArtifacts`
+- `producedArtifacts`
+
+의미:
+- `buildResult`는 build-resolve 결과 자체를 설명하는 protected surface다.
+- `buildPreparation`은 S2가 **빌드 준비 완료 상태를 저장/전달**할 때 쓰는 명시적 후속-step 번들이다.
+- legacy/strict contract parsing 의미는 그대로 유지된다.
 
 ---
 

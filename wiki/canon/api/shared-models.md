@@ -617,6 +617,8 @@ Validation enforced today:
 
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
+| POST | `/api/projects/:pid/pipeline/prepare` | `{ targetIds?: string[] }` | `202 { success, data: { preparationId, status: "running" } }` | `202`, `404` |
+| POST | `/api/projects/:pid/pipeline/prepare/:targetId` | empty body | `202 { success, data: { preparationId, targetId, status: "running" } }` | `202`, `404` |
 | POST | `/api/projects/:pid/pipeline/run` | `{ targetIds?: string[] }` | `202 { success, data: { pipelineId, status: "running" } }` | `202`, `404` |
 | POST | `/api/projects/:pid/pipeline/run/:targetId` | empty body | `202 { success, data: { pipelineId, targetId, status: "running" } }` | `202`, `404` |
 | GET | `/api/projects/:pid/pipeline/status` | - | `200 { success, data: PipelineStatus }` | `200`, `404` |
@@ -647,11 +649,20 @@ Current phase mapping is controller-derived:
 - `ready`: `ready`
 - `build`: everything else
 
+Build-preparation note:
+
+- `POST /pipeline/prepare*` is an additive explicit build-preparation surface.
+- It currently reuses the existing target status model (`resolving`, `configured`, `building`, `built`, `build_failed`) and the same pipeline status recovery path:
+  - `GET /api/projects/:pid/pipeline/status`
+- No separate build-preparation WS family has been introduced in this slice.
+
 ## 3.8 Analysis surface
 
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
 | POST | `/api/analysis/run` | `{ projectId: string; targetIds?: string[]; mode?: "full" \| "subproject" }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400` |
+| POST | `/api/analysis/quick` | `{ projectId: string; targetIds?: string[]; mode?: "full" \| "subproject" }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400` |
+| POST | `/api/analysis/deep` | `{ projectId: string; quickAnalysisId: string }` | `202 { success, data: { analysisId, status: "running" } }` | `202`, `400`, `404` |
 | GET | `/api/analysis/status` | - | `200 { success, data: AnalysisProgress[] }` | `200` |
 | GET | `/api/analysis/status/:analysisId` | - | `200 { success, data: AnalysisProgress }` | `200`, `404` |
 | POST | `/api/analysis/abort/:analysisId` | - | `200 { success, data: { analysisId, status: "aborted" } }` | `200`, `404` |
@@ -667,6 +678,24 @@ Validation rules enforced on `POST /api/analysis/run`:
 - if `mode === "subproject"`, `targetIds` must be non-empty.
 - if `mode === "full"`, `targetIds` must be omitted/empty.
 - if `mode` is omitted, backend preserves existing targetIds-based behavior.
+
+Additional additive semantics:
+
+- `POST /api/analysis/run`
+  - legacy public alias of explicit Quick
+  - uses the same mode validation rules and accepted-response shape as `/api/analysis/quick`
+- `POST /api/analysis/quick`
+  - uses the same mode validation rules as legacy `/run`
+  - currently represents explicit Quick-only execution
+  - when target-scoped Quick is requested, build preparation is expected to have already produced `compile_commands`
+- `POST /api/analysis/deep`
+  - requires `quickAnalysisId`
+  - currently bootstraps Deep from a prior Quick result plus KB graph stats
+
+Compatibility note:
+
+- `POST /api/analysis/run` remains mounted only as a **legacy Quick alias**, not as the old auto Quick→Deep chain.
+- `POST /api/analysis/quick` and `POST /api/analysis/deep` are additive explicit-step surfaces introduced during the migration.
 
 `GET /api/analysis/summary` notes:
 
@@ -1006,6 +1035,7 @@ Role and recovery:
 Current progress phases:
 
 - `quick_sast`
+- `quick_graphing`
 - `quick_complete`
 - `deep_submitting`
 - `deep_analyzing`
@@ -1014,7 +1044,7 @@ Current progress phases:
 
 Role and recovery:
 
-- **Foreground role**: primary real-time progress surface for Quick→Deep analysis jobs.
+- **Foreground role**: primary real-time progress surface for explicit Quick and explicit Deep analysis jobs.
 - **Terminal signals**:
   - `analysis-quick-complete`
   - `analysis-deep-complete`
@@ -1063,7 +1093,7 @@ Interpretation rules:
 |---|---|---|---|
 | Source upload | `/ws/upload?uploadId=` | `GET /api/projects/:pid/source/upload-status/:uploadId` | `/ws/notifications` + notifications list (`upload_complete` / `upload_failed`) |
 | SDK registration | `/ws/sdk?projectId=` | `GET /api/projects/:pid/sdk/:id` | `/ws/notifications` + notifications list (`sdk_ready` / `sdk_failed`) |
-| Quick→Deep analysis | `/ws/analysis?analysisId=` | `GET /api/analysis/status/:analysisId`, then `GET /api/analysis/results/:analysisId` | notifications are supplementary; HTTP status/results remain authoritative |
+| Analysis (explicit Quick / explicit Deep) | `/ws/analysis?analysisId=` | `GET /api/analysis/status/:analysisId`, then `GET /api/analysis/results/:analysisId` | notifications are supplementary; HTTP status/results remain authoritative |
 | Pipeline | `/ws/pipeline?projectId=` | `GET /api/projects/:pid/pipeline/status` | `/ws/notifications` + notifications list (`pipeline_complete` / `pipeline_failed`) |
 | General cross-screen completion | n/a | `GET /api/projects/:pid/notifications` / `/count` | `/ws/notifications?projectId=` |
 

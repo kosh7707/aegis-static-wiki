@@ -112,10 +112,14 @@ migration_status: "canonicalized"
 | DELETE | `/api/projects/:pid/targets/:id` | 빌드 타겟 삭제 |
 | GET | `/api/projects/:pid/targets/:id/build-log` | 타겟 빌드 로그 조회 |
 | POST | `/api/projects/:pid/targets/discover` | 빌드 타겟 자동 탐색 (S4 호출) |
+| POST | `/api/projects/:pid/pipeline/prepare` | 빌드 준비만 실행 (`202 { preparationId, status: "running" }`) |
+| POST | `/api/projects/:pid/pipeline/prepare/:targetId` | 단일 타겟 빌드 준비만 실행 (`202 { preparationId, targetId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |
 | POST | `/api/projects/:pid/pipeline/run/:targetId` | 단일 타겟 파이프라인 재실행 (`202 { pipelineId, targetId, status: "running" }`) |
 | GET | `/api/projects/:pid/pipeline/status` | 프로젝트 파이프라인 상태 |
-| POST | `/api/analysis/run` | Quick→Deep 분석 실행 (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
+| POST | `/api/analysis/run` | legacy Quick alias (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
+| POST | `/api/analysis/quick` | explicit Quick-only 실행 (`202`, body: `{ projectId, targetIds?, mode?: "full" | "subproject" }`) |
+| POST | `/api/analysis/deep` | explicit Deep-only 실행 (`202`, body: `{ projectId, quickAnalysisId }`) |
 | GET | `/api/analysis/status` | 모든 진행 중 분석 |
 | GET | `/api/analysis/status/:analysisId` | 단일 분석 진행률 (disconnect/re-entry recovery source while running) |
 | POST | `/api/analysis/abort/:analysisId` | 분석 중단 |
@@ -177,7 +181,7 @@ migration_status: "canonicalized"
 | WebSocket | `/ws/notifications?projectId=` | 프로젝트 알림 실시간 push (background completion awareness) | `GET /api/projects/:pid/notifications`, `GET /api/projects/:pid/notifications/count` |
 | WebSocket | `/ws/dynamic-analysis?sessionId=` | 동적 분석 실시간 이벤트 | out-of-scope for current progress/completion hardening |
 | WebSocket | `/ws/dynamic-test?testId=` | 동적 테스트 진행률 | out-of-scope for current progress/completion hardening |
-| WebSocket | `/ws/analysis?analysisId=` | Quick→Deep 진행률 | `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId` |
+| WebSocket | `/ws/analysis?analysisId=` | explicit Quick / explicit Deep 진행률 | `GET /api/analysis/status/:analysisId`, `GET /api/analysis/results/:analysisId` |
 | WebSocket | `/ws/upload?uploadId=` | 소스 업로드 진행률 | `GET /api/projects/:pid/source/upload-status/:uploadId` |
 | WebSocket | `/ws/pipeline?projectId=` | 파이프라인 타겟 상태 스트림 | `GET /api/projects/:pid/pipeline/status` |
 | WebSocket | `/ws/sdk?projectId=` | SDK 업로드/설치/검증 진행률 (`uploading`,`uploaded`,`extracting`/`installing`,`extracted`/`installed`,`analyzing`,`verifying`,`ready`) + install-log stream (`sdk-log`) | `GET /api/projects/:pid/sdk`, `GET /api/projects/:pid/sdk/:id`, `GET /api/projects/:pid/sdk/:id/log` |

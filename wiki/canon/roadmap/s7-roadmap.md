@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/roadmap.md"
 original_path: "docs/s7-handoff/roadmap.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-14"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -21,22 +21,39 @@ migration_status: "canonicalized"
 
 ## 즉시 다음 작업
 
-현재 코드/문서 기준 미완료 항목 없음.
+### 1) strict JSON mode runtime rollout 마무리
+
+- 2026-04-14 repo 기준 `/v1/chat` opt-in strict JSON mode 구현 완료
+- 다음 세션의 최우선 작업은 **실제 떠 있는 S7 gateway 프로세스가 새 코드로 재기동/rollout 되었는지 확인**하는 것
+- 완료 기준:
+  - live `http://localhost:8000/v1/chat`에 `X-AEGIS-Strict-JSON: true` 요청 시 응답 헤더 `X-AEGIS-Strict-JSON: applied` 확인
+  - strict mode 성공 케이스에서 `choices[0].message.content` compact JSON + `reasoning: null` 확인
+  - strict mode 실패 케이스에서 502 명확 실패 확인
+
+### 2) caller guidance 안정화
+
+- S3/S2 호출자에게 현재 지원 계약을 유지:
+  - strict JSON이 필요하면 `X-AEGIS-Strict-JSON: true`
+  - 응답은 OpenAI envelope 유지, **`choices[0].message.content`만 JSON으로 파싱**
+- runtime rollout 후 실제 live smoke 결과를 바탕으로 추가 문서 drift가 없는지 재점검
 
 ### 최신 확인 상태
 
-- 2026-04-03 안정화 패치 반영:
-  - schema-invalid 응답이 성공 처리되던 버그 수정
-  - commentary-wrapped JSON object 파싱 보강
+- 2026-04-14 strict JSON mode 반영:
+  - `X-AEGIS-Strict-JSON` 헤더 도입
+  - `response_format=json_object` + `enable_thinking=false` 강제
+  - strict 응답 검증/정규화 + `reasoning` scrub + 502 fail-closed
 - 검증 상태:
-  - 타깃 회귀 테스트 25 passed
-  - 전체 S7 테스트 185 passed (`PYTHONPATH=. .venv/bin/python3 -m pytest -q`)
+  - 타깃 회귀 테스트 28 passed
+  - 전체 S7 테스트 188 passed (`.venv/bin/python3 -m pytest -q`)
+  - in-process strict JSON smoke pass
 - 운영 메모:
   - 2026-04-04부터 공용 `.omx`에는 cross-lane durable 정보만 남기고,
-    S7 전용 장문 메모/세부 TODO는 `docs/s7-handoff/` 또는 session state에 기록
+    S7 전용 장문 메모/세부 TODO는 `wiki/canon/handoff/s7/` 또는 session state에 기록
 
 ### 관측된 운영 이슈/개선 기회
 
+- 2026-04-14 live localhost smoke에서 strict header가 아직 반영되지 않아 **runtime restart pending**으로 판단
 - 2026-03-31 기준 통합 테스트 2회 로그 분석에서는 S7 에러 0건
 
 ### 관측된 모델 한계 (개선 기회)
