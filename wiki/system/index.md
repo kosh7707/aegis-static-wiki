@@ -20,6 +20,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## Specifications
 
+- [[wiki/canon/specs/container-gateway|S8. Container Gateway 기능 명세]] — 프로젝트별 업로드 워크스페이스와 프로젝트당 1개 컨테이너를 관리하는 독립 HTTP 서비스 *(verified 2026-04-14; s8)*
+
 - [[wiki/canon/specs/adapter|Adapter 기능 명세]] — ECU ↔ Backend 사이의 WebSocket 릴레이 서비스 *(verified 2026-04-09; s6)*
 - [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-14; s3)*
 - [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-04-13; s2)*
@@ -36,6 +38,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## API contracts
 
+- [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — 업로드 / container / compile / exec / runtime teardown HTTP 계약 *(verified 2026-04-14; s8)*
+
 - [[wiki/canon/api/adapter-api|Adapter WebSocket API 명세 (v0.1.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-06; s6)*
 - [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-04-14; s3)*
 - [[wiki/canon/api/build-agent-api|Build Agent API 명세 (v1.0.0)]] — 소유자: S3 *(verified 2026-04-13; s3)*
@@ -46,6 +50,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-13; platform)*
 
 ## Handoff
+
+- [[wiki/canon/handoff/s8/readme|S8. Container Gateway 인수인계서]] — 독립 HTTP 서비스 S8의 bootstrap/readme *(verified 2026-04-14; s8)*
 
 - [[wiki/canon/handoff/s1-qa/session-s1qa-comprehensive-20260406|Session history — s1-qa / s1qa-comprehensive-20260406]] — - Lane: s1-qa *(verified 2026-04-06; s1-qa)*
 - [[wiki/canon/handoff/s1/architecture|S1 Frontend Architecture Snapshot]] — services/frontend/의 실제 코드 구조와 라우팅/모듈/테스트 자산을 2026-04-10 기준으로 정리한 문서. *(verified 2026-04-10; s1)*
