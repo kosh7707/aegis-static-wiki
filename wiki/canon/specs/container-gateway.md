@@ -10,7 +10,7 @@ source_refs:
   - "services/container-gateway/src/routes/exec-router.ts"
   - "services/container-gateway/src/routes/runtime-router.ts"
   - "services/container-gateway/docker/container-toolchain.Dockerfile"
-last_verified: "2026-04-14"
+last_verified: "2026-04-15"
 service_tags: ["s8"]
 decision_tags: ["container-gateway", "upload-compile", "project-scoped-runtime"]
 related_pages: ["wiki/canon/api/container-gateway-api.md", "wiki/canon/handoff/s8/readme.md"]
@@ -72,7 +72,7 @@ services/container-gateway/
 ## 기동
 
 ```bash
-cd /home/gang/AEGIS
+cd ~/AEGIS
 ./scripts/start-container-gateway.sh
 ```
 

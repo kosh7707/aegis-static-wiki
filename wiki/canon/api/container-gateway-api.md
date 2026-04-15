@@ -9,7 +9,7 @@ source_refs:
   - "services/container-gateway/src/routes/compile-router.ts"
   - "services/container-gateway/src/routes/exec-router.ts"
   - "services/container-gateway/src/routes/runtime-router.ts"
-last_verified: "2026-04-14"
+last_verified: "2026-04-15"
 service_tags: ["s8"]
 decision_tags: ["http-api", "container-gateway"]
 related_pages: ["wiki/canon/specs/container-gateway.md", "wiki/canon/handoff/s8/readme.md"]
@@ -87,6 +87,8 @@ Multipart field: `file`
   }
 }
 ```
+
+참고: `workspacePath`는 디버깅/운영 편의를 위한 구현 노출값일 뿐이며, 서비스 간 canonical identity로 취급하지 않는다. inter-service seam은 `uploadId`와 `workspaceId`를 기준으로 설계한다.
 
 오류:
 - `400 Invalid projectId`

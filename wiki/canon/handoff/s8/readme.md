@@ -8,7 +8,7 @@ source_refs:
   - "services/container-gateway/src/index.ts"
   - "services/container-gateway/scripts/exec-command.sh"
   - "services/container-gateway/scripts/upload-and-exec.sh"
-last_verified: "2026-04-14"
+last_verified: "2026-04-15"
 service_tags: ["s8"]
 decision_tags: ["bootstrap", "container-gateway"]
 related_pages: ["wiki/canon/specs/container-gateway.md", "wiki/canon/api/container-gateway-api.md"]
@@ -47,7 +47,7 @@ scripts/start-container-gateway.sh
 ## 3. 빠른 기동
 
 ```bash
-cd /home/gang/AEGIS
+cd ~/AEGIS
 ./scripts/start-container-gateway.sh
 ```
 
@@ -60,9 +60,9 @@ curl http://localhost:4010/health
 
 ### 업로드 + compile + exec smoke
 ```bash
-cd /home/gang/AEGIS/services/container-gateway
+cd ~/AEGIS/services/container-gateway
 npm run image:build
-cd /home/gang/AEGIS
+cd ~/AEGIS
 services/container-gateway/scripts/smoke-upload-compile.sh
 ```
 
