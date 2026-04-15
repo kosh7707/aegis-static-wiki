@@ -1014,3 +1014,11 @@ related_pages:
 ## [2026-04-14] mcp | complete_wr | s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat
 - Lane s1 completed recipient-side handling
 - Status: open
+
+## [2026-04-15] mcp | register_wr | s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs
+- Registered request WR for s8
+- Path: wiki/canon/work-requests/s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs.md
+
+## [2026-04-15] mcp | register_wr | s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa
+- Registered request WR for s8
+- Path: wiki/canon/work-requests/s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa.md
