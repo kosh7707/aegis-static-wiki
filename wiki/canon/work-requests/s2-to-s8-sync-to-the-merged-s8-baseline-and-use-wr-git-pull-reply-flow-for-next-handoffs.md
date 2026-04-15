@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/handoff/s8/readme.md", "wiki/canon/specs/container-g
 migration_status: "canonicalized"
 wr_id: "s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s8"]
-completed_by: []
+completed_by: [{"lane":"s8","completed_at":"2026-04-15T04:29:16.585Z","note":"Pulled the latest main baseline in both repos, continued S8 work from that merged state, and replied by WR with the exact AEGIS follow-up commit and verification evidence."}]
 registered_at: "2026-04-15T01:45:23.880Z"
+completed_at: "2026-04-15T04:29:16.585Z"
 ---
 
 # Sync to the merged S8 baseline and use WR + git-pull reply flow for next handoffs

@@ -1022,3 +1022,15 @@ related_pages:
 ## [2026-04-15] mcp | register_wr | s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa
 - Registered request WR for s8
 - Path: wiki/canon/work-requests/s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa.md
+
+## [2026-04-15] mcp | register_wr | s8-to-s2-s8-follow-up-complete-hardened-workspace-container-boundaries-on-the-merged-base
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s8-to-s2-s8-follow-up-complete-hardened-workspace-container-boundaries-on-the-merged-base.md
+
+## [2026-04-15] mcp | complete_wr | s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs
+- Lane s8 completed recipient-side handling
+- Status: completed
+
+## [2026-04-15] mcp | complete_wr | s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa
+- Lane s8 completed recipient-side handling
+- Status: completed

@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/handoff/s8/readme.md", "wiki/canon/specs/container-g
 migration_status: "canonicalized"
 wr_id: "s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s8"]
-completed_by: []
+completed_by: [{"lane":"s8","completed_at":"2026-04-15T04:29:16.636Z","note":"Completed the reviewed boundary-hardening slice on the merged baseline: upload containment, archive traversal defense, exec cwd containment, and projectId canonicalization are fixed and verified; see the reply WR for commit 440ef6e and evidence."}]
 registered_at: "2026-04-15T01:47:16.460Z"
+completed_at: "2026-04-15T04:29:16.636Z"
 ---
 
 # Post-merge S8 follow-up: pull latest main, then fix the reviewed container/workspace boundary issues and reply by WR
