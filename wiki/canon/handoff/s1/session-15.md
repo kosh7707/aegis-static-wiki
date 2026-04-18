@@ -97,7 +97,7 @@ S2 API/모델 확장 완료 통보(A/B/C 전부) + QA 분석가 UX 리뷰 S1 독
 
 ### CSS 리디자인 "Tactical Operations Console"
 - 액센트: #0EA5E9 → #22D3A7 (포스포 그린)
-- 폰트: IBM Plex Sans → DM Sans + Instrument Sans (display)
+- 폰트: legacy vendor font stack → DM Sans + Instrument Sans (display)
 - 토큰 전면 재설계 (tokens.css)
 - 전 페이지/컴포넌트 CSS 폴리시 (20+ 파일)
 - 하드코딩 색상/--primary 참조 전면 정리 (10건)

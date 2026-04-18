@@ -3,83 +3,88 @@ title: "S1 Frontend 개발 인수인계서"
 page_type: "canonical-handoff"
 canonical: true
 source_refs:
+  - "docs/AEGIS.md"
+  - "docs/mcp.md"
+  - "wiki/canon/specs/frontend.md"
+  - "services/frontend/docs/design/SHADCN-REPLATFORM.md"
   - "services/frontend/package.json"
-  - "services/frontend/tsconfig.json"
-  - "services/frontend/vite.config.ts"
-  - "services/frontend/playwright.config.ts"
-  - "services/frontend/src/App.tsx"
-  - "services/frontend/src/layouts/Navbar.tsx"
-  - "services/frontend/src/layouts/Sidebar.tsx"
-  - "services/frontend/src/layouts/ProjectBreadcrumbLayout.tsx"
-  - "services/frontend/src/pages/FilesPage/FilesPage.tsx"
-  - "services/frontend/src/pages/StaticAnalysisPage/StaticAnalysisPage.tsx"
-  - "services/frontend/src/pages/ReportPage/ReportPage.tsx"
-  - "services/frontend/src/pages/VulnerabilitiesPage/VulnerabilitiesPage.tsx"
-  - "services/frontend/docs/design/AEGIS-DESIGN.md"
-last_verified: "2026-04-15"
+  - "services/frontend/components.json"
+  - "services/frontend/src/index.css"
+last_verified: "2026-04-18"
 service_tags: ["s1"]
-decision_tags: ["frontend-structure-contract", "dashboard-reference-specimen", "web-only-frontend", "src-flattened", "page-root-decomposition", "shell-polish-2026-04"]
+decision_tags: ["shadcn-replatform", "aceternity-reference", "frontend-skill-review-gate", "web-only-frontend", "single-css-entrypoint", "design-doc-hierarchy"]
 related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/architecture.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/feedback/s1_frontend_working_guide.md"]
 ---
 
 # S1 Frontend 개발 인수인계서
 
-> **먼저 `docs/AEGIS.md`를 읽을 것.**
-> 이 문서는 `services/frontend/` 기준의 현재 구현 상태, 검증 결과, 라우트/모듈 인벤토리, 그리고 다음 세션의 정리 우선순위를 넘기기 위한 최신 진입점이다.
-> **마지막 검증/갱신: 2026-04-15**
+> 먼저 `docs/AEGIS.md`와 `docs/mcp.md`를 읽을 것.
+> 마지막 검증/갱신: **2026-04-18**
 
 ## 1. 역할과 경계
 
-- S1은 `services/frontend/` 하위 프론트엔드 코드와 S1 canonical handoff/spec 문서를 관리한다.
-- S1은 **순수 웹 SPA**다. Electron, preload, desktop shell은 사용하지 않는다.
-- `src/api/mock-handler.ts`와 프론트 mock/auth 흐름은 S1의 유지관리 의무다.
-- 동적 분석/동적 테스트 화면은 실제 페이지 컴포넌트가 마운트되어 있으며 사이드바에도 정상 노출된다.
+- S1은 `services/frontend/` 하위 프론트엔드 코드와 S1 canonical spec/handoff 문서를 관리한다.
+- S1은 Electron 없는 **웹 전용 SPA**다.
+- S1은 S2 API/WS 계약만 소비하며 다른 lane 코드를 수정하지 않는다.
 
-## 2. 2026-04-15 기준 검증 스냅샷
+## 2. 현재 큰 방향
 
-| 항목 | 명령 | 결과 |
-|------|------|------|
-| 빌드 | `cd services/frontend && npm run build` | PASS |
-| 전체 유닛 | `cd services/frontend && npm test` | PASS (`71` files / `509` tests) |
-| 타입체크 | `cd services/frontend && npm run typecheck` | PASS |
-| Playwright shell/page sweep | localhost page traversal + screenshots | 진행 중 / 주요 shell·empty surface 재검증 완료 |
+S1은 bespoke CSS/design doctrine을 폐기하고 **shadcn/ui + Tailwind + Radix-style primitives** 기반으로 이동했다.
 
-## 3. 현재 구조 메모
+- shadcn/ui: 기본 app primitives source
+- Aceternity UI: 필수 탐색/레퍼런스 source, opt-in adoption
+- reviewer: `$frontend-skill`을 쓰는 hard-veto critic
+- stylesheet entrypoint: `services/frontend/src/index.css` **하나**
 
-- 런타임 소스 루트는 `src/`다.
-- 모든 페이지는 **page-local `components/` / `hooks/`** 구조를 갖고 있다.
-- 현재 큰 정리 축은 **page root decomposition은 거의 끝났고, dense populated surface polish가 남아 있다**.
-- 테스트 bootstrap은 `src/test/setup.ts`에 있다.
+## 3. 3강 실행 체계
 
-## 4. 현재 UI / shell 현실
+| 역할 | 책임 |
+|---|---|
+| Component sourcing worker | shadcn/ui와 Aceternity UI를 탐색하고 sourcing matrix를 작성한다. 코드 구현/최종승인 권한 없음. |
+| Developer | 선택된 primitives/components를 S1 코드에 통합하고 기능/테스트를 보존한다. |
+| Reviewer | `$frontend-skill`을 로드해 AI Slop, 과한 motion, generic SaaS look, AEGIS 부적합을 veto한다. 코드 작성/자료탐색 금지. |
 
-- Navbar: **AEGIS 브랜드 블록 + 대시보드 링크 + 설정/테마/알림/아바타**
-- Sidebar: **항상 더 어두운 project rail**
-- `ProjectBreadcrumbLayout`: localized breadcrumb (`파일 탐색기`, `품질 게이트`, `승인 큐`, `분석 이력`)
-- auth: localStorage mock 기준이며 로그인/회원가입 화면은 **split hero + auth panel** 구조
-- empty state: giant neutral panel을 피하고, readiness + next action + workspace purpose를 보여주는 방향으로 정리 중
-- `FilesPage`는 VS Code 스타일의 **resizable split workspace**를 가진다.
+충돌 시 reviewer가 우선이다.
 
-## 5. 지금 바로 알아야 할 디자인 계약
+## 4. 현재 활성 파일
 
-- AEGIS는 **trusted operations console**로 읽혀야 한다.
-- dark sidebar + light main canvas 계층을 유지한다.
-- dense surfaces(Files / Vulnerabilities / Static Analysis / Report)는 카드 모자이크가 아니라 작업면으로 보여야 한다.
-- visible terminology는 의도적 고유명사가 아니면 한국어 기준으로 통일한다.
-- `services/frontend/docs/design/AEGIS-DESIGN.md`와 `wiki/canon/specs/frontend.md`가 최신 디자인 계약의 기준이다.
+- `services/frontend/components.json`
+- `services/frontend/src/index.css`
+- `services/frontend/src/components/ui/*`
+- `.omx/plans/ralplan-s1-shadcn-replatform.md`
+- `.omx/plans/test-spec-s1-shadcn-replatform.md`
+- `.omx/plans/s1-shadcn-component-sourcing-matrix-template.md`
+- `.omx/plans/s1-shadcn-reviewer-gate-template.md`
 
-## 6. 다음 세션 우선순위
+## 5. 검증 스냅샷
 
-1. dense populated surface 추가 polish
-   - `DynamicAnalysisPage/components/MonitoringView.tsx`
-   - `StaticAnalysisPage/components/LatestAnalysisTab.tsx`
-   - `StaticAnalysisPage/components/SourceTreeView.tsx`
-   - `FilesPage/hooks/useFilesPage.tsx`
-   - `VulnerabilitiesPage/components/VulnerabilitiesToolbar.tsx`
-2. Playwright E2E baseline / screenshot baseline 재정비
-3. frontend design / QA docs drift 계속 정리
-4. `/signup` / `/login` 실제 backend auth 연동 준비
+2026-04-18 기준:
 
-## 7. 한 줄 메모
+| 항목 | 결과 |
+|---|---|
+| standalone page/component/global helper CSS | 제거 완료 |
+| remaining stylesheet entrypoint | `src/index.css` 단일 파일 |
+| frontend tests | PASS (`74 files / 527 tests`) |
+| Build | PASS, chunk-size warning만 존재 |
+| Typecheck | PASS |
 
-현재 S1 프론트는 **Electron 없는 웹 전용 SPA**이며, shell/empty-state 방향은 신뢰형 운영 콘솔 톤으로 수렴했고, 다음 단계는 dense populated work surface polish다.
+## 6. 다음 작업 기준
+
+1. 새 스타일은 가능하면 component utility composition으로 해결한다.
+2. Aceternity는 mandatory search지만, motion-heavy adoption은 reviewer 승인 전 금지다.
+3. 기존 design docs는 active 기준에서 제거한다. session/history/evidence는 보존한다.
+4. 디자인 관련 문서가 현재 코드 구조(단일 stylesheet entrypoint)를 반영하는지 항상 확인한다.
+
+## 7. 문서 우선순위
+
+1. 활성 규칙은 wiki canon이 우선이다.
+2. `services/frontend/docs/design/SHADCN-REPLATFORM.md`는 로컬 mirror/compatibility 문서다.
+3. repo-local design surface에는 vendor-branded inspiration pack이 남아 있지 않다.
+4. historical session/work-request 문서에 남아 있는 과거 디자인 용어/파일명은 증거 보존 대상이다.
+
+## 8. 금지 사항
+
+- shadcn을 reference-only로 쓰고 bespoke CSS source-of-truth를 다시 늘리는 것
+- Aceternity motion을 장식 목적으로 붙이는 것
+- Developer가 자기 작업을 visual approve하는 것
+- 기존 테스트를 약화시켜 regression을 숨기는 것

@@ -9,12 +9,11 @@ source_refs:
   - "services/frontend/playwright.config.ts"
   - "services/frontend/src/App.tsx"
   - "services/frontend/src/layouts/ProjectBreadcrumbLayout.tsx"
-  - "services/frontend/src/styles/tokens.css"
-  - "services/frontend/docs/design/AEGIS-DESIGN.md"
-  - ".omx/plans/prd-flatten-frontend-src.md"
-last_verified: "2026-04-10"
+  - "services/frontend/src/index.css"
+  - "services/frontend/docs/design/SHADCN-REPLATFORM.md"
+last_verified: "2026-04-18"
 service_tags: ["s1", "platform"]
-decision_tags: ["frontend-structure-contract", "dashboard-reference-specimen", "web-only-frontend", "src-flattened"]
+decision_tags: ["frontend-structure-contract", "web-only-frontend", "src-flattened", "single-css-entrypoint", "design-doc-hierarchy"]
 related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/architecture.md"]
 ---
 
@@ -48,6 +47,7 @@ S1은 아래를 책임지지 않는다.
 3. 새 코드와 실질 리팩터 코드는 동일한 구조 규칙을 따른다.
 4. Electron/bridge 의존 없이 브라우저에서 직접 실행 가능하다.
 5. 런타임 소스 루트는 `src/`로 유지된다.
+6. 스타일 엔트리포인트는 `src/index.css` 하나로 유지한다.
 
 ## 4. 프론트엔드 설계 원칙
 
@@ -59,17 +59,21 @@ S1은 아래를 책임지지 않는다.
 4. 그 결과의 근거가 무엇인지
 5. 누가/무엇이/어떤 버전으로 그 결과를 냈는지
 
-### Reference specimen
-`DashboardPage`는 스타일 기준 사례(reference specimen)다.
-보존 대상:
-- tone
-- density
-- emphasis hierarchy
-- component spacing의 인간 친화적 읽기 리듬
+### Active styling contract
+- shadcn/ui + Tailwind + Radix-style primitives가 기본 구현 수단이다.
+- Aceternity는 필수 탐색 레퍼런스지만, 채택은 opt-in이다.
+- 새로운 page/component 전용 CSS는 기본적으로 금지하고, utility composition을 우선한다.
+- 전역 스타일은 `src/index.css` 하나에서 관리한다.
+
+### Documentation hierarchy
+- 활성 규칙의 source-of-truth는 wiki canon(`specs/frontend`, `handoff/s1/readme`, `handoff/s1/architecture`, 본 working guide)이다.
+- `services/frontend/docs/design/SHADCN-REPLATFORM.md`는 repo-local mirror/compatibility 문서다.
+- vendor-branded inspiration packs were removed from the repo-local design surface.
+- session/work-request/history 문서는 과거 판단과 파일명을 보존할 수 있으며, 활성 구현 기준으로 재해석하지 않는다.
 
 ## 5. 아키텍처 가이드
 
-### 5.1 실제 디렉터리 구조 (2026-04-10 현재)
+### 5.1 실제 디렉터리 구조 (2026-04-18 현재)
 
 ```text
 services/frontend/
@@ -77,11 +81,12 @@ services/frontend/
 ├── tsconfig.json
 ├── vite.config.ts
 ├── playwright.config.ts
-├── docs/design/AEGIS-DESIGN.md
+├── docs/design/SHADCN-REPLATFORM.md
 ├── e2e/
 └── src/
     ├── App.tsx
     ├── main.tsx
+    ├── index.css
     ├── api/
     ├── components/
     ├── constants/
@@ -89,7 +94,6 @@ services/frontend/
     ├── hooks/
     ├── layouts/
     ├── pages/
-    ├── styles/
     ├── test/
     │   └── setup.ts
     ├── test-utils/
@@ -106,8 +110,6 @@ services/frontend/
 | Dashboard | Navbar + edge-to-edge content | `/dashboard` |
 | Project | Navbar + Sidebar + content | `/projects/:projectId/*` |
 
-> `StatusBar`는 현재 레이아웃에 마운트되지 않는다.
-
 ### 5.3 구조 규칙
 
 #### Page-per-directory
@@ -115,22 +117,15 @@ services/frontend/
 pages/
   <Page>/
     <Page>.tsx
-    <Page>.css
     components/
     ...local helpers
 ```
 
-현재 16개 페이지 구현은 이 규칙으로 정리되어 있다.
-
-#### Ownership split
-- page-local → `pages/<Page>/components`
-- feature-local → `features/<feature>/components`
-- app-global → `components/ui`, `components/layout`
-
-#### Style layering
-1. palette / tokens (`src/styles/tokens.css`)
-2. semantic token usage (`--cds-*`, `--aegis-*`)
-3. component/page CSS
+#### Styling ownership
+1. global theme/base/animation/markdown/toast entry: `src/index.css`
+2. generated primitives: `src/components/ui/*`
+3. shared wrappers and page/layout TSX utility classes
+4. page-level standalone CSS는 현재 실제 구현 기준 제거되었다
 
 ### 5.4 Web-only runtime rule
 - Electron main/preload를 새로 도입하지 않는다.
@@ -139,28 +134,26 @@ pages/
 
 ## 6. 새 페이지/컴포넌트 추가 체크리스트
 
-1. `pages/<Page>/<Page>.tsx` + `pages/<Page>/<Page>.css` 생성
+1. `pages/<Page>/<Page>.tsx` + `pages/<Page>/components` 생성
 2. page-local UI는 `pages/<Page>/components`에 둔다
 3. `document.title = "AEGIS — {Page Name}"` 설정
 4. `App.tsx`에 라우트 추가
-5. 토큰 준수: `--cds-*` / `--aegis-*`만 사용
+5. 스타일은 utility composition 우선, 전역 rule이 필요하면 `src/index.css`에서만 관리
 6. 테스트 추가
 7. wiki 문서 동기화
 8. 웹 전용 런타임 규칙을 깨는 bridge/desktop shell을 도입하지 않는다
 
 ## 7. 테스트 전략
 
-### 현재 신뢰 가능한 자동 검증
+현재 신뢰 가능한 자동 검증:
 - `cd services/frontend && npm run build`
-- `cd services/frontend && npm test` → `64` files / `426` tests
+- `cd services/frontend && npm test`
 - `cd services/frontend && npm run typecheck`
-- `cd services/frontend && find src -maxdepth 1 -type d | sort`
-- `cd /home/kosh/AEGIS && rg -n "from ['\"]electron['\"]|window\.api|contextBridge|BrowserWindow|preload\.js|preload\.ts|dev:main|build:main" services/frontend -g '!services/frontend/dist' -S`
 
 ## 8. 완료 기준
 
-- 새 코드/실질 리팩터 코드는 page-per-directory + ownership split 규칙을 따른다.
+- 새 코드/실질 리팩터 코드는 page-per-directory + shared primitive 규칙을 따른다.
 - 빌드/테스트/타입체크가 green이다.
 - wiki 문서와 코드가 서로 모순되지 않는다.
 - Electron/bridge 흔적이 재도입되지 않는다.
-- 옛 중첩 런타임 경로 전제가 재도입되지 않는다.
+- standalone helper CSS 파일이 다시 늘어나지 않는다.

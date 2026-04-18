@@ -3,70 +3,58 @@ title: "S1-QA 실행 가이드"
 page_type: "canonical-handoff"
 canonical: true
 source_refs:
-  - "services/frontend/package.json"
-  - "services/frontend/vite.config.ts"
+  - "wiki/canon/specs/frontend.md"
+  - ".omx/plans/ralplan-s1-shadcn-replatform.md"
   - "services/frontend/playwright.config.ts"
-  - "services/frontend/src/App.tsx"
-  - "services/frontend/src/layouts/Navbar.tsx"
-  - "services/frontend/src/layouts/Sidebar.tsx"
-  - "services/frontend/src/layouts/ProjectBreadcrumbLayout.tsx"
-  - "services/frontend/docs/design/AEGIS-DESIGN.md"
 last_verified: "2026-04-15"
 service_tags: ["s1", "s1-qa"]
-decision_tags: ["frontend-structure-contract", "dashboard-reference-specimen", "web-only-frontend", "src-flattened", "shell-polish-2026-04"]
-related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/architecture.md"]
+decision_tags: ["shadcn-replatform", "frontend-skill-review-gate", "playwright-qa"]
+related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/specs/frontend.md"]
 ---
 
 # S1-QA 실행 가이드
 
-> **역할**: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane
-> **최신 상태 반영일**: 2026-04-15
+> 역할: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane
+> 최신 상태 반영일: **2026-04-15**
 
-## 1. 역할과 기본 원칙
+## 1. 기본 원칙
 
 - QA는 `services/frontend/src/**` 구현 코드를 읽지 않는다.
-- S1은 Electron이 아닌 **웹 전용 SPA**다.
-- 최신 디자인 기준은 **trusted operations console**이다. generic SaaS / washed-out admin처럼 보이면 실패다.
+- S1은 웹 전용 SPA다.
+- 현재 UI 기준은 legacy vendor-style doctrine이 아니라 **shadcn/Aceternity sourcing + `$frontend-skill` reviewer gate**다.
 
-## 2. 2026-04-15 기준 자동 검증 상태
+## 2. QA 판정 기준
 
-| 영역 | 명령 | 결과 |
-|------|------|------|
-| 빌드 | `cd services/frontend && npm run build` | PASS |
-| 전체 유닛 | `cd services/frontend && npm test` | PASS (`71` files / `509` tests) |
-| 타입체크 | `cd services/frontend && npm run typecheck` | PASS |
-| shell + empty-state Playwright sweep | localhost screenshots | 진행 중 |
+검증자는 제품 화면을 다음 기준으로 본다.
 
-## 3. QA가 알아야 할 현재 사실
+- AEGIS는 자동차 임베디드 보안 운영 콘솔로 읽혀야 한다.
+- Routine app UI는 shadcn-style primitive density와 restraint를 가져야 한다.
+- Aceternity-style motion/background는 장식이면 실패다.
+- Generic SaaS card mosaic / glow / gradient / floating gimmick은 실패다.
+- Empty/loading/error state는 다음 action과 운영 문맥을 보여야 한다.
+- Dense surfaces는 카드 더미가 아니라 작업면이어야 한다.
 
-- `/projects`, `/`는 auth 상태에 따라 `/dashboard` 또는 `/login`으로 redirect된다.
-- Navbar: **AEGIS 브랜드 블록 + 대시보드 링크 + 설정/테마/알림/아바타**
-- Sidebar: **항상 더 어두운 project rail**
-- breadcrumb는 localized current page를 보여야 한다 (`파일 탐색기`, `품질 게이트`, `승인 큐`, `분석 이력` 등)
-- auth 화면은 **split hero + auth panel** 구조다.
-- empty states는 giant neutral blank panel이면 안 되고, readiness/next action이 보여야 한다.
+## 3. 페이지별 필수 확인
 
-## 4. 도구 우선순위
+16개 페이지 각각:
 
-1. Playwright MCP / Playwright browser
-2. Playwright CLI
-3. log-analyzer MCP
+1. normal state
+2. empty/loading/error state where feasible
+3. primary interaction
+4. console error 없음
+5. visual reviewer verdict와 충돌 없음
 
-### CLI 핵심 명령
+## 4. 명령
 
 ```bash
 cd services/frontend
-npm run build
 npm test
 npm run typecheck
+npm run build
 npm run test:e2e
 ```
 
-## 5. 지금 QA가 특히 봐야 할 것
+## 5. 현재 known note
 
-1. Navbar / sidebar / breadcrumb가 같은 톤과 언어 체계를 유지하는지
-2. dark sidebar와 light main canvas의 계층이 무너지지 않는지
-3. empty state가 washed-out blank surface처럼 보이지 않는지
-4. dense surfaces(Files / Vulnerabilities / Static Analysis / Report)가 카드 더미가 아니라 작업면으로 읽히는지
-5. `Dashboard` 같은 shell label drift나 영어 혼합 잔재가 남지 않는지
-6. dynamic analysis / dynamic test / quality gate / approvals / analysis-history의 no-data 상태가 운영형 문맥을 주는지
+- Build는 chunk-size warning을 낼 수 있다. 이는 fail이 아니지만 신규 dependency가 과도하게 bundle을 키운 경우 reviewer/test evidence에 기록한다.
+- Reviewer hard veto는 QA 의견보다 우선하는 visual gate다. QA는 증거를 남기고 S1에 WR/보고한다.
