@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-14**
+> **마지막 업데이트: 2026-04-20**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -109,17 +109,61 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 
 ---
 
-## 3. 현재 상태 (2026-04-13)
+## 3. 현재 상태 (2026-04-20)
 
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **447개 통과** (vitest, 2026-04-14 BuildTarget-only cutover 및 aggregate-read 정렬 후 재검증) |
-| DB 테이블 | **30개** (SQLite, WAL) — 기존 21개 활성 표면 + execution/persistence seam 9개 포함 |
+| 테스트 | **474개 통과** (vitest, 2026-04-20 auth/member-management v1 + hardening 후 재검증) |
+| DB 테이블 | **34개** (SQLite, WAL) — 기존 25개 활성 표면 + execution/persistence seam 9개 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 (`/pipeline/prepare*`, `/analysis/quick`, `/analysis/deep`) |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
-| 에러 클래스 | 18개 (AppError 계층, 21개 에러코드) |
+| 에러 클래스 | 20개 (AppError 계층, 23개 에러코드 — `FORBIDDEN`, `RATE_LIMITED` 포함) |
 | 외부 클라이언트 | SastClient(S4), AgentClient(S3), BuildAgentClient(S3:8003), KbClient(S5), AdapterClient(S6), LlmTaskClient(S7) |
+
+### 3-0. auth/member-management v1 메모 (2026-04-20)
+
+현재 S2는 기존 prototype auth (`login/logout/me/users`) 위에 **lifecycle-first 회원 관리 v1** 를 올린 상태다.
+
+canonical v1 lifecycle:
+- org creation / first org-admin bootstrap 은 public product scope 밖이다 (seed / migration / import only)
+- 사용자는 기존 org code 기반으로 가입 요청을 만든다
+- org-admin 이 same-org request 를 review 하며 role 을 배정하고 approve / reject 한다
+- password 는 registration 시점에 이미 수집된다
+- `Invite` 는 v1 에서 제거됐다
+- approval 즉시 account 가 login-capable 상태가 된다
+
+현재 mounted auth/member surface:
+- public
+  - `POST /api/auth/login`
+  - `POST /api/auth/logout`
+  - `GET /api/auth/orgs/:code/verify`
+  - `POST /api/auth/register`
+  - `GET /api/auth/registrations/lookup/:lookupToken`
+  - `POST /api/auth/password-reset/request`
+  - `POST /api/auth/password-reset/confirm`
+- authenticated
+  - `GET /api/auth/me`
+- admin-only
+  - `GET /api/auth/users`
+  - `GET /api/auth/registration-requests`
+  - `GET /api/auth/registration-requests/:id`
+  - `POST /api/auth/registration-requests/:id/approve`
+  - `POST /api/auth/registration-requests/:id/reject`
+
+현재 hardening 상태:
+- login identifier 는 request field 이름을 `username` 으로 유지하되, backend 는 exact `username` 후 normalized `email` 순으로 해석한다
+- session token 은 bearer raw token 을 클라이언트에만 반환하고, DB `sessions` 에는 SHA-256 hash 만 저장한다
+- legacy plaintext session row 는 DB init 시 best-effort migration 된다
+- public auth rate limit 은 SQLite `auth_rate_limit_events` 에 영속화되어, 같은 DB 를 쓰는 현재 배포에서는 process restart 후에도 유지된다
+- login throttle HTTP contract (`429 RATE_LIMITED`) regression test 가 추가됐다
+- password reset request 는 account existence 를 노출하지 않고 `202 { accepted: true }` 를 반환한다
+- new reset token 발급 시 기존 active reset token 들을 revoke 하고, successful reset 시 남은 reset token 과 active sessions 를 함께 revoke 한다
+
+현재 남은 follow-up risk (non-blocking):
+- rate limit durability 는 shared SQLite 범위까지다. future multi-node deployment 에서는 shared store 로 옮겨야 한다
+- login 성공도 현재는 throttle budget 을 소모한다
+- auth error DTO (`429` 포함) 를 shared layer 에 더 풍부하게 모델링하는 후속 polish 여지는 있다
 
 ### 3-0. explicit-step migration 메모 (2026-04-13)
 

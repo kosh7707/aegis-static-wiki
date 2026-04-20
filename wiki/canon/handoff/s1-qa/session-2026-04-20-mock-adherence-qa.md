@@ -7,7 +7,7 @@ source_refs:
   - "mcp://record_session_history"
   - "mcp://register_wr"
   - "playwright://localhost:5180"
-  - "file:///home/kosh/AEGIS/.omc/autopilot/findings.md"
+  - "wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings.md"
 original_path: "mcp://record_session_history/s1-qa/2026-04-20-mock-adherence-qa"
 last_verified: "2026-04-20"
 service_tags: ["s1-qa"]

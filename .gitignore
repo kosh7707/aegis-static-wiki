@@ -1,4 +1,7 @@
 .omx/
+.omc/
+.claude/
+.playwright-mcp/
 
 __pycache__/
 *.pyc

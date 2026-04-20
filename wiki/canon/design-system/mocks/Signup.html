@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>AEGIS — 가입 요청</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Design system (order matters) -->
+<link rel="stylesheet" href="assets/fonts.css" />
+<link rel="stylesheet" href="assets/tokens.css" />
+<link rel="stylesheet" href="assets/base.css" />
+
+<!-- Components -->
+<link rel="stylesheet" href="assets/components/button.css" />
+<link rel="stylesheet" href="assets/components/input.css" />
+<link rel="stylesheet" href="assets/components/divider.css" />
+<link rel="stylesheet" href="assets/components/choreography.css" />
+
+<!-- Shared auth shell + page -->
+<link rel="stylesheet" href="assets/auth-console.css" />
+<link rel="stylesheet" href="assets/pages/signup.css" />
+</head>
+<body>
+
+<script>
+  (function(){
+    try {
+      const t = localStorage.getItem('aegis.theme');
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch(e){}
+  })();
+</script>
+
+<div class="shell">
+
+  <!-- LEFT -->
+  <aside class="brand-panel" data-chore>
+    <header class="brand-mark chore c-1">
+      <div class="row-1">
+        <div class="shield">
+          <svg viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shield outer silhouette -->
+            <path d="M22 1 L42 6 V24 C42 36 33 44 22 47 C11 44 2 36 2 24 V6 Z"
+                  stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"
+                  fill="oklch(1 0 0 / 0.015)"/>
+            <!-- Inner hex lattice -->
+            <path d="M22 11 L30 15.5 V24.5 L22 29 L14 24.5 V15.5 Z"
+                  stroke="currentColor" stroke-width="1" stroke-linejoin="round"
+                  opacity="0.45"/>
+            <!-- Cross-hair center -->
+            <line x1="22" y1="17" x2="22" y2="23" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+            <line x1="19" y1="20" x2="25" y2="20" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+            <!-- Scan baseline -->
+            <line x1="8" y1="35" x2="36" y2="35" stroke="currentColor" stroke-width="0.75" opacity="0.25" stroke-dasharray="2 2"/>
+            <circle cx="22" cy="20" r="1.25" fill="currentColor" opacity="0.85"/>
+          </svg>
+          <span class="dot"></span>
+        </div>
+        <div class="wordstack">
+          <div class="wordmark">AEGIS</div>
+          <div class="tagline">embedded security · analysis platform</div>
+        </div>
+      </div>
+
+      <div class="spec">
+        <div class="cell"><span class="k">region</span><span class="v">kr-seoul-1</span></div>
+        <div class="cell"><span class="k">status</span><span class="v"><span class="live-dot"></span>operational</span></div>
+      </div>
+    </header>
+
+    <div class="brand-hero">
+      <h1 class="chore c-2">계정 하나로<br/><em>분석부터 승인까지.</em></h1>
+      <p class="chore c-3">정밀한 소스코드 분석과 시스템 검증으로, 개발 속도를 늦추지 않는 강력한 보안.</p>
+
+      <div class="onboard-header chore c-4">
+        <span class="label">onboarding · request flow</span>
+        <span class="counter">step <span class="cur">01</span> / 04</span>
+      </div>
+
+      <div class="onboard-list chore c-4">
+        <div class="onboard-item current">
+          <div class="step"></div>
+          <div class="body">
+            <div class="title-row">
+              <span class="title">가입 요청 제출</span>
+              <span class="now-tag">NOW</span>
+            </div>
+            <div class="desc">이메일, 비밀번호, 조직 코드를 오른쪽 폼에 입력하세요.</div>
+          </div>
+        </div>
+        <div class="onboard-item upcoming">
+          <div class="step">2</div>
+          <div class="body">
+            <div class="title-row"><span class="title">조직 관리자 검토 · 승인</span></div>
+            <div class="desc">요청은 승인 큐에 등록됩니다. 평균 응답 시간 <span class="mono">&lt; 24h</span>.</div>
+          </div>
+        </div>
+        <div class="onboard-item upcoming">
+          <div class="step">3</div>
+          <div class="body">
+            <div class="title-row"><span class="title">이메일 인증 · 최초 로그인</span></div>
+            <div class="desc">승인 후 이메일로 초대 링크가 발송됩니다. 링크 만료 48시간.</div>
+          </div>
+        </div>
+        <div class="onboard-item upcoming">
+          <div class="step">4</div>
+          <div class="body">
+            <div class="title-row"><span class="title">콘솔 진입 · 프로젝트 배정</span></div>
+            <div class="desc">배정된 프로젝트와 권한 스코프가 대시보드에 나타납니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="brand-meta chore c-5">
+      <span>© 2026 AEGIS</span>
+      <span class="vdiv"></span>
+      <a href="#">security</a>
+      <span class="vdiv"></span>
+      <a href="#">privacy</a>
+      <span class="vdiv"></span>
+      <span>v0.1.0 · main</span>
+    </footer>
+  </aside>
+
+  <!-- RIGHT -->
+  <section class="form-panel" data-chore>
+    <button class="theme-toggle chore c-1" type="button" onclick="toggleTheme()" aria-label="테마 전환">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+
+    <div class="form-wrap">
+      <div class="form-header chore c-4">
+        <span class="eyebrow"><span class="env-dot"></span>AEGIS · ACCESS REQUEST</span>
+        <h2>회원가입</h2>
+        <div class="meta">
+          <span>관리자 승인 필요</span>
+          <span class="sep">·</span>
+          <span>ETA ~1 영업일</span>
+          <span class="sep">·</span>
+          <span>kr-aegis-01.prod</span>
+        </div>
+      </div>
+
+      <div class="notice chore c-5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <strong>가입은 승인제로 운영됩니다.</strong><br/>
+          조직 코드는 관리자에게 요청하거나, <span class="mono">invite/</span> 링크로 접근하세요.
+        </div>
+      </div>
+
+      <form onsubmit="event.preventDefault();" style="display:flex;flex-direction:column;gap:var(--space-7);">
+
+        <div class="section-group chore c-6">
+          <div class="rail">
+            <div class="num">01</div>
+            <div class="line"></div>
+          </div>
+          <div class="body">
+            <div class="section-header">
+              <span class="title">계정 정보</span>
+              <span class="meta">필수 · 3 fields</span>
+            </div>
+
+            <div class="field">
+              <label for="name">이름</label>
+              <div class="input-wrap">
+                <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input id="name" class="input" type="text" placeholder="홍길동" autocomplete="name" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="email">업무용 이메일</label>
+              <div class="input-wrap">
+                <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                <input id="email" class="input" type="email" placeholder="analyst@company.com" autocomplete="email" />
+              </div>
+              <div class="hint">개인 이메일은 승인되지 않을 수 있습니다.</div>
+            </div>
+
+            <div class="field">
+              <label for="password">비밀번호</label>
+              <div class="input-wrap">
+                <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+                <input id="password" class="input" type="password" placeholder="최소 8자 · 대소문자 · 숫자 · 특수문자" autocomplete="new-password" oninput="updateStrength(this.value)" />
+                <button type="button" class="trailing-btn" onclick="const i=document.getElementById('password'); i.type = i.type==='password'?'text':'password';">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="strength" id="strength" data-level="0">
+                <div class="strength-ticks" id="strength-ticks">●○○○</div>
+                <div class="strength-label" id="strength-label">strength=—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-group chore c-8" id="org-section">
+          <div class="rail">
+            <div class="num">02</div>
+          </div>
+          <div class="body">
+            <div class="section-header">
+              <span class="title">조직 · 접근 범위</span>
+              <span class="meta">필수 · 1 field</span>
+            </div>
+
+            <div class="field">
+              <label for="org">
+                <span>조직 코드</span>
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--foreground-subtle);">CASE-SENSITIVE</span>
+              </label>
+              <div class="input-wrap">
+                <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1"/></svg>
+                <input id="org" class="input" type="text" placeholder="ACME-KR-SEC" style="font-family:var(--font-mono);letter-spacing:0.04em;padding-right:82px;" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();verifyOrg(this.value);}" oninput="resetOrg()" />
+                <button type="button" class="trailing-btn" id="org-verify-btn" onclick="verifyOrg(document.getElementById('org').value)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+                  verify
+                </button>
+              </div>
+            </div>
+
+            <!-- Verification resolve panel -->
+            <div class="org-verify" id="org-verify" data-state="idle">
+              <div class="status">
+                <span class="dot"></span>
+                <span id="org-status-text">awaiting input</span>
+              </div>
+              <div class="row"><span class="k">조직명</span><span class="v" id="org-name">—</span></div>
+              <div class="row"><span class="k">관리자</span><span class="v mono" id="org-admin">—</span></div>
+              <div class="row"><span class="k">리전</span><span class="v mono" id="org-region">—</span></div>
+              <div class="row"><span class="k">배정 역할</span><span class="v" id="org-role">승인 시 관리자가 배정</span></div>
+            </div>
+
+            <!-- Alternate path -->
+            <div class="org-alt">
+              <div class="left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                <span>코드가 없다면 초대 링크로 진입</span>
+              </div>
+              <a href="#">INVITE/ →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="chore c-9" style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-2);">
+          <label class="checkbox-row">
+            <input type="checkbox" required />
+            <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span><a href="#">서비스 이용 약관</a>과 <a href="#">개인정보 처리방침</a>에 동의합니다. <span style="color:var(--danger);">*</span></span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" required />
+            <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>계정 활동은 감사 목적으로 기록되며, 조직 관리자가 열람할 수 있음을 이해합니다. <span style="color:var(--danger);">*</span></span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary btn-block chore c-9" type="submit">
+          가입 요청 제출
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <div class="form-footer chore c-9">
+        이미 계정이 있으신가요? <a href="Login.html">로그인</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    if (next === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    try { localStorage.setItem('aegis.theme', next); } catch(e){}
+  }
+
+  function updateStrength(val) {
+    const el = document.getElementById('strength');
+    const ticks = document.getElementById('strength-ticks');
+    const label = document.getElementById('strength-label');
+    let level = 0;
+    if (val.length >= 8) level++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) level++;
+    if (/\d/.test(val)) level++;
+    if (/[^A-Za-z0-9]/.test(val)) level++;
+    if (val.length === 0) level = 0;
+    el.dataset.level = level;
+    const patterns = ['●○○○','●●○○','●●○○','●●●○','●●●●'];
+    ticks.textContent = patterns[level];
+    label.textContent = val.length === 0 ? 'strength=—' :
+      level <= 1 ? 'strength=weak' :
+      level === 2 ? 'strength=fair' :
+      level === 3 ? 'strength=good' : 'strength=strong';
+  }
+
+  // Org code verification (mock)
+  const ORG_DB = {
+    'ACME-KR-SEC':   { name: 'ACME Corp · Security Team', admin: 'admin@acme.kr',   region: 'kr-seoul-1',  role: '분석가 (analyst)', domain: 'acme.kr' },
+    'HYUNDAI-AVSEC': { name: '현대차 AV Security',         admin: 'av-sec@hmc.co.kr', region: 'kr-seoul-1',  role: '분석가 (analyst)', domain: 'hmc.co.kr' },
+    'LG-EV-SECOPS':  { name: 'LG Energy EV SecOps',       admin: 'secops@lges.com',  region: 'kr-seoul-1',  role: '검토자 (reviewer)', domain: 'lges.com' },
+  };
+  let orgTimer = null;
+
+  function resetOrg() {
+    const panel = document.getElementById('org-verify');
+    const btn   = document.getElementById('org-verify-btn');
+    const txt   = document.getElementById('org-status-text');
+    const nm    = document.getElementById('org-name');
+    const adm   = document.getElementById('org-admin');
+    const reg   = document.getElementById('org-region');
+    const role  = document.getElementById('org-role');
+    const sec   = document.getElementById('org-section');
+    const email = document.getElementById('email');
+
+    clearTimeout(orgTimer);
+    panel.dataset.state = 'idle';
+    btn.dataset.state = 'idle';
+    txt.textContent = 'awaiting input';
+    nm.textContent = '—'; adm.textContent = '—'; reg.textContent = '—';
+    role.textContent = '승인 시 관리자가 배정';
+    sec.classList.remove('active');
+    // Clear prefill marker on email (but keep whatever user typed)
+    if (email) {
+      email.placeholder = 'analyst@company.com';
+      delete email.dataset.prefilled;
+    }
+  }
+
+  function verifyOrg(val) {
+    const panel = document.getElementById('org-verify');
+    const btn   = document.getElementById('org-verify-btn');
+    const txt   = document.getElementById('org-status-text');
+    const nm    = document.getElementById('org-name');
+    const adm   = document.getElementById('org-admin');
+    const reg   = document.getElementById('org-region');
+    const role  = document.getElementById('org-role');
+    const sec   = document.getElementById('org-section');
+    const email = document.getElementById('email');
+
+    clearTimeout(orgTimer);
+    const v = val.trim().toUpperCase();
+    if (!v) {
+      resetOrg();
+      return;
+    }
+    panel.dataset.state = 'checking';
+    btn.dataset.state = 'checking';
+    txt.textContent = 'resolving…';
+    sec.classList.add('active');
+
+    orgTimer = setTimeout(() => {
+      const hit = ORG_DB[v];
+      if (hit) {
+        panel.dataset.state = 'ok';
+        btn.dataset.state = 'ok';
+        txt.textContent = 'verified · ready for request';
+        nm.textContent = hit.name;
+        adm.textContent = hit.admin;
+        reg.textContent = hit.region;
+        role.textContent = hit.role;
+        // Prefill email domain hint (only if user hasn't typed their own)
+        if (email && (!email.value || email.dataset.prefilled === '1')) {
+          email.placeholder = `you@${hit.domain}`;
+          email.dataset.prefilled = '1';
+        }
+      } else {
+        panel.dataset.state = 'bad';
+        btn.dataset.state = 'bad';
+        txt.textContent = 'not found · 관리자에게 문의';
+        nm.textContent = '—'; adm.textContent = '—'; reg.textContent = '—';
+        role.textContent = '—';
+      }
+    }, 450);
+  }
+
+</body>
+</html>

@@ -6,8 +6,8 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://record_session_history"
   - "mcp://register_wr"
-  - "file:///home/kosh/AEGIS/.omc/autopilot/findings-v2.md"
-  - "file:///home/kosh/AEGIS/.omc/autopilot/findings.md"
+  - "wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings-v2.md"
+  - "wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings.md"
 original_path: "mcp://record_session_history/s1-qa/2026-04-20-mock-adherence-qa-v2"
 last_verified: "2026-04-20"
 service_tags: ["s1-qa"]
@@ -38,7 +38,7 @@ v1 WR 송부 후 사용자 지적(프론트 코드 전수 검토 필요) 수용.
 
 ### 2026-04-20T04:47:09.759Z — passed
 - Command: `services/frontend/src/** deep read (Read ×60+ / Grep ×25+ / Explore sub-agent ×3) + handoff/*.css ↔ mock assets/*.css diff (18 쌍 + 3 extension)`
-- Log ref: file:///home/kosh/AEGIS/.omc/autopilot/findings-v2.md
+- Log ref: wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings-v2.md (aegis-static-wiki repo)
 - CSS diff: 18 mock/handoff pairs — 16 byte-identical, fonts.css CDN→local, dashboard.css +3 rules
 - Handoff-only: compat.css (Carbon→handoff 1-way proxy), app-shell.css, page-surfaces.css
 - pages + layouts + contexts + hooks + api + utils: 약 80+ files accessed

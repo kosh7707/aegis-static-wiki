@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["s1", "s1-qa", "s2", "frontend", "api-contract", "websocket", "buildtarget"]
 decision_tags: ["contract-sync", "buildtarget-only", "recovery"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md", "wiki/canon/specs/backend.md", "wiki/canon/handoff/s2/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1", "s1-qa"]
-completed_by: [{"lane":"s1","completed_at":"2026-04-14T09:12:58.257Z","note":"S1 alignment completed. Quick request remains `{ projectId, buildTargetId }`; client state preserves `analysisId`, `buildTargetId`, and `executionId`; `/ws/analysis` additive lineage fields are consumed in `useAnalysisWebSocket`; StaticAnalysisPage now recovers from `analysisId` via `GET /api/analysis/status/:analysisId` and `GET /api/analysis/results/:analysisId`."}]
+completed_by: [{"lane":"s1","completed_at":"2026-04-14T09:12:58.257Z","note":"S1 alignment completed. Quick request remains `{ projectId, buildTargetId }`; client state preserves `analysisId`, `buildTargetId`, and `executionId`; `/ws/analysis` additive lineage fields are consumed in `useAnalysisWebSocket`; StaticAnalysisPage now recovers from `analysisId` via `GET /api/analysis/status/:analysisId` and `GET /api/analysis/results/:analysisId`."},{"lane":"s1-qa","completed_at":"2026-04-20T06:44:28.501Z","note":"s1-qa 쪽 수신분 close. s1 앞 action은 s1 측에서 별도 처리."}]
 registered_at: "2026-04-14T07:12:45.389Z"
+completed_at: "2026-04-20T06:44:28.501Z"
 ---
 
 # BuildTarget-only analysis cutover is now materially complete; align S1/S1-QA to accepted payloads, status recovery, and WS lineage

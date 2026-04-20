@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -93,10 +93,34 @@ Health control-signal 메모 (2026-04-14):
 | PATCH | `/api/projects/:pid/notifications/read-all` | 프로젝트 알림 전체 읽음 처리 |
 | GET | `/api/projects/:pid/notifications` | 프로젝트 알림 목록 (`?unread=true` 지원) |
 | PATCH | `/api/notifications/:id/read` | 개별 알림 읽음 처리 |
-| POST | `/api/auth/login` | 로그인 |
-| POST | `/api/auth/logout` | 로그아웃 |
-| GET | `/api/auth/me` | 현재 사용자 정보 |
-| GET | `/api/auth/users` | 사용자 목록 |
+| POST | `/api/auth/login` | 로그인 (`rememberMe?: boolean` 지원; `username` 필드는 v1에서 login identifier로 해석) |
+| POST | `/api/auth/logout` | 로그아웃 (token optional, public route 유지) |
+| GET | `/api/auth/orgs/:code/verify` | 조직 코드 preview 조회 (signup UX용 public route) |
+| POST | `/api/auth/register` | org-code 기반 가입 요청 생성 (`202`, `lookupToken` 반환) |
+| GET | `/api/auth/registrations/lookup/:lookupToken` | public registration status lookup (high-entropy lookup token only) |
+| POST | `/api/auth/password-reset/request` | 비밀번호 재설정 요청 (`202`, 계정 존재 여부 비노출) |
+| POST | `/api/auth/password-reset/confirm` | 비밀번호 재설정 확정 (`token`, `newPassword`) |
+| GET | `/api/auth/me` | 현재 사용자 정보 (authenticated) |
+| GET | `/api/auth/users` | 관리자용 사용자 목록 (org-admin = same-org only, platform-admin bypass 허용) |
+| GET | `/api/auth/registration-requests` | 관리자용 가입 요청 목록 |
+| GET | `/api/auth/registration-requests/:id` | 관리자용 가입 요청 상세 |
+| POST | `/api/auth/registration-requests/:id/approve` | 관리자 승인 + 역할 배정; 승인 즉시 login 가능 |
+| POST | `/api/auth/registration-requests/:id/reject` | 관리자 거절 (terminal rejection) |
+
+Auth v1 메모 (2026-04-20):
+- lifecycle는 `org verify → register(pending_admin_review) → org-admin approve/reject → approved 즉시 login 가능` 이다.
+- `Invite`는 v1 범위에서 제거됐다.
+- 비밀번호는 registration 시점에 수집하며, 승인 후 별도 invite/activation step 없이 바로 인증 가능하다.
+- public route는 `/api/auth/login`, `/api/auth/logout`, `/api/auth/orgs/:code/verify`, `/api/auth/register`, `/api/auth/registrations/lookup/:lookupToken`, `/api/auth/password-reset/request`, `/api/auth/password-reset/confirm` 로 명시적으로 제한된다.
+- auth public route rate limiting is persisted in SQLite `auth_rate_limit_events`, so limits survive process restarts on the same backend instance.
+- remember-me session policy:
+  - default TTL `24h`
+  - remember-me TTL `30d`
+- lookup token TTL `30d`, password reset token TTL `1h`
+- rate limits:
+  - org verify `10/min/IP`
+  - register `5/min/IP`, `3 active pending requests / 24h / email`
+  - password reset request `5/min/IP`, `3/hour/email`
 
 ### 프로파일 / SDK 레지스트리 / 타겟 라이브러리
 

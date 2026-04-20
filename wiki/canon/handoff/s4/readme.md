@@ -149,7 +149,7 @@ tail -20 logs/s4-sast-runner.jsonl
 SAST_PORT=9000
 SAST_SCAN_TIMEOUT=120
 SAST_MAX_CONCURRENT_SCANS=2
-SAST_SDK_ROOT=/home/kosh/sdks
+SAST_SDK_ROOT=/opt/sdks   # 예시값 — 환경별로 교체
 ```
 
 **주의**: `list[str]` 타입 필드를 `.env`에 쓰면 pydantic-settings JSON 파싱 실패. `str` 타입 + `@property`로 우회 (config.py 참조).
@@ -181,7 +181,7 @@ SAST_SDK_ROOT=/home/kosh/sdks
 ## 4. 내부 SDK 해석 데이터 (analysis path only)
 
 ```text
-$SAST_SDK_ROOT/              <- .env: SAST_SDK_ROOT=/home/kosh/sdks
+$SAST_SDK_ROOT/              <- .env 예시: SAST_SDK_ROOT=/opt/sdks (환경별로 교체)
   ├── sdk-registry.json       <- SDK 메타데이터 (외부 설정, 코드 밖)
   └── ti-am335x/              <- sdkId = 폴더명
 ```

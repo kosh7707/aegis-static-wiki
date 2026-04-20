@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/roadmap.md"
 original_path: "docs/s2-handoff/roadmap.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: []
@@ -21,6 +21,45 @@ migration_status: "canonicalized"
 ---
 
 ## 10. 알려진 이슈 / 로드맵 / 세션 로그
+
+### auth/member-management v1 완료 + pre-WR hardening (2026-04-20)
+
+완료된 slice:
+- org-code verify
+- registration request creation
+- public lookup-token based registration status
+- same-org admin approval / rejection + role assignment
+- `Invite` 제거
+- password-at-registration
+- approval => immediate login capability
+- remember-me session TTL differentiation
+- password reset request / confirm + session invalidation
+- `/api/auth/users` admin-only cutover
+
+같은 세션에서 추가 hardening 완료:
+- `auth_rate_limit_events` 기반 durable auth throttling
+- session token hash-at-rest + legacy session migration
+- stored session hash bearer replay 차단
+- `/api/auth/login` 429 contract regression test
+
+검증 snapshot:
+- shared/backend typecheck 통과
+- backend vitest **474 passed**
+- `npm audit --omit=dev --audit-level=high` => **0 vulnerabilities**
+- architect approve / security approve 완료
+
+즉시 다음 작업:
+1. S1에 canonical reply WR 발행
+   - invite 제거
+   - org verify / register / lookup / password reset / remember-me contract 변경 고지
+   - `username` field 가 v1 에서 login identifier 의미를 갖는다는 점 전달
+2. 원 요청 WR recipient 완료 처리
+3. 필요 시 S1-QA 후속 verification WR 분리
+
+후순위 hardening:
+- distributed rate limit store 설계 (future multi-node)
+- login 성공이 throttle budget 을 소모하는 정책 재검토
+- shared auth error DTO (`errorDetail`) typing 강화
 
 ### explicit-step migration 상태 (2026-04-13)
 
@@ -297,7 +336,7 @@ src/
 - 소스코드/SDK는 공유 볼륨(`uploads:`)으로 S2/S3/S4 간 공유
 - config.ts 환경변수가 이미 외부 주입 가능 → localhost를 컨테이너 DNS(`http://sast-runner:9000`)로 교체만 하면 됨
 - 서비스별 `Dockerfile` 추가 필요, 코드 변경 거의 없음
-- SDK 마운트: `-v /home/kosh/sdks:/sdks`
+- SDK 마운트: `-v "$SAST_SDK_ROOT:/sdks"` (호스트측 SDK 루트를 env로 지정)
 
 **장기 — Kubernetes** (SaaS화 또는 다중 고객 서비스 시):
 - 서비스별 Pod 스케일링 (SAST Runner 병렬 확장 등)

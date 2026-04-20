@@ -12,8 +12,6 @@ def resolve_source_docs() -> Path:
     candidates = [
         os.environ.get('SOURCE_DOCS_ROOT'),
         ROOT.parent / 'AEGIS' / 'docs',
-        Path('/home/kosh/AEGIS/docs'),
-        Path('/home/kosh/projects/AEGIS-codex-safety-20260403/docs'),
     ]
     for candidate in candidates:
         if not candidate:

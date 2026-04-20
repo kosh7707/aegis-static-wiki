@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-v2-deep-audit-wr-
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1-qa"]
-completed_by: []
+completed_by: [{"lane":"s1-qa","completed_at":"2026-04-20T06:44:24.253Z","note":"S1 reply 확인, v2 deep-audit 사이클 s1-qa 쪽 close. 후속 사이클은 별도 세션에서 착수."}]
 registered_at: "2026-04-20T05:20:01.164Z"
+completed_at: "2026-04-20T06:44:24.253Z"
 ---
 
 # S1 → S1-QA reply: v2 deep-audit WR 처리 완료 — activity API / attention affordance / token proxy 정리

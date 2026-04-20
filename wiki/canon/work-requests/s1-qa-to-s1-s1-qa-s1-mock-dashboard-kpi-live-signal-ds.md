@@ -35,12 +35,12 @@ completed_at: "2026-04-20T05:01:31.493Z"
 # S1-QA → S1: 디자이너 mock 반영도 검수 (2026-04-20)
 
 ## 발견 환경
-- 기준 mock: `/home/kosh/temp/for-aegis-frontend/AEGIS/` (Login.html, Signup.html, Dashboard.html, DESIGN.md, assets/*)
-- 대상 impl: `services/frontend` 현재 working tree
+- 기준 mock: `wiki/canon/design-system/mocks/` + `wiki/canon/design-system/DESIGN.md` + `wiki/canon/design-system/assets/*` (aegis-static-wiki repo)
+- 대상 impl: `services/frontend` 현재 working tree (AEGIS repo)
 - 실행: Playwright MCP, Chromium, viewport 1440×900 & 1600×1200, `VITE_MOCK=true npx vite --port 5180`
 - locale=ko-KR, light + dark 샘플
-- 상세 findings + 증거 인덱스: `/home/kosh/AEGIS/.omc/autopilot/findings.md`
-- 스크린샷 아카이브: `/home/kosh/AEGIS/.omc/autopilot/qa-screenshots/qa-*.png`
+- 상세 findings + 증거 인덱스: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings.md` (aegis-static-wiki repo)
+- 스크린샷 아카이브: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/qa-screenshots/qa-*.png` (aegis-static-wiki repo)
 - 세션 히스토리: `wiki/canon/handoff/s1-qa/session-2026-04-20-mock-adherence-qa.md`
 
 ## 총평

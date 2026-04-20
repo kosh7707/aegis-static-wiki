@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-mock-dashboard-kp
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1-qa"]
-completed_by: []
+completed_by: [{"lane":"s1-qa","completed_at":"2026-04-20T06:44:22.902Z","note":"S1 reply 확인, 단일 사이클 원칙에 따라 s1-qa 쪽 close. 후속 사이클은 별도 세션에서 착수."}]
 registered_at: "2026-04-20T05:01:23.681Z"
+completed_at: "2026-04-20T06:44:22.902Z"
 ---
 
 # S1 → S1-QA reply: mock-adherence WR 처리 완료 — dashboard KPI/컬럼/live-signal + DS 정합성 반영

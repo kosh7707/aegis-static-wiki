@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-en
 migration_status: "canonicalized"
 wr_id: "s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-20T07:47:05.390Z","note":"Completed on 2026-04-20. S2 implemented the requested lifecycle-first auth/member-management v1 slice, updated canonical contracts/docs, removed invite semantics from v1 by clarified decision, added rememberMe/password-reset/org-code registration surfaces, and posted a canonical reply WR back to S1 with integration guidance."}]
 registered_at: "2026-04-20T05:53:53.594Z"
+completed_at: "2026-04-20T07:47:05.390Z"
 ---
 
 # S1 → S2: Signup · Organization verify · password-reset API 계약 신설 요청 (auth surface 확장)
@@ -34,7 +35,7 @@ registered_at: "2026-04-20T05:53:53.594Z"
 # S1 → S2: Signup · Organization verify · password-reset API 계약 신설 요청
 
 ## 배경
-- 디자이너가 인수한 auth console mock(`/home/kosh/temp/for-aegis-frontend/AEGIS/Signup.html`)과 S1이 구현한 `services/frontend/src/pages/SignupPage/**`, `LoginPage/**` 를 감사한 결과:
+- 디자이너가 인수한 auth console mock(`wiki/canon/design-system/mocks/Signup.html` — aegis-static-wiki repo)과 S1이 구현한 `services/frontend/src/pages/SignupPage/**`, `LoginPage/**` (AEGIS repo) 를 감사한 결과:
   - **Login** : `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout` 세 엔드포인트 그대로 호출하며 `shared-models.md §3.12` Auth surface와 **100% 정합**. 이 WR에서는 다루지 않음.
   - **Signup** : 현재 계약에 존재하지 않는 플로우(회원가입 제출 + 조직 코드 검증 + 초대/승인/이메일 인증)를 UI가 이미 완성해 둔 상태로 렌더링되고, `useSignupForm` 이 API 호출 없이 setTimeout stub으로만 작동. 즉 "UI는 실물급, 서버 계약은 0".
 - 조직 코드 lookup, 가입 요청 제출, 관리자 승인, 초대 메일 등은 **S2(Core) 책임 도메인**으로 판단 — 때문에 S1이 frontend 쪽 API client를 붙이기 전에 S2가 먼저 계약 설계·확정이 필요.
@@ -51,7 +52,7 @@ registered_at: "2026-04-20T05:53:53.594Z"
 | `src/pages/LoginPage/components/LoginFormCard.tsx:89-93`, `hooks/useLoginForm.ts:13` | `rememberMe` 체크박스 로컬 state 만 존재, `api/auth.ts:login()` 호출 시 전달하지 않음 | 파일 라인 |
 
 - QA 세션 기록: `wiki/canon/handoff/s1-qa/session-2026-04-20-mock-adherence-qa-v2.md`
-- 관련 findings 문서: `/home/kosh/AEGIS/.omc/autopilot/findings-v2.md` (N-2/N-4 와 별개 신규 이슈)
+- 관련 findings 문서: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings-v2.md` (aegis-static-wiki repo; N-2/N-4 와 별개 신규 이슈)
 
 ## S2에 요청하는 작업
 

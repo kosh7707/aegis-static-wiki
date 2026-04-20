@@ -7,8 +7,6 @@ const repoRoot = path.resolve(__dirname, '..');
 const sourceDocsCandidates = [
   process.env.SOURCE_DOCS_ROOT,
   path.join(repoRoot, '..', 'AEGIS', 'docs'),
-  '/home/kosh/AEGIS/docs',
-  '/home/kosh/projects/AEGIS-codex-safety-20260403/docs'
 ].filter(Boolean).map((candidate) => path.resolve(candidate));
 const sourceDocsRoot = sourceDocsCandidates.find((candidate) => fs.existsSync(candidate)) || sourceDocsCandidates[0];
 const migrationMapPath = path.join(repoRoot, 'wiki/system/migration-map.md');

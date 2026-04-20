@@ -7,8 +7,6 @@ function resolveSourceDocsRoot() {
   const candidates = [
     process.env.SOURCE_DOCS_ROOT,
     path.join(ROOT, '..', 'AEGIS', 'docs'),
-    '/home/kosh/AEGIS/docs',
-    '/home/kosh/projects/AEGIS-codex-safety-20260403/docs'
   ].filter(Boolean).map((candidate) => path.resolve(candidate));
 
   const existing = candidates.find((candidate) => fs.existsSync(candidate));

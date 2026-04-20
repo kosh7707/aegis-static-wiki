@@ -326,7 +326,7 @@ S5 ingest 후 유용성을 결정하는 보조 지표:
 외부 파일(`$SAST_SDK_ROOT/sdk-registry.json`)로 SDK 메타데이터를 관리한다.
 
 ```
-$SAST_SDK_ROOT/               <- .env: SAST_SDK_ROOT=/home/kosh/sdks
+$SAST_SDK_ROOT/               <- .env 예시: SAST_SDK_ROOT=/opt/sdks (환경별로 교체)
   |- sdk-registry.json         <- SDK 메타데이터 (외부 설정, 코드 밖)
   +- ti-am335x/                <- sdkId = 폴더명
 ```

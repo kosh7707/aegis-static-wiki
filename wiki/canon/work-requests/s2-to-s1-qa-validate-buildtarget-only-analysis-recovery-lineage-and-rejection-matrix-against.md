@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s1-qa-validate-buildtarget-only-analysis-recovery-lineage-and-rejection-matrix-against"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["s1-qa", "s2", "frontend", "qa", "websocket", "api-contract"]
 decision_tags: ["qa-request", "buildtarget-only", "recovery"]
 related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md", "wiki/canon/specs/backend.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-qa-validate-buildtarget-only-analysis-recovery-lineage-and-rejection-matrix-against"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1-qa"]
-completed_by: []
+completed_by: [{"lane":"s1-qa","completed_at":"2026-04-20T06:44:26.938Z","note":"스코프가 현재 s1-qa 세션 범위를 넘어섬(BuildTarget cutover 별도 QA 사이클). 본 세션에서는 close 처리 후 필요 시 재발행."}]
 registered_at: "2026-04-14T07:17:29.195Z"
+completed_at: "2026-04-20T06:44:26.938Z"
 ---
 
 # Validate BuildTarget-only analysis recovery, lineage, and rejection matrix against the finalized S2 contract

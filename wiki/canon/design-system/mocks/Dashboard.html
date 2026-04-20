@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>AEGIS — 대시보드</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Design system (order matters) -->
+<link rel="stylesheet" href="assets/fonts.css" />
+<link rel="stylesheet" href="assets/tokens.css" />
+<link rel="stylesheet" href="assets/base.css" />
+
+<!-- Components -->
+<link rel="stylesheet" href="assets/components/button.css" />
+<link rel="stylesheet" href="assets/components/panel.css" />
+<link rel="stylesheet" href="assets/components/pill.css" />
+<link rel="stylesheet" href="assets/components/seg.css" />
+<link rel="stylesheet" href="assets/components/toggle.css" />
+<link rel="stylesheet" href="assets/components/severity.css" />
+<link rel="stylesheet" href="assets/components/lang-tag.css" />
+<link rel="stylesheet" href="assets/components/divider.css" />
+<link rel="stylesheet" href="assets/components/choreography.css" />
+<link rel="stylesheet" href="assets/components/nav.css" />
+
+<!-- Page -->
+<link rel="stylesheet" href="assets/pages/dashboard.css" />
+
+<!-- Theme pre-paint: read saved preference before first paint to avoid light-flash.
+     Canonical location is the end of <head> — see DESIGN.md §3.5. -->
+<script>
+  (function(){ try { const t = localStorage.getItem('aegis.theme'); if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch(e){} })();
+</script>
+</head>
+<body>
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <span class="shield">
+      <svg viewBox="0 0 44 48" fill="none">
+        <path d="M22 1 L42 6 V24 C42 36 33 44 22 47 C11 44 2 36 2 24 V6 Z"
+              stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+        <path d="M22 11 L30 15.5 V24.5 L22 29 L14 24.5 V15.5 Z"
+              stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" opacity="0.5"/>
+      </svg>
+    </span>
+    <span class="wordmark">AEGIS</span>
+    <span class="env"><span class="dot"></span>PROD · kr-seoul-1</span>
+  </a>
+
+  <div class="nav-search" onclick="/* TODO: command palette */">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+    <span class="ph">프로젝트, 파일, finding 검색…</span>
+    <span class="kbd">⌘K</span>
+  </div>
+
+  <div class="nav-right">
+    <button class="nav-icon nav-search-mobile" aria-label="검색">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+    </button>
+    <button class="nav-icon" aria-label="실행 이력">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+    </button>
+    <button class="nav-icon" aria-label="알림">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></svg>
+      <span class="badge">3</span>
+    </button>
+    <button class="nav-icon" data-theme-toggle aria-label="테마 전환" onclick="
+      (function(){
+        var html = document.documentElement;
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        if (next === 'dark') html.setAttribute('data-theme','dark'); else html.removeAttribute('data-theme');
+        try { localStorage.setItem('aegis.theme', next); } catch(e){}
+      })();
+    ">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+    </button>
+    <button class="nav-icon" aria-label="설정">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+    <button class="nav-user" aria-label="계정 · 김코세화" title="김코세화 · LEAD · SECOPS">
+      <span class="avatar" aria-hidden="true">김</span>
+      <span class="u-text">
+        <span class="name">김코세화</span>
+        <span class="role">LEAD · SECOPS</span>
+      </span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="page-head" data-chore>
+    <div class="chore c-1">
+      <h1>안녕하세요, 김코세화 <em>— 오늘 주의 필요 <span class="crit-n">3건</span></em></h1>
+      <div class="sub">
+        <span><b>12</b> 프로젝트 활성</span>
+        <span class="sep">·</span>
+        <span><span class="critical">47 critical</span> open</span>
+        <span class="sep">·</span>
+        <span><b>8</b> 승인 대기</span>
+        <span class="sep">·</span>
+        <span id="last-sync">마지막 동기화 00:00 UTC+9</span>
+      </div>
+    </div>
+    <div class="actions chore c-2">
+      <button class="btn btn-ghost btn-sm" onclick="toggleTweaks()" title="뷰 옵션">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        뷰
+      </button>
+      <button class="btn btn-primary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        새 프로젝트
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════ NEEDS ATTENTION ═══════════════ -->
+  <section data-chore>
+    <div class="section-head chore c-2">
+      <h2>주의 필요 <span class="count">3</span></h2>
+      <span class="hint">최근 24시간 기준 · 자동 우선순위</span>
+    </div>
+
+    <div class="attention-grid">
+
+      <!-- Card 1 -->
+      <article class="att-card sev-critical chore c-3" onclick="/* TODO: nav */">
+        <div class="att-head">
+          <div class="title-block">
+            <div class="title">
+              <span class="dot-sev"></span>
+              motor-control-unit
+            </div>
+            <div class="meta">
+              <span class="lang-tag l-c"><span class="lang-dot"></span>c</span>
+              <span class="sep">·</span>
+              <span>ECU · AUTOSAR Classic</span>
+            </div>
+          </div>
+          <span class="gate blocked">BLOCKED</span>
+        </div>
+
+        <div class="att-body">
+          <div class="att-headline">
+            <span class="n critical">14</span> critical, <span class="n high">23</span> high 신규 — 마지막 스캔에서 <span class="n" style="color:var(--severity-critical)">+9</span> 증가
+          </div>
+          <div class="att-chips">
+            <span class="chip-sev critical">14</span>
+            <span class="chip-sev high">23</span>
+            <span class="chip-sev medium">41</span>
+            <span class="chip-sev low">62</span>
+          </div>
+        </div>
+
+        <div class="att-foot">
+          <div class="left">
+            <span>3분 전 완료</span>
+            <span class="sep">·</span>
+            <span>승인 2건 대기</span>
+          </div>
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </article>
+
+      <!-- Card 2 — in progress -->
+      <article class="att-card sev-high chore c-3" onclick="/* TODO: nav */">
+        <div class="att-head">
+          <div class="title-block">
+            <div class="title">
+              <span class="dot-sev"></span>
+              bms-gateway-fw
+            </div>
+            <div class="meta">
+              <span class="lang-tag l-cpp"><span class="lang-dot"></span>c++</span>
+              <span class="sep">·</span>
+              <span>BMS · CAN-FD</span>
+            </div>
+          </div>
+          <span class="gate running">RUNNING</span>
+        </div>
+
+        <div class="att-progress" title="분석 진행 중"></div>
+
+        <div class="att-body">
+          <div class="att-headline">
+            Static 분석 <span class="n">64%</span> · Agent · <span class="mono" style="font-family:var(--font-mono);color:var(--foreground-subtle);font-size:11.5px">taint-flow heuristic</span>
+          </div>
+          <div class="att-chips">
+            <span class="chip-sev critical">7</span>
+            <span class="chip-sev high">19</span>
+            <span class="chip-sev medium">28</span>
+            <span class="chip-sev low">34</span>
+          </div>
+        </div>
+
+        <div class="att-foot">
+          <div class="left">
+            <span>ETA ~4분</span>
+            <span class="sep">·</span>
+            <span>승인 1건 대기</span>
+          </div>
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="att-card sev-medium chore c-3" onclick="/* TODO: nav */">
+        <div class="att-head">
+          <div class="title-block">
+            <div class="title">
+              <span class="dot-sev"></span>
+              adas-perception-rt
+            </div>
+            <div class="meta">
+              <span class="lang-tag l-rust"><span class="lang-dot"></span>rust</span>
+              <span class="sep">·</span>
+              <span>ADAS · ISO 26262 ASIL-D</span>
+            </div>
+          </div>
+          <span class="gate warn">REVIEW</span>
+        </div>
+
+        <div class="att-body">
+          <div class="att-headline">
+            Quality Gate 2개 룰 실패 · <span class="n high">6</span> high, 품질 게이트 재평가 필요
+          </div>
+          <div class="att-chips">
+            <span class="chip-sev critical">0</span>
+            <span class="chip-sev high">6</span>
+            <span class="chip-sev medium">11</span>
+            <span class="chip-sev low">18</span>
+          </div>
+        </div>
+
+        <div class="att-foot">
+          <div class="left">
+            <span>27분 전 완료</span>
+            <span class="sep">·</span>
+            <span>승인 5건 대기</span>
+          </div>
+          <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ MAIN COLUMNS ═══════════════ -->
+  <div class="cols" data-chore>
+
+    <!-- ── Projects table ── -->
+    <section class="panel projects-wrap chore c-3">
+      <div class="panel-head">
+        <h3>프로젝트 <span class="count">12</span></h3>
+        <div class="panel-tools">
+          <div class="filter-pills" id="filter-pills">
+            <button class="pill active" data-filter="all">ALL</button>
+            <button class="pill" data-filter="blocked"><span class="dot blocked"></span>BLOCKED</button>
+            <button class="pill" data-filter="running"><span class="dot running"></span>RUNNING</button>
+            <button class="pill" data-filter="stale">STALE</button>
+          </div>
+          <div class="search-inline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" placeholder="프로젝트 이름…" id="project-search" />
+          </div>
+        </div>
+      </div>
+
+      <div class="ptable-wrap">
+        <table class="projects" id="projects-table">
+          <thead>
+            <tr>
+              <th class="sort active" data-sort="name">프로젝트 <span class="chev">▾</span></th>
+              <th class="center">게이트</th>
+              <th class="num sort" data-sort="critical">크리티컬 <span class="chev">▾</span></th>
+              <th class="num sort" data-sort="high">하이 <span class="chev">▾</span></th>
+              <th class="num sort" data-sort="medium">미디엄 <span class="chev">▾</span></th>
+              <th class="num">오픈</th>
+              <th class="num sort" data-sort="approvals">승인대기 <span class="chev">▾</span></th>
+              <th class="sort" data-sort="when">마지막 분석 <span class="chev">▾</span></th>
+              <th>담당</th>
+            </tr>
+          </thead>
+          <tbody id="projects-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="ptable-cards" id="projects-cards"></div>
+
+      <div class="panel-foot">
+        <span>12 / 12 프로젝트 표시</span>
+        <a href="#">전체 보기 →</a>
+      </div>
+    </section>
+
+    <!-- ── Activity feed ── -->
+    <aside class="activity chore c-4">
+      <div class="panel">
+        <div class="panel-head" style="padding: var(--space-4) var(--space-5);">
+          <h3>최근 활동</h3>
+          <button class="nav-icon" style="width:26px;height:26px" aria-label="새로고침">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          </button>
+        </div>
+
+        <div class="activity-body" id="activity-body"></div>
+
+        <div class="activity-foot">
+          <span class="live-dot"></span>
+          WS 연결됨 · 실시간 스트림
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<!-- ═══════════════ TWEAKS PANEL ═══════════════ -->
+<aside class="tweaks" id="tweaks">
+  <div class="tweaks-head">
+    <span class="title">TWEAKS</span>
+    <button onclick="toggleTweaks()" aria-label="닫기">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="tweaks-body">
+    <div class="tweak-group">
+      <label>밀도</label>
+      <div class="seg" data-group="density">
+        <button data-val="comfortable">COMFORTABLE</button>
+        <button data-val="compact">COMPACT</button>
+      </div>
+    </div>
+    <div class="tweak-group">
+      <label>레이아웃</label>
+      <div class="seg" data-group="layout">
+        <button data-val="table">TABLE</button>
+        <button data-val="cards">CARDS</button>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span>활동 피드 표시</span>
+      <div class="toggle on" id="toggle-activity" onclick="toggleActivity()"></div>
+    </div>
+    <div class="toggle-row">
+      <span>라이브 스트림</span>
+      <div class="toggle on" id="toggle-live" onclick="toggleLive()"></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+/* EDITMODE-BEGIN */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "activity": true,
+  "live": true,
+  "density": "comfortable",
+  "layout": "table"
+}/*EDITMODE-END*/;
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const PROJECTS = [
+  { name: "motor-control-unit",    slug: "mcu-atk1.prod",   lang: "c",    gate: "blocked", running: false, critical: 14, high: 23, medium: 41, low: 62, approvals: 2, when: "3분 전",  owner: "김", ownerName: "Kim" },
+  { name: "bms-gateway-fw",        slug: "bms-gw.prod",     lang: "cpp",  gate: "running", running: true,  critical: 7,  high: 19, medium: 28, low: 34, approvals: 1, when: "진행 중", owner: "박", ownerName: "Park" },
+  { name: "adas-perception-rt",    slug: "adas-rt.prod",    lang: "rust", gate: "warn",    running: false, critical: 0,  high: 6,  medium: 11, low: 18, approvals: 5, when: "27분 전", owner: "이", ownerName: "Lee" },
+  { name: "infotainment-ivi",      slug: "ivi.prod",        lang: "cpp",  gate: "pass",    running: false, critical: 0,  high: 2,  medium: 9,  low: 21, approvals: 0, when: "1시간 전", owner: "최", ownerName: "Choi" },
+  { name: "ota-update-service",    slug: "ota.prod",        lang: "ts",   gate: "pass",    running: false, critical: 0,  high: 0,  medium: 3,  low: 12, approvals: 0, when: "3시간 전", owner: "정", ownerName: "Jung" },
+  { name: "v2x-stack-dsrc",        slug: "v2x.prod",        lang: "c",    gate: "warn",    running: false, critical: 1,  high: 4,  medium: 8,  low: 15, approvals: 2, when: "6시간 전", owner: "강", ownerName: "Kang" },
+  { name: "telematics-edge",       slug: "tel-edge.prod",   lang: "rust", gate: "pass",    running: false, critical: 0,  high: 1,  medium: 4,  low: 9,  approvals: 0, when: "어제",     owner: "윤", ownerName: "Yoon" },
+  { name: "diag-uds-over-can",     slug: "uds-can.prod",    lang: "c",    gate: "pass",    running: false, critical: 0,  high: 0,  medium: 2,  low: 6,  approvals: 0, when: "어제",     owner: "서", ownerName: "Seo" },
+  { name: "hypervisor-arm",        slug: "hv-arm.prod",     lang: "cpp",  gate: "warn",    running: false, critical: 1,  high: 3,  medium: 5,  low: 8,  approvals: 1, when: "2일 전",   owner: "박", ownerName: "Park" },
+  { name: "secure-boot-loader",    slug: "sbl.prod",        lang: "c",    gate: "pass",    running: false, critical: 0,  high: 0,  medium: 1,  low: 3,  approvals: 0, when: "3일 전",   owner: "김", ownerName: "Kim" },
+  { name: "can-tp-layer",          slug: "cantp.prod",      lang: "c",    gate: "none",    running: false, critical: 0,  high: 0,  medium: 0,  low: 0,  approvals: 0, when: "7일 전",   owner: "—", ownerName: "—" },
+  { name: "python-eval-harness",   slug: "py-harness.dev",  lang: "py",   gate: "pass",    running: false, critical: 0,  high: 0,  medium: 0,  low: 2,  approvals: 0, when: "12일 전",  owner: "이", ownerName: "Lee" },
+];
+
+const ACTIVITY = [
+  { type: "success",  icon: "check",  when: "방금 전",  html: '<b><span class="proj">motor-control-unit</span></b> 정적 분석 완료 · <span class="n critical">14 crit</span>, <span class="n high">23 high</span> 신규' },
+  { type: "critical", icon: "alert",  when: "3분 전",   html: '<b><span class="proj">motor-control-unit</span></b> Quality Gate <b>BLOCKED</b> — 룰 <span class="n">3/7</span> 실패' },
+  { type: "primary",  icon: "play",   when: "6분 전",   html: '<b><span class="proj">bms-gateway-fw</span></b> 정적 분석 시작 · Agent <span class="n">taint-flow</span> 활성' },
+  { type: "muted",    icon: "user",   when: "14분 전",  html: '<b>박지은</b>이 <b><span class="proj">adas-perception-rt</span></b> finding <span class="n">#F-4021</span> 를 <b>accepted-risk</b> 로 승인' },
+  { type: "muted",    icon: "branch", when: "28분 전",  html: '<b><span class="proj">infotainment-ivi</span></b> 빌드 타깃 <b>QNX 7.1</b> 추가' },
+  { type: "success",  icon: "check",  when: "1시간 전", html: '<b><span class="proj">ota-update-service</span></b> 동적 테스트 통과 · <span class="n">120/120</span>' },
+  { type: "muted",    icon: "user",   when: "2시간 전", html: '<b>이준호</b>가 <b><span class="proj">v2x-stack-dsrc</span></b> 에 승인 요청 <span class="n">#A-209</span> 제출' },
+  { type: "critical", icon: "alert",  when: "3시간 전", html: '<b><span class="proj">hypervisor-arm</span></b> finding <span class="n">#F-3880</span> 재검증 필요 (needs-revalidation)' },
+  { type: "muted",    icon: "clock",  when: "5시간 전", html: '일일 posture 리포트 <b>email-digest</b> 발송 완료 (12건)' },
+  { type: "success",  icon: "check",  when: "어제",     html: '<b><span class="proj">telematics-edge</span></b> 정적 분석 완료 · 신규 없음' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════
+function gateLabel(g, running) {
+  if (running) return { cls: 'running', txt: 'RUNNING' };
+  const map = {
+    pass:    { cls: 'pass',    txt: 'PASS' },
+    blocked: { cls: 'blocked', txt: 'BLOCK' },
+    warn:    { cls: 'warn',    txt: 'WARN' },
+    running: { cls: 'running', txt: 'RUNNING' },
+    none:    { cls: 'none',    txt: '—' },
+  };
+  return map[g] || map.none;
+}
+
+function numCell(n, cls) {
+  if (n === 0) return `<td class="num-cell zero">·</td>`;
+  return `<td class="num-cell"><span class="${cls}">${n}</span></td>`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('projects-tbody');
+  const filter = document.querySelector('#filter-pills .pill.active').dataset.filter;
+  const q = document.getElementById('project-search').value.trim().toLowerCase();
+
+  let data = [...PROJECTS];
+  if (filter === 'blocked') data = data.filter(p => p.gate === 'blocked');
+  else if (filter === 'running') data = data.filter(p => p.running);
+  else if (filter === 'stale') data = data.filter(p => /일 전|—/.test(p.when));
+  if (q) data = data.filter(p => p.name.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q));
+
+  // sort
+  const by = SORT.by, dir = SORT.dir;
+  data.sort((a, b) => {
+    let av = a[by], bv = b[by];
+    if (by === 'when') { av = whenScore(a.when); bv = whenScore(b.when); }
+    if (by === 'name') { av = a.name; bv = b.name; }
+    if (typeof av === 'string') return dir * av.localeCompare(bv);
+    return dir * (bv - av);
+  });
+
+  tbody.innerHTML = data.map(p => {
+    const g = gateLabel(p.gate, p.running);
+    return `
+      <tr class="${p.running ? 'running' : ''}" onclick="/* nav */">
+        <td>
+          <div class="cell-name">
+            <span class="n ${p.running ? 'running' : ''}">${p.name}</span>
+            <span class="slug">${p.slug}</span>
+          </div>
+        </td>
+        <td style="text-align:center"><span class="cell-gate ${g.cls}">${g.txt}</span></td>
+        ${numCell(p.critical, 'crit')}
+        ${numCell(p.high, 'high')}
+        ${numCell(p.medium, 'med')}
+        <td class="num-cell ${p.critical + p.high + p.medium + p.low === 0 ? 'zero' : ''}">${p.critical + p.high + p.medium + p.low || '·'}</td>
+        <td class="num-cell">${p.approvals > 0 ? `<span class="approvals-pill">${p.approvals}</span>` : `<span class="approvals-pill zero">·</span>`}</td>
+        <td class="cell-when">${p.when}</td>
+        <td>
+          <div class="cell-owner">
+            <span class="mini-avatar">${p.owner}</span>
+            <span>${p.ownerName}</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // also card layout
+  renderCards(data);
+
+  // count
+  document.querySelector('.panel-foot span').textContent = `${data.length} / ${PROJECTS.length} 프로젝트 표시`;
+}
+
+function renderCards(data) {
+  const el = document.getElementById('projects-cards');
+  el.innerHTML = data.map(p => {
+    const g = gateLabel(p.gate, p.running);
+    return `
+      <article class="pcard" onclick="/* nav */">
+        <div class="pc-head">
+          <div>
+            <div class="pc-name">${p.name}</div>
+            <div class="pc-meta">${p.slug} · ${p.when}</div>
+          </div>
+          <span class="cell-gate ${g.cls}">${g.txt}</span>
+        </div>
+        <div class="pc-chips">
+          ${p.critical ? `<span class="chip-sev critical">${p.critical}</span>` : ''}
+          ${p.high ? `<span class="chip-sev high">${p.high}</span>` : ''}
+          ${p.medium ? `<span class="chip-sev medium">${p.medium}</span>` : ''}
+          ${p.low ? `<span class="chip-sev low">${p.low}</span>` : ''}
+          ${p.approvals ? `<span class="approvals-pill">${p.approvals} 승인</span>` : ''}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function whenScore(s) {
+  if (s.includes('진행')) return 0;
+  if (s.includes('분 전')) return parseInt(s) || 1;
+  if (s.includes('시간 전')) return (parseInt(s) || 1) * 60;
+  if (s.includes('어제')) return 60*24;
+  if (s.includes('일 전')) return (parseInt(s) || 1) * 60 * 24;
+  return 99999;
+}
+
+const SORT = { by: 'name', dir: 1 };
+function bindSort() {
+  document.querySelectorAll('#projects-table th.sort').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (SORT.by === key) SORT.dir *= -1;
+      else { SORT.by = key; SORT.dir = (key === 'name' ? 1 : -1); }
+      document.querySelectorAll('#projects-table th').forEach(x => {
+        x.classList.remove('active', 'asc');
+      });
+      th.classList.add('active');
+      if (SORT.dir === 1) th.classList.add('asc');
+      renderTable();
+    });
+  });
+  // Initialize visual state for the default sort.
+  const initial = document.querySelector(`#projects-table th[data-sort="${SORT.by}"]`);
+  if (initial && SORT.dir === 1) initial.classList.add('asc');
+}
+
+function bindFilter() {
+  document.querySelectorAll('#filter-pills .pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#filter-pills .pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      renderTable();
+    });
+  });
+  document.getElementById('project-search').addEventListener('input', renderTable);
+}
+
+// ── Activity ──
+const ICONS = {
+  check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  alert:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  play:   '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 19 12 7 20"/></svg>',
+  user:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  branch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>',
+  clock:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+};
+
+function renderActivity() {
+  const el = document.getElementById('activity-body');
+  el.innerHTML = ACTIVITY.map(a => `
+    <div class="activity-item">
+      <span class="activity-icon ${a.type}">${ICONS[a.icon] || ICONS.clock}</span>
+      <div class="activity-content">
+        <div class="line">${a.html}</div>
+        <div class="when">${a.when}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// TWEAKS
+// ═══════════════════════════════════════════════════════════
+let TWEAK = { ...TWEAK_DEFAULTS };
+
+function applyTweaks() {
+  document.body.classList.toggle('no-activity', !TWEAK.activity);
+  document.body.classList.toggle('no-live', !TWEAK.live);
+  document.body.classList.toggle('density-compact', TWEAK.density === 'compact');
+  document.body.classList.toggle('layout-cards', TWEAK.layout === 'cards');
+  document.getElementById('toggle-activity').classList.toggle('on', TWEAK.activity);
+  document.getElementById('toggle-live').classList.toggle('on', TWEAK.live);
+
+  // Sync segmented controls
+  document.querySelectorAll('.tweaks-body .seg').forEach(seg => {
+    const group = seg.dataset.group;
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === TWEAK[group]);
+    });
+  });
+}
+
+function setTweak(k, v) {
+  TWEAK[k] = v;
+  applyTweaks();
+  try { window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*'); } catch(e){}
+  try { localStorage.setItem('aegis.tweak', JSON.stringify(TWEAK)); } catch(e){}
+}
+
+function toggleActivity() { setTweak('activity', !TWEAK.activity); }
+function toggleLive()     { setTweak('live', !TWEAK.live); }
+
+function toggleTweaks() {
+  document.getElementById('tweaks').classList.toggle('show');
+}
+
+// Edit-mode protocol
+window.addEventListener('message', (e) => {
+  if (e.data?.type === '__activate_edit_mode') document.getElementById('tweaks').classList.add('show');
+  if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('show');
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+function bindTweaks() {
+  document.querySelectorAll('.tweaks-body .seg').forEach(seg => {
+    const group = seg.dataset.group;
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => setTweak(group, btn.dataset.val));
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+// Load saved tweak state
+try {
+  const saved = JSON.parse(localStorage.getItem('aegis.tweak') || 'null');
+  if (saved) TWEAK = { ...TWEAK, ...saved };
+} catch(e){}
+
+applyTweaks();
+renderTable();
+renderActivity();
+bindSort();
+bindFilter();
+bindTweaks();
+
+// Last sync time
+(function() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const str = `${pad(now.getHours())}:${pad(now.getMinutes())} UTC+9`;
+  document.getElementById('last-sync').textContent = `마지막 동기화 ${str}`;
+})();
+
+// ⌘K
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.querySelector('.nav-search').style.borderColor = 'var(--primary)';
+    setTimeout(() => document.querySelector('.nav-search').style.borderColor = '', 600);
+  }
+});
+</script>
+
+</body>
+</html>

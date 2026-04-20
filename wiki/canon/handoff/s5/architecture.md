@@ -123,7 +123,7 @@ services/knowledge-base/
 ## 3. 환경변수 (.env)
 
 ```bash
-AEGIS_KB_QDRANT_PATH=/home/kosh/AEGIS/services/knowledge-base/data/qdrant
+AEGIS_KB_QDRANT_PATH=./services/knowledge-base/data/qdrant   # AEGIS repo-root 기준 예시 — 필요 시 절대경로로 교체
 # AEGIS_KB_QDRANT_URL=http://localhost:6333    # 서버 모드 시 설정 (qdrant_path 대신 사용)
 # AEGIS_KB_QDRANT_API_KEY=                     # 서버 인증 시 설정
 AEGIS_KB_RAG_TOP_K=5

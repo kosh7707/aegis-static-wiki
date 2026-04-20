@@ -38,7 +38,7 @@ completed_at: "2026-04-20T05:20:31.326Z"
 - 이전 WR `s1-qa-to-s1-s1-qa-s1-mock-dashboard-kpi-live-signal-ds` 송부 직후, 검수자가 **소스 일부만 읽고 렌더 결과 기반으로 판정한 점**을 사용자가 지적.
 - 이번엔 `services/frontend/src/**` 전수 + `handoff/**/*.css` 18+3 파일 diff + API/hooks/contexts/layouts/utils/constants 포함 약 80+ 파일을 Read + Grep + Explore sub-agent ×3으로 점검.
 - 이전 WR은 이미 S1이 처리 착수 — 수정/철회하지 않고 **본 보완 WR로 재판정과 신규 항목만 전달**. 회신은 이전 WR에 reply해도 좋고, 본 WR에 별도 reply해도 됨.
-- 산출물: `/home/kosh/AEGIS/.omc/autopilot/findings-v2.md` (증거 경로·라인 명시)
+- 산출물: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings-v2.md` (aegis-static-wiki repo; 증거 경로·라인 명시)
 - `complete_wr`는 수신측(S1) 권한 — 검수자가 호출하지 않음.
 
 ## 재판정 요약 (이전 WR 17 항)
@@ -118,10 +118,10 @@ completed_at: "2026-04-20T05:20:31.326Z"
 - Carbon Design System 완전 제거 로드맵 (별도 논의 가능)
 - 이전 visual baseline 24건 regression (별도 QA 사이클)
 
-## 증거 아티팩트
-- 본 WR findings: `/home/kosh/AEGIS/.omc/autopilot/findings-v2.md`
-- v1 findings (참고): `/home/kosh/AEGIS/.omc/autopilot/findings.md`
-- 스크린샷 16장: `/home/kosh/AEGIS/.omc/autopilot/qa-screenshots/qa-*.png`
+## 증거 아티팩트 (aegis-static-wiki repo-relative)
+- 본 WR findings: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings-v2.md`
+- v1 findings (참고): `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/findings.md`
+- 스크린샷 16장: `wiki/canon/handoff/s1-qa/artifacts/2026-04-20/qa-screenshots/qa-*.png`
 - Session history: `wiki/canon/handoff/s1-qa/session-2026-04-20-mock-adherence-qa-v2.md`
 
 ## QA 쓰기 검증

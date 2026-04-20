@@ -51,7 +51,7 @@ related_pages:
 - Implemented constrained write operations: write_page, append_log_entry, update_index, and record_migration_transition.
 
 ## [2026-04-06] migration | active AEGIS docs resync
-- Resynced 163 canonical pages from /home/kosh/AEGIS/docs.
+- Resynced 163 canonical pages from the AEGIS repo `docs/` directory.
 - Added newly discovered handoff/work-request pages and rebuilt migration-map.md plus index.md.
 
 ## [2026-04-06] maintenance | wiki-first governance cutover
@@ -1360,3 +1360,56 @@ related_pages:
 ## [2026-04-20] mcp | register_wr | s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface
 - Registered request WR for s2
 - Path: wiki/canon/work-requests/s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface.md
+
+## [2026-04-20] mcp | complete_wr | s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | complete_wr | s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | complete_wr | s2-to-s1-qa-validate-buildtarget-only-analysis-recovery-lineage-and-rejection-matrix-against
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | complete_wr | s2-to-s1-s1-qa-buildtarget-only-analysis-cutover-is-now-materially-complete-align-s1-s1-qa-to-a
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | complete_wr | s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat
+- Lane s1-qa completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-s1-s2-repo-portable-s2-wiki-home-kosh
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-s1-s2-repo-portable-s2-wiki-home-kosh.md
+
+## [2026-04-20] mcp | register_wr | s1-to-s3-s1-s3-repo-portable-analysis-agent-build-agent
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s1-to-s3-s1-s3-repo-portable-analysis-agent-build-agent.md
+
+## [2026-04-20] mcp | register_wr | s1-to-s4-s1-s4-repo-portable-sast-runner-baseline
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s1-to-s4-s1-s4-repo-portable-sast-runner-baseline.md
+
+## [2026-04-20] mcp | register_wr | s1-to-s5-s1-s5-repo-portable-s5-architecture
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s1-to-s5-s1-s5-repo-portable-s5-architecture.md
+
+## [2026-04-20] mcp | register_wr | s1-to-s7-s1-s7-repo-portable-llm-gateway-readme
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s1-to-s7-s1-s7-repo-portable-llm-gateway-readme.md
+
+## [2026-04-20] mcp | register_wr | s2-to-s1-reply-auth-member-management-v1-landed-on-2026-04-20-adopt-org-code-registration
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-auth-member-management-v1-landed-on-2026-04-20-adopt-org-code-registration.md
+
+## [2026-04-20] mcp | complete_wr | s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] implemented lifecycle-first auth/member-management v1 and replied to S1 | s2
+- Updated canonical backend-owned auth docs: shared-models, s2 api-endpoints, backend spec, s2 readme, s2 roadmap.
+- Completed the S1->S2 auth surface WR from the S2 recipient perspective.
+- Registered reply WR to S1 with org-code registration, no-invite lifecycle, rememberMe, password-reset, and integration guidance.

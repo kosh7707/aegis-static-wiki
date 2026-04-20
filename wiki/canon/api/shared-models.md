@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-20"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -60,6 +60,8 @@ interface ApiError {
       | "INVALID_INPUT"
       | "NOT_FOUND"
       | "CONFLICT"
+      | "FORBIDDEN"
+      | "RATE_LIMITED"
       | "ADAPTER_UNAVAILABLE"
       | "LLM_UNAVAILABLE"
       | "LLM_HTTP_ERROR"
@@ -400,13 +402,49 @@ interface Notification {
   createdAt: string;
 }
 
+type UserAccountStatus = "active" | "disabled";
+
 interface User {
   id: string;
   username: string;
+  email?: string;
   displayName: string;
   role: "viewer" | "analyst" | "admin";
+  accountStatus?: UserAccountStatus;
+  organizationId?: string | null;
+  organizationCode?: string | null;
+  organizationName?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface OrganizationVerifyPreview {
+  orgId: string;
+  code: string;
+  name: string;
+  admin: { displayName: string; email: string };
+  region: string;
+  defaultRole: "viewer" | "analyst" | "admin";
+  emailDomainHint?: string;
+}
+
+type RegistrationRequestStatus = "pending_admin_review" | "approved" | "rejected";
+
+interface RegistrationRequest {
+  id: string;
+  organizationId: string;
+  organizationCode: string;
+  organizationName: string;
+  fullName: string;
+  email: string;
+  status: RegistrationRequestStatus;
+  assignedRole?: "viewer" | "analyst" | "admin";
+  approvedUserId?: string;
+  decisionReason?: string;
+  lookupExpiresAt: string;
+  createdAt: string;
+  approvedAt?: string;
+  rejectedAt?: string;
 }
 ```
 
@@ -810,18 +848,99 @@ Important clarification:
 
 ## 3.12 Auth surface
 
-| Method | Path | Request | Success | Status codes |
-|---|---|---|---|---|
-| POST | `/api/auth/login` | `{ username: string; password: string }` | `200 { success, data: { token, user } }` | `200`, `400` |
-| POST | `/api/auth/logout` | Bearer token optional | `200 { success: true }` | `200` |
-| GET | `/api/auth/me` | Bearer token | `200 { success, data: User }` | `200`, `401` |
-| GET | `/api/auth/users` | - | `200 { success, data: User[] }` | `200` |
+### Route matrix
 
-Notes:
+| Access | Method | Path | Notes |
+|---|---|---|---|
+| public | POST | `/api/auth/login` | `username` field is a compatibility name; backend resolves exact `username` first, then normalized `email` |
+| public | POST | `/api/auth/logout` | token optional; remains public for brownfield compatibility |
+| public | GET | `/api/auth/orgs/:code/verify` | org code preview for signup UX |
+| public | POST | `/api/auth/register` | creates pending registration request and returns lookup token |
+| public | GET | `/api/auth/registrations/lookup/:lookupToken` | public bearer-style lookup using high-entropy token, not internal id |
+| public | POST | `/api/auth/password-reset/request` | always returns generic `202 { accepted: true }` |
+| public | POST | `/api/auth/password-reset/confirm` | consumes reset token and rotates password |
+| authenticated | GET | `/api/auth/me` | current session identity |
+| admin-only | GET | `/api/auth/users` | org-admin sees same-org users only; platform-admin (`organizationId = null`) may see all |
+| admin-only | GET | `/api/auth/registration-requests` | list registration requests for same org unless platform-admin bypass applies |
+| admin-only | GET | `/api/auth/registration-requests/:id` | request detail |
+| admin-only | POST | `/api/auth/registration-requests/:id/approve` | assign role + approve; approval makes account login-capable immediately |
+| admin-only | POST | `/api/auth/registration-requests/:id/reject` | terminal rejection |
 
-- login failure is currently `400 Invalid username or password`, not `401`.
-- `/api/auth/*` is auth-exempt at middleware level so login/logout/me/users remain reachable even when global auth is enabled.
-- `/api/auth/me` still returns `401 Not authenticated` when `req.user` is absent.
+### Request / response shapes
+
+```ts
+interface LoginRequest {
+  username: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+interface LoginResponse {
+  success: boolean;
+  data?: {
+    token: string;
+    expiresAt: string;
+    user: User;
+  };
+  error?: string;
+}
+
+interface RegisterRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  orgCode: string;
+  termsAcceptedAt: string;
+  auditAcceptedAt: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  data?: {
+    registrationId: string;
+    lookupToken: string;
+    lookupExpiresAt: string;
+    status: RegistrationRequestStatus;
+    createdAt: string;
+  };
+  error?: string;
+}
+
+interface PasswordResetRequestBody {
+  email: string;
+}
+
+interface PasswordResetConfirmBody {
+  token: string;
+  newPassword: string;
+}
+```
+
+### Frozen v1 semantics
+- `rememberMe=false` => default session TTL `24h`
+- `rememberMe=true` => extended session TTL `30d`
+- login rate limit: `10/min/IP`, `10/10min/identifier`
+- registration lookup token TTL `30d`
+- password reset token TTL `1h`
+- password reset request rate limit:
+  - `5/min/IP`
+  - `3/hour/email`
+- issuing a new password reset token revokes older unconsumed reset tokens for that user
+- successful password reset consumes the presented token, revokes any remaining outstanding reset tokens, and invalidates all active sessions for that user
+- org verify rate limit: `10/min/IP`
+- registration submit rate limit:
+  - `5/min/IP`
+  - `3 active pending requests / 24h / email`
+- `Invite` is **not** part of v1 auth lifecycle.
+- Password is collected at registration-request time.
+- Org-admin approval makes the account login-capable immediately.
+- Public registration lookup uses `lookupToken`; raw internal ids are not accepted as public lookup credentials.
+- `/api/auth/users` is no longer public even when soft-auth mode is enabled.
+
+### Brownfield compatibility notes
+- Existing `/api/auth/login`, `/api/auth/logout`, and `/api/auth/me` remain mounted.
+- The login request field keeps the name `username` to minimize S1 churn, but its v1 meaning is now “login identifier”.
+- Platform-admin bypass is transitional: pre-provisioned legacy/system admins with `organizationId = null` may review across organizations until a later admin-model cleanup.
 
 ## 3.13 Additional mounted REST surfaces
 

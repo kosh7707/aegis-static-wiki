@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════
+   AEGIS — Fonts
+   Paperlogy (sans, Korean-optimized) weights 300-700.
+   Geist Mono (monospace) loaded from Google Fonts.
+   ═══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-4@1.0/Paperlogy-3Light.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-4@1.0/Paperlogy-4Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-4@1.0/Paperlogy-5Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-4@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Paperlogy';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-4@1.0/Paperlogy-7Bold.woff2') format('woff2');
+}

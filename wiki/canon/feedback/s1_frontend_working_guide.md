@@ -16,10 +16,19 @@ source_refs:
   - "services/frontend/src/styles/handoff/base.css"
   - "services/frontend/src/styles/handoff/components/nav.css"
   - "services/frontend/src/styles/handoff/pages/dashboard.css"
-last_verified: "2026-04-18"
+  - "wiki/canon/design-system/readme.md"
+  - "wiki/canon/design-system/DESIGN.md"
+  - "wiki/canon/handoff/s1/design-system.md"
+last_verified: "2026-04-20"
 service_tags: ["s1", "platform"]
-decision_tags: ["frontend-structure-contract", "web-only-frontend", "src-flattened", "external-ui-handoff", "handoff-css-system"]
-related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/architecture.md"]
+decision_tags: ["frontend-structure-contract", "web-only-frontend", "src-flattened", "external-ui-handoff", "handoff-css-system", "design-system-source-of-truth"]
+related_pages:
+  - "wiki/canon/specs/frontend.md"
+  - "wiki/canon/handoff/s1/readme.md"
+  - "wiki/canon/handoff/s1/architecture.md"
+  - "wiki/canon/handoff/s1/design-system.md"
+  - "wiki/canon/design-system/readme.md"
+  - "wiki/canon/design-system/DESIGN.md"
 ---
 
 # S1 작업 지침서 — Frontend (React + TypeScript Web SPA)
@@ -66,14 +75,19 @@ S1은 아래를 책임지지 않는다.
 5. 누가/무엇이/어떤 버전으로 그 결과를 냈는지
 
 ### Active documentation contract
-- visual direction은 외부 디자이너 handoff가 결정한다.
+- visual direction은 외부 디자이너 handoff가 결정하며, canonical 위치는 `wiki/canon/design-system/` 이다.
+- lane-local 적용 규칙은 `wiki/canon/handoff/s1/design-system.md` 에 있다.
 - repo 내부 문서는 구조/행동/검증 계약만 유지한다.
 - auth entry 화면은 `src/shared/auth/*` 공용 자산을 사용한다.
 - 새로운 styling lane을 추가할 때는 실제 재사용 경계를 먼저 입증한다.
 
 ### Documentation hierarchy
-- 활성 규칙의 source-of-truth는 wiki canon(`specs/frontend`, `handoff/s1/readme`, `handoff/s1/architecture`, 본 working guide)이다.
-- repo 내부에는 더 이상 활성 디자인 지침 문서를 두지 않는다.
+- 활성 규칙의 source-of-truth는 wiki canon이다:
+  1. 디자인 규칙 권위: `wiki/canon/design-system/DESIGN.md` + `mocks/**` + `assets/**`
+  2. S1 lane-local 디자인 적용 규칙: `wiki/canon/handoff/s1/design-system.md`
+  3. S1 lane 계약: `wiki/canon/specs/frontend`, `wiki/canon/handoff/s1/readme`, `wiki/canon/handoff/s1/architecture`, 본 working guide
+- repo 내부(`services/frontend/docs/**`)에는 활성 디자인 지침 문서를 두지 않는다.
+- `services/frontend/src/styles/handoff/**` 는 `wiki/canon/design-system/assets/**` 의 **ship 전용 1:1 복제본**이며, 로컬 개정 금지.
 - session/work-request/history 문서는 과거 판단과 파일명을 보존할 수 있으며, 활성 구현 기준으로 재해석하지 않는다.
 
 ## 5. 아키텍처 가이드
@@ -140,14 +154,19 @@ pages/
 
 ## 6. 새 페이지/컴포넌트 추가 체크리스트
 
-1. `pages/<Page>/<Page>.tsx` + `pages/<Page>/components` 생성
-2. page-local UI는 `pages/<Page>/components`에 둔다
-3. `document.title = "AEGIS — {Page Name}"` 설정
-4. `App.tsx`에 라우트 추가
-5. 구조/행동/검증 계약을 문서와 맞춘다
-6. 테스트 추가
-7. wiki 문서 동기화
-8. 웹 전용 런타임 규칙을 깨는 bridge/desktop shell을 도입하지 않는다
+1. `wiki/canon/design-system/` 에 해당 페이지/컴포넌트 자산이 있는지 확인한다.
+   - 있음 → 원본 자산을 `services/frontend/src/styles/handoff/` 로 복제한다.
+   - 없음 → DESIGN.md §10 "Extending" 절차에 따라 기존 토큰·컴포넌트로 조합한다. 새 색/폰트/토큰을 만들지 않는다.
+2. `pages/<Page>/<Page>.tsx` + `pages/<Page>/components` 생성
+3. page-local UI는 `pages/<Page>/components`에 둔다
+4. page HTML mock이 있으면 `wiki/canon/design-system/mocks/*.html` 의 class·copy·DOM 순서·data-* 속성을 1:1 반영한다
+5. `document.title = "AEGIS — {Page Name}"` 설정
+6. `App.tsx`에 라우트 추가 (AuthEntryRoute / RequireAuth 중 적절한 가드)
+7. severity color를 non-severity UI (버튼·링크·네비게이션) 에 사용하지 않는다 (DESIGN.md §3.4)
+8. 구조/행동/검증 계약을 문서와 맞춘다
+9. 테스트 추가
+10. wiki 문서 동기화 (`handoff/s1/design-system.md` §5 동기화 표 포함)
+11. 웹 전용 런타임 규칙을 깨는 bridge/desktop shell을 도입하지 않는다
 
 ## 7. 테스트 전략
 
