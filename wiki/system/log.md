@@ -1034,3 +1034,7 @@ related_pages:
 ## [2026-04-15] mcp | complete_wr | s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa
 - Lane s8 completed recipient-side handling
 - Status: completed
+
+## [2026-04-20] mcp | register_wr | s8-to-s6-s8-container-gateway-contract-summary-for-s6-dynamic-analysis-integration
+- Registered notice WR for s6
+- Path: wiki/canon/work-requests/s8-to-s6-s8-container-gateway-contract-summary-for-s6-dynamic-analysis-integration.md

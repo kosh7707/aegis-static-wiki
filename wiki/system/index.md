@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-04-15"
+last_verified: "2026-04-20"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -309,6 +309,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics|S7 follow-up clarification on /health local-ack vs transport-liveness semantics]] — - Kind: reply *(verified 2026-04-13; s7/s3)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-health-request-summary-semantics-response-to-s3-rollout-request|S7 /health request-summary semantics — response to S3 rollout request]] — - Kind: reply *(verified 2026-04-13; s7/s3)*
 - [[wiki/canon/work-requests/s8-to-s2-s8-follow-up-complete-hardened-workspace-container-boundaries-on-the-merged-base|S8 follow-up complete: hardened workspace/container boundaries on the merged baseline]] — - Kind: reply *(verified 2026-04-15; s8/s2)*
+- [[wiki/canon/work-requests/s8-to-s6-s8-container-gateway-contract-summary-for-s6-dynamic-analysis-integration|S8 Container Gateway contract summary for S6 dynamic-analysis integration]] — - Kind: notice *(verified 2026-04-20; s8/s6)*
 
 ## Feedback
 
