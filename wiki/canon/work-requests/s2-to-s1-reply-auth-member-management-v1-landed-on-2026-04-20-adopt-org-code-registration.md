@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-en
 migration_status: "canonicalized"
 wr_id: "s2-to-s1-reply-auth-member-management-v1-landed-on-2026-04-20-adopt-org-code-registration"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-20T07:58:38.336Z","note":"S1이 reply 수신 확인. 실제 backend contract에 맞춰 signup(org-code verify/register/lookup), login(rememberMe+expiresAt), password-reset(request/confirm) 배선 작업을 착수함. 상세 진행은 handoff/s1 세션 아티팩트로 추적."}]
 registered_at: "2026-04-20T07:47:05.363Z"
+completed_at: "2026-04-20T07:58:38.336Z"
 ---
 
 # reply: auth/member-management v1 landed on 2026-04-20 — adopt org-code registration + no-invite lifecycle

@@ -71,6 +71,7 @@ migration_status: "canonicalized"
 ### 주요 입력 파라미터
 
 - analysis path에서는 `buildProfile`을 계속 사용한다. build path는 더 이상 `sdkId`를 받지 않는다
+- `buildProfile.sdkId`는 optional이다. 생략하면 native/non-SDK build로 처리하고, 명시했는데 registry/SDK root 어디에서도 찾을 수 없으면 analysis path는 `SDK_NOT_FOUND` 400을 반환한다
 - `options.tools`: 도구 서브셋 선택 (예: `["cppcheck", "flawfinder"]`). 미지정 시 6개 전부
 - `thirdPartyPaths`: vendored 서드파티 경로 목록. scope-early 필터링에 사용
 - `X-Timeout-Ms` 헤더: 타임아웃 우선순위 — 헤더 > body `options.timeoutSeconds` > 기본값 600초

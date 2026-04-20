@@ -1413,3 +1413,61 @@ related_pages:
 - Updated canonical backend-owned auth docs: shared-models, s2 api-endpoints, backend spec, s2 readme, s2 roadmap.
 - Completed the S1->S2 auth surface WR from the S2 recipient perspective.
 - Registered reply WR to S1 with org-code registration, no-invite lifecycle, rememberMe, password-reset, and integration guidance.
+
+## [2026-04-20] mcp | complete_wr | s2-to-s1-reply-auth-member-management-v1-landed-on-2026-04-20-adopt-org-code-registration
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p.md
+
+## [2026-04-20] Implemented non-production org/admin fixture seeding and password-reset dev bridge | S2 auth mock-to-real bridge
+- Seeded signup org fixtures aligned with design mock codes: ACME-KR-SEC, HYUNDAI-AVSEC, LG-EV-SECOPS.
+- Seeded org-admin fixture accounts acme-admin, hyundai-admin, lges-admin with default password override via AEGIS_AUTH_DEV_ADMIN_PASSWORD.
+- Added GET /api/auth/dev/password-reset/latest?email= backed by SQLite dev_password_reset_deliveries for SMTP-free mock/E2E reset flows.
+- Revalidated shared/backend typecheck, backend vitest (479 passed), and backend build.
+
+## [2026-04-20] mcp | register_wr | s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid.md
+
+## [2026-04-20] Registered canonical WR for mock-to-real auth implementation/QA handoff | S2→S1 auth mock bridge WR
+- Registered S2→S1 WR with seeded org codes, org-admin credentials, and non-production password-reset bridge guidance.
+- WR path: wiki/canon/work-requests/s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid.md
+
+## [2026-04-20] mcp | complete_wr | s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] fixed optional sdkId scan crash and added NDJSON traceback logging | s4
+- Guarded SDK resolver helpers so buildProfile without sdkId skips SDK path/compiler resolution instead of raising PosixPath/NoneType.
+- Added regression tests for resolver optional-sdk behavior, /v1/scan success with buildProfile lacking sdkId, and NDJSON internal-error logging.
+- Verified full services/sast-runner pytest suite passes after the fix.
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-.md
+
+## [2026-04-20] tightened analysis-path sdkId validation to explicit SDK_NOT_FOUND domain error | s4
+- Added route-level validation so buildProfile/scanProfile sdkId values that are absent from both sdk-registry and SDK root fail fast with SDK_NOT_FOUND 400.
+- Preserved native/non-SDK behavior by allowing buildProfile without sdkId to proceed normally.
+- Updated canonical API/spec docs to document optional sdkId semantics and the new SDK_NOT_FOUND error.
+
+## [2026-04-20] mcp | register_wr | s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk
+- Registered notice WR for s2, s3
+- Path: wiki/canon/work-requests/s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk.md
+
+## [2026-04-20] removed legacy custom sdkId sentinel from analysis-path contract | s4
+- Deleted runtime acceptance of buildProfile/scanProfile sdkId="custom"; callers must now omit sdkId for native/non-SDK builds.
+- Added regression coverage so sdkId omission succeeds while both nonexistent and custom now fail with SDK_NOT_FOUND 400.
+- Published a notice WR to S2/S3 describing the migration and updated canonical S4 API/spec/handoff docs.
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-.md
+
+## [2026-04-20] enabled hot reload by default in start-sast-runner script | s4
+- scripts/start-sast-runner.sh now starts uvicorn with --reload --reload-dir app by default.
+- Set SAST_HOT_RELOAD=0 to opt out and run a single-process server.
+- Verified script syntax with bash -n; did not execute the start script.

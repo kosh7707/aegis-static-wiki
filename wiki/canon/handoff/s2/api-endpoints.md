@@ -99,6 +99,7 @@ Health control-signal 메모 (2026-04-14):
 | POST | `/api/auth/register` | org-code 기반 가입 요청 생성 (`202`, `lookupToken` 반환) |
 | GET | `/api/auth/registrations/lookup/:lookupToken` | public registration status lookup (high-entropy lookup token only) |
 | POST | `/api/auth/password-reset/request` | 비밀번호 재설정 요청 (`202`, 계정 존재 여부 비노출) |
+| GET | `/api/auth/dev/password-reset/latest?email=` | 로컬/non-production mock bridge: 최신 active reset token 조회 |
 | POST | `/api/auth/password-reset/confirm` | 비밀번호 재설정 확정 (`token`, `newPassword`) |
 | GET | `/api/auth/me` | 현재 사용자 정보 (authenticated) |
 | GET | `/api/auth/users` | 관리자용 사용자 목록 (org-admin = same-org only, platform-admin bypass 허용) |
@@ -111,12 +112,17 @@ Auth v1 메모 (2026-04-20):
 - lifecycle는 `org verify → register(pending_admin_review) → org-admin approve/reject → approved 즉시 login 가능` 이다.
 - `Invite`는 v1 범위에서 제거됐다.
 - 비밀번호는 registration 시점에 수집하며, 승인 후 별도 invite/activation step 없이 바로 인증 가능하다.
-- public route는 `/api/auth/login`, `/api/auth/logout`, `/api/auth/orgs/:code/verify`, `/api/auth/register`, `/api/auth/registrations/lookup/:lookupToken`, `/api/auth/password-reset/request`, `/api/auth/password-reset/confirm` 로 명시적으로 제한된다.
+- public route는 `/api/auth/login`, `/api/auth/logout`, `/api/auth/orgs/:code/verify`, `/api/auth/register`, `/api/auth/registrations/lookup/:lookupToken`, `/api/auth/password-reset/request`, `/api/auth/dev/password-reset/latest`, `/api/auth/password-reset/confirm` 로 명시적으로 제한된다. 단, `/api/auth/dev/password-reset/latest` 는 non-production bridge route 이다.
 - auth public route rate limiting is persisted in SQLite `auth_rate_limit_events`, so limits survive process restarts on the same backend instance.
 - remember-me session policy:
   - default TTL `24h`
   - remember-me TTL `30d`
 - lookup token TTL `30d`, password reset token TTL `1h`
+- local mock-to-real bridge defaults (non-production):
+  - fixture organizations/admins seeded on startup when `AEGIS_AUTH_DEV_FIXTURES=true` (or when `NODE_ENV` is `development` / `test`)
+  - fixture org-admin password defaults to `Admin1234!` unless `AEGIS_AUTH_DEV_ADMIN_PASSWORD` overrides it
+  - seeded org/admin pairs: `ACME-KR-SEC`/`acme-admin`, `HYUNDAI-AVSEC`/`hyundai-admin`, `LG-EV-SECOPS`/`lges-admin`
+  - password-reset dev bridge route is enabled when `AEGIS_AUTH_DEV_PASSWORD_RESET_BRIDGE=true` (or when `NODE_ENV` is `development` / `test`) and reads SQLite `dev_password_reset_deliveries`
 - rate limits:
   - org verify `10/min/IP`
   - register `5/min/IP`, `3 active pending requests / 24h / email`

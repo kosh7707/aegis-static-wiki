@@ -73,6 +73,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - build / scan / build-and-analyze가 nested `provenance` 입력을 받음
 - `/v1/build`는 structured `buildEvidence` + `readiness` + `failureDetail` 반환
 - build preparation의 canonical ready 조건은 `readiness.compileCommandsReady=true` + `buildEvidence.userEntries>0` + `buildEvidence.exitCode==0`
+- analysis path에서는 native/non-SDK build가 `sdkId`를 생략하는 것이 canonical이며, legacy `sdkId="custom"` sentinel은 더 이상 허용하지 않는다. 명시적 invalid sdkId는 `SDK_NOT_FOUND` 400으로 실패한다
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
 - explicit Quick는 `/v1/build` ready 이후 `compileCommands` 를 포함한 `/v1/scan` one-shot 호출로 취급하며, Deep 자동 연쇄를 전제하지 않음
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
@@ -143,6 +144,9 @@ services/sast-runner/
 ./scripts/start-sast-runner.sh
 tail -20 logs/s4-sast-runner.jsonl
 ```
+
+- `scripts/start-sast-runner.sh`는 기본적으로 `uvicorn --reload --reload-dir app`로 실행된다.
+- 핫 리로드를 끄고 단일 프로세스로 띄우려면 `SAST_HOT_RELOAD=0 ./scripts/start-sast-runner.sh`를 사용한다.
 
 `.env` / 기본값 예시:
 ```env

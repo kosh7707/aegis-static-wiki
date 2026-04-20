@@ -71,6 +71,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-15|S1 세션 15 — 2026-04-02]] — S2 API/모델 확장 완료 통보(A/B/C 전부) + QA 분석가 UX 리뷰 S1 독립 14건 + mock 보강. *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-16|Session history — s1 / 16]] — - Lane: s1 *(verified 2026-04-07; s1)*
 - [[wiki/canon/handoff/s1/session-2|S1 Session 2 — 2026-03-16]] — 3. ✅ 종합 리팩토링 — 버그 3건 수정 + 코드 품질 감사 50건 일괄 정리 *(verified 2026-04-06; s1)*
+- [[wiki/canon/handoff/s1/session-2026-04-20-admin-registrations-page-v1|Session history — s1 / 2026-04-20-admin-registrations-page-v1]] — - Lane: s1 *(verified 2026-04-20; s1)*
+- [[wiki/canon/handoff/s1/session-2026-04-20-auth-happy-path-qa-v1|Session history — s1 / 2026-04-20-auth-happy-path-qa-v1]] — - Lane: s1 *(verified 2026-04-20; s1)*
+- [[wiki/canon/handoff/s1/session-2026-04-20-auth-surface-wiring-v1|Session history — s1 / 2026-04-20-auth-surface-wiring-v1]] — - Lane: s1 *(verified 2026-04-20; s1)*
 - [[wiki/canon/handoff/s1/session-3|S1 Session 3 — 2026-03-17]] — 4. ✅ 정적 분석 대시보드 2-탭 개편 (SonarQube 패턴) *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-4|S1 Session 4 — 2026-03-18]] — 9. ✅ 디자인 리뷰 2차 피드백 8건 수정 *(verified 2026-04-06; s1)*
 - [[wiki/canon/handoff/s1/session-5|S1 Session 5 — 2026-03-19]] — 13. ✅ 7인 체제 전환 대응 (S2 WR s2-to-s1-update-handoff-s7.md 처리) *(verified 2026-04-06; s1)*
@@ -172,6 +175,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-omx-1776068296251-abnt8x|Session history — s4 / omx-1776068296251-abnt8x]] — - Lane: s4 *(verified 2026-04-13; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1776135939178-y43l10|Session history — s4 / omx-1776135939178-y43l10]] — - Lane: s4 *(verified 2026-04-14; s4)*
 - [[wiki/canon/handoff/s4/session-omx-177615|Session history — s4 / omx-177615?]] — - Lane: s4 *(verified 2026-04-14; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1776672910901-tbeczj|Session history — s4 / omx-1776672910901-tbeczj]] — - Lane: s4 *(verified 2026-04-20; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1776673108356-35eljz|Session history — s4 / omx-1776673108356-35eljz]] — - Lane: s4 *(verified 2026-04-20; s4)*
 - [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-14; s5)*
 - [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-14; s5)*
 - [[wiki/canon/handoff/s5/session-1|S5 Session 1 — 2026-03-18]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -198,6 +203,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s5/session-omx-1775722925405-bjvop8|Session history — s5 / omx-1775722925405-bjvop8]] — - Lane: s5 *(verified 2026-04-09; s5)*
 - [[wiki/canon/handoff/s5/session-omx-1776068998838-lap2tj|Session history — s5 / omx-1776068998838-lap2tj]] — - Lane: s5 *(verified 2026-04-14; s5)*
 - [[wiki/canon/handoff/s5/session-omx-1776135950461-h7l909|Session history — s5 / omx-1776135950461-h7l909]] — - Lane: s5 *(verified 2026-04-14; s5)*
+- [[wiki/canon/handoff/s5/session-omx-1776673108356-35eljz|Session history — s5 / omx-1776673108356-35eljz]] — - Lane: s5 *(verified 2026-04-20; s5)*
 - [[wiki/canon/handoff/s6/readme|S6. Dynamic Analysis 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-09; s6)*
 - [[wiki/canon/handoff/s6/session-1|S6 세션 1 — 2026-03-28]] — 1. 코드베이스 전체 탐색 *(verified 2026-04-06; s6)*
 - [[wiki/canon/handoff/s6/session-2|S6 세션 2 — 2026-03-31]] — 1. 코드베이스 재탐색 (세션 인수인계) *(verified 2026-04-06; s6)*
@@ -245,6 +251,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds|S1 → S1-QA reply: mock-adherence WR 처리 완료 — dashboard KPI/컬럼/live-signal + DS 정합성 반영]] — - Kind: reply *(verified 2026-04-20; frontend)*
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy|S1 → S1-QA reply: v2 deep-audit WR 처리 완료 — activity API / attention affordance / token proxy 정리]] — - Kind: reply *(verified 2026-04-20; frontend)*
 - [[wiki/canon/work-requests/s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss|Project-scoped SDK upload failures before job acceptance need notification emission for cross-page awareness]] — - Kind: request *(verified 2026-04-10; s1/s2/frontend/backend/sdk/notifications/websocket)*
+- [[wiki/canon/work-requests/s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-|reply: auth happy-path QA green — signup · approve · rememberMe · password-reset via dev bridge all verified]] — - Kind: reply *(verified 2026-04-20; s1/s2/auth/frontend/qa)*
+- [[wiki/canon/work-requests/s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p|reply: S1 auth surface wired to S2 v1 contract — org-code signup · rememberMe login · password-reset]] — - Kind: reply *(verified 2026-04-20; s1/s2/auth/frontend/backend)*
+- [[wiki/canon/work-requests/s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-|request: return full RegistrationRequest from approve/reject/lookup (and consider populated org fields on public lookup)]] — - Kind: request *(verified 2026-04-20; s1/s2/auth/backend/frontend)*
 - [[wiki/canon/work-requests/s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface|S1 → S2: Signup · Organization verify · password-reset API 계약 신설 요청 (auth surface 확장)]] — - Kind: request *(verified 2026-04-20; frontend/backend/auth)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
 - [[wiki/canon/work-requests/s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-|adopt explicit build-preparation then Quick then Deep UX on the new S2 additive contract surfaces]] — - Kind: request *(verified 2026-04-14; s1/s2)*
@@ -262,6 +271,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s2-to-s1-s1-qa-buildtarget-terminology-cutover-is-complete-on-active-s2-frontend-surfaces-updat|BuildTarget terminology cutover is complete on active S2/frontend surfaces; update any remaining S1 labels, copy, and QA baselines]] — - Kind: notice *(verified 2026-04-20; s2/s1/s1-qa)*
 - [[wiki/canon/work-requests/s2-to-s1-s1-qa-s2-backend-project-crud-hardening-landed-on-2026-04-09-please-wire-s1-edit-delet|S2 backend project CRUD hardening landed on 2026-04-09 — please wire S1 edit/delete UI to stable PUT/DELETE semantics]] — - Kind: request *(verified 2026-04-14; s2/s1)*
 - [[wiki/canon/work-requests/s2-to-s1-s1-qa-s2-websocket-recovery-hardening-landed-on-2026-04-08-please-validate-s1-reconnec|S2 websocket recovery hardening landed on 2026-04-08; please validate S1 reconnect/progress UX]] — - Kind: request *(verified 2026-04-14; s2/s1/s1-qa/websocket/api-contract/frontend)*
+- [[wiki/canon/work-requests/s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid|S2 → S1: auth mock-to-real bridge landed — use seeded org codes/admins + dev reset bridge for happy-path QA]] — - Kind: request *(verified 2026-04-20; s2/s1/auth/backend/frontend/qa)*
 - [[wiki/canon/work-requests/s2-to-s1-sdk-upload-request-shape-examples-for-s1-archive-.bin-folder-with-relativepath|SDK upload request-shape examples for S1 (archive / .bin / folder with relativePath[])]] — - Kind: reply *(verified 2026-04-07; s1/s2/frontend/backend/sdk/multipart)*
 - [[wiki/canon/work-requests/s2-to-s1-visible-sdk-upload-progress-bar-needed-for-large-.bin-uploads-user-observed-gap-|Visible SDK upload progress bar needed for large .bin uploads (user-observed gap on 2026-04-09)]] — - Kind: request *(verified 2026-04-10; s1/s2/frontend/backend/sdk/websocket/ux)*
 - [[wiki/canon/work-requests/s2-to-s3-build-agent-canonical-target-locator-fields-are-now-buildtargetpath-buildtargetn|Build Agent canonical target locator fields are now buildTargetPath/buildTargetName after legacy terminology cutover]] — - Kind: notice *(verified 2026-04-14; s2/s3)*
@@ -301,6 +311,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat|start immediate S7 work on opt-in strict JSON mode for /v1/chat]] — - Kind: request *(verified 2026-04-14; s3/s7)*
 - [[wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4|reply: explicit build-preparation and one-shot Quick contract is ready on S4]] — - Kind: reply *(verified 2026-04-13; s4/s2)*
 - [[wiki/canon/work-requests/s4-to-s2-reply-s4-build-sdk-migration-truth-is-runtime-aligned-with-canonical-docs-no-v1-|Reply: S4 build/sdk migration truth is runtime-aligned with canonical docs (no /v1/sdk-registry compatibility seam)]] — - Kind: reply *(verified 2026-04-07; s4/s2/sast-runner/backend/sdk-registry/build)*
+- [[wiki/canon/work-requests/s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk|Legacy buildProfile.sdkId='custom' sentinel removed from S4 analysis path; omit sdkId for native builds]] — - Kind: notice *(verified 2026-04-20; s4/s2/s3/api-contract/sast-runner)*
 - [[wiki/canon/work-requests/s4-to-s2-s3-prepare-for-s4-omission-policy-contract-changes-on-v1-scan-and-v1-build-and-anal|Prepare for S4 omission-policy contract changes on /v1/scan and /v1/build-and-analyze]] — - Kind: request *(verified 2026-04-07; s4/s2/s3/sast-runner/analysis-agent)*
 - [[wiki/canon/work-requests/s4-to-s3-confirm-s4-exploitability-consumer-minimum-field-set-and-normalization-expectati|Confirm S4 exploitability-consumer minimum field set and normalization expectations]] — - Kind: request *(verified 2026-04-07; s4/s3/analysis-agent/sast-runner)*
 - [[wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m|reply: live S4 /v1/health request-summary drift is runtime lag, not code contract mismatch]] — - Kind: reply *(verified 2026-04-14; s4/s3)*

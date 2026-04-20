@@ -114,8 +114,8 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 | 항목 | 값 |
 |------|---|
 | TypeScript 에러 | **0개** |
-| 테스트 | **474개 통과** (vitest, 2026-04-20 auth/member-management v1 + hardening 후 재검증) |
-| DB 테이블 | **34개** (SQLite, WAL) — 기존 25개 활성 표면 + execution/persistence seam 9개 포함 |
+| 테스트 | **479개 통과** (vitest, 2026-04-20 mock-to-real auth bridge 추가 후 재검증) |
+| DB 테이블 | **35개** (SQLite, WAL) — 기존 26개 활성 표면 + execution/persistence seam 9개 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 (`/pipeline/prepare*`, `/analysis/quick`, `/analysis/deep`) |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
 | 에러 클래스 | 20개 (AppError 계층, 23개 에러코드 — `FORBIDDEN`, `RATE_LIMITED` 포함) |
@@ -141,6 +141,7 @@ canonical v1 lifecycle:
   - `POST /api/auth/register`
   - `GET /api/auth/registrations/lookup/:lookupToken`
   - `POST /api/auth/password-reset/request`
+  - `GET /api/auth/dev/password-reset/latest?email=` (non-production mock bridge)
   - `POST /api/auth/password-reset/confirm`
 - authenticated
   - `GET /api/auth/me`
@@ -159,6 +160,11 @@ canonical v1 lifecycle:
 - login throttle HTTP contract (`429 RATE_LIMITED`) regression test 가 추가됐다
 - password reset request 는 account existence 를 노출하지 않고 `202 { accepted: true }` 를 반환한다
 - new reset token 발급 시 기존 active reset token 들을 revoke 하고, successful reset 시 남은 reset token 과 active sessions 를 함께 revoke 한다
+- non-production mock-to-real bridge:
+  - startup 시 fixture org/admin 이 자동 보장된다 (`AEGIS_AUTH_DEV_FIXTURES=true` 또는 `NODE_ENV=development|test`; 현재 로컬 `.env` 는 true)
+  - fixture org/admin pairs: `ACME-KR-SEC`/`acme-admin`, `HYUNDAI-AVSEC`/`hyundai-admin`, `LG-EV-SECOPS`/`lges-admin`
+  - fixture org-admin password default = `Admin1234!` (`AEGIS_AUTH_DEV_ADMIN_PASSWORD` override 가능)
+  - `GET /api/auth/dev/password-reset/latest?email=` 가 SQLite `dev_password_reset_deliveries` 에서 최신 active token 을 노출해 SMTP 없이 mock/E2E reset flow 를 이어준다
 
 현재 남은 follow-up risk (non-blocking):
 - rate limit durability 는 shared SQLite 범위까지다. future multi-node deployment 에서는 shared store 로 옮겨야 한다

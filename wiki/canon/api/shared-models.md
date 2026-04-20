@@ -858,6 +858,7 @@ Important clarification:
 | public | POST | `/api/auth/register` | creates pending registration request and returns lookup token |
 | public | GET | `/api/auth/registrations/lookup/:lookupToken` | public bearer-style lookup using high-entropy token, not internal id |
 | public | POST | `/api/auth/password-reset/request` | always returns generic `202 { accepted: true }` |
+| public | GET | `/api/auth/dev/password-reset/latest?email=` | non-production mock bridge: returns latest active reset token for the email when dev bridge is enabled |
 | public | POST | `/api/auth/password-reset/confirm` | consumes reset token and rotates password |
 | authenticated | GET | `/api/auth/me` | current session identity |
 | admin-only | GET | `/api/auth/users` | org-admin sees same-org users only; platform-admin (`organizationId = null`) may see all |
@@ -914,6 +915,15 @@ interface PasswordResetConfirmBody {
   token: string;
   newPassword: string;
 }
+
+interface DevPasswordResetDeliveryResponse {
+  success: boolean;
+  data?: {
+    available: boolean;
+    delivery?: DevPasswordResetDelivery;
+  };
+  error?: string;
+}
 ```
 
 ### Frozen v1 semantics
@@ -927,6 +937,12 @@ interface PasswordResetConfirmBody {
   - `3/hour/email`
 - issuing a new password reset token revokes older unconsumed reset tokens for that user
 - successful password reset consumes the presented token, revokes any remaining outstanding reset tokens, and invalidates all active sessions for that user
+- non-production mock bridge defaults:
+  - `AEGIS_AUTH_DEV_FIXTURES=true` (default-on only when `NODE_ENV` is `development` or `test`)
+  - `AEGIS_AUTH_DEV_PASSWORD_RESET_BRIDGE=true` (default-on only when `NODE_ENV` is `development` or `test`)
+  - fixture org-admin password defaults to `Admin1234!` unless `AEGIS_AUTH_DEV_ADMIN_PASSWORD` overrides it
+  - seeded org/admin fixtures: `ACME-KR-SEC`/`acme-admin`, `HYUNDAI-AVSEC`/`hyundai-admin`, `LG-EV-SECOPS`/`lges-admin`
+  - `GET /api/auth/dev/password-reset/latest?email=` reads the latest active token from SQLite `dev_password_reset_deliveries` for frontend mock-to-real bridging
 - org verify rate limit: `10/min/IP`
 - registration submit rate limit:
   - `5/min/IP`

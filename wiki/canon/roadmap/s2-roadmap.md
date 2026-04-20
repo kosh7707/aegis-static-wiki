@@ -22,7 +22,7 @@ migration_status: "canonicalized"
 
 ## 10. 알려진 이슈 / 로드맵 / 세션 로그
 
-### auth/member-management v1 완료 + pre-WR hardening (2026-04-20)
+### auth/member-management v1 + mock bridge (2026-04-20)
 
 완료된 slice:
 - org-code verify
@@ -42,18 +42,27 @@ migration_status: "canonicalized"
 - stored session hash bearer replay 차단
 - `/api/auth/login` 429 contract regression test
 
+mock-to-real bridge 추가 완료:
+- non-production startup fixture seed (`AEGIS_AUTH_DEV_FIXTURES=true`; `NODE_ENV=development|test` 에서는 default-on) for `ACME-KR-SEC`, `HYUNDAI-AVSEC`, `LG-EV-SECOPS`
+- org-admin fixture accounts (`acme-admin`, `hyundai-admin`, `lges-admin`)
+- fixture org-admin default password `Admin1234!` (`AEGIS_AUTH_DEV_ADMIN_PASSWORD` override 가능)
+- `GET /api/auth/dev/password-reset/latest?email=` route + SQLite `dev_password_reset_deliveries` outbox (`AEGIS_AUTH_DEV_PASSWORD_RESET_BRIDGE=true`; development/test default-on)
+
+의도:
+- design-system mock 에 있던 org code 를 실제 backend signup flow 와 연결
+- org-admin approval/mock review 를 즉시 수행 가능하게 함
+- SMTP 없이도 forgot-password mock/E2E 를 이어갈 수 있게 함
+
 검증 snapshot:
 - shared/backend typecheck 통과
-- backend vitest **474 passed**
+- backend vitest **479 passed**
+- backend build 통과
 - `npm audit --omit=dev --audit-level=high` => **0 vulnerabilities**
 - architect approve / security approve 완료
 
 즉시 다음 작업:
-1. S1에 canonical reply WR 발행
-   - invite 제거
-   - org verify / register / lookup / password reset / remember-me contract 변경 고지
-   - `username` field 가 v1 에서 login identifier 의미를 갖는다는 점 전달
-2. 원 요청 WR recipient 완료 처리
+1. S1 mock wiring 시 seeded org code / admin credentials / dev reset bridge route 기준으로 연결
+2. 실제 mail/SMS delivery 채널 도입 전까지 dev bridge 를 non-production 보조 수단으로 유지
 3. 필요 시 S1-QA 후속 verification WR 분리
 
 후순위 hardening:
