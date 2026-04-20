@@ -4,16 +4,20 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "services/frontend/package.json"
-  - "services/frontend/components.json"
   - "services/frontend/tsconfig.json"
   - "services/frontend/vite.config.ts"
   - "services/frontend/playwright.config.ts"
   - "services/frontend/src/App.tsx"
   - "services/frontend/src/index.css"
-  - "services/frontend/docs/design/SHADCN-REPLATFORM.md"
+  - "services/frontend/src/shared/auth/AuthConsoleShell.tsx"
+  - "services/frontend/src/styles/handoff/auth-console.css"
+  - "services/frontend/src/styles/handoff/tokens.css"
+  - "services/frontend/src/styles/handoff/base.css"
+  - "services/frontend/src/styles/handoff/components/nav.css"
+  - "services/frontend/src/styles/handoff/pages/dashboard.css"
 last_verified: "2026-04-18"
 service_tags: ["s1"]
-decision_tags: ["frontend-structure-contract", "web-only-frontend", "shadcn-replatform", "single-css-entrypoint", "design-doc-hierarchy"]
+decision_tags: ["frontend-structure-contract", "web-only-frontend", "external-ui-handoff", "handoff-css-system"]
 related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/feedback/s1_frontend_working_guide.md"]
 ---
 
@@ -27,11 +31,9 @@ related_pages: ["wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/readme.md
 ```text
 services/frontend/
 ├── package.json
-├── components.json
 ├── tsconfig.json
 ├── vite.config.ts
 ├── playwright.config.ts
-├── docs/design/SHADCN-REPLATFORM.md
 ├── e2e/
 └── src/
     ├── App.tsx
@@ -46,6 +48,7 @@ services/frontend/
     ├── lib/utils.ts
     ├── pages/
     ├── shared/
+    │   └── auth/
     ├── test/
     ├── test-utils/
     ├── types/
@@ -81,34 +84,26 @@ S1은 순수 웹 SPA다. Electron/preload/window bridge는 없다.
 - `NotificationBridge.tsx`
 - `Navbar.tsx`
 - `Sidebar.tsx`
+- `shared/auth/AuthConsoleShell.tsx`
 
-## 5. UI architecture — active contract
-
-현재 활성 계약은:
-
-- `services/frontend/docs/design/SHADCN-REPLATFORM.md`
-- `services/frontend/components.json`
-- `services/frontend/src/index.css`
-- `services/frontend/src/components/ui/*`
+## 5. 구조 계약
 
 ### Layering
 
-1. **single CSS entrypoint**: `src/index.css`
-2. generated shadcn/Radix primitives: `src/components/ui/*`
-3. app behavior/shared wrappers: `src/shared/ui/*`
-4. page/layout/components use Tailwind utility classes directly
-5. standalone page/component CSS는 현재 실제 코드 기준 제거됨
+1. app-global theme/base/runtime rules: `src/index.css`
+2. handoff shared assets: `src/shared/auth/*`
+3. generated/shared UI primitives: `src/components/ui/*`, `src/shared/ui/*`
+4. page/layout/components logic: `src/pages/*`, `src/layouts/*`, `src/hooks/*`
 
 ### Documentation boundary
 
-- wiki canon(`specs/frontend`, `handoff/s1/readme`, `handoff/s1/architecture`, `feedback/s1_frontend_working_guide`)가 활성 설계 기준이다.
-- `services/frontend/docs/design/SHADCN-REPLATFORM.md`는 repo-local mirror다.
-- repo-local design surface에는 vendor-branded inspiration pack이 남아 있지 않다.
-- history/session/work-request 문서에 남은 과거 CSS 파일명은 구조 drift가 아니라 기록 보존일 수 있다.
+- wiki canon(`specs/frontend`, `handoff/s1/readme`, `handoff/s1/architecture`, `feedback/s1_frontend_working_guide`)가 활성 구조 기준이다.
+- repo 내부에는 활성 디자인 지침 문서를 두지 않는다.
+- history/session/work-request 문서에 남은 과거 용어는 기록 보존일 수 있다.
 
 ## 6. Page ownership
 
-All 16 pages remain page-per-directory, but page-local CSS files are no longer required:
+All 16 pages remain page-per-directory. Auth pages consume shared assets under `src/shared/auth/*`:
 
 ```text
 pages/<Page>/<Page>.tsx
@@ -119,13 +114,12 @@ Page-level final migration requires normal/empty/error/primary-interaction evide
 
 ## 7. Current architectural debt
 
-- CSS debt is no longer page-scoped; styling is centralized in `src/index.css`.
+- handoff shared assets와 다른 app surfaces 사이의 styling 일관성은 여전히 후속 정리 대상이다.
 - build chunk-size warning remains non-blocking and is the main frontend infra debt.
-- future cleanup focus is code-splitting / bundle structure, not page CSS removal.
+- future cleanup focus is code-splitting / bundle structure and wider handoff-driven rollout.
 
 ## 8. Next-change checklist
 
-- Do not add new standalone CSS files casually; prefer component utility composition.
-- Do not claim a page is fully migrated until it has page-level evidence and reviewer approval.
-- Update wiki canon first when frontend design architecture changes.
-- Keep active docs and local mirrors aligned; treat older design packs as reference-only.
+- handoff shared asset 변경 시 login/signup 동시 영향 여부를 먼저 본다.
+- page 구조와 실제 테스트 자산이 계속 정렬되는지 확인한다.
+- Update wiki canon first when frontend structure changes.

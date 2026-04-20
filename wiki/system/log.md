@@ -1022,3 +1022,341 @@ related_pages:
 ## [2026-04-15] mcp | register_wr | s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa
 - Registered request WR for s8
 - Path: wiki/canon/work-requests/s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa.md
+
+## [2026-04-18] Verified MonitoringView refactor and converted additional static-analysis hotspots | S1 frontend handoff cleanup
+- MonitoringView rewrite validated with typecheck, targeted DynamicAnalysisPage test, full test suite, and production build.
+- Converted AgentResultPanel and LatestAnalysisTab away from utility-heavy styling into handoff CSS classes in app-shell.css.
+- Remaining prominent hotspots now center on SourceTreeView and other StaticAnalysis leaf views.
+
+## [2026-04-18] Converted SourceTreeView and FileTreeNode to handoff CSS structure | S1 frontend handoff cleanup
+- SourceTreeView now uses named handoff classes for summary, tree, preview, code, and finding surfaces instead of utility-heavy layout strings.
+- FileTreeNode was normalized to ftree-* structural classes so StaticAnalysis tree rendering shares the same handoff styling layer.
+- Fresh verification stayed green across typecheck, targeted DynamicAnalysis/StaticAnalysis tests, full frontend tests, and production build.
+
+## [2026-04-18] Converted AnalysisResultsView to handoff CSS structure | S1 frontend handoff cleanup
+- AnalysisResultsView and its file-coverage/filter/grouped-result surfaces now use named handoff classes in app-shell.css instead of utility-heavy layout strings.
+- Fresh verification stayed green across typecheck, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining prominent cleanup now centers on SourceUploadView and TwoStageProgressView.
+
+## [2026-04-18] Converted SourceUploadView and TwoStageProgressView to handoff CSS structure | S1 frontend handoff cleanup
+- SourceUploadView now uses named handoff classes for upload summary, actions, tabs, dropzone, and git-clone form surfaces.
+- TwoStageProgressView now uses named handoff classes for status banners, staged progress timeline, error state, CTA row, and handoff notice.
+- Fresh verification stayed green across typecheck, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+
+## [2026-04-18] Converted remaining shared helper surfaces to handoff CSS structure | S1 frontend handoff cleanup
+- ConnectionStatusBanner, ConfirmDialog, and SeveritySummary now use named handoff classes rather than utility-heavy layout strings.
+- Fresh verification stayed green across typecheck, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+- Major StaticAnalysis and shared-helper hotspots are now cleared; only lower-priority residual utility strings remain.
+
+## [2026-04-18] Converted shared badge helpers to handoff CSS classes while preserving test contracts | S1 frontend handoff cleanup
+- SeverityBadge, FindingStatusBadge, SourceBadge, and TargetStatusBadge now map to named handoff CSS classes instead of inline utility-style token strings.
+- Legacy badge class hooks required by existing tests were preserved alongside the new handoff classes to keep compatibility while moving styling into app-shell.css.
+- Fresh verification stayed green across typecheck, focused shared-ui tests, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+
+## [2026-04-18] Converted final low-priority shared-ui surfaces in this wave and re-verified | S1 frontend handoff cleanup
+- Spinner, BackButton, and PageHeader now use named handoff classes for their residual layout/styling hooks.
+- Fresh verification stayed green across typecheck, focused shared-ui tests, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining residual utility strings are now mostly limited to secondary analytics/summary helpers like DonutChart, SeverityBar, FindingSummary, TargetProgressStepper, AdapterSelector, and StateTransitionDialog.
+
+## [2026-04-18] Converted summary and stepper shared-ui helpers to handoff CSS classes | S1 frontend handoff cleanup
+- DonutChart, FindingSummary, SeverityBar, and TargetProgressStepper now use named handoff CSS classes for layout, legends, tracks, and stateful markers instead of utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused shared-ui tests, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining lower-priority cleanup now concentrates on AdapterSelector, StateTransitionDialog, TrendChart, and scattered minor utility strings.
+
+## [2026-04-18] Converted remaining secondary helper surfaces to handoff CSS classes | S1 frontend handoff cleanup
+- AdapterSelector, StateTransitionDialog, and TrendChart were moved onto named handoff CSS classes; dialog and adapter selection layouts no longer rely on utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused StateTransitionDialog/ui-components tests, targeted StaticAnalysis and DynamicAnalysis tests, full frontend tests, and production build.
+- What remains is now mostly minor scattered utility strings and small inline presentation details rather than major product surfaces.
+
+## [2026-04-18] Converted remaining residual StatCard styling to handoff CSS classes | S1 frontend handoff cleanup
+- StatCard no longer depends on inline typography/layout styling; it now uses named handoff classes while preserving dynamic color and click/accent behavior.
+- Fresh verification stayed green across typecheck, focused Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining cleanup is now almost entirely limited to scattered minor utility strings and inline presentation details rather than shared surfaces.
+
+## [2026-04-18] Converted a final dashboard/overview residual slice and re-verified | S1 frontend handoff cleanup
+- ActivityEventCard and RecentActivitySection no longer rely on inline presentation styles for the timeline icon/load-more area; those hooks moved into dashboard CSS.
+- OverviewPage no longer uses an inline utility grid definition for its main split layout; the layout now uses a named handoff class in app-shell.css.
+- Fresh verification stayed green across typecheck, focused Dashboard/Overview/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+
+## [2026-04-18] Converted key overview leaf surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- OverviewSectionHeader, SecurityPostureSection, TrendSummaryCard, OverviewMetaPanel, and overviewModel SDK tone classes were moved onto named handoff CSS classes.
+- Fresh verification stayed green across typecheck, focused Overview/Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining cleanup is now mostly minor scattered utility strings in lower-priority overview/dashboard leaves rather than structural or shared surfaces.
+
+## [2026-04-18] Converted additional overview leaf surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- OverviewEmptyState, OverviewActivityPanel, and BuildTargetsSection were moved onto named handoff CSS classes instead of utility-heavy layout strings.
+- Fresh verification stayed green across typecheck, focused Overview/Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining cleanup is now mostly cosmetic/local low-priority utility strings rather than structural/shared surfaces.
+
+## [2026-04-19] Converted another dashboard/overview residual slice and re-verified | S1 frontend handoff cleanup
+- OverviewBottomGrid now uses named handoff classes for full-width actions and target summary badges instead of utility-heavy class strings.
+- ProjectExplorer table gate cells no longer rely on inline text-align styling; alignment moved into dashboard CSS.
+- Fresh verification stayed green across typecheck, focused Overview/Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+
+## [2026-04-19] Removed remaining inline tone styling from Overview security posture cards and re-verified | S1 frontend handoff cleanup
+- SecurityPostureSection now uses severity-specific handoff classes instead of inline border/color styles for the posture cards and labels.
+- Fresh verification stayed green across typecheck, focused Overview/Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining cleanup is now mostly small scattered utility strings and inline presentation details in low-priority leaves rather than reusable surfaces.
+
+## [2026-04-19] Converted analysis-history toolbar and runs table to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- AnalysisHistoryToolbar and AnalysisHistoryRunsTable now use named handoff CSS classes for filters, stat cards, status pills, severity summaries, and table surface styling instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused AnalysisHistory/Overview/Dashboard/StaticAnalysis/DynamicAnalysis tests, full frontend tests, and production build.
+- Remaining cleanup is now mostly scattered cosmetic utility strings and inline presentation details in lower-priority leaves rather than reusable surfaces.
+
+## [2026-04-19] Deduped analysis-history handoff CSS block and re-verified clean build | S1 frontend handoff cleanup
+- A duplicated analysis-history CSS block in app-shell.css was removed to restore a single canonical definition set.
+- Fresh verification stayed green across typecheck, the full frontend test suite, and production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings rather than reusable or structural surfaces.
+
+## [2026-04-19] Converted DynamicTestResultsView to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- DynamicTestResultsView now uses named handoff CSS classes for stats, metadata tiles, finding cards, IO rows, and expanded LLM-analysis panels instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused DynamicTestPage, FileDetailPage, and OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now mostly FileDetailSourcePanel plus smaller cosmetic utility strings and inline presentation details in lower-priority leaves/modals.
+
+## [2026-04-19] Converted FileDetailSourcePanel to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- FileDetailSourcePanel now uses named handoff CSS classes for code rows, preview surface, markdown tabs, empty state, maximize control, and fullscreen dialog shell instead of utility-heavy class strings and inline highlight styling.
+- Fresh verification stayed green across typecheck, focused FileDetailPage, DynamicTestPage, and OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now mostly minor scattered utility strings and inline presentation details in low-priority leaves and modals rather than reusable or structural surfaces.
+
+## [2026-04-19] Converted file-detail and dynamic-test result surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- FileDetailSourcePanel now uses named handoff CSS classes for code rows, preview surface, markdown tabs, empty state, maximize control, and fullscreen dialog shell.
+- DynamicTestResultsView now uses named handoff CSS classes for stats, metadata tiles, finding cards, IO rows, and expanded LLM-analysis panels.
+- Fresh verification stayed green across typecheck, focused FileDetailPage/DynamicTestPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted DynamicTestRunningView to handoff CSS classes, added focused regression coverage, and re-verified | S1 frontend handoff cleanup
+- DynamicTestRunningView now uses named handoff CSS classes for progress layout, chart empty state, chart SVG styling, and live findings log rows instead of utility-heavy class strings.
+- Added focused regression coverage for DynamicTestRunningView before the cleanup to lock in the running-state UI contract.
+- Fresh verification stayed green across typecheck, focused component/page tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted DynamicTestHistoryView to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- DynamicTestHistoryView now uses named handoff CSS classes for loading shell, empty-state workspace surface, checklist chips, history rows, strategy/metric copy, and delete-action reveal instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused DynamicTestPage, DynamicTestRunningView, FileDetailPage, and OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings rather than structural/shared surfaces.
+
+## [2026-04-19] Converted OverallStatusTab and child summary cards to handoff CSS classes, with regression coverage | S1 frontend handoff cleanup
+- Added focused regression coverage for OverallStatusTab before the cleanup to lock in period switching and linked-item behavior.
+- OverallStatusTab, TopFilesCard, TopRulesCard, and RecentRunsList now use named handoff CSS classes for distribution bars, ranked rows, recent-run badges, and section grids instead of utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused StaticAnalysis/Overview/Dashboard tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted FileDetailHeader to handoff CSS classes, added focused regression coverage, and re-verified | S1 frontend handoff cleanup
+- Added focused FileDetailHeader regression coverage before cleanup to lock in metadata badge rendering and download action behavior.
+- FileDetailHeader now uses named handoff CSS classes for the identity row, icon shell, title/path stack, download action, and metadata/vulnerability badges instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused FileDetailHeader/FileDetailPage/DynamicTestPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted TargetSelectDialog to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- TargetSelectDialog now uses named handoff CSS classes for dialog shell, target rows, selection indicator, title/path stack, SDK label, and footer action layout instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused TargetSelectDialog/StaticAnalysis/Overview/Dashboard tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings rather than structural/shared surfaces.
+
+## [2026-04-19] Converted BuildTargetCreateDialog to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- BuildTargetCreateDialog now uses named handoff CSS classes for dialog shell, field stack, included-path section, help copy, selection summary, and footer layout instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildTargetCreateDialog/FilesPage/FileDetailPage/DynamicTestPage/OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted quality-gate card/rule presentation to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- Quality gate presentation constants now resolve to named handoff badge/banner/rule classes instead of utility-heavy strings, and QualityGateCard/QualityGateRuleResultRow now use structural handoff classes for headers, overrides, action forms, and rule copy.
+- Fresh verification stayed green across typecheck, focused QualityGate/Overview/Dashboard/StaticAnalysis tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings rather than structural/shared surfaces.
+
+## [2026-04-19] Converted SettingsBackendSection to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- SettingsBackendSection now uses named handoff CSS classes for the title row, icon shell, input/status indicator stack, button row, result message, and reset action instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused Settings/Overview/Dashboard tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused BuildTargetRow coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added focused BuildTargetRow regression coverage before cleanup to lock in ready/failed action behavior and action-lock handling.
+- BuildTargetRow now uses named handoff CSS classes for the status shell, metadata chips, build-command block, stepper spacing, and action rail instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildTargetRow plus FilesPage/FileDetailPage/DynamicTestPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted SettingsThemeSection to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- SettingsThemeSection now uses named handoff CSS classes for the title row, icon shell, description stack, and theme option pill group instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused Settings/Overview/Dashboard tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted settings API/platform panels to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- SettingsApiAccessSection now uses named handoff CSS classes for info surfaces and status badge styling instead of utility-heavy class strings.
+- SettingsPlatformSection now uses named handoff CSS classes for title row, metadata rows, version pill, and license badge instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused Settings/Overview/Dashboard tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused BuildTargetSection coverage, converted its wrapper surfaces to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct BuildTargetSection regression coverage for loading, add-form, and target/log/edit-dialog states before the cleanup.
+- BuildTargetSection now uses named handoff CSS classes for its main card shell, title row, add-form wrapper, field stack, form actions, loading state, and empty state instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildTargetSection/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted TargetLibraryPanel to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- TargetLibraryPanel now uses named handoff CSS classes for its loading shell, header row, count summary, library rows, version/path/modified-file copy, and save/cancel action bar instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused TargetLibraryPanel plus FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted BuildLogViewer to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- BuildLogViewer now uses named handoff CSS classes for the dialog shell, header row, title/status line, action cluster, log body, preformatted content, and empty state instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildLogViewer plus FilesPage/FileDetailPage/OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused coverage for BuildTargetActionBar/BuildTargetSectionSummary, converted them to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for BuildTargetActionBar and BuildTargetSectionSummary before cleanup to lock in action-enablement and pipeline/ready-summary behavior.
+- BuildTargetActionBar and BuildTargetSectionSummary now use named handoff CSS classes for action row, running/ready banners, and count/failure copy instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused files/settings/overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted FileUploadView to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- FileUploadView now uses named handoff CSS classes for the existing-file picker rows, upload dropzone, newly added file list, and selected-file footer summary instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused FileUploadView/StaticAnalysis/Overview/Dashboard tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted BuildProfileForm to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- BuildProfileForm now uses named handoff CSS classes for field stacks, field labels, advanced-toggle chevron state, and advanced textarea/input field wrappers instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildProfileForm plus FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted CustomReportModal to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- CustomReportModal now uses named handoff CSS classes for its modal shell, header/copy, field stack, textarea/select controls, and footer action bar instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused CustomReportModal/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted SdkUploadForm to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- SdkUploadForm now uses named handoff CSS classes for field stacks, labels, mode pills, upload zones, file preview list, and footer actions instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused SdkUploadForm/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted ErrorBoundary fallback surface to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- ErrorBoundary fallback UI now uses named handoff CSS classes for the shell, icon, title, description, and action button spacing instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused ErrorBoundary/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted quality-gate sidebar/banner residual surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- QualityGateStatusBanner now uses named handoff CSS classes for its body, copy block, title, and timestamp while continuing to reuse the centralized status-class mapping.
+- QualityGateSidebar now uses named handoff CSS classes for the scroll container/body and the disabled guide action instead of residual utility-heavy classes.
+- Fresh verification stayed green across typecheck, focused QualityGate/Overview/Dashboard tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added direct BuildTargetTreeSelector coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for BuildTargetTreeSelector before cleanup to lock in folder/file rendering, file toggling, folder cascade toggling, and disabled behavior.
+- BuildTargetTreeSelector now uses named handoff CSS classes for rows, checkboxes, indent/chevron/icons, names, counts, and the tree container instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused BuildTargetTreeSelector/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused ReportFindingsSection coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for ReportFindingsSection to lock in its empty-state and populated table rendering before cleanup.
+- ReportFindingsSection now uses named handoff CSS classes for card shell, table head cells, title/location block, and evidence badge/empty copy instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused ReportFindingsSection/ReportPage/Settings/Overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted ReportFiltersPanel to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- ReportFiltersPanel now uses named handoff CSS classes for the card shell, title, filter field stack, select widths, and action row instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused ReportPage/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused ReportModuleBreakdown coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for ReportModuleBreakdown to lock in empty-state and populated row rendering before cleanup.
+- ReportModuleBreakdown now uses named handoff CSS classes for the card shell, table head cells, module title/key block, and status badge styling instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused ReportModuleBreakdown/ReportPage/Settings/Overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused report list coverage, converted report runs/approvals/audit sections to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for ReportRunsSection, ReportApprovalsSection, and ReportAuditLogSection before the cleanup to lock in empty/populated list rendering and status-badge behavior.
+- Those report list surfaces now use named handoff CSS classes for card shells, row layouts, metadata groups, timestamps, and status badges instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused report/settings/overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted project-settings content/general/danger/placeholder surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- ProjectSettingsContent now uses a named handoff class for tab panels, and the general/placeholder/danger sections now rely on named handoff CSS classes for card shells, headers, form grids, labels, and danger-copy layout instead of residual utility-heavy classes.
+- Fresh verification stayed green across typecheck, focused ProjectSettingsPage/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused FilesLanguageSummary coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for FilesLanguageSummary to lock in summary-segment and legend rendering before cleanup.
+- FilesLanguageSummary now uses named handoff CSS classes for its card shell, summary bar, segment blocks, and legend items instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused FilesLanguageSummary/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused StaticAnalysisEmptyState coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for StaticAnalysisEmptyState to lock in the empty-state copy, checklist, and CTA behavior before cleanup.
+- StaticAnalysisEmptyState now uses named handoff CSS classes for the shell, card, copy block, eyebrow, title, description, checklist, and CTA row instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused StaticAnalysisEmptyState/StaticAnalysis/Overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused FilesBuildTargetPanel coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for FilesBuildTargetPanel to lock in target-row rendering and build-log action behavior before cleanup.
+- FilesBuildTargetPanel now uses named handoff CSS classes for the card shell, title row, target rows, target name/path, and build-log action state instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused FilesBuildTargetPanel/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted file-detail vulnerability/history list sections to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- FileDetailVulnerabilitiesSection and FileDetailAnalysisHistorySection now use named handoff CSS classes for card shells, section headers, list wrappers, titles, source/location/time metadata, and empty-state copy instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused FileDetailPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused AnalysisProgressView coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for AnalysisProgressView to lock in progress percentage, step labels, and current-step copy before cleanup.
+- AnalysisProgressView now uses named handoff CSS classes for the shell, spinner, stepper, progress bar, and message copy instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused AnalysisProgressView/StaticAnalysis/Overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused ActiveAnalysisBanner coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for ActiveAnalysisBanner to lock in phase text, chunk progress, metadata line, and action buttons before cleanup.
+- ActiveAnalysisBanner now uses named handoff CSS classes for the card shell, status line, action cluster, and progress track/fill instead of utility-heavy class strings.
+- Fresh verification stayed green across typecheck, focused ActiveAnalysisBanner/StaticAnalysis/Overview tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted small settings/static-analysis wrapper surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- SettingsHeaderActions now uses a named handoff class for its action cluster instead of a utility-heavy inline flex/gap string.
+- StaticAnalysisUploadScreen now uses a named handoff shell class instead of the page-enter spacing utility combination.
+- Fresh verification stayed green across typecheck, focused SettingsPage/StaticAnalysisPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Converted ApprovalDecisionDialog to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- ApprovalDecisionDialog now uses named handoff CSS classes for the modal shell, header, description, body, textarea, and footer action bar instead of residual utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused Approvals/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Converted StaticDashboard wrapper/action/tab surfaces to handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- StaticDashboard now uses named handoff CSS classes for the page shell, header action cluster, tabs wrapper, tabs list, and tab triggers instead of residual utility-heavy classes.
+- Fresh verification stayed green across typecheck, focused StaticAnalysisPage and OverviewPage tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused AsyncAnalysisProgressView coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for AsyncAnalysisProgressView to lock in running/completed titles, chunk progress, and manual result-action visibility before cleanup.
+- AsyncAnalysisProgressView now uses named handoff CSS classes for the shell, spinner/title, stepper, chunk-progress copy, progress bar, error box, actions, and handoff card instead of utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused AsyncAnalysisProgressView/StaticAnalysisPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused RunDetailView coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for RunDetailView to lock in summary rendering, grouped findings, and legacy-result/finding click interactions before cleanup.
+- RunDetailView now uses named handoff CSS classes for the page shell, summary stats row, metadata line, grouped file cards, and finding row layout instead of utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused RunDetailView/StaticAnalysisPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused HighlightedCode coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for HighlightedCode to lock in empty-state copy, line-number rendering, and highlight-line class application before cleanup.
+- HighlightedCode now uses named handoff CSS classes for the shell, empty copy, code lines, highlighted line state, line numbers, and line text instead of utility-heavy strings and inline highlight styling.
+- Fresh verification stayed green across typecheck, focused HighlightedCode/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Added focused VulnerabilityKeyboardHint coverage, converted it to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for VulnerabilityKeyboardHint to lock in the shortcut hint copy and keycap rendering before cleanup.
+- VulnerabilityKeyboardHint now uses named handoff CSS classes for the shell, inline copy, and keycap instead of a residual utility-heavy class string.
+- Fresh verification stayed green across typecheck, focused VulnerabilitiesPage/SettingsPage tests, the full frontend suite, and a production build.
+
+## [2026-04-19] Refined DynamicTestConfigView field and count surfaces onto handoff CSS classes and re-verified | S1 frontend handoff cleanup
+- DynamicTestConfigView no longer relies on inherited build-profile utility label/width helpers for target and count fields; it now uses dedicated dynamic-test field classes.
+- Fresh verification stayed green across typecheck, focused DynamicTest/Files/Settings/Overview tests, the full frontend suite, and a production build.
+- Remaining cleanup is now primarily cosmetic/local low-priority utility strings and inline presentation details rather than structural/shared surfaces.
+
+## [2026-04-19] Added focused FilesSourceWorkspace coverage, converted residual wrappers to handoff CSS classes, and re-verified | S1 frontend handoff cleanup
+- Added direct regression coverage for FilesSourceWorkspace to lock in empty-preview copy, loading state, and finding-row interaction before cleanup.
+- FilesSourceWorkspace now uses named handoff CSS classes for the tree padding wrapper, empty-preview copy/title/text, preview language badge, and error preview copy instead of residual utility-heavy strings.
+- Fresh verification stayed green across typecheck, focused FilesSourceWorkspace/FilesPage/SettingsPage/OverviewPage tests, the full frontend suite, and a production build.
+
+## [2026-04-20] mcp | register_wr | s1-qa-to-s1-s1-qa-s1-mock-dashboard-kpi-live-signal-ds
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-mock-dashboard-kpi-live-signal-ds.md
+
+## [2026-04-20] mcp | register_wr | s1-qa-to-s1-s1-qa-s1-v2-deep-audit-wr-activity-feed-attention-card
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-v2-deep-audit-wr-activity-feed-attention-card.md
+
+## [2026-04-20] mcp | register_wr | s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds
+- Registered reply WR for s1-qa
+- Path: wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds.md
+
+## [2026-04-20] mcp | complete_wr | s1-qa-to-s1-s1-qa-s1-mock-dashboard-kpi-live-signal-ds
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | register_wr | s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy
+- Registered reply WR for s1-qa
+- Path: wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy.md
+
+## [2026-04-20] mcp | complete_wr | s1-qa-to-s1-s1-qa-s1-v2-deep-audit-wr-activity-feed-attention-card
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface.md

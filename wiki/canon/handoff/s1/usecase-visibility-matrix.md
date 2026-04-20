@@ -25,14 +25,14 @@ source_refs:
   - ".omx/plans/s1-usecase-frontend-visibility-matrix.md"
 last_verified: "2026-04-18"
 service_tags: ["s1", "s1-qa"]
-decision_tags: ["frontend-visibility-contract", "qa-pass-fail-rubric", "frontend-skill-review-gate", "shadcn-replatform", "exclude-dynamic-analysis"]
+decision_tags: ["frontend-visibility-contract", "qa-pass-fail-rubric", "exclude-dynamic-analysis"]
 related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/architecture.md"]
 ---
 
 # S1 Frontend 유스케이스 · Must-Show 가시성 매트릭스
 
-> 목적: 각 프론트 유스케이스가 화면에 **반드시 존재해야 할 DOM 관측 항목**을 QA/Reviewer가 그 자리에서 pass/fail 판단할 수 있는 단위로 명시한다.
-> 사용자: S1(Developer), S1-QA, `$frontend-skill` Reviewer.
+> 목적: 각 프론트 유스케이스가 화면에 **반드시 존재해야 할 DOM 관측 항목**을 QA가 그 자리에서 pass/fail 판단할 수 있는 단위로 명시한다.
+> 사용자: S1(Developer), S1-QA.
 > Scope: 2026-04-18 기준 `services/frontend/src/**` 활성 라우트.
 > Exclusions: **DynamicAnalysisPage · DynamicTestPage** 및 `api/dynamic.ts` 관련 어댑터 플로우는 이 매트릭스 밖. Sidebar 내부에서 해당 항목이 렌더링되는 것은 허용하되, 그 내부 동작은 이 매트릭스의 합격/불합격 판단에 쓰지 않는다.
 > 상위 참조: `wiki/canon/specs/frontend.md`, `wiki/canon/handoff/s1/qa-guide.md`, `wiki/canon/handoff/s1/architecture.md`.
@@ -41,7 +41,7 @@ related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-gui
 ## 0. 규약
 
 ### 레벨
-- **MUST**: 해당 상태에서 DOM에 반드시 존재해야 한다. 누락 시 QA/Reviewer REJECT.
+- **MUST**: 해당 상태에서 DOM에 반드시 존재해야 한다. 누락 시 QA REJECT.
 - **SHOULD**: 정상 데이터 경로에서는 보여야 한다. 서버 미응답·미구현 같은 합리적 파생 상태에서 빠질 수 있다. SHOULD 누락은 사유 기록 대상이지 즉시 REJECT는 아니다.
 - **SHOULD+TODO**: 현재 구현에 접근성 속성이 없지만 추가되어야 한다. QA는 이 항목이 누락되어도 FAIL 내지 않는다. Developer 백로그 항목이다.
 - **NICE**: 운영 편의 요소.
@@ -68,7 +68,7 @@ related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-gui
 
 ### 합격/불합격 판정 규칙
 1. 해당 상태의 MUST 중 **하나라도** 누락되면 REJECT.
-2. SHOULD 누락은 사유 기록 후 reviewer 판단.
+2. SHOULD 누락은 사유 기록 대상이다.
 3. SHOULD+TODO 누락은 Developer 백로그 갱신만 수행. 즉시 REJECT 아님.
 4. 매트릭스 밖 요소(동적 분석/테스트 내부 등)는 판정에 쓰지 않는다.
 
@@ -146,7 +146,7 @@ related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-gui
 - submit 버튼 내부 텍스트 `"진입 중..."`.
 
 ### MUST (error: `error !== null`)
-- `role="alert"` 속성을 가진 요소가 렌더된다 (shadcn `Alert`는 기본적으로 `role="alert"`을 세팅; 미설정 시 SHOULD+TODO로 분리). 해당 요소 내부에 `error` 문자열이 표시된다.
+- `role="alert"` 속성을 가진 요소가 렌더된다. 해당 요소 내부에 `error` 문자열이 표시된다.
 
 ### SHOULD+TODO
 - 로그인 에러 Alert에 `aria-live="assertive"` 명시 추가.

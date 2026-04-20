@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-04-18"
+last_verified: "2026-04-20"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -49,6 +49,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 ## Handoff
 
+- [[wiki/canon/handoff/s1-qa/session-2026-04-20-mock-adherence-qa-v2|Session history — s1-qa / 2026-04-20-mock-adherence-qa-v2]] — - Lane: s1-qa *(verified 2026-04-20; s1-qa)*
+- [[wiki/canon/handoff/s1-qa/session-2026-04-20-mock-adherence-qa|Session history — s1-qa / 2026-04-20-mock-adherence-qa]] — - Lane: s1-qa *(verified 2026-04-20; s1-qa)*
 - [[wiki/canon/handoff/s1-qa/session-s1qa-comprehensive-20260406|Session history — s1-qa / s1qa-comprehensive-20260406]] — - Lane: s1-qa *(verified 2026-04-06; s1-qa)*
 - [[wiki/canon/handoff/s1/architecture|S1 Frontend Architecture Snapshot]] — services/frontend/의 실제 코드 구조와 라우팅/모듈/테스트 자산을 정리한 문서. *(verified 2026-04-18; s1)*
 - [[wiki/canon/handoff/s1/qa-guide|S1-QA 실행 가이드]] — 역할: S1 프론트엔드를 사용자 관점에서 검증하는 QA lane *(verified 2026-04-18; s1/s1-qa)*
@@ -85,7 +87,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-omx-1776240985579-tuy6uf|Session history — s1 / omx-1776240985579-tuy6uf]] — - Lane: s1 *(verified 2026-04-15; s1)*
 - [[wiki/canon/handoff/s1/session-omx-1776240985579-tuyuf6|Session history — s1 / omx-1776240985579-tuyuf6]] — - Lane: s1 *(verified 2026-04-18; s1)*
 - [[wiki/canon/handoff/s1/session-omx-1776493817550-3z7au0|Session history — s1 / omx-1776493817550-3z7au0]] — - Lane: s1 *(verified 2026-04-18; s1)*
-- [[wiki/canon/handoff/s1/usecase-visibility-matrix|S1 Frontend 유스케이스 · Must-Show 가시성 매트릭스]] — 목적: 각 프론트 유스케이스가 화면에 반드시 존재해야 할 DOM 관측 항목을 QA/Reviewer가 그 자리에서 pass/fail 판단할 수 있는 단위로 명시한다. *(verified 2026-04-18; s1/s1-qa)*
+- [[wiki/canon/handoff/s1/session-omx-1776506230513-4jau8a|Session history — s1 / omx-1776506230513-4jau8a]] — - Lane: s1 *(verified 2026-04-18; s1)*
+- [[wiki/canon/handoff/s1/session-omx-1776651971369-0r6mm0|Session history — s1 / omx-1776651971369-0r6mm0]] — - Lane: s1 *(verified 2026-04-20; s1)*
+- [[wiki/canon/handoff/s1/usecase-visibility-matrix|S1 Frontend 유스케이스 · Must-Show 가시성 매트릭스]] — 목적: 각 프론트 유스케이스가 화면에 반드시 존재해야 할 DOM 관측 항목을 QA가 그 자리에서 pass/fail 판단할 수 있는 단위로 명시한다. *(verified 2026-04-18; s1/s1-qa)*
 - [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-14; s2)*
 - [[wiki/canon/handoff/s2/architecture|S2 아키텍처 상세]] — 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행/운영 메모 *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/readme|S2. AEGIS Core (Backend) 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-14; s2)*
@@ -114,6 +118,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-omx-1776068296251-abnt8x|Session history — s2 / omx-1776068296251-abnt8x]] — - Lane: s2 *(verified 2026-04-14; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1776135927691-508h7n|Session history — s2 / omx-1776135927691-508h7n]] — - Lane: s2 *(verified 2026-04-14; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1776135956336-nqyup8|Session history — s2 / omx-1776135956336-nqyup8]] — - Lane: s2 *(verified 2026-04-14; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1776663923341-syfhj2|Session history — s2 / omx-1776663923341-syfhj2]] — - Lane: s2 *(verified 2026-04-20; s2)*
 - [[wiki/canon/handoff/s2/session-omx-20260410-s2-sdk-upload-failure-notification|Session history — s2 / omx-20260410-s2-sdk-upload-failure-notification]] — - Lane: s2 *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/session-omx-20260413-s2-sdk-source-isolation-observability|Session history — s2 / omx-20260413-s2-sdk-source-isolation-observability]] — - Lane: s2 *(verified 2026-04-13; s2)*
 - [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-04-14; s3)*
@@ -229,10 +234,15 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 - [[wiki/canon/work-requests/s1-qa-to-s1-notification-dropdown|알림 드롭다운(notification-dropdown) 디자인 전면 개선]] — - Kind: request *(verified 2026-04-07; frontend)*
 - [[wiki/canon/work-requests/s1-qa-to-s1-s1-qa---s1-qa-p0-baseline-p1|S1-QA -> S1: 종합 QA 결과 — P0 승인버튼 복원 + baseline 갱신 + P1 수정 요청]] — - Kind: request *(verified 2026-04-07; s1)*
+- [[wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-mock-dashboard-kpi-live-signal-ds|S1-QA → S1: 디자이너 mock 반영도 검수 — Dashboard KPI/컬럼/live-signal + DS 일관성]] — - Kind: request *(verified 2026-04-20; frontend)*
+- [[wiki/canon/work-requests/s1-qa-to-s1-s1-qa-s1-v2-deep-audit-wr-activity-feed-attention-card|S1-QA → S1 (v2 · deep-audit): 이전 WR 재판정 + Activity feed/Attention card 마크업 누락 보완]] — - Kind: request *(verified 2026-04-20; frontend)*
 - [[wiki/canon/work-requests/s1-qa-to-s1-untitled|프로젝트 대시보드 디자인 전면 개선 요청]] — - Kind: request *(verified 2026-04-07; frontend)*
 - [[wiki/canon/work-requests/s1-qa-to-s1-websocket-overviewpage|사이드바 + WebSocket + OverviewPage 에러 수정 요청]] — - Kind: request *(verified 2026-04-07; frontend)*
 - [[wiki/canon/work-requests/s1-to-s1-qa-s1-qa-qa|S1-QA 종합 QA 요청 — 페르소나 기반 전면 검증]] — - Kind: request *(verified 2026-04-14; s1)*
+- [[wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-mock-adherence-wr-dashboard-kpi-live-signal-ds|S1 → S1-QA reply: mock-adherence WR 처리 완료 — dashboard KPI/컬럼/live-signal + DS 정합성 반영]] — - Kind: reply *(verified 2026-04-20; frontend)*
+- [[wiki/canon/work-requests/s1-to-s1-qa-s1-s1-qa-reply-v2-deep-audit-wr-activity-api-attention-affordance-token-proxy|S1 → S1-QA reply: v2 deep-audit WR 처리 완료 — activity API / attention affordance / token proxy 정리]] — - Kind: reply *(verified 2026-04-20; frontend)*
 - [[wiki/canon/work-requests/s1-to-s2-project-scoped-sdk-upload-failures-before-job-acceptance-need-notification-emiss|Project-scoped SDK upload failures before job acceptance need notification emission for cross-page awareness]] — - Kind: request *(verified 2026-04-10; s1/s2/frontend/backend/sdk/notifications/websocket)*
+- [[wiki/canon/work-requests/s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface|S1 → S2: Signup · Organization verify · password-reset API 계약 신설 요청 (auth surface 확장)]] — - Kind: request *(verified 2026-04-20; frontend/backend/auth)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
 - [[wiki/canon/work-requests/s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-|adopt explicit build-preparation then Quick then Deep UX on the new S2 additive contract surfaces]] — - Kind: request *(verified 2026-04-14; s1/s2)*
 - [[wiki/canon/work-requests/s2-to-s1-audit-remaining-s1-consumer-surfaces-for-buildtarget-only-analysis-lineage-and-r|Audit remaining S1 consumer surfaces for BuildTarget-only analysis lineage and remove any final project-owned assumptions]] — - Kind: request *(verified 2026-04-14; s1/s2/frontend/api-contract/buildtarget)*
@@ -343,7 +353,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-18; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-20; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*

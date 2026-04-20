@@ -5,11 +5,10 @@ canonical: true
 source_refs:
   - "wiki/canon/specs/frontend.md"
   - "wiki/canon/handoff/s1/usecase-visibility-matrix.md"
-  - ".omx/plans/ralplan-s1-shadcn-replatform.md"
   - "services/frontend/playwright.config.ts"
 last_verified: "2026-04-18"
 service_tags: ["s1", "s1-qa"]
-decision_tags: ["shadcn-replatform", "frontend-skill-review-gate", "playwright-qa", "frontend-visibility-contract"]
+decision_tags: ["playwright-qa", "frontend-visibility-contract"]
 related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/specs/frontend.md", "wiki/canon/handoff/s1/usecase-visibility-matrix.md"]
 ---
 
@@ -22,19 +21,19 @@ related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/specs/frontend.md
 
 - QA는 `services/frontend/src/**` 구현 코드를 읽지 않는다.
 - S1은 웹 전용 SPA다.
-- 현재 UI 기준은 legacy vendor-style doctrine이 아니라 **shadcn/Aceternity sourcing + `$frontend-skill` reviewer gate**다.
+- repo 내부의 과거 디자인 지침은 QA 기준이 아니다.
 - 화면 pass/fail 판정은 `wiki/canon/handoff/s1/usecase-visibility-matrix.md`를 우선 참조한다.
 
 ## 2. QA 판정 기준
 
 검증자는 제품 화면을 다음 기준으로 본다.
 
-- AEGIS는 자동차 임베디드 보안 운영 콘솔로 읽혀야 한다.
-- Routine app UI는 shadcn-style primitive density와 restraint를 가져야 한다.
-- Aceternity-style motion/background는 장식이면 실패다.
-- Generic SaaS card mosaic / glow / gradient / floating gimmick은 실패다.
-- Empty/loading/error state는 다음 action과 운영 문맥을 보여야 한다.
-- Dense surfaces는 카드 더미가 아니라 작업면이어야 한다.
+- must-show 항목이 visibility matrix와 일치하는가
+- normal / empty / loading / error state가 관측 가능한가
+- primary interaction이 실제로 동작하는가
+- 콘솔 오류가 없는가
+- mock UI는 mock 상태로 명시되어 있는가
+- chunk-size warning 같은 known note는 evidence에 기록되었는가
 
 ## 3. 페이지별 필수 확인
 
@@ -44,8 +43,7 @@ related_pages: ["wiki/canon/handoff/s1/readme.md", "wiki/canon/specs/frontend.md
 2. empty/loading/error state where feasible
 3. primary interaction
 4. console error 없음
-5. visual reviewer verdict와 충돌 없음
-6. must-show 항목이 visibility matrix와 일치함
+5. must-show 항목이 visibility matrix와 일치함
 
 ## 4. 명령
 
@@ -59,5 +57,5 @@ npm run test:e2e
 
 ## 5. 현재 known note
 
-- Build는 chunk-size warning을 낼 수 있다. 이는 fail이 아니지만 신규 dependency가 과도하게 bundle을 키운 경우 reviewer/test evidence에 기록한다.
-- Reviewer hard veto는 QA 의견보다 우선하는 visual gate다. QA는 증거를 남기고 S1에 WR/보고한다.
+- Build는 chunk-size warning을 낼 수 있다. 이는 fail이 아니지만 evidence에는 기록한다.
+- mock section은 fail 사유가 아니라 “미구현 상태 명시 여부”로 본다.
