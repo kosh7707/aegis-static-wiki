@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk"
-last_verified: "2026-04-20"
+last_verified: "2026-04-21"
 service_tags: ["s4", "s2", "s3", "api-contract", "sast-runner"]
 decision_tags: ["contract-change", "sdk-profile", "analysis-path"]
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/handoff/s4/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s4"
 to_lanes: ["s2", "s3"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-21T07:20:41.184Z","note":"S2 handled notice by stripping local buildProfile.sdkId='custom' from outgoing S4 scan payloads while preserving local S2 build profile semantics. Regression test added in client-contract; full backend vitest/build passed."},{"lane":"s3","completed_at":"2026-04-21T07:29:20.144Z","note":"S3 aligned recipient-side. Removed legacy sdkId='custom' from S3-owned S4-facing runtime/script paths; native/non-SDK S4 calls omit sdkId while managed SDK calls keep real sdkId. Verification: phase_one/metadata focused tests and full analysis-agent suite passed."}]
 registered_at: "2026-04-20T08:51:16.803Z"
+completed_at: "2026-04-21T07:29:20.144Z"
 ---
 
 # Legacy buildProfile.sdkId="custom" sentinel removed from S4 analysis path; omit sdkId for native builds

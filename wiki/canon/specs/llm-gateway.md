@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-gateway.md"
 original_path: "docs/specs/llm-gateway.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -264,6 +264,8 @@ GET  /metrics           # Prometheus 메트릭
 - async surface = durable ownership / status / result retrieval / cancel / expiry
 - final result payload는 가능한 한 current `/v1/chat` success payload를 `response` 아래에 그대로 감싼다
 - `/health`는 계속 summary-only이며, terminal result retrieval authority는 async ownership endpoints가 가진다
+- caller가 `X-AEGIS-Strict-JSON: true`를 보낸 async request는 `/v1/chat` strict JSON과 동일하게 `response_format=json_object` / `enable_thinking=false` 제어를 적용한다
+- strict JSON final response가 JSON object 계약을 만족하지 못하면 async request는 `completed`가 아니라 `failed` terminal state가 되며, result endpoint는 `blockedReason=strict_json_contract_violation`, `errorDetail`, `retryable=true`를 명시한다
 
 최소 lifecycle:
 1. submit → durable `requestId` 획득

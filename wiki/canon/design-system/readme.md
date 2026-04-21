@@ -4,27 +4,22 @@ page_type: "canonical-design-system"
 canonical: true
 source_refs:
   - "wiki/canon/design-system/DESIGN.md"
+  - "wiki/canon/design-system/design-doctrine.md"
   - "wiki/canon/design-system/mocks/"
   - "wiki/canon/design-system/assets/"
   - "services/frontend/src/styles/handoff/"
   - "designer-handoff:external-channel"
-last_verified: "2026-04-20"
+last_verified: "2026-04-21"
 service_tags: ["s1", "s1-qa", "platform"]
 decision_tags: ["external-ui-handoff", "analysts-console", "handoff-css-system", "design-system-source-of-truth"]
-related_pages:
-  - "wiki/canon/design-system/DESIGN.md"
-  - "wiki/canon/handoff/s1/design-system.md"
-  - "wiki/canon/handoff/s1/readme.md"
-  - "wiki/canon/handoff/s1/qa-guide.md"
-  - "wiki/canon/feedback/s1_frontend_working_guide.md"
-  - "wiki/canon/specs/frontend.md"
+related_pages: ["wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/design-system.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/feedback/s1_frontend_working_guide.md", "wiki/canon/specs/frontend.md"]
 ---
 
 # AEGIS Design System — External Handoff Canonical
 
 > 외부 디자이너가 인수한 AEGIS 디자인 시스템의 canonical source-of-truth.
 > S1 구현과 S1-QA 검증 모두 **이 문서와 그 아래 자산**을 권위로 따른다.
-> 마지막 검증/갱신: **2026-04-20**
+> 마지막 검증/갱신: **2026-04-21**
 
 ## 1. 이 페이지의 역할
 
@@ -32,12 +27,21 @@ related_pages:
 - DESIGN.md + HTML mock 3종 + CSS 토큰·컴포넌트·페이지 규칙 전체를 **단일 canonical 디렉토리**(`wiki/canon/design-system/`)에 귀속시켜, Claude Code / Codex-CLI 등 에이전트가 S1 레인을 부팅할 때 참조 경로를 헤매지 않도록 한다.
 - repo 내부(`services/frontend/docs/**`)에는 활성 디자인 지침 문서를 두지 **않는다**. 시각 규칙이 필요하면 반드시 이 canonical 페이지로 리다이렉트한다.
 
+**디자인 시스템 3부작 관계:**
+
+| 문서 | 다루는 것 |
+|---|---|
+| **`readme.md`** (이 문서) | 라우팅 · 소유 경로 · source-of-truth 순서 |
+| `DESIGN.md` | 시스템 그 자체 (토큰 · 컴포넌트 · 패턴) |
+| `design-doctrine.md` | 프로세스 · anti-slop 룰 · 변형 전략 · writer-reviewer 분리 |
+
 ## 2. 소유 경로 (디렉토리 지도)
 
 ```text
 wiki/canon/design-system/
 ├── readme.md                        ← 이 문서 (canonical pointer + 라우팅)
 ├── DESIGN.md                         ← 디자인 시스템 전체 지침서 (source of truth)
+├── design-doctrine.md                ← 프로세스 원칙 (anti-slop · 변형 전략 · writer/reviewer)
 ├── mocks/
 │   ├── Login.html                    ← Auth 2-column shell 참조
 │   ├── Signup.html                   ← Onboarding 4-step flow 참조
@@ -62,7 +66,7 @@ wiki/canon/design-system/
 
 ## 3. Source-of-truth 순서
 
-구현·검증·문서 작성 어느 경우든 충돌 시 아래 순서가 우선한다.
+구현·검증·문서 작성 어느 경우든 시각 규칙이 충돌할 때 아래 순서가 우선한다. (프로세스 원칙은 §1의 3부작 표에서 `design-doctrine.md` 가 담당.)
 
 1. `wiki/canon/design-system/DESIGN.md` — 정책·규칙·토큰 스펙의 문자적 권위
 2. `wiki/canon/design-system/mocks/{Login,Signup,Dashboard}.html` — 페이지 구조·class 네이밍·copy·마이크로 인터랙션의 참조 구현
@@ -108,11 +112,13 @@ DESIGN.md §10 요약 + AEGIS 구현 관점 보강:
 1. `docs/AEGIS.md` (AEGIS repo root) — lane router
 2. `wiki/canon/handoff/s1/readme.md` 또는 `wiki/canon/handoff/s1/qa-guide.md`
 3. **`wiki/canon/design-system/readme.md`** (이 문서) — 디자인 규칙을 다룰 땐 여기가 `DESIGN.md` 로 리다이렉트되는 중간 지점
-4. 필요 시 `wiki/canon/design-system/DESIGN.md` 전문 참조
-5. 페이지 구현 시 `wiki/canon/design-system/mocks/*.html` + `assets/**` 를 계약으로 읽음
+4. **`wiki/canon/design-system/design-doctrine.md`** — 어떻게 작업할지 (프로세스 · anti-slop · 변형 · writer/reviewer 분리). 디자인 요청·변형 제안·자가 승인 상황 전에 반드시 1회 확인
+5. 필요 시 `wiki/canon/design-system/DESIGN.md` 전문 참조
+6. 페이지 구현 시 `wiki/canon/design-system/mocks/*.html` + `assets/**` 를 계약으로 읽음
 
 ## 8. 갱신 정책
 
 - 디자이너 handoff가 갱신될 때마다 이 페이지의 `last_verified` 와 §6 "Mock ↔ 구현 동기화 현황"을 함께 bump 한다.
 - 디자인 규칙이 바뀐 경우 `DESIGN.md` 를 덮어쓴 뒤 §2 지도 / §5 Extending 규칙 변동 여부를 점검한다.
+- 프로세스 원칙이 바뀐 경우 `design-doctrine.md` 를 갱신한다. readme.md §1 3부작 표와 §7 라우팅 순서를 동시에 확인한다.
 - `handoff/` 포팅이 갱신되면 S1 세션 히스토리에 mock ↔ impl diff 요약을 기록한다.

@@ -65,7 +65,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.2** |
-| 테스트 | **382개 수집 / 382개 통과 (2026-04-13 재검증)** |
+| 테스트 | **399개 통과 (2026-04-21 재검증)** |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -165,6 +165,12 @@ SAST_SDK_ROOT=/opt/sdks   # 예시값 — 환경별로 교체
 - 로그 파일: `logs/s4-sast-runner.jsonl`
 - JSON structured, `time` epoch ms, `level` 숫자 (pino 표준)
 - `X-Request-Id` 전파
+- 고도화된 structured summary 로그:
+  - `SAST Runner runtime configuration` — startup 설정, `hotReload`, port, concurrency, rulesets
+  - `SAST Runner ready for traffic` — tool policy/availability probe 이후 traffic 수신 가능 상태
+  - `Scan execution summary` — scanId/projectId, 도구별 findings/latency/status, filter counters, SDK/compileCommands/degraded 정보
+  - `Build execution summary` — build readiness, compileCommandsReady/quickEligible, entries/userEntries/exitCode/failureCategory
+  - `Request terminal summary` — `/v1/health` requestSummary와 같은 terminal state/ackStatus/localAckState/blockedReason
 
 ---
 

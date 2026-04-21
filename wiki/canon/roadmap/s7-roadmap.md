@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/roadmap.md"
 original_path: "docs/s7-handoff/roadmap.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -76,8 +76,8 @@ migration_status: "canonicalized"
   - `traceRequestId`, `resultReady`, `expiresAt` surfaced for ownership path
   - phase-2 방향은 Option C(새 async surface)로 정리
 - 검증 상태:
-  - 타깃 회귀 테스트 47 passed (`tests/test_contract_endpoints.py`, `tests/test_async_chat_manager.py`, `tests/test_contract_input_validation.py`)
-  - 전체 S7 테스트 205 passed (`.venv/bin/python3 -m pytest -q`)
+  - S3 structured finalizer 의존성 보강 후 타깃 회귀 테스트 48 passed (`tests/test_contract_endpoints.py`, `tests/test_async_chat_manager.py`, `tests/test_contract_input_validation.py`, 2026-04-21)
+  - S3 structured finalizer 의존성 보강 후 전체 S7 테스트 206 passed (`.venv/bin/python3 -m pytest -q`, 2026-04-21)
 - 운영 메모:
   - 2026-04-04부터 공용 `.omx`에는 cross-lane durable 정보만 남기고,
     S7 전용 장문 메모/세부 TODO는 `wiki/canon/handoff/s7/` 또는 session state에 기록

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -35,7 +35,7 @@ http://localhost:8000
 | `X-Timeout-Seconds` | 요청 | `/v1/chat` 전용. 호출자가 원하는 read timeout (초). Gateway가 LLM Engine 호출 시 이 값을 적용. 미전달 시 기본 1800초. 상한 1800초. |
 | `X-Model` | 응답 | `/v1/chat` 전용. Gateway가 실제 사용한 모델명 (오버라이드 후). 호출자가 어떤 모델명을 보냈든 실제 적용된 모델을 확인할 수 있다. |
 | `X-Gateway-Latency-Ms` | 응답 | `/v1/chat` 전용. Gateway 측정 지연시간 (밀리초). LLM Engine 호출 + 전후 처리 포함. |
-| `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 전용 opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용하고, 응답에는 `applied`를 돌려준다. |
+| `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 및 `/v1/async-chat-requests` opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용한다. `/v1/chat` 동기 응답에는 `applied`를 돌려준다. async ownership 경로에서는 terminal status/result body에 strict JSON 실패 정보를 명시한다. |
 
 ---
 
@@ -151,7 +151,7 @@ OpenAI-compatible chat completion body를 거의 그대로 받는다. `model`은
 - `messages`는 필수이며 비어 있으면 안 된다
 - `X-Request-Id`는 원래 trace/correlation ID로 유지된다
 - async surface의 durable ownership ID는 별도의 `requestId`다
-- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 strict JSON 제어를 적용한 결과를 생성한다
+- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 `/v1/chat`과 동일하게 `response_format={"type":"json_object"}`와 `enable_thinking=false`를 강제하고, final response content가 JSON object가 아니면 completed로 처리하지 않는다
 
 #### 응답
 
@@ -191,6 +191,9 @@ Durable ownership 상태 조회 엔드포인트.
   "lastAckAt": 1776151200000,
   "lastAckSource": "queue-exit",
   "blockedReason": null,
+  "error": null,
+  "errorDetail": null,
+  "retryable": false,
   "resultReady": false,
   "acceptedAt": "2026-04-14T03:30:00+00:00",
   "startedAt": "2026-04-14T03:30:01+00:00",
@@ -238,8 +241,9 @@ Final result retrieval endpoint.
 
 규칙:
 - `response`는 가능한 한 current `/v1/chat` success payload shape를 유지한다
-- result not ready → explicit non-ready response (`409`)
+- result not ready → explicit non-ready response (`409`, `retryable: true`)
 - failed/cancelled → explicit terminal non-success response (`409`)
+- strict JSON contract violation → explicit terminal failure (`409`) with `error="Strict JSON contract violated"`, `blockedReason="strict_json_contract_violation"`, `errorDetail`, and `retryable: true`
 - expired/not retained → explicit expired response (`410`)
 - idle/empty ambiguity는 허용하지 않는다
 

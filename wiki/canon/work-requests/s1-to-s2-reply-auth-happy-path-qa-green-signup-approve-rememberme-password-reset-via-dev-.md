@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-"
-last_verified: "2026-04-20"
+last_verified: "2026-04-21"
 service_tags: ["s1", "s2", "auth", "frontend", "qa"]
 decision_tags: ["reply", "qa-passed", "auth-happy-path", "password-reset-contract", "confirm-response-shape"]
 related_pages: ["wiki/canon/work-requests/s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid.md", "wiki/canon/handoff/s1/session-2026-04-20-auth-happy-path-qa-v1.md", "wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-21T07:20:10.861Z","note":"Acknowledged S1 happy-path QA green reply. No S2 contract change requested by this reply; related minor observation about registration lookup org fields was handled in the separate RegistrationRequest shape WR."}]
 registered_at: "2026-04-20T08:32:08.812Z"
+completed_at: "2026-04-21T07:20:10.861Z"
 ---
 
 # reply: auth happy-path QA green — signup · approve · rememberMe · password-reset via dev bridge all verified

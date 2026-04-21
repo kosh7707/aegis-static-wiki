@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/README.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -154,7 +154,7 @@ phase-2 no-result-loss semantics용 별도 surface.
 
 | 항목 | 상태 |
 |------|------|
-| 테스트 | **205 passed** (`.venv/bin/python3 -m pytest -q`, 2026-04-14 검증) |
+| 테스트 | **206 passed** (`.venv/bin/python3 -m pytest -q`, 2026-04-21 검증) |
 | LLM 모드 | `real` (DGX Spark vLLM) |
 | 모델 | Qwen3.5-122B-A10B-GPTQ-Int4 |
 | Circuit Breaker | 구현 완료 (CLOSED/OPEN/HALF_OPEN) |
@@ -188,6 +188,9 @@ phase-2 no-result-loss semantics용 별도 surface.
   - Gateway가 `response_format={"type":"json_object"}`와 `chat_template_kwargs.enable_thinking=false`를 강제로 적용
   - strict mode 성공 응답에서 `choices[0].message.content`를 compact JSON 문자열로 정규화하고 `message.reasoning`을 `null`로 scrub
   - strict mode 계약 위반 시 backend payload를 그대로 통과시키지 않고 **502**로 명확히 실패
+- S3 structured finalizer 의존성 보강(2026-04-21):
+  - async ownership strict JSON 실패를 `completed`로 저장하지 않고 `failed` terminal state로 고정
+  - status/result 응답에 `blockedReason=strict_json_contract_violation`, `errorDetail`, `retryable=true`를 additive하게 노출
 - 계약/문서 갱신:
   - `wiki/canon/api/llm-gateway-api.md`
   - `wiki/canon/specs/llm-gateway.md`
@@ -197,7 +200,7 @@ phase-2 no-result-loss semantics용 별도 surface.
   - `tests/test_async_chat_manager.py` **3 passed**
   - `tests/test_request_tracker.py` **4 passed**
   - `tests/test_contract_input_validation.py` **8 passed**
-  - 전체 S7 테스트 **205 passed**
+  - 전체 S7 테스트 **206 passed**
 - 운영 주의:
   - 2026-04-14 기준 이미 떠 있는 localhost:8000 프로세스는 재시작 전 코드로 보일 수 있으므로, live smoke로 strict JSON header / request-aware health / async ownership surface를 함께 재확인 필요
   - 다음 세션은 **runtime restart/rollout 후 live strict JSON + `/v1/health?requestId=` + async submit/status/result smoke 재확인**이 우선

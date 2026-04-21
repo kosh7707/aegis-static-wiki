@@ -1007,6 +1007,12 @@ POST /api/auth/registration-requests/:id/reject
 - register: `5/min/IP`, `3 active pending requests / 24h / email`
 - password reset request: `5/min/IP`, `3/hour/email`
 
+### Cross-lane contract notes (2026-04-21)
+- `BuildTarget.sdkChoiceState` is canonical and must be documented/consumed for Quick preflight. `sdk-unresolved` is not Quick-eligible; `sdk-selected` and `sdk-none-explicit` are Quick-eligible with other build prerequisites satisfied.
+- S2 preserves S3 `result.policyFlags`, including additive `structured_finalizer`, and treats S3 non-`completed` statuses such as `validation_failed` / `INVALID_SCHEMA` / `INVALID_GROUNDING` as Deep failures. S3 terminal task failures may arrive on non-2xx HTTP statuses (for example 422/413/504/503); S2 parses the structured JSON failure body and preserves `failureCode` / `failureDetail` instead of reducing it to a generic transport error.
+- S2 strips local `buildProfile.sdkId = "custom"` before calling S4 scan endpoints; native/non-SDK S4 scans omit `sdkId`.
+- registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape with populated org fields.
+
 ### Password reset behavior
 - request endpoint is non-enumerating and returns `202 { accepted: true }` regardless of account existence.
 - non-production bridge route `GET /api/auth/dev/password-reset/latest?email=` lets frontend mock/E2E flows fetch the latest active token without SMTP.

@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -77,7 +77,7 @@ services/llm-gateway/
 │       └── requirements.txt      # ETL 전용 의존성
 ├── data/
 │   └── qdrant/                   # Qdrant 파일 기반 벡터 DB (ETL 빌드 산출물, git 추적 제외)
-├── tests/                        # 205 tests total (2026-04-14 기준)
+├── tests/                        # 206 tests total (2026-04-21 기준)
 │   ├── conftest.py               # 공통 fixture: TestClient(client_live, client+mock_pipeline), 요청 빌더
 │   ├── test_response_parser.py   # 12 tests
 │   ├── test_evidence_validator.py # 5 tests
@@ -93,7 +93,7 @@ services/llm-gateway/
 │   ├── test_request_tracker.py       # 4 tests (idle/oldest/targeted request summary, clear semantics)
 │   ├── test_async_chat_manager.py    # 3 tests (submit/complete, cancel, expiry)
 │   ├── test_token_tracker.py         # 7 tests (누적 집계, endpoint별, taskType별)
-│   ├── test_contract_endpoints.py      # 36 tests (health request-aware summary, chat proxy strict JSON, async ownership endpoints)
+│   ├── test_contract_endpoints.py      # 37 tests (health request-aware summary, chat proxy strict JSON, async ownership endpoints, async strict JSON terminal failure)
 │   ├── test_contract_task_success.py   # 17 tests (POST /v1/tasks 성공 응답 JSON 계약 검증)
 │   ├── test_contract_task_failure.py   # 22 tests (실패 응답 구조, retryable, 500 형식, failureCode*status)
 │   └── test_contract_input_validation.py # 8 tests (422 입력 검증: taskType/필드 누락/maxTokens 범위 + async chat messages 검증)
@@ -202,6 +202,13 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 | AEGIS_CONFIDENCE_W_SCHEMA | `0.10` | Confidence 가중치: schema compliance |
 | LOG_DIR | `../../logs` (프로젝트 루트 `logs/`) | JSONL 로그 파일 디렉토리 |
 
+### `scripts/start-llm-gateway.sh` hot reload
+
+- 2026-04-21 기준 S7 단독 기동 스크립트는 기본적으로 uvicorn `--reload --reload-dir app`을 사용한다.
+- `S7_HOT_RELOAD=0` 또는 공통 `AEGIS_HOT_RELOAD=0`으로 opt out 가능하다.
+- `AEGIS_PRINT_CMD=1`을 설정하면 실제 서버를 기동하지 않고 실행될 uvicorn command만 출력한다.
+- 포트는 기본 `8000`이며, 필요 시 `AEGIS_LLM_GATEWAY_PORT`로 override할 수 있다.
+
 ---
 
 ## Observability
@@ -267,6 +274,7 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 - 성공 응답에서는 `choices[0].message.content`가 JSON object 문자열인지 검증하고 compact JSON으로 정규화
 - backend가 `message.reasoning`을 포함해도 strict mode 응답에서는 `null`로 scrub
 - strict mode 계약 불만족 시 backend 200을 그대로 반환하지 않고 **502**로 명확히 실패
+- async ownership request에서 strict mode 계약 불만족 시 `completed`로 저장하지 않고 `failed` terminal state + `blockedReason=strict_json_contract_violation` + `errorDetail` + `retryable=true`를 status/result 응답에 남긴다
 - 2026-04-14 검증 시 repo/in-process 경로는 green이었고, 이미 떠 있는 localhost runtime은 재시작 전 코드로 보이는 stale behavior가 남아 있어 rollout restart가 필요
 
 ## Thinking 모드 제어

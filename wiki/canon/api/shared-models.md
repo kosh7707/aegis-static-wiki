@@ -269,6 +269,8 @@ type BuildTargetStatus =
   | "graph_failed"
   | "ready";
 
+type BuildTargetSdkChoiceState = "sdk-selected" | "sdk-none-explicit" | "sdk-unresolved";
+
 interface BuildTarget {
   id: string;
   projectId: string;
@@ -277,6 +279,8 @@ interface BuildTarget {
   includedPaths?: string[];
   sourcePath?: string;
   buildProfile: BuildProfile;
+  /** SDK selection preflight state. Quick is allowed only when this is sdk-selected or sdk-none-explicit. */
+  sdkChoiceState: BuildTargetSdkChoiceState;
   buildSystem?: "cmake" | "make" | "custom";
   buildCommand?: string;
   status: BuildTargetStatus;
@@ -718,7 +722,9 @@ Build-preparation note:
   - BuildTarget-only 실행 요청이다.
   - `buildTargetId` 필수
   - legacy `mode`, `targetIds`, project-only payload는 `400 INVALID_INPUT`
+  - `BuildTarget.sdkChoiceState` is the canonical frontend preflight field for SDK choice.
   - 현재 runtime에서는 BuildTarget의 SDK choice가 명시적으로 확정(`sdk-selected` 또는 `sdk-none-explicit`)되지 않으면 Quick가 거부된다.
+  - `sdk-unresolved` means S1 should disable Quick and explain that SDK choice must be selected or explicitly set to no-SDK/native.
 - `POST /api/analysis/deep`
   - `buildTargetId` 필수
   - `executionId` 필수
@@ -937,6 +943,7 @@ interface DevPasswordResetDeliveryResponse {
   - `3/hour/email`
 - issuing a new password reset token revokes older unconsumed reset tokens for that user
 - successful password reset consumes the presented token, revokes any remaining outstanding reset tokens, and invalidates all active sessions for that user
+- registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape; `organizationCode` / `organizationName` are populated for the requester-visible organization.
 - non-production mock bridge defaults:
   - `AEGIS_AUTH_DEV_FIXTURES=true` (default-on only when `NODE_ENV` is `development` or `test`)
   - `AEGIS_AUTH_DEV_PASSWORD_RESET_BRIDGE=true` (default-on only when `NODE_ENV` is `development` or `test`)

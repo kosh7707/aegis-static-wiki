@@ -166,6 +166,11 @@ canonical v1 lifecycle:
   - fixture org-admin password default = `Admin1234!` (`AEGIS_AUTH_DEV_ADMIN_PASSWORD` override 가능)
   - `GET /api/auth/dev/password-reset/latest?email=` 가 SQLite `dev_password_reset_deliveries` 에서 최신 active token 을 노출해 SMTP 없이 mock/E2E reset flow 를 이어준다
 
+- registration approve/reject/lookup 응답은 full `RegistrationRequest` shape 으로 정규화되며 `organizationCode` / `organizationName` 은 populated 값이다
+- `BuildTarget.sdkChoiceState` 는 Quick preflight canonical field 이다 (`sdk-unresolved` 면 Quick disabled)
+- S3 `structured_finalizer` policy flag 는 보존하고, S3 `validation_failed` / `INVALID_SCHEMA` 는 Deep failure 로 처리한다
+- S4 native/custom scan 호출 시 S2 는 local `buildProfile.sdkId="custom"` sentinel 을 제거하고 `sdkId` 를 생략한다
+
 현재 남은 follow-up risk (non-blocking):
 - rate limit durability 는 shared SQLite 범위까지다. future multi-node deployment 에서는 shared store 로 옮겨야 한다
 - login 성공도 현재는 throttle budget 을 소모한다

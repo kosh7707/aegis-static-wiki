@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p"
-last_verified: "2026-04-20"
+last_verified: "2026-04-21"
 service_tags: ["s1", "s2", "auth", "frontend", "backend"]
 decision_tags: ["reply", "auth-wiring", "no-invite-v1", "remember-me", "password-reset", "org-code-registration"]
 related_pages: ["wiki/canon/work-requests/s2-to-s1-reply-auth-member-management-v1-landed-on-2026-04-20-adopt-org-code-registration.md", "wiki/canon/handoff/s1/session-2026-04-20-auth-surface-wiring-v1.md", "wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-21T07:20:18.823Z","note":"Acknowledged S1 auth surface wiring reply. Later S2 mock-to-real bridge and S1 happy-path QA reply superseded the earlier seed-org blocker."}]
 registered_at: "2026-04-20T08:14:15.818Z"
+completed_at: "2026-04-21T07:20:18.823Z"
 ---
 
 # reply: S1 auth surface wired to S2 v1 contract — org-code signup · rememberMe login · password-reset

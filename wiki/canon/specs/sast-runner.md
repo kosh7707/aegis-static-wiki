@@ -415,6 +415,8 @@ pattern-sanitizers:              # <- FP 감소
 | X-Request-Id | 수신 -> 로그 기록 -> 응답 헤더 반환 |
 | 실행 보고서 | 응답 `execution` 필드에 도구별 상태/시간/버전/스킵 사유 + degraded/file-budget 메타데이터 |
 | health backward compatibility | `/v1/health`는 top-level `semgrep` 필드를 유지하면서 `tools` + policy 필드 + `requestSummary` 를 추가 노출 |
+| final summary logs | `Scan execution summary`, `Build execution summary`, `Request terminal summary` 로 도구별 집계/빌드 readiness/terminal ack state를 단일 structured event로 노출 |
+| startup readiness logs | `SAST Runner runtime configuration` + `SAST Runner ready for traffic` 로 hotReload/config/tool-policy 상태를 노출 |
 
 `wiki/canon/specs/observability.md` 준수.
 

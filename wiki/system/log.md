@@ -1471,3 +1471,175 @@ related_pages:
 - scripts/start-sast-runner.sh now starts uvicorn with --reload --reload-dir app by default.
 - Set SAST_HOT_RELOAD=0 to opt out and run a single-process server.
 - Verified script syntax with bash -n; did not execute the start script.
+
+## [2026-04-20] mcp | register_wr | s1-to-s2-buildtarget-quick-preflight-contract-gap-runtime-returns-sdkchoicestate-but-cano
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-buildtarget-quick-preflight-contract-gap-runtime-returns-sdkchoicestate-but-cano.md
+
+## [2026-04-21] mcp | register_wr | s3-to-s2-s3-structured-finalization-contract-update-consume-structured_finalizer-policy-f
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-structured-finalization-contract-update-consume-structured_finalizer-policy-f.md
+
+## [2026-04-21] mcp | register_wr | s3-to-s7-s3-now-depends-on-s7-strict-json-behavior-for-deep-analyze-structured-finalizer
+- Registered notice WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-now-depends-on-s7-strict-json-behavior-for-deep-analyze-structured-finalizer.md
+
+## [2026-04-21] mcp | complete_wr | s3-to-s7-s3-now-depends-on-s7-strict-json-behavior-for-deep-analyze-structured-finalizer
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] tightened async strict JSON terminal failure contract for S3 structured finalizer | s7
+- S7 now preserves explicit retryable terminal failure details for async ownership strict JSON violations instead of only marking the async request failed.
+- Added status/result fields: error, errorDetail, retryable; strict JSON violations use blockedReason=strict_json_contract_violation and retryable=true.
+- Updated canonical S7 API/spec/handoff/roadmap docs and rebuilt wiki index.
+- Verified focused suite: 48 passed; full services/llm-gateway suite: 206 passed.
+
+## [2026-04-21] mcp | register_wr | s7-to-s3-reply-async-strict-json-terminal-failure-contract-tightened-for-s3-structured-fi
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-async-strict-json-terminal-failure-contract-tightened-for-s3-structured-fi.md
+
+## [2026-04-21] enabled hot reload by default in start-llm-gateway script | s7
+- scripts/start-llm-gateway.sh now builds a uvicorn command with --reload --reload-dir app by default.
+- Set S7_HOT_RELOAD=0 or AEGIS_HOT_RELOAD=0 to opt out.
+- AEGIS_PRINT_CMD=1 prints the command without starting the service; AEGIS_LLM_GATEWAY_PORT can override port 8000.
+- Verified syntax and printed command shapes; did not execute the start script as a running service.
+
+## [2026-04-21] mcp | register_wr | s2-to-s1-reply-buildtarget-quick-preflight-uses-canonical-sdkchoicestate
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-buildtarget-quick-preflight-uses-canonical-sdkchoicestate.md
+
+## [2026-04-21] mcp | complete_wr | s1-to-s2-buildtarget-quick-preflight-contract-gap-runtime-returns-sdkchoicestate-but-cano
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | register_wr | s2-to-s1-reply-registrationrequest-responses-normalized-to-full-shape-with-populated-org-
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-registrationrequest-responses-normalized-to-full-shape-with-populated-org-.md
+
+## [2026-04-21] mcp | complete_wr | s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s1-to-s2-reply-s1-auth-surface-wired-to-s2-v1-contract-org-code-signup-rememberme-login-p
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | register_wr | s2-to-s3-reply-s2-preserves-structured_finalizer-policy-flag-and-treats-validation_failed
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-reply-s2-preserves-structured_finalizer-policy-flag-and-treats-validation_failed.md
+
+## [2026-04-21] mcp | complete_wr | s3-to-s2-s3-structured-finalization-contract-update-consume-structured_finalizer-policy-f
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s4-to-s2-s3-legacy-buildprofile.sdkid-custom-sentinel-removed-from-s4-analysis-path-omit-sdk
+- Lane s2 completed recipient-side handling
+- Status: open
+
+## [2026-04-21] Resolved S2 recipient-side actions for S1/S3/S4 WR backlog | S2 WR backlog triage and implementation
+- Canonicalized BuildTarget.sdkChoiceState as S1 Quick preflight field and sent S2→S1 reply.
+- Normalized RegistrationRequest lookup/approve/reject response shape with populated organizationCode/organizationName and sent S2→S1 reply.
+- Acknowledged and completed S1 auth wiring and happy-path QA replies.
+- Confirmed S3 structured_finalizer handling with regression coverage and sent S2→S3 reply.
+- Handled S4 sdkId=custom notice by stripping the sentinel from outgoing S4 scan payloads.
+- Critic review approved; full backend verification passed: 27 files / 482 tests.
+
+## [2026-04-21] mcp | register_wr | s2-to-s1-s2-api-contract-delta-notice-buildtarget-sdkchoicestate-full-registrationrequest
+- Registered notice WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-api-contract-delta-notice-buildtarget-sdkchoicestate-full-registrationrequest.md
+
+## [2026-04-21] mcp | register_wr | s2-to-s3-s2-consumer-alignment-notice-s4-native-scans-now-omit-legacy-sdkid-custom-sentin
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s2-consumer-alignment-notice-s4-native-scans-now-omit-legacy-sdkid-custom-sentin.md
+
+## [2026-04-21] Registered outbound WR notices for lanes affected by S2 API contract changes | S2 contract delta outbound notices
+- S2→S1 notice registered for BuildTarget.sdkChoiceState, full RegistrationRequest responses, and structured_finalizer display hint.
+- S2→S3 notice registered for S4 native scan sdkId custom sentinel omission alignment.
+- These notices supplement the narrower reply WRs already sent while closing the S2 backlog.
+
+## [2026-04-21] mcp | complete_wr | s2-to-s3-reply-s2-preserves-structured_finalizer-policy-flag-and-treats-validation_failed
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s7-to-s3-reply-async-strict-json-terminal-failure-contract-tightened-for-s3-structured-fi
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s2-to-s3-s2-consumer-alignment-notice-s4-native-scans-now-omit-legacy-sdkid-custom-sentin
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s2-to-s1-s2-api-contract-delta-notice-buildtarget-sdkchoicestate-full-registrationrequest
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s2-to-s1-reply-buildtarget-quick-preflight-uses-canonical-sdkchoicestate
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s2-to-s1-reply-registrationrequest-responses-normalized-to-full-shape-with-populated-org-
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] implemented structured S4 observability summaries | s4
+- Added Scan execution summary, Build execution summary, and Request terminal summary structured log events.
+- Added startup runtime configuration and ready-for-traffic logs including hotReload/config/tool-policy fields.
+- Updated start-sast-runner hot reload env export/print behavior and canonical S4 docs.
+
+## [2026-04-21] mcp | register_wr | s3-to-s2-s3-v1-tasks-terminal-failures-now-return-non-2xx-http-status
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-v1-tasks-terminal-failures-now-return-non-2xx-http-status.md
+
+## [2026-04-21] Aligned terminal task failures with non-2xx HTTP statuses | S3 Analysis Agent /v1/tasks HTTP status contract
+- Changed S3 router so `completed` returns HTTP 200, `validation_failed` returns 422, budget failures 413, timeouts 504, and model errors 503.
+- Added `X-AEGIS-Task-Ok` and `X-AEGIS-Task-Status` response headers for machine-readable task outcome.
+- Added regression coverage for deep-analyze `INVALID_SCHEMA` terminal validation failure returning HTTP 422 instead of HTTP 200.
+- Updated `wiki/canon/api/analysis-agent-api.md` and `wiki/canon/specs/analysis-agent.md`; sent S2 notice WR.
+
+## [2026-04-21] Hardened deep-analyze against missing caveats/usedEvidenceRefs | S3 Deep required Assessment fields
+- ResultAssembler now normalizes missing/non-list top-level `caveats` to `[]` before schema validation, so optional-content-required-schema omissions do not become terminal invalid output.
+- Missing `usedEvidenceRefs` is inferred from claim-level `supportingEvidenceRefs` when possible, then sanitized/validated through the existing evidence pipeline.
+- Deep finalizer and Phase 1 prompts now explicitly require `caveats` and `usedEvidenceRefs` to be emitted as `[]` when empty.
+- Regression tests added; focused tests 20 passed, full analysis-agent suite 339 passed.
+
+## [2026-04-21] Added strict rerun/finalizer path for schema-valid JSON with broken claims structure | S3 Deep malformed claims strict schema repair
+- AgentLoop now probes parsed final JSON for schema errors before result assembly.
+- Harmless required optional-content omissions are normalized for the probe, but malformed core structures such as non-dict `claims[]` trigger one strict structured finalizer repair call.
+- The repaired output still goes through ResultAssembler, schema validation, evidence sanitizer, and evidence validation.
+- Regression added for `claims` emitted as a string; focused tests 19 passed and full analysis-agent suite 340 passed.
+
+## [2026-04-21] Completed Ralph hardening with Critic approval | S3 strict structured output and evidence grounding
+- Deep and generate-poc now attempt strict repair for missing/null/wrong-type required fields and malformed claim objects rather than silently normalizing them.
+- SchemaValidator requires all Assessment top-level fields plus claim statement/detail/supportingEvidenceRefs/location, with list element type checks and non-empty claim text/location checks.
+- ResultAssembler and generate-poc validate raw evidence before sanitizer; unsupported/hallucinated refs produce INVALID_GROUNDING instead of completed output.
+- Evidence sanitizer no longer fuzzy-corrects unsupported refs; generate-poc no longer injects fallback evidence refs or locations.
+- Final Critic verdict: APPROVE. Post-deslop focused suite: 69 passed; full analysis-agent suite: 349 passed.
+
+## [2026-04-21] mcp | register_wr | s3-to-s2-s3-strict-assessment-contract-now-rejects-missing-fields-and-unsupported-evidenc
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-strict-assessment-contract-now-rejects-missing-fields-and-unsupported-evidenc.md
+
+## [2026-04-21] mcp | register_wr | s2-to-s3-reply-s2-agentclient-now-parses-non-2xx-terminal-task-failures-and-preserves-str
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-reply-s2-agentclient-now-parses-non-2xx-terminal-task-failures-and-preserves-str.md
+
+## [2026-04-21] mcp | complete_wr | s3-to-s2-s3-v1-tasks-terminal-failures-now-return-non-2xx-http-status
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] mcp | complete_wr | s3-to-s2-s3-strict-assessment-contract-now-rejects-missing-fields-and-unsupported-evidenc
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-21] Aligned AgentClient with non-2xx strict Assessment failure contract | S2 S3 task failure transport alignment
+- Handled S3 WRs for /v1/tasks terminal non-2xx failures and strict Assessment INVALID_SCHEMA/INVALID_GROUNDING semantics.
+- AgentClient now parses structured non-2xx failure JSON and returns AgentResponseFailure preserving failureCode/failureDetail/audit.
+- Verified backend typecheck, client contract test (38 passed), full backend vitest (483 passed), and backend build.
+
+## [2026-04-21] mcp | complete_wr | s2-to-s3-reply-s2-agentclient-now-parses-non-2xx-terminal-task-failures-and-preserves-str
+- Lane s3 completed recipient-side handling
+- Status: completed

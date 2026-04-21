@@ -123,6 +123,10 @@ Auth v1 메모 (2026-04-20):
   - fixture org-admin password defaults to `Admin1234!` unless `AEGIS_AUTH_DEV_ADMIN_PASSWORD` overrides it
   - seeded org/admin pairs: `ACME-KR-SEC`/`acme-admin`, `HYUNDAI-AVSEC`/`hyundai-admin`, `LG-EV-SECOPS`/`lges-admin`
   - password-reset dev bridge route is enabled when `AEGIS_AUTH_DEV_PASSWORD_RESET_BRIDGE=true` (or when `NODE_ENV` is `development` / `test`) and reads SQLite `dev_password_reset_deliveries`
+- registration approve/reject/lookup returns the full `RegistrationRequest` shape with populated `organizationCode` / `organizationName`.
+- BuildTarget Quick preflight uses canonical `BuildTarget.sdkChoiceState`; `sdk-unresolved` means Quick must be disabled until SDK choice is explicit.
+- For S4 native/custom scans, S2 strips local `buildProfile.sdkId: "custom"` before calling S4; native scans omit `sdkId`.
+- S3 `/v1/tasks` terminal failures may return non-2xx status; S2 AgentClient parses the structured failure body and preserves `failureCode` / `failureDetail` for Deep failure reporting. `INVALID_SCHEMA` and `INVALID_GROUNDING` are terminal failed task results.
 - rate limits:
   - org verify `10/min/IP`
   - register `5/min/IP`, `3 active pending requests / 24h / email`

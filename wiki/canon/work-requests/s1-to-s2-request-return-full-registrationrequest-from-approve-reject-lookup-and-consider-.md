@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-"
-last_verified: "2026-04-20"
+last_verified: "2026-04-21"
 service_tags: ["s1", "s2", "auth", "backend", "frontend"]
 decision_tags: ["request", "contract-follow-up", "registration-request-shape", "optimistic-update"]
 related_pages: ["wiki/canon/work-requests/s2-to-s1-s2-s1-auth-mock-to-real-bridge-landed-use-seeded-org-codes-admins-dev-reset-brid.md", "wiki/canon/work-requests/s1-to-s2-reply-auth-happy-path-qa-green-signup-approve-rememberme-password-reset-via-dev-.md", "wiki/canon/api/shared-models.md", "wiki/canon/handoff/s2/api-endpoints.md", "wiki/canon/specs/backend.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s2-request-return-full-registrationrequest-from-approve-reject-lookup-and-consider-"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-04-21T07:20:06.104Z","note":"Implemented response shape normalization. approve/reject/public lookup now return full RegistrationRequest with populated organizationCode/organizationName. Reply WR sent: s2-to-s1-reply-registrationrequest-responses-normalized-to-full-shape-with-populated-org-."}]
 registered_at: "2026-04-20T10:20:07.447Z"
+completed_at: "2026-04-21T07:20:06.104Z"
 ---
 
 # request: return full RegistrationRequest from approve/reject/lookup (and consider populated org fields on public lookup)
