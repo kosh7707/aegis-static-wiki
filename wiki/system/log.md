@@ -1643,3 +1643,56 @@ related_pages:
 ## [2026-04-21] mcp | complete_wr | s2-to-s3-reply-s2-agentclient-now-parses-non-2xx-terminal-task-failures-and-preserves-str
 - Lane s3 completed recipient-side handling
 - Status: completed
+
+## [2026-04-21] Fixed repair retry preserving invalid JSON shape | S3 generate-poc deterministic schema scaffold repair
+- Verified failing evidence package SHA256 3be1d77d58e73444613be02043c30566bf33edffa6097c477ad5bff2aaf56f8a and log trace for req-e2e-poc-stable10-20260421-192806-09.
+- generate-poc schema repair now builds a deterministic Assessment scaffold before retry and merges LLM refinement without permitting required key deletion or invalid shape preservation.
+- Scaffold preserves summary/claim statement/detail and restores location/supportingEvidenceRefs/usedEvidenceRefs from trusted input claim or request evidence refs where possible.
+- Regression added for initial and repair outputs both containing only summary+claims; focused suite 60 passed, full analysis-agent suite 350 passed.
+
+## [2026-04-22] Implemented evidence-catalog based deep/generate-poc hardening with Critic approval | S3 certificate-maker hot15 reliability implementation
+- Added S3 evidence catalog lifecycle from request refs, Phase 1 evidence, and AgentLoop tool results.
+- Deep false-negative claims=[] now triggers quality retry and deterministic repair only for complete same-path command-injection evidence bundles; incomplete evidence fails INVALID_GROUNDING.
+- Deep claim missing location/supporting refs can be repaired from catalog evidence; no project-specific certificate-maker hardcoding or first-N ref fallback remains.
+- generate-poc scaffold repair now preserves required shape; strict_json_contract_violation has enriched exception metadata and bounded retry handling.
+- Focused suite 86 passed; full analysis-agent suite 369 passed; Critic approved. Partial exact hot run first 3 attempts passed, exact 15/15 remains to be run.
+
+## [2026-04-22] planning | s3 hot15 deep-analyze schema/grounding repair ralplan approved
+- Created deliberate RALPLAN for certificate-maker hot15 12/15 remaining S3 failures.
+- Architect iterated on structured-finalizer alignment, narrow knowledge-ref cleanup, invalid-ref preservation, severity inference, bundle coherence, and analysis-agent-only scope; re-approved.
+- Critic iterated on post-cleanup category/coherence grounding gate; final critic approved.
+- Artifacts: .omx/plans/ralplan-s3-hot15-deep-grounding-repair.md, .omx/plans/prd-s3-hot15-deep-grounding-repair.md, .omx/plans/test-spec-s3-hot15-deep-grounding-repair.md
+
+## [2026-04-22] implementation | s3 hot15 deep-analyze schema/grounding repair implemented
+- Scope: services/analysis-agent only.
+- Implemented prompt/finalizer alignment: all strict Assessment fields listed; finalizer excludes knowledge refs from grounding refs.
+- Implemented deterministic deep final canonicalization before strict validation: safe metadata scaffold, exact CWE-shaped contextual knowledge cleanup, local ref sync, and command-injection category/coherence grounding gate.
+- Added regressions for metadata scaffold, knowledge ref cleanup/repopulation, SAST-only after strip, mismatched CWE, fake mixed refs, typo knowledge refs, unrelated path refs, unrelated caller refs, system/shell/exec marker handling, and plain execution false positives.
+- Verification: focused PRD set 92 passed; full analysis-agent 387 passed; compileall passed; git diff --check -- services/analysis-agent passed; Architect post-deslop APPROVE.
+- Exact certificate-maker hot15 E2E not run in this session.
+
+## [2026-04-22] mcp | register_wr | s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab.md
+
+## [2026-04-22] mcp | register_wr | s1-to-s1-redesign-approvalspage-as-canonical-triage-queue
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-redesign-approvalspage-as-canonical-triage-queue.md
+
+## [2026-04-22] implementation | s3 hot15 fail-fast regression fixed after first rerun failure
+- User reran certificate-maker fail-fast hot15 base hot15-20260422-163238; run 01 failed Stage 5 deep-analyze with INVALID_GROUNDING: insufficient_command_injection_grounding.
+- Root cause: precomputed Quick path supplied SAST and S5 dangerous-callers but no deterministic source/input-path ref when the LLM made zero code.read_file calls; the new coherence gate rejected the claim.
+- Fix: deep_analyze_handler now ingests command-injection SAST source files from trusted projectPath into EvidenceCatalog before prompt/result assembly; ResultAssembler can repopulate partial local command-injection refs from a complete coherent bundle but still blocks incoherent local refs.
+- Verification after fix: source/result/evidence subset 46 passed; focused PRD set 94 passed; full analysis-agent 389 passed; compileall and git diff --check passed; Architect approved. Exact hot15 rerun not performed in this session after the fix.
+
+## [2026-04-22] mcp | register_wr | s1-to-s1-redesign-reportpage-onto-analyst-s-document-tone
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-redesign-reportpage-onto-analyst-s-document-tone.md
+
+## [2026-04-22] mcp | register_wr | s1-to-s1-redesign-analysishistorypage-run-table-onto-canonical-run-row-status-vocab
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-redesign-analysishistorypage-run-table-onto-canonical-run-row-status-vocab.md
+
+## [2026-04-22] mcp | register_wr | s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline
+- Registered request WR for s1
+- Path: wiki/canon/work-requests/s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline.md
