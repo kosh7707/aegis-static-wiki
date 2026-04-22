@@ -159,6 +159,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-omx-1776080082663-5r6t9t|Session history — s3 / omx-1776080082663-5r6t9t]] — - Lane: s3 *(verified 2026-04-14; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1776133018109-2pqa7c|Session history — s3 / omx-1776133018109-2pqa7c]] — - Lane: s3 *(verified 2026-04-14; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claims-schema-repair-20260421|Session history — s3 / session-s3-claims-schema-repair-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralph-20260422|Session history — s3 / s3-final-output-clean-refactor-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
+- [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralplan-20260422|Session history — s3 / s3-final-output-clean-refactor-ralplan-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-generate-poc-quality-hardening-20260421|Session history — s3 / s3-generate-poc-quality-hardening-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-generate-poc-scaffold-repair-20260421|Session history — s3 / session-s3-generate-poc-scaffold-repair-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-generate-poc-stability-20260421|Session history — s3 / s3-generate-poc-stability-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
@@ -167,6 +169,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-hot15-reliability-ralph-20260422|Session history — s3 / session-s3-hot15-reliability-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-hot15-reliability-ralplan-20260422|Session history — s3 / session-s3-hot15-reliability-ralplan-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-http-status-terminal-failures-20260421|Session history — s3 / session-s3-http-status-terminal-failures-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-owned-code-ai-slop-cleanup-20260422|Session history — s3 / s3-owned-code-ai-slop-cleanup-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-ralph-strict-output-contract-20260421|Session history — s3 / session-s3-ralph-strict-output-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-strict-structured-finalizer-contract-20260421|Session history — s3 / s3-strict-structured-finalizer-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-structured-output-fallback-20260421|Session history — s3 / s3-structured-output-fallback-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*

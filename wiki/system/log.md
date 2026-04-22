@@ -1696,3 +1696,57 @@ related_pages:
 ## [2026-04-22] mcp | register_wr | s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline
 - Registered request WR for s1
 - Path: wiki/canon/work-requests/s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline.md
+
+## [2026-04-22] cleanup | s3 hot15 slop cleanup after critic review
+- User stopped hot15 patch-chasing and requested removal of slop/patchy code before design discussion.
+- Strict Critic reviewed current dirty diff and classified it as hot15/CWE-78 semantic slop: low-confidence demotion, same-root popen collapse, generate-poc next-step injection, and associated tests.
+- Applied cleanup by restoring the dirty S3 files: result_assembler.py, generate_poc_handler.py, test_result_assembler.py, test_generate_poc_handler.py.
+- Verification after cleanup: focused tests 79 passed; full analysis-agent 389 passed; compileall/diff-check passed; strict Critic final APPROVE; working tree clean for services/analysis-agent/global per critic.
+- Next discussion should focus on final-output failure retry policy rather than CWE-78 semantic hotfixing.
+
+## [2026-04-22] audit | s3 head-level slop audit after dirty cleanup
+- User noted a one-commit rollback is insufficient; audited current HEAD after dirty diff cleanup.
+- Working tree is clean and tests pass, but HEAD contains command-injection/CWE-78-specific semantic repair in ResultAssembler, AgentLoop false-negative retry, EvidenceCatalog command_injection_bundle, and deep handler source ingestion.
+- Audit artifact: .omx/context/s3-head-slop-audit-20260422T085916Z.md
+- Recommendation: stop hot15 patch chasing; plan final-output full retry and generic root-cause/evidence-role normalization boundaries.
+
+## [2026-04-22] audit | s3 deeper history audit found slop spans e408 d134 662
+- User clarified rollback must go further back than HEAD~1/2. Read-only git history audit found path-relevant S3 drift across e408c8a, d134b6c, and 6628a0a.
+- e408c8a introduced EvidenceCatalog/CommandInjectionBundle, ResultAssembler deterministic command-injection repair, AgentLoop command-injection false-negative retry, and strict-json/generate-poc scaffold mixed together.
+- d134b6c expanded canonicalization/knowledge-ref cleanup/coherence logic.
+- 6628a0a added deep_analyze_handler command-injection source-file ingestion and partial ref repopulation.
+- Candidate pre-drift baseline for affected S3 semantic repair is e408c8a^, but useful strict-json/generate-poc schema work must be separated from CWE-78 semantic repair before any surgical revert.
+- Artifact: .omx/context/s3-deep-history-audit-20260422T090500Z.md
+
+## [2026-04-22] audit | s3 two-day change audit requested by user
+- User clarified S3 test/debug changes began at least two days earlier and each S3 change since then must be audited.
+- Fresh audit enumerated S3 path commits since 2026-04-20: 495f8a1, 69d5ea4, 6b116e4, e408c8a, d134b6c, 6628a0a.
+- Finding: explicit deep-analyze CWE-78 semantic repair decision path starts at e408c8a and is expanded by d134b6c/6628a0a, but 69d5ea4 and 6b116e4 also contain related Build/generate-poc/structured-output work that must be hunk-classified before any cleanup.
+- Fresh evidence: focused tests 68 passed; full analysis-agent 389 passed; compileall/diff-check passed; Critic approved rollback-by-HEAD~1/2 is insufficient.
+- Artifact: .omx/context/s3-two-day-change-audit-20260422T091000Z.md
+
+## [2026-04-22] planning | s3 final-output cleanup ralplan approved
+- Consensus plan approved after Architect and Critic iterations.
+- Plan audits all S3 changes since 2026-04-20, not only HEAD~1/2.
+- Decision: surgical cleanup, retain EvidenceCatalog metadata-only, remove CommandInjectionBundle/semantic completeness APIs, remove ResultAssembler command-injection semantic repair, remove AgentLoop command-injection retry, remove deep handler command-injection source ingest, and clean generate-poc command-injection quality gates.
+- Live hot15 intentionally not a cleanup gate; next design step is generic final-output full retry/root-cause normalization.
+- Artifacts: .omx/plans/ralplan-s3-final-output-clean-refactor.md, .omx/plans/prd-s3-final-output-clean-refactor.md, .omx/plans/test-spec-s3-final-output-clean-refactor.md
+
+## [2026-04-22] implementation | s3 final-output cleanup executed
+- Executed approved S3 cleanup/refactor plan; live hot15 intentionally not used as gate.
+- Removed production CWE-78/command-injection semantic drift: ResultAssembler semantic repair/gates, AgentLoop command-injection retry, deep handler source ingest, EvidenceCatalog bundle/completeness APIs, generate-poc command-injection/CN/shell quote quality gates.
+- Retained EvidenceCatalog as metadata-only and preserved generic structured-output/schema/evidence/HTTP reliability behavior.
+- Verification: focused cleanup suite 55 passed; integration-ish suite 37 passed; full analysis-agent 355 passed; compileall and diff-check passed; production-forbidden grep no output; fixture grep only intentional absence assertion.
+- Strict Critic approved; Architect approved and post-deslop approved.
+
+## [2026-04-22] implementation | s3 final-output semantic drift cleanup completed
+- Scope: services/analysis-agent final-output cleanup. This did not attempt full S3 all-code deslop or build-agent/agent-shared refactor.
+- Removed production CWE-78/command-injection/certificate-maker/hot15 semantic drift from ResultAssembler, AgentLoop, EvidenceCatalog, deep_analyze_handler, and generate_poc_handler.
+- Verification: focused cleanup suite 55 passed; integration-ish suite 37 passed; full analysis-agent 355 passed; compileall and diff-check passed; production-forbidden grep no output; fixture grep only intentional command_injection_bundle absence assertion.
+- Strict Critic approved. Architect approved and post-deslop approved.
+- Live hot15 intentionally not run because cleanup success criterion is removal of semantic drift, not target-specific E2E pass.
+
+## [2026-04-22] S3 owned-code AI slop cleanup verified | s3-owned-code-ai-slop-cleanup-20260422
+- Ralph + ai-slop-cleaner cleanup covered S3-owned analysis-agent, build-agent, agent-shared, and S3 start scripts.
+- Full regression evidence: analysis-agent 353 passed; build-agent 243 passed; compileall and diff-check passed.
+- Generated/cross-lane artifacts removed, dead legacy analysis pipeline/client seam removed, build-agent boundary issues hardened, production mock/unittest.mock usage removed.
