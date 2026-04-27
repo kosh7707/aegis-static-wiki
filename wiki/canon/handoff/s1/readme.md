@@ -174,7 +174,7 @@ action-icon 옆의 텍스트 라벨 ("GATE OVERRIDE" / "ACCEPTED RISK") — seve
 | frontend tests | **691 PASS / 108 files** (baseline 유지) |
 | Build | PASS, esbuild CSS warning 0 |
 | Typecheck | PASS |
-| code-reviewer | **대기** — fresh context 별도 lane 핸드오프 의무 (2026-04-27 writer 자가 approve 금지) |
+| code-reviewer / critic | **APPROVE** (2026-04-27 fresh context, ITERATE → 1 MAJOR + 1 MINOR fix + `--destructive` 13곳 review-tone 통일 → re-verified clean) |
 | qa-tester (Playwright) | **deferred** — dev server 환경 필요. 다음 round |
 | lint grep (production CSS) | hex 0 (DynamicAnalysisPage console theme 제외, 별도 WR) / oklch 0 (handoff/index.css 외) / drift token (`--pass/--fail/--warn/--pending/--neutral/--sb-*`) 0 / Pretendard 직접 0 / severity ramp leak (§2.2 화이트리스트 외) 0 |
 | handoff §5 sync table 정합 | 2026-04-27 갱신 — tokens.css / auth-console.css / dashboard.css 의 실제 drift와 사유 명시 (이전 "바이트 동일" 기재 부정확 수정) |
@@ -224,6 +224,11 @@ action-icon 옆의 텍스트 라벨 ("GATE OVERRIDE" / "ACCEPTED RISK") — seve
   - QualityGateOverrideModal ticketRef audit-only 명시 — `aria-describedby` + helper text + S2 contract L1 의존 명시
   - `services/frontend/src/index.css` unused 토큰 82개 정의 제거 — 730 → 586 lines (-144). 정의 113 → 36 (1:1 사용 매칭)
   - 검증 재실행: 691/108 PASS, typecheck PASS, build PASS (2.41s, CSS warning 0), lint grep clean
+- ✅ **2026-04-27 critic ITERATE → fix → APPROVE round 3**:
+  - **MAJOR fix**: `shared/ui/SelectField.css` `[aria-invalid="true"]` `--severity-critical` → `--danger` (form-* 5 sibling 컴포넌트 일관)
+  - **MINOR fix**: `pages/StaticAnalysisPage/StaticAnalysisPage.css` `.two-stage-error-card` / `.two-stage-error-head` `--destructive` → `--danger` (sibling `.two-stage-error` 블록과 통일)
+  - **`--destructive` 토큰 review-tone 통일** (critic awareness flag): 13 위치 일괄 마이그레이션 — ConnectionStatusBanner / FilesPage / ErrorBoundary / handoff/components/dialog.css / handoff/app-shell.css / SettingsPage 의 workflow error/danger surface 모두 `--danger` 로 (shadcn legacy `--destructive` → review-tone critical-review 일관)
+  - critic fresh context 재평가 → **APPROVE** (verdict: 모든 fix evidence-verified, 새 위반 0)
 - ✅ **ProjectSettingsPage** — 2026-04-22 baseline + 2026-04-25 phase-2 polish + 2026-04-25 mock v2 layout 전면 적용 + 2026-04-25 SDK 신규 계약 활용
 - ✅ **AnalysisHistoryPage** — 2026-04-25 canonical run-row + Deep outcome compact chip
 - ✅ **ReportPage** — 2026-04-25 Analyst's Document + 3 outcome chip + RecoveryTracePanel + ABCD review-tone migration + MINOR sweep
