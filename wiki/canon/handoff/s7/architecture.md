@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-21"
+last_verified: "2026-04-23"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -182,7 +182,7 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 |------|--------|------|
 | AEGIS_LLM_MODE | `mock` | `mock` / `real` |
 | AEGIS_LLM_ENDPOINT | `http://10.126.37.19:8000` | LLM Engine 주소 (DGX Spark vLLM) |
-| AEGIS_LLM_MODEL | `Qwen/Qwen3.5-122B-A10B-GPTQ-Int4` | 모델명 (HuggingFace 형식) |
+| AEGIS_LLM_MODEL | `Qwen/Qwen3.6-27B` | 현재 운영 모델명. 원본 dense checkpoint이며 FP8/quantized 모델 아님 |
 | AEGIS_LLM_API_KEY | (빈 문자열) | API 키 (vLLM: 불필요) |
 | AEGIS_LLM_CONCURRENCY | `4` | 동시 LLM 요청 수 |
 | AEGIS_LLM_CONNECT_TIMEOUT | `10` | LLM Engine 연결 타임아웃 (초) |
@@ -208,6 +208,69 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 - `S7_HOT_RELOAD=0` 또는 공통 `AEGIS_HOT_RELOAD=0`으로 opt out 가능하다.
 - `AEGIS_PRINT_CMD=1`을 설정하면 실제 서버를 기동하지 않고 실행될 uvicorn command만 출력한다.
 - 포트는 기본 `8000`이며, 필요 시 `AEGIS_LLM_GATEWAY_PORT`로 override할 수 있다.
+
+---
+
+## Qwen3.6-27B vLLM Engine recipe (verified 2026-04-25)
+
+S7 Gateway는 OpenAI-compatible `/v1/chat/completions` backend만 요구한다. 현재 DGX Spark live backend는 `Qwen/Qwen3.6-27B` 원본 dense checkpoint를 vLLM 0.19.1로 서빙한다.
+
+현재 live command evidence:
+
+```bash
+vllm serve Qwen/Qwen3.6-27B \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 131072 \
+  --max-num-batched-tokens 8192 \
+  --gpu-memory-utilization 0.9 \
+  --enable-auto-tool-choice \
+  --tool-call-parser qwen3_coder \
+  --reasoning-parser qwen3 \
+  --language-model-only \
+  -tp 1
+```
+
+Important model identity rule:
+
+```text
+current model: Qwen/Qwen3.6-27B
+not current: Qwen/Qwen3.6-27B-FP8
+quantization override: none
+--quantization: not used
+```
+
+현재 recipe 재기동:
+
+```bash
+ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
+  'source $HOME/.local/bin/env && cd ~/spark-vllm-docker && \
+   nohup ./run-recipe.sh qwen3.6-27b-origin --solo --tensor-parallel 1 --port 8000 \
+   > /tmp/vllm-launch.log 2>&1 &'
+```
+
+주요 현재값:
+
+| 변수/옵션 | 값 | 설명 |
+|---|---|---|
+| served model | `Qwen/Qwen3.6-27B` | Gateway `AEGIS_LLM_MODEL`과 맞춘다 |
+| `--max-model-len` | `131072` | live deployment context limit |
+| `--language-model-only` | enabled | S7 text-only workload |
+| `--reasoning-parser` | `qwen3` | thinking/content 분리 |
+| `--tool-call-parser` | `qwen3_coder` | OpenAI-compatible tool calls |
+| `--quantization` | 미사용 | 모델 양자화 없음 |
+| TP | `1` | DGX Spark 단일 GB10 기준 |
+
+전환/검증 절차:
+
+1. 기존 `vllm_node`가 잘못된 모델이면 `docker stop vllm_node && docker rm vllm_node`.
+2. 위 `qwen3.6-27b-origin` recipe로 재기동.
+3. `curl http://10.126.37.19:8000/v1/models`가 `id=root=Qwen/Qwen3.6-27B`, `max_model_len=131072`를 반환하는지 확인.
+4. Gateway `/v1/models`가 `Qwen/Qwen3.6-27B-default`, `contextLimit=131072`를 반환하는지 확인.
+5. strict JSON/tool-call smoke를 실행해 S3 계약을 재확인.
+
+4. Gateway `services/llm-gateway/.env`의 `AEGIS_LLM_MODEL`을 served model name과 일치시킨 뒤 Gateway를 restart한다.
+5. `cd services/llm-gateway && .venv/bin/python3 -m pytest -q`와 legacy `services/llm-gateway/scripts/integration-test-static.sh`로 회귀를 확인한다.
 
 ---
 

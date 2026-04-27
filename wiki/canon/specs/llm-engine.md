@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-engine.md"
 original_path: "docs/specs/llm-engine.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-25"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,8 +15,11 @@ migration_status: "canonicalized"
 
 # S7. LLM Engine 기능 명세
 
-> LLM Engine은 S7이 관리하는 LLM 추론 모델 서빙 계층이다.
-> S7(LLM Gateway)이 유일한 호출자이며, OpenAI-compatible API(`/v1/chat/completions`)를 제공한다.
+> **Current serving default (verified 2026-04-25): `Qwen/Qwen3.6-27B`.**
+> This is the original dense 27B checkpoint, not `Qwen/Qwen3.6-27B-FP8`, and S7 does not pass any model-quantization override to vLLM.
+> Cutover evidence: `wiki/canon/handoff/s7/session-s7-qwen27-cutover-20260424.md` and `wiki/canon/handoff/s7/session-s7-qwen27-s3-wr-20260424.md`.
+
+LLM Engine은 S7이 관리하는 LLM 추론 모델 서빙 계층이다. S7(LLM Gateway)이 유일한 AEGIS 호출자이며, OpenAI-compatible API(`/v1/chat/completions`)를 제공한다.
 
 ---
 
@@ -24,17 +27,17 @@ migration_status: "canonicalized"
 
 ### 책임
 
-- Qwen3.5-122B-A10B-GPTQ-Int4 모델 로딩 및 추론 수행
+- `Qwen/Qwen3.6-27B` 원본 dense 모델 로딩 및 추론 수행
 - OpenAI-compatible REST API 제공 (`/v1/chat/completions`)
-- Thinking 모드 제어 (`enable_thinking` 파라미터)
-- Tool calling 지원 (`qwen3_coder` 파서)
-- GPU 메모리 관리 및 추론 최적화 (PagedAttention, FP8 KV cache, prefix caching)
+- Thinking 모드 제어 (`chat_template_kwargs.enable_thinking`, `--reasoning-parser qwen3`)
+- Tool calling 지원 (`--enable-auto-tool-choice --tool-call-parser qwen3_coder`)
+- GPU 메모리 관리 및 추론 최적화 (PagedAttention/vLLM KV cache/prefix caching/torch compile cache)
 
 ### 비책임
 
-- 프롬프트 구성 및 템플릿 관리 → S7 (Gateway)
-- 출력 검증 및 파싱 → S7 (Gateway)
-- 입력 신뢰도 관리 → S7 (Gateway)
+- 프롬프트 구성 및 템플릿 관리 → S7 Gateway
+- strict JSON 검증/정규화 → S7 Gateway
+- 입력 신뢰도 관리 → S7 Gateway
 - 비즈니스 로직 → S2
 - 사용자 인터페이스 → S1
 
@@ -46,78 +49,72 @@ migration_status: "canonicalized"
 
 | 항목 | 사양 |
 |------|------|
+| Host/IP | `spark-be83` / `10.126.37.19` |
 | GPU | NVIDIA GB10 (Blackwell), Compute Capability 12.1 |
-| 드라이버 | 580.126.09 |
-| CUDA | 13.0 |
-| 메모리 | 128GB LPDDR5x unified (GPU/CPU 공유, 가용 ~119.7GB) |
-| 대역폭 | 273 GB/s |
+| 드라이버/CUDA | 580.126.09 / CUDA 13.0 계열 |
+| 메모리 | 128GB LPDDR5x unified (GPU/CPU 공유, 가용 약 119.7GiB) |
 | 디스크 | 3.7TB NVMe |
 | 아키텍처 | aarch64 (ARM64) |
 | OS | NVIDIA DGX Spark Version 7.4.0 |
 | Docker | 29.1.3 + NVIDIA Container Runtime 1.18.2 |
-| 연결 | ConnectX-7 (100GbE) |
-| IP | 환경변수 `AEGIS_LLM_ENDPOINT`로 설정 (인수인계서 참조) |
 
-### 모델 메모리 분석
-
-| 항목 | 크기 |
-|------|------|
-| Qwen3.5-122B-A10B-GPTQ-Int4 모델 | ~67 GiB |
-| vLLM 런타임 + KV cache + FlashInfer | ~24 GiB |
-| 총 GPU 메모리 사용 | ~96 GiB (gpu_memory_utilization: 0.75) |
-| 결론 | 128GB unified에 충분, 262K 컨텍스트 처리 가능 |
-
----
-
-## 3. 모델: Qwen3.5-122B-A10B-GPTQ-Int4
-
-### MoE (Mixture of Experts) 아키텍처
+### 현재 모델/자원 상태
 
 | 항목 | 값 |
 |------|------|
-| 총 파라미터 | 122B |
-| 활성 파라미터 (토큰당) | **10B** |
-| 전문가 수 | 256개 |
-| 활성 전문가 (토큰당) | 8 라우팅 + 1 공유 = 9개 |
-| 어텐션 | Gated Delta Networks + Sparse MoE 하이브리드 |
-| 컨텍스트 | 262,144 토큰 (네이티브) |
-| 양자화 | FP8 (네이티브, 정밀도 손실 최소) |
-| 라이선스 | Apache 2.0 |
+| Serving model | `Qwen/Qwen3.6-27B` |
+| HF cache | `~/.cache/huggingface/hub/models--Qwen--Qwen3.6-27B` (~52GiB) |
+| vLLM image | `vllm-node:official-0.19.1-cu130` |
+| vLLM version | 0.19.1 |
+| Model load memory evidence | 약 50.22GiB |
+| Available KV cache memory evidence | 약 54.35GiB |
+| GPU KV cache capacity evidence | 221,872 tokens |
+| Max concurrency estimate | 6.64x @ 131072 tokens/request |
+| Disk cleanup status | 2026-04-25 기준 old model caches / ollama / local venv / remote IDE caches removed |
 
-122B 파라미터 중 토큰당 10B만 활성화하여, dense 모델 대비 **훨씬 빠른 추론 속도**를 달성한다. GPTQ-Int4 양자화 적용(Expert=INT4, Attention=BF16).
+---
 
-### 지원 기능
+## 3. 모델: `Qwen/Qwen3.6-27B`
 
-- **Thinking 모드**: `<think>` 태그 기반 추론 체인, API로 on/off 제어 가능
-- **Tool calling**: `qwen3_coder` 파서로 함수 호출 지원
-- **멀티모달**: 텍스트 + 이미지 입력 지원 (현재 텍스트만 사용)
+| 항목 | 값 |
+|------|------|
+| 아키텍처 | Dense |
+| Served model id/root | `Qwen/Qwen3.6-27B` |
+| Context | `max_model_len=131072` (live vLLM `/v1/models` 기준) |
+| Quantization | **없음**. `Qwen/Qwen3.6-27B-FP8` 아님, `--quantization` 미사용 |
+| Runtime dtype | vLLM default/auto path. S7은 dtype/quantization override를 지정하지 않는다 |
+| Text mode | `--language-model-only` |
+| Thinking parser | `--reasoning-parser qwen3` |
+| Tool parser | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
 
-### 모델 전환 이력
+### 중요한 구분: 27B 원본 vs 27B-FP8
 
-| 항목 | Qwen3 32B | Qwen3.5-35B-A3B FP8 | Qwen3.5-122B-A10B-GPTQ-Int4 (현재) |
-|------|:---:|:---:|:---:|
-| 아키텍처 | Dense | MoE | **MoE** |
-| 활성 파라미터 | 32B (전체) | 3B | **10B** |
-| 추론 서버 | ollama | vLLM | **vLLM** |
-| 처리량 | 10.2 tok/s | ~26 tok/s | **~14 tok/s** |
-| GPU 메모리 | 30GB | 84GB | **~96 GiB** |
-| 양자화 | — | FP8 (네이티브) | **GPTQ-Int4 (Expert=INT4, Attention=BF16)** |
-| Thinking 제어 | `/api/chat`에서만 | OpenAI API | **OpenAI API** |
+현재 운영 모델은 `Qwen/Qwen3.6-27B` 원본 checkpoint이다. 과거 테스트 중 `Qwen/Qwen3.6-27B-FP8` cache/checkpoint가 잠깐 사용되며 혼선이 있었지만, 해당 cache는 2026-04-25 정리되었고 현재 DGX에는 `models--Qwen--Qwen3.6-27B`만 남아 있다.
 
-### 모델 행동 특성 (통합 테스트 관측, 2026-03-30)
+현재 확인된 vLLM process:
 
-**tool_calls 선호 경향**
+```bash
+vllm serve Qwen/Qwen3.6-27B \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 131072 \
+  --max-num-batched-tokens 8192 \
+  --gpu-memory-utilization 0.9 \
+  --enable-auto-tool-choice \
+  --tool-call-parser qwen3_coder \
+  --reasoning-parser qwen3 \
+  --language-model-only \
+  -tp 1
+```
 
-- `tools`가 제공되고 `tool_choice="auto"`일 때, **73.9% 확률**로 `finish_reason=tool_calls` 반환 (46회 호출 중 34회)
-- 자발적 content 전환(보고서 작성)은 비결정적이며 낮은 확률
-- `tools`가 없는 요청은 100% `finish_reason=stop` (content) 반환
-- **대응**: 호출자가 적절한 시점에 `tools` 제거 또는 `tool_choice="none"` 설정으로 content 전환을 강제해야 한다
+`--quantization`, FP8 checkpoint path, FP8 served model name은 없다.
 
-**evidence ref 환각**
+### 모델 행동 특성
 
-- 프롬프트에 제공된 예시 ref(`eref-sast-00` 등)를 실제 도구 반환 ref 대신 복사하는 경향
-- 실제 도구 반환값의 ref를 무시하고 텍스트에서 임의 ref를 생성하는 경우 있음
-- **대응**: 호출자 측 evidence ref 검증 필수 (soft/hard 모드)
+- **Thinking 모드**: `enable_thinking=true`인 hard reasoning에서는 긴 사고 토큰을 사용할 수 있어 latency가 길다.
+- **Strict JSON**: S7 Gateway strict mode는 `enable_thinking=false`와 `response_format=json_object`를 강제하고 content를 JSON object로 검증한다.
+- **Tool calling**: OpenAI-compatible `message.tool_calls[]`로 분리된다. Final strict JSON call은 tool-less로 보내는 것이 S3 계약이다.
+- **멀티모달**: 현재 AEGIS/S7은 text-only workload만 사용한다. Engine도 `--language-model-only`로 기동한다.
 
 ---
 
@@ -127,270 +124,196 @@ migration_status: "canonicalized"
 
 | 기준 | 근거 |
 |------|------|
-| GB10 GPU 지원 | `TORCH_CUDA_ARCH_LIST="12.1a"`로 사전 컴파일된 휠 제공 |
-| 성능 | PagedAttention, FlashInfer, FP8 KV cache, prefix caching |
-| Thinking 제어 | `--reasoning-parser qwen3`로 OpenAI API에서 thinking on/off 가능 |
-| Tool calling | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` 내장 |
-| Qwen3.5 지원 | vLLM 0.17.0+ 공식 지원, 전용 레시피 제공 |
-
-### ollama에서 전환한 이유
-
-1. **성능**: MoE 모델(Qwen3.5-35B-A3B)의 이점을 최대한 활용 (ollama 10 tok/s → vLLM 26 tok/s)
-2. **Thinking 제어**: ollama의 OpenAI 호환 레이어에서 thinking 비활성화 불가 → vLLM은 가능
-3. **메모리 효율**: PagedAttention + FP8 KV cache로 262K 컨텍스트 처리 가능
-4. **Prefix caching**: 동일 시스템 프롬프트 재활용 (보안 분석 태스크에 유리)
+| GB10 GPU 지원 | CUDA 13 / Blackwell 경로에서 vLLM 0.19.1 container 검증 |
+| OpenAI 호환성 | `/v1/chat/completions`, `/v1/models`, `/health` 제공 |
+| Thinking 제어 | `--reasoning-parser qwen3` + request `chat_template_kwargs.enable_thinking` |
+| Tool calling | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
+| S7 text-only 최적화 | `--language-model-only` |
 
 ### 배포 구조
 
-```
-DGX Spark
-  └── Docker (vllm-node 컨테이너)
-        └── vLLM 0.17.1rc1 (CUDA 13.1, aarch64)
-              └── Qwen3.5-122B-A10B-GPTQ-Int4
-                    ├── FlashInfer attention (CC 12.1a)
-                    ├── FP8 KV cache
-                    ├── Prefix caching
-                    └── Reasoning parser (qwen3)
+```text
+DGX Spark 10.126.37.19
+  └── Docker container: vllm_node
+        └── image: vllm-node:official-0.19.1-cu130
+              └── vLLM 0.19.1
+                    └── Qwen/Qwen3.6-27B original dense checkpoint
+                          ├── no FP8 model checkpoint
+                          ├── no --quantization override
+                          ├── reasoning parser: qwen3
+                          └── tool parser: qwen3_coder
 ```
 
 ### 서버 기동
 
 ```bash
-# DGX Spark에서
-cd ~/spark-vllm-docker
-./run-recipe.sh qwen3.5-122b-gptq-int4 --solo --tensor-parallel 1 --port 8000
+ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
+  'source $HOME/.local/bin/env && cd ~/spark-vllm-docker && \
+   nohup ./run-recipe.sh qwen3.6-27b-origin --solo --tensor-parallel 1 --port 8000 \
+   > /tmp/vllm-launch.log 2>&1 &'
 ```
+
+현재 recipe가 만드는 핵심 command는 위 `vllm serve Qwen/Qwen3.6-27B ...` 형태다.
 
 ### 주요 vLLM 파라미터
 
-| 파라미터 | 값 | 설명 |
+| 파라미터 | 현재 값 | 설명 |
 |----------|------|------|
 | `--port` | 8000 | API 포트 |
 | `--host` | 0.0.0.0 | 외부 접근 허용 |
-| `--gpu-memory-utilization` | 0.75 | GPU 메모리 75% 사용 (KV cache 확대) |
-| `--max-model-len` | 262144 | 최대 컨텍스트 길이 |
-| `--kv-cache-dtype` | fp8 | KV cache FP8 양자화 |
-| `--attention-backend` | flashinfer | FlashInfer 어텐션 |
-| `--enable-prefix-caching` | - | 프리픽스 캐싱 활성화 |
-| `--enable-chunked-prefill` | - | 청크 프리필 활성화 (ITL 개선) |
-| `--reasoning-parser` | qwen3 | Thinking 모드 분리 파서 |
-| `--enable-auto-tool-choice` | - | Tool calling 자동 선택 |
-| `--tool-call-parser` | qwen3_coder | Tool call 파서 |
-| `--load-format` | fastsafetensors | 빠른 모델 로딩 |
-| `--chat-template` | unsloth.jinja | 호환 챗 템플릿 |
-| `-tp` | 1 | Tensor parallelism (GPU 1개) |
+| `--max-model-len` | 131072 | live deployment 총 context 한도 |
+| `--max-num-batched-tokens` | 8192 | batching budget |
+| `--gpu-memory-utilization` | 0.9 | vLLM 메모리 사용 목표 |
+| `--language-model-only` | enabled | text-only serving |
+| `--reasoning-parser` | qwen3 | Thinking field/content 분리 지원 |
+| `--enable-auto-tool-choice` | enabled | Tool calling 자동 선택 |
+| `--tool-call-parser` | qwen3_coder | Qwen tool-call parser |
+| `-tp` | 1 | Tensor parallelism |
+| `--quantization` | **미사용** | 모델 양자화 없음 |
+| FP8 checkpoint | **미사용** | `Qwen/Qwen3.6-27B-FP8` 아님 |
+
+---
+
+## Operational control script
+
+DGX Spark에는 현재 Qwen27 serving lifecycle 전용 script가 있다.
+
+```text
+/home/accslab/aegis-llm-engine/bin/qwen27-vllm
+/home/accslab/qwen27-vllm -> /home/accslab/aegis-llm-engine/bin/qwen27-vllm
+```
+
+지원 action: `start`, `stop`, `restart`, `status`, `health`, `models`, `logs`, `ps`.
+
+이 script는 `qwen3.6-27b-origin` recipe, `Qwen/Qwen3.6-27B`, `max_model_len=131072`, no-quantization identity를 검증 대상으로 삼는다. 다른 모델을 기동하려면 S7 문서와 control script를 함께 갱신해야 한다.
 
 ---
 
 ## 5. API 인터페이스
 
-상세 스키마는 [API 명세서](../api/llm-engine-api.md)를 참조. 여기서는 설계 원칙만 기술한다.
-
-### 엔드포인트
+상세 스키마는 [API 명세서](../api/llm-engine-api.md)를 참조한다.
 
 | 메서드 | 경로 | 포트 | 용도 |
 |--------|------|------|------|
 | POST | `/v1/chat/completions` | 8000 | 추론 요청 (OpenAI 호환) |
-| GET | `/v1/models` | 8000 | 사용 가능한 모델 목록 |
+| GET | `/v1/models` | 8000 | served model 목록/`max_model_len` 확인 |
 | GET | `/health` | 8000 | 헬스체크 |
-
-### 포트
-
-vLLM 서빙 포트는 **8000**이다 (이전 ollama의 11434에서 변경). S7의 `AEGIS_LLM_ENDPOINT`에 이 포트를 지정해야 한다.
 
 ### Thinking 모드 제어
 
-vLLM의 `--reasoning-parser qwen3` 옵션으로 OpenAI 호환 API에서 thinking 모드를 제어할 수 있다:
+- 비활성화: `"chat_template_kwargs": {"enable_thinking": false}` → final content 직접 응답
+- 활성화: `"enable_thinking": true` 또는 기본 경로 → reasoning parser가 reasoning/content 분리를 시도
 
-- **비활성화**: `"chat_template_kwargs": {"enable_thinking": false}` → `content`에 바로 응답
-- **활성화**: 기본값 (또는 `"enable_thinking": true`) → `reasoning` 필드에 사고 과정, `content`에 최종 답변
-
-### 응답 형식
-
-OpenAI-compatible JSON. `choices[0].message.content`로 응답 추출.
+S7 strict JSON 경로에서는 Gateway가 thinking을 강제로 비활성화한다.
 
 ---
 
 ## 6. S7 Gateway↔LLM Engine 연동
 
-### 통신 구조
-
-```
+```text
 S7 Gateway (LLM Gateway, :8000)
-  │
-  │  POST /v1/chat/completions
-  │  (httpx, connect 10s / read 600s)
-  │
+  │ POST /v1/chat/completions
+  │ httpx connect 10s / read 600s(task client) or caller X-Timeout-Seconds(/v1/chat)
   ▼
 LLM Engine (DGX Spark, :8000)
-  │
-  │  vLLM (Qwen3.5-122B-A10B-GPTQ-Int4) inference
-  │  Docker container on DGX Spark
-  │
+  │ vLLM Qwen/Qwen3.6-27B inference
   ▼
-GPU (GB10, ~96GiB used, GPU-Util 96%)
+GPU/Unified memory (GB10)
 ```
 
-### S7 연결 설정
-
-S7 Gateway의 환경변수로 LLM Engine을 가리킨다:
+S7 Gateway 환경변수:
 
 ```env
 AEGIS_LLM_MODE=real
-AEGIS_LLM_ENDPOINT=http://${LLM_ENGINE_HOST}:8000
-AEGIS_LLM_MODEL=Qwen/Qwen3.5-122B-A10B-GPTQ-Int4
-AEGIS_LLM_API_KEY=                              # vLLM: 불필요
+AEGIS_LLM_ENDPOINT=http://10.126.37.19:8000
+AEGIS_LLM_MODEL=Qwen/Qwen3.6-27B
+AEGIS_LLM_API_KEY=
 ```
-
-**주의**: S7 Gateway(WSL2)에서 LLM Engine(DGX Spark)으로의 통신이므로 `localhost`가 아닌 LLM Engine 호스트의 IP를 사용한다. 실제 IP는 `.env` 파일에서 설정하며, 접속 정보는 인수인계서(`docs/s7-handoff/README.md`)를 참조한다.
 
 ### 모델명 규칙
 
-vLLM의 모델명은 HuggingFace 형식 `Qwen/Qwen3.5-122B-A10B-GPTQ-Int4`이다 (ollama의 `qwen3:32b` 형식과 다름).
+vLLM의 현재 운영 모델명은 HuggingFace 형식 `Qwen/Qwen3.6-27B`이다. `Qwen/Qwen3.6-27B-FP8`, ollama-style `qwen3:*`, 또는 이전 `Qwen/Qwen3.5-122B-A10B-GPTQ-Int4`로 표기하지 않는다.
 
 ### 연동 확인 절차
 
-1. DGX Spark에서 vLLM 컨테이너 기동
-2. `curl http://${LLM_ENGINE_HOST}:8000/v1/models` → 모델 목록 확인
-3. S7 환경변수 설정 (`AEGIS_LLM_MODE=real`, endpoint/model 변경)
-4. S7 Gateway 기동
-5. S7 `/v1/health` → `modelProfiles` 확인
-6. S7 `/v1/tasks` 테스트 요청 → 실 LLM 응답 확인
+```bash
+curl http://10.126.37.19:8000/health
+curl http://10.126.37.19:8000/v1/models | python3 -m json.tool
+curl http://localhost:8000/v1/models | python3 -m json.tool
+curl http://localhost:8000/v1/health | python3 -m json.tool
+```
+
+기대값:
+
+```text
+Engine /v1/models: id=root=Qwen/Qwen3.6-27B, max_model_len=131072
+Gateway /v1/models: Qwen/Qwen3.6-27B-default, contextLimit=131072
+```
 
 ---
 
 ## 7. 성능 가이드라인
 
-### 실측 성능 (2026-03-24 갱신)
+### Qwen3.6-27B hard benchmark / smoke evidence
 
-| 항목 | 실측값 | 비고 |
-|------|--------|------|
-| 처리량 (단일, 122B) | **~14 tok/s** (non-thinking) | gpu_mem 0.75 + chunked prefill, 워밍업 후 |
-| 배치 prompt throughput | **1,500~3,000 tok/s** | 4 reqs 병렬 처리 시 |
-| 배치 generation throughput | **60~113 tok/s** | 4 reqs 병렬 처리 시 |
-| GPU-Util | 96% | 추론 중 |
-| GPU 메모리 | 84,276MiB | 모델 + KV cache |
-| GPU KV cache 사용률 | 2.1% (피크) | 배치 처리 시. 여유 충분 |
-| Prefix cache hit rate | ~1.2% | 시스템 프롬프트 다양 시 낮음 |
-| 최대 동시 처리 | **4 reqs** | 대기 없이 처리 |
-| 모델 로딩 시간 | ~54초 | 컨테이너 기동 포함 ~4분 |
+| 항목 | 값 | 비고 |
+|------|----|------|
+| hard qualityScore | 0.74 | sequential clean-lifecycle benchmark |
+| hard passRate | 0.70 | decisive quality fixtures |
+| hard p50 latency | 약 660.6s | thinking-heavy prompts |
+| hard p95 latency | 약 1244.8s | thinking-heavy prompts |
+| mean completion throughput | 4.65 tok/s | hard benchmark 평균 |
+| strict JSON smoke | 4.975s | Gateway strict JSON, thinking off |
+| tool-call smoke | 6.274s | OpenAI-compatible tool call separated |
+| async strict JSON smoke | ~3.8s | submit/status/result completed |
 
-### 배치 처리 특성 (2026-03-17 측정)
+### 운영 팁
 
-7개 정적 분석 태스크 동시 실행 시 관측된 특성:
-
-| 태스크별 지표 | 범위 | 비고 |
-|-------------|------|------|
-| latency | 18.7~47.3초 | 입력 크기에 비례 |
-| promptTokens | 3,029~17,609 | 태스크별 편차 큼 |
-| completionTokens | 559~1,055 | 상대적으로 균일 |
-
-- vLLM이 최대 4개 요청을 병렬 처리, 대기(Waiting) 없음
-- KV cache 2.1%만 사용 → 더 큰 배치도 가능
-- 전 요청 200 OK, 에러 없음
-
-### 성능 팁
-
-- 모든 턴을 thinking 모드로 돌리면 느림 → **control turn은 non-thinking**
-- 최종 synthesis만 더 큰 budget 부여
-- Prefix caching이 활성화되어 있어, 동일 시스템 프롬프트 반복 시 prompt 처리 속도 향상
-- 첫 요청은 torch.compile 때문에 느림 → 기동 후 워밍업 요청 권장
+- 일반 control/tool turn은 non-thinking 또는 제한된 output budget을 사용한다.
+- 품질 우선 deep reasoning만 thinking을 켠다.
+- 최종 strict JSON finalizer는 반드시 `X-AEGIS-Strict-JSON: true`로 보내 Gateway 검증을 사용한다.
+- 장문 요청은 `/v1/health?requestId=`의 `transport-only` 상태를 alive 신호로 해석하고 elapsed time만으로 중단하지 않는다.
+- 첫 요청/재기동 후에는 torch compile/KV cache warmup이 지연될 수 있다.
 
 ---
 
 ## 8. 향후 확장
 
-### Tool Calling (즉시 사용 가능)
-
-vLLM에 `--enable-auto-tool-choice --tool-call-parser qwen3_coder`가 이미 설정되어 있어, 호출자(S7 Gateway 경유)가 `tools` 파라미터를 포함하면 바로 사용 가능:
-
-```json
-{
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
-  "messages": [...],
-  "tools": [
-    {
-      "type": "function",
-      "function": {
-        "name": "source.get_span",
-        "description": "소스 코드 구간 조회",
-        "parameters": { ... }
-      }
-    }
-  ],
-  "tool_choice": "auto",
-  "max_tokens": 2048,
-  "chat_template_kwargs": {"enable_thinking": false}
-}
-```
-
-### Structured Output (즉시 사용 가능)
-
-`response_format` 파라미터로 JSON 출력 강제:
-
-```json
-{
-  "response_format": {
-    "type": "json_object"
-  }
-}
-```
-
-### 향후 계획
-
-| 항목 | 시기 | 설명 |
-|------|------|------|
-| 모델 업그레이드 | 수시 | Qwen3.5 122B (멀티 GPU 시), 차기 모델 |
-| Tensor Parallelism | GB10 2대 구성 시 | TP=2로 처리량 향상 |
-| 다중 모델 | v3 | 용도별 분리 (경량: 분류, 중량: 심층 분석) |
+| 항목 | 설명 |
+|------|------|
+| 모델 업그레이드 | 새 모델은 clean lifecycle benchmark와 `/v1/models` proof 후 채택 |
+| 다중 모델 | 현재는 자동 fallback 없음. 필요 시 별도 profile/라우팅 계약을 추가해야 함 |
+| Tensor Parallelism | 현재 DGX 단일 GB10 기준 `-tp 1`; 다중 장비/다중 GPU 구성 시 재검토 |
 
 ---
 
 ## 9. 보안 고려사항
 
-- LLM Engine은 **내부 네트워크에서만** 접근 가능 (외부 노출 금지)
-- vLLM은 기본적으로 API key 없이 동작 — 내부망 전제
-- LLM Engine에 도달하는 모든 입력은 S7 Gateway가 이미 검증한 상태
-- LLM Engine은 파일시스템, 네트워크, ECU에 직접 접근하지 않음
-- Docker 컨테이너 내부에서 실행되어 호스트 격리
+- LLM Engine은 내부 네트워크에서만 접근 가능 (외부 노출 금지)
+- vLLM은 API key 없이 동작 — 내부망/S7 단일 호출자 전제
+- LLM Engine에 도달하는 모든 입력은 S7 Gateway가 이미 정책적으로 통제한 상태여야 한다
+- LLM Engine은 파일시스템, 네트워크, ECU에 직접 접근하지 않는다
+- Docker 컨테이너 내부에서 실행되어 호스트와 격리된다
 
 ---
 
 ## 10. 로깅 및 관측성
 
-### 로그 파일
-
 | 로그 | 위치 | 작성자 | 내용 |
 |------|------|--------|------|
 | vLLM 서버 로그 | DGX Spark: `/tmp/vllm-launch.log` | vLLM | HTTP 요청 상태, 엔진 통계 |
-| LLM 교환 로그 | `logs/llm-exchange.jsonl` | S7 (RealLlmClient) | 요청/응답 전문, 레이턴시, 토큰 수 |
-| S7 서비스 로그 | `logs/aegis-llm-gateway.jsonl` | S7 | 태스크 수명주기, confidence, rag_hits |
-
-### vLLM 엔진 통계 (10초 주기 자동 출력)
-
-vLLM은 `/tmp/vllm-launch.log`에 10초 간격으로 엔진 통계를 기록한다:
-
-- **Avg prompt throughput**: 입력 처리 속도 (tokens/s)
-- **Avg generation throughput**: 생성 속도 (tokens/s)
-- **Running / Waiting reqs**: 동시 처리 / 대기 요청 수
-- **GPU KV cache usage**: KV cache 메모리 사용률 (%)
-- **Prefix cache hit rate**: 프리픽스 캐시 적중률 (%)
-
-### 로그 관리
-
-- 전체 로그 일괄 초기화: `./scripts/common/reset-logs.sh` (S2 관리)
-
-### 관측 한계
-
-vLLM은 HTTP 액세스 로그와 엔진 통계만 기록한다.
-실제 프롬프트 내용이나 응답 본문은 vLLM 로그에 포함되지 않는다.
-프롬프트/응답 디버깅이 필요하면 `logs/llm-exchange.jsonl`을 참조한다.
+| Docker 로그 | `docker logs vllm_node` | Docker/vLLM | container stdout/stderr |
+| LLM 교환 로그 | `services/llm-gateway/logs/llm-exchange.jsonl` | S7 Gateway | 요청/응답, 레이턴시, 토큰 수 |
 
 ---
 
-## 관련 문서
+## 11. Historical baseline notes
 
-- [전체 개요](technical-overview.md)
-- [S7. LLM Gateway](llm-gateway.md)
-- [S7 Gateway↔LLM Engine API 계약서](../api/llm-engine-api.md)
-- [S7 인수인계서](../s7-handoff/README.md)
+이전 운영/비교 모델은 다음 이유로 현재 기본값에서 제외되었다.
+
+| 모델 | 현재 상태 |
+|------|-----------|
+| `Qwen/Qwen3.6-27B-FP8` | 과거 혼선/오시도 cache. 현재 DGX cache 삭제됨. 운영 모델 아님 |
+| `Qwen/Qwen3.6-35B-A3B` | 빠른/simple 후보였으나 품질 우선 benchmark에서 27B보다 낮아 cache 삭제됨 |
+| `Qwen/Qwen3.5-122B-A10B-GPTQ-Int4` | 이전 baseline/archive. cache 삭제됨 |
+| ollama/Qwen3 32B | 폐기된 이전 경로. `~/ollama` 삭제됨 |

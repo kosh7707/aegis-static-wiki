@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/AEGIS.md"
 original_path: "docs/AEGIS.md"
-last_verified: "2026-04-06"
+last_verified: "2026-04-27"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: []
@@ -127,7 +127,6 @@ migration_status: "canonicalized"
 | `services/llm-gateway/` | **S7** | LLM Gateway (:8000) |
 | `services/analysis-agent/` | S3 | Analysis Agent (:8001) |
 | `services/build-agent/` | S3 | Build Agent (S3 겸임) |
-| `services/agent-shared/` | S3 | Analysis/Build Agent 공통 프레임워크 |
 | `services/sast-runner/` | S4 | |
 | `services/knowledge-base/` | S5 | |
 | `services/ecu-simulator/` | S6 | |
@@ -323,7 +322,7 @@ AEGIS는 Codex + oh-my-codex(OMX)를 기준으로 세션 메모리와 QA 보조 
 | 머신 | CPU / GPU | 메모리 | OS | 용도 |
 |------|-----------|--------|-----|------|
 | **개발 머신** | Intel i7-14700K (3.42GHz) | 64GB DDR5 | Windows 11 Education 24H2 (WSL2 Ubuntu 24.04.4 LTS) | S1, S2, S3, S4, S5, S6, S7(Gateway) 실행 |
-| **DGX Spark** | NVIDIA GB10 (aarch64) | 128GB LPDDR5x | DGX Spark OS 7.4.0 (GNU/Linux 6.14.0) | S7(LLM Engine) — Qwen3.5-122B-A10B-GPTQ-Int4 서빙 |
+| **DGX Spark** | NVIDIA GB10 (aarch64) | 128GB LPDDR5x | DGX Spark OS 7.4.0 (GNU/Linux 6.14.0) | S7(LLM Engine) — Qwen/Qwen3.6-27B 서빙 (2026-04-24 S7 default) |
 
 ### 언어 + 런타임
 
@@ -398,3 +397,4 @@ docs/
 | 2026-03-31 | log-analyzer 토큰 절감 (메시지 축약, 중복 그룹핑, max_lines). 레거시 전면 제거 (Rule 엔진, LlmV1Adapter, MockEcu). |
 | 2026-04-03 | 8세션 체계(S1-QA 분리) 명시. Codex/OMX 운영 메모와 Playwright skill/MCP/CLI 우선순위 추가. |
 | 2026-04-04 | 공용 `.omx` 메모 운영 규칙 추가: `.omx/notepad.md`·`.omx/project-memory.json`은 전역 durable 정보만 기록하고, lane/세션 전용 메모는 handoff·WR·session state로 분리하도록 명시. |
+| 2026-04-27 | S3 공유 런타임 retired. S3 active owned code path는 Analysis Agent와 Build Agent이며, runtime helper는 각 서비스 내부 service-local 패키지로 소유한다. |

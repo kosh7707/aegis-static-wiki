@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-20"
+last_verified: "2026-04-25"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -126,7 +126,7 @@ Auth v1 메모 (2026-04-20):
 - registration approve/reject/lookup returns the full `RegistrationRequest` shape with populated `organizationCode` / `organizationName`.
 - BuildTarget Quick preflight uses canonical `BuildTarget.sdkChoiceState`; `sdk-unresolved` means Quick must be disabled until SDK choice is explicit.
 - For S4 native/custom scans, S2 strips local `buildProfile.sdkId: "custom"` before calling S4; native scans omit `sdkId`.
-- S3 `/v1/tasks` terminal failures may return non-2xx status; S2 AgentClient parses the structured failure body and preserves `failureCode` / `failureDetail` for Deep failure reporting. `INVALID_SCHEMA` and `INVALID_GROUNDING` are terminal failed task results.
+- S3 `/v1/tasks` `status=completed` means the Analysis Agent returned a valid review envelope, not necessarily a clean Deep pass. S2 persists `analysisOutcome` / `qualityOutcome` / `pocOutcome` / `recoveryTrace`; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Non-clean but valid-input outcomes remain completed results with review/warning signals, while true task failures may return non-2xx and preserve `failureCode` / `failureDetail`.
 - rate limits:
   - org verify `10/min/IP`
   - register `5/min/IP`, `3 active pending requests / 24h / email`
@@ -141,8 +141,11 @@ Auth v1 메모 (2026-04-20):
 | GET | `/api/gate-profiles` | Gate 프로필 목록 |
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
-| GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source) |
-| GET | `/api/projects/:pid/sdk/:id/log` | SDK install log tail 조회 (`?tailLines=` optional, re-entry / reconnect recovery source) |
+| GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source; phase/retry metadata 포함) |
+| GET | `/api/projects/:pid/sdk/quota` | 프로젝트 SDK storage quota/usage 조회 |
+| GET | `/api/projects/:pid/sdk/metrics` | SDK 등록/phase duration aggregate metrics 조회 |
+| GET | `/api/projects/:pid/sdk/:id/log` | SDK install log tail/pagination/download 조회 (`?tailLines=`, `?offset=&limit=`, `?download=true`) |
+| POST | `/api/projects/:pid/sdk/:id/retry` | 실패 SDK 재시도 (`fromPhase?: analyzing|verifying`, retained/materialized artifact 필요) |
 | POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 multipart project-scoped upload; 단일 archive / 단일 `.bin` / multi-file folder upload 지원. 폴더 업로드는 클라이언트가 상대경로를 보존해서 보내야 함) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
@@ -200,6 +203,13 @@ Auth v1 메모 (2026-04-20):
 
 ### Run / Finding / Gate / Approval / Report
 
+QualityGate / Approvals mock-absorption contract memo (2026-04-26):
+
+- `GateRuleResult` now includes optional backend-owned metric fields `current`, `threshold`, `unit`, and mirrored `meta`; S1 must not hardcode threshold maps.
+- `GateResult` now includes optional `profileId`, `commit`, `branch`, `requestedBy`; automatic gate evaluation currently fills `profileId` and `requestedBy=system`, while `commit/branch` remain optional unless known to S2.
+- `ApprovalRequest` now includes optional `impactSummary` and `targetSnapshot`; gate override requests are populated from the gate, and accepted-risk requests are populated from visible finding data when that path creates an approval.
+- Contract details and TypeScript snippets live in `wiki/canon/api/shared-models.md` under “Gate / approval additive mock-absorption fields (S1 WR 2026-04-26)”.
+
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | GET | `/api/projects/:pid/runs` | 프로젝트 Run 목록 |
@@ -242,3 +252,33 @@ Auth v1 메모 (2026-04-20):
 - `/ws/upload`, `/ws/sdk`, `/ws/analysis`, `/ws/pipeline` 는 **foreground progress** 채널이다.
 - `/ws/notifications` 는 **background completion awareness** 채널이다.
 - 사용자가 화면을 이동하거나 재연결한 뒤에는 WS replay를 기대하지 말고, 위 표의 REST/status surface를 authoritative recovery path로 사용해야 한다.
+
+Deep outcome / cleanPass UI contract memo (2026-04-25):
+
+- `AnalysisResult.analysisOutcome`, `qualityOutcome`, `pocOutcome`, `recoveryTrace` are additive REST/shared fields for Deep results; old/non-Deep rows may omit them.
+- `cleanPass` is currently a WebSocket convenience field on `analysis-deep-complete`, not a persisted REST field. REST consumers derive it from `status=completed && analysisOutcome=accepted_claims && qualityOutcome=accepted`.
+- `analysis-deep-complete` success paths populate outcome fields + `cleanPass`; `recoveryTrace` is recovered through REST result detail, not the WS payload.
+- `analysis-quick-complete` and `analysis-error` do not carry these outcome fields. True task failures are error surfaces, not synthesized `inconclusive` completed results.
+- S1 display guidance, bilingual copy, cleanPass matrix, recoveryTrace schema, and forward-compat defaults are canonicalized in `wiki/canon/api/shared-models.md` §2.6.1.
+
+SDK second follow-up implementation memo (2026-04-25):
+
+- Full A1-O2 SDK follow-up implementation answers are canonicalized in `wiki/canon/api/shared-models.md` §4.5.1.
+- Current-cycle S2 now implements additive SDK runtime fields and endpoints: upload `etaSeconds`, `phaseStartedAt`, persisted `phaseHistory`, `phaseDetail`, conservative `retryable` / `recoverable`, structured SDK error `code`, wiki-canonical `troubleshootingUrl`, server-side retry endpoint, quota endpoint, log pagination/download, SDK metrics endpoint, and app-level WS heartbeat messages.
+- Current usable surfaces: integer upload percent cadence, server `meta.timestamp`/`seq`, project-scoped `/ws/sdk`, live `sdk-log`, REST log tail/pagination/download, `GET /sdk` ordering by `created_at DESC`, optional profile metadata, `GET /sdk/quota`, `GET /sdk/metrics`, and `POST /sdk/:id/retry` for retained/materialized failed SDKs.
+- In-flight `DELETE /sdk/:id` is still not a supported cancellation contract; S1 must not show it as guaranteed cancel until a future S2 cancellation WR is implemented.
+
+SDK 진행률 계약 메모 (2026-04-25 updated):
+
+- S2의 canonical SDK state machine은 9 progress phases + 4 error phases다. S1이 5단계 stepper로 묶는 것은 허용되며, S2 승인 매핑은 `업로드=uploading/uploaded`, `설치/압축해제=extracting/extracted/installing/installed`, `AI 분석=analyzing`, `검증=verifying`, `완료=ready` 이다.
+- artifact kind별 정상 흐름:
+  - archive: `uploading → uploaded → extracting → extracted → analyzing → verifying → ready`
+  - bin: `uploading → uploaded → installing → installed → analyzing → verifying → ready`
+  - folder: `uploading → uploaded → extracting → extracted → analyzing → verifying → ready`
+- `sdk-progress` payload는 업로드 중 `etaSeconds`, 각 phase의 `phaseStartedAt`, 구조화 `phaseDetail`을 포함할 수 있다. 비업로드 phase ETA는 신뢰 가능한 추정이 없으면 생략한다.
+- `RegisteredSdk`는 `currentPhaseStartedAt`, `phaseHistory`, `retryCount`, `retryable`, `retryExpiresAt`을 포함할 수 있다.
+- `message`는 현재 phase의 사람이 읽는 ko-KR status text다. 안정적인 분기/i18n에는 `phaseDetail.kind + params`를 우선 사용한다.
+- `fileName`은 optional이며 upload/uploaded/archive extracting/bin installing에서 주로 들어간다. 값은 표시용 basename/제출 filename이며 absolute server path contract가 아니다. 긴 이름 축약은 frontend 책임이다.
+- 실패 SDK retry는 `POST /api/projects/:pid/sdk/:id/retry`이며, retained/materialized artifact가 있고 quota/cooldown/retention을 통과할 때만 성공한다. `retryable=false`이면 재업로드 UX를 사용한다.
+- 로그 보기는 `GET /api/projects/:pid/sdk/:id/log` 응답의 `content`를 사용한다. `offset/limit` pagination과 `download=true` text attachment를 지원한다. `logPath`는 server-side correlation/debug 필드다.
+- `troubleshootingUrl`은 `wiki/canon/troubleshooting/sdk#<code>` 형태의 wiki-canonical anchor다.

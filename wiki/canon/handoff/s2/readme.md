@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-20"
+last_verified: "2026-04-25"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-20**
+> **마지막 업데이트: 2026-04-25**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -46,7 +46,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
            S7 Gateway (:8000)  ← LLM 단일 관문
                 │
            LLM Engine (DGX Spark)
-           Qwen3.5-122B-A10B-GPTQ-Int4
+           Qwen/Qwen3.6-27B
 ```
 
 **S2가 전체 오케스트레이터.** S1에게 API를 제공하고, S3/S4/S5/S6/S7를 호출하는 중추.
@@ -168,7 +168,7 @@ canonical v1 lifecycle:
 
 - registration approve/reject/lookup 응답은 full `RegistrationRequest` shape 으로 정규화되며 `organizationCode` / `organizationName` 은 populated 값이다
 - `BuildTarget.sdkChoiceState` 는 Quick preflight canonical field 이다 (`sdk-unresolved` 면 Quick disabled)
-- S3 `structured_finalizer` policy flag 는 보존하고, S3 `validation_failed` / `INVALID_SCHEMA` 는 Deep failure 로 처리한다
+- S3 Deep 결과는 `status=completed` 만으로 clean pass 로 보지 않는다. S2는 `analysisOutcome` / `qualityOutcome` / `pocOutcome` / `recoveryTrace` 를 보존하며, clean Deep pass 는 `analysisOutcome=accepted_claims` + `qualityOutcome=accepted` 일 때만 성립한다. valid-input S3 내부 deficiency 는 completed 결과 + warning/review 상태로 표현하고, invalid caller contract / unsafe request / dependency down / timeout 같은 true task failure 만 Deep failure 로 처리한다.
 - S4 native/custom scan 호출 시 S2 는 local `buildProfile.sdkId="custom"` sentinel 을 제거하고 `sdkId` 를 생략한다
 
 현재 남은 follow-up risk (non-blocking):

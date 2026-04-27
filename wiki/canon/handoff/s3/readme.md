@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s3-handoff/README.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-27"
 service_tags: ["s3"]
 decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract"]
 related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md"]
@@ -13,9 +13,9 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-04-14**
+> **마지막 업데이트: 2026-04-27**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-14 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-27 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
@@ -27,7 +27,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 |---|---|---|
 | Analysis Agent | `:8001` | `deep-analyze`, `generate-poc` |
 | Build Agent | `:8003` | `build-resolve`, `sdk-analyze` |
-| agent-shared | 라이브러리 | 공통 LLM/도구/정책/스키마 프레임 |
+| agent_runtime (service-local) | 각 서비스 내부 `app/agent_runtime/` | Analysis/Build 각각의 로컬 LLM/도구/정책/스키마 프레임. 공유 런타임 디렉터리는 retired/deleted 상태 |
 
 ### S3가 호출하는 외부 서비스
 
@@ -114,7 +114,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | build public router | `services/build-agent/app/routers/tasks.py` |
 | build handlers | `services/build-agent/app/routers/build_resolve_handler.py`, `sdk_analyze_handler.py` |
 | build phase0 / loop / result assembly | `services/build-agent/app/core/phase_zero.py`, `agent_loop.py`, `result_assembler.py` |
-| shared caller / policy / router | `services/agent-shared/agent_shared/llm/caller.py`, `policy/termination.py`, `tools/router_core.py` |
+| service-local caller / policy / router | `services/analysis-agent/app/agent_runtime/**`, `services/build-agent/app/agent_runtime/**` |
 | analysis legacy direct caller | `services/analysis-agent/app/clients/real.py` |
 | analysis eval helper | `services/analysis-agent/eval/eval_runner.py` |
 
@@ -217,3 +217,24 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
    - mounted backend/orchestration wording의 legacy Quick→Deep 자동 후속 표현 추적
 
 현재 상태는 **public contract를 유지한 채 explicit-step + health-control + no-result-loss internal consumption을 상당 부분 실제 코드에 반영한 상태**다.
+
+---
+
+## 9. 2026-04-26 Producer/Critic/Orchestrator refactor status
+
+S3는 retained shared-kernel 방향을 폐기하고, Analysis Agent와 Build Agent가 primitive runtime helper까지 service-local copy/specialization으로 소유하는 방향으로 전환했다.
+
+핵심 경계:
+- Producer: quality-aware candidate artifact author. 최종 score/verdict authority 없음.
+- Critic / QualityGate: independent classifier / repair planner. Evidence fabrication 금지.
+- Orchestrator / State Machine: task survival boundary, RecoveryTriage, final envelope authority.
+
+현재 구현 표면:
+- Analysis runtime: `services/analysis-agent/app/agent_runtime/`
+- Build runtime: `services/build-agent/app/agent_runtime/`
+- Analysis role modules: `app/producers`, `app/quality`, `app/state_machine`
+- Build role modules: `app/producers`, `app/quality`, `app/state_machine`
+
+후속 ownership coordination:
+- 2026-04-27 기준 canonical charter와 로컬 bootstrap ownership map은 S3 active path를 `services/analysis-agent`, `services/build-agent`로 정렬했다.
+- 앞으로 공유 런타임 디렉터리를 active S3 owned path로 다시 추가하지 않는다. 필요한 primitive helper는 각 서비스 내부 `app/agent_runtime/`에서 독립적으로 소유한다.

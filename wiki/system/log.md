@@ -1750,3 +1750,426 @@ related_pages:
 - Ralph + ai-slop-cleaner cleanup covered S3-owned analysis-agent, build-agent, agent-shared, and S3 start scripts.
 - Full regression evidence: analysis-agent 353 passed; build-agent 243 passed; compileall and diff-check passed.
 - Generated/cross-lane artifacts removed, dead legacy analysis pipeline/client seam removed, build-agent boundary issues hardened, production mock/unittest.mock usage removed.
+
+## [2026-04-23] spec-draft | S3 claim-evidence state machine draft pages
+- Created wiki/canon/specs/s3-claim-evidence-state-machine/readme.md as the canonical draft surface for S3 claim/evidence/retry/quality state-machine work.
+- Created wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart.md with the first TaskRun Mermaid statechart, state definitions, terminal semantics draft, and transition-table sketch.
+- Design intent: avoid certificate-maker/CWE-78 patching by defining generic EvidenceRef, retry, grounding, and quality controller contracts first.
+
+## [2026-04-23] spec-draft | S3 EvidenceRef and EvidenceSlot contract
+- Created wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md.
+- Defined local, knowledge, derived, and operational evidence classes for S3 grounding.
+- Defined conservative claim-ref policy: claims[].supportingEvidenceRefs must be local or derived-from-local in v1; knowledge refs may be used in usedEvidenceRefs only if present in the S3 evidence ledger and allowed set.
+- Added EvidenceSlot catalog, lifecycle Mermaid, draft required-slot policy by vulnerability family, ref repair rules, and required fixture tests.
+- Updated the S3 Claim-Evidence State Machine root page to link the new evidence contract and make retry-repair-policy.md the next page.
+
+## [2026-04-23] spec-draft | S3 claim-evidence state machine page family completed with Critic approval
+- Completed draft page family under wiki/canon/specs/s3-claim-evidence-state-machine/: readme, taskrun-statechart, evidence-ref-and-slots, retry-repair-policy, claim-lifecycle, quality-gates, poc-lifecycle, invariants, transition-table, implementation-work-packages, api-contract-decisions.
+- Critic agent 019db8d4-8dea-72e0-8a29-9a0ec35328ff first returned REVISE; fixes applied for v1 usedEvidenceRefs policy, no-accepted-claim semantics, typed quality/no-accepted API gate, explicit audited ref repair, accepted-claim-only PoC precondition, and caveated quality pass semantics.
+- Critic final verdict: APPROVE with no remaining blocking issues; non-blocking wording cleanups applied.
+- Verification: markdown fence parity checked for all pages; suspicious stale wording scan passed after cleanup.
+
+## [2026-04-23] verification | S3 claim-evidence state machine architect/deslop verification
+- Architect verification approved the page family as coherent and safe as a planning/specification surface.
+- Scoped deslop verification on the state-machine wiki pages passed duplicate heading, stale ambiguity, and markdown fence parity checks.
+- Additional test evidence appended to wiki/canon/handoff/s3/session-s3-claim-evidence-state-machine-20260423.md.
+
+## [2026-04-23] spec-revision | S3 claim-evidence state machine outcome/quality separation rewrite
+- Revised the S3 claim-evidence state-machine wiki family to separate task-level completion from result-level quality/outcome.
+- New decision: valid caller input + live LLM/runtime should produce schema-valid completed response; schema/ref/grounding/quality/PoC deficiencies go through RecoveryTriage and become analysisOutcome/qualityOutcome/pocOutcome rather than task failure.
+- Task-level failure is now reserved for invalid caller input, unsafe/out-of-authority request, unavailable runtime/dependency, hard timeout/cancellation, or internal envelope-assembly failure.
+- Critic final verdict: APPROVE after fixes; Architect final verdict: APPROVED as planning/spec surface with WP0/API-S2 alignment required before implementation/default exposure.
+
+## [2026-04-23] Ran S7 pytest suite and legacy static-explain integration test | s7 llm-gateway test plate
+- pytest: 206 passed in 2.89s
+- legacy integration: temporary gateway on port 8199, static-explain completed against Qwen/Qwen3.5-122B-A10B-GPTQ-Int4 in 33209ms
+- integration warning: RAG disabled, ragHits=0
+
+## [2026-04-23] mcp | register_wr | s3-to-s7-confirm-qwen3.6-rollout-semantics-for-s3-strict-json-tool-call-context-assumptio
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-confirm-qwen3.6-rollout-semantics-for-s3-strict-json-tool-call-context-assumptio.md
+
+## [2026-04-23] work-request | S3 to S7 Qwen3.6 rollout semantics confirmation
+- Registered canonical WR wiki/canon/work-requests/s3-to-s7-confirm-qwen3.6-rollout-semantics-for-s3-strict-json-tool-call-context-assumptio.md.
+- WR asks S7 to confirm Qwen3.6 model/profile identity, strict JSON and thinking-output handling, tool-call parser compatibility, effective context limits, latency/timeout profile, async ownership compatibility, and canonical S7 wiki/API updates.
+- Purpose: let S3 implement RecoveryTriage / QualityGate / outcome-classification controller without stale Qwen3.5 assumptions.
+
+## [2026-04-23] Added Qwen3.6 vLLM engine start/stop recipe scripts for S7 | s7 qwen3.6 vllm recipe
+- Added scripts/start-llm-engine-qwen36-vllm.sh and scripts/stop-llm-engine-vllm.sh.
+- Documented Qwen3.6 vLLM recipe in wiki/canon/handoff/s7/architecture.md.
+- Verified bash syntax and dry-run commands for Qwen/Qwen3.6-27B and Qwen/Qwen3.6-35B-A3B.
+- Current active engine still advertises Qwen/Qwen3.5-122B-A10B-GPTQ-Int4 because the endpoint is remote and not controllable from this container via local process management.
+
+## [2026-04-23] Documented provisional Qwen3.6 rollout semantics for S3 dependency WR | s7 qwen3.6 contract docs for s3 wr
+- Updated wiki/canon/specs/llm-gateway.md with active-not-switched status, strict JSON, tool-call, context, timeout, async compatibility notes.
+- Updated wiki/canon/api/llm-gateway-api.md with API-compatible Qwen3.6 rollout note.
+- Updated wiki/canon/handoff/s7/readme.md with rollout status and pending verification gates.
+- Did not complete S3 WR because live Qwen3.6 cutover is not yet verified.
+
+## [2026-04-23] mcp | register_wr | s7-to-s3-reply-qwen3.6-rollout-recipe-prepared-s7-live-cutover-not-yet-verified
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-qwen3.6-rollout-recipe-prepared-s7-live-cutover-not-yet-verified.md
+
+## [2026-04-24] autopilot-resume-verified | s7-qwen-hard-retest
+- S7 hard benchmark harness resumed after interruption.
+- Added bubblewrap-isolated hidden-test scorer and rescore utility.
+- Verified services/llm-gateway tests: 235 passed.
+- Recorded hard no-thinking rescored comparison: 35B-A3B=0.68, 27B-origin=0.68, 122B=0.5467; recommendation route-by-workload.
+- Endpoint healthy on Qwen/Qwen3.6-35B-A3B, vLLM 0.19.1.
+
+## [2026-04-24] S7 switched LLM Engine serving default to Qwen/Qwen3.6-27B after sequential benchmark evidence favored 27B for reasoning quality/stability. | S7 Qwen3.6-27B serving cutover
+- DGX Spark vLLM container cleaned and relaunched with recipe qwen3.6-27b-origin.
+- Verified /health=200 and /v1/models id/root=Qwen/Qwen3.6-27B max_model_len=131072.
+- Updated S7 cutover session page and llm-engine canonical note; local llm-gateway default model now Qwen/Qwen3.6-27B.
+- Benchmark evidence root: services/llm-gateway/bench/results/sequential-rebench-20260423T221050Z.
+
+## [2026-04-24] mcp | register_wr | s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b
+- Registered notice WR for all
+- Path: wiki/canon/work-requests/s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b.md
+
+## [2026-04-24] S7 completed S3 Qwen3.6 rollout semantics confirmation | s7-qwen36-27b-s3-wr
+- Live default confirmed as Qwen/Qwen3.6-27B with Gateway profile Qwen/Qwen3.6-27B-default and contextLimit/max_model_len 131072.
+- Updated wiki/canon/specs/llm-gateway.md, wiki/canon/api/llm-gateway-api.md, and wiki/canon/handoff/s7/readme.md.
+- Verification evidence recorded in wiki/canon/handoff/s7/session-s7-qwen27-s3-wr-20260424.md.
+
+## [2026-04-24] mcp | complete_wr | s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b
+- Lane s1 completed recipient-side handling
+- Status: open
+
+## [2026-04-24] mcp | register_wr | s7-to-s3-reply-qwen3.6-27b-rollout-semantics-confirmed-for-s3-strict-json-tool-call-conte
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-reply-qwen3.6-27b-rollout-semantics-confirmed-for-s3-strict-json-tool-call-conte.md
+
+## [2026-04-24] mcp | complete_wr | s3-to-s7-confirm-qwen3.6-rollout-semantics-for-s3-strict-json-tool-call-context-assumptio
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-24] mcp | complete_wr | s7-to-s3-reply-qwen3.6-rollout-recipe-prepared-s7-live-cutover-not-yet-verified
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-24] mcp | register_wr | s5-to-s3-reply-gateway-webserver-s5-context-drift-check-found-no-s5-drift-or-memory-bias
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-reply-gateway-webserver-s5-context-drift-check-found-no-s5-drift-or-memory-bias.md
+
+## [2026-04-24] mcp | complete_wr | s3-to-s5-inspect-gateway-webserver-s5-context-logs-for-analysis-drift
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-04-24] work-request-completed | S2 handled S7 Qwen3.6-27B default-model notice
+- Completed WR wiki/canon/work-requests/s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b.md for lane s2.
+- Updated S2/platform canonical docs that contained historical Qwen3.5 default references.
+- Updated S2 AgentClient contract-test fixture modelProfile to Qwen/Qwen3.6-27B.
+- Verification: shared/backend tsc diagnostics 0 errors; backend client-contract vitest 38 passed.
+
+## [2026-04-24] mcp | complete_wr | s7-to-s3-reply-qwen3.6-27b-rollout-semantics-confirmed-for-s3-strict-json-tool-call-conte
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-24] mcp | register_wr | s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte.md
+
+## [2026-04-25] mcp | register_wr | s1-to-designer-design-system-readme.md-7-handoff-s1-bootstrap.md
+- Registered request WR for designer
+- Path: wiki/canon/work-requests/s1-to-designer-design-system-readme.md-7-handoff-s1-bootstrap.md.md
+
+## [2026-04-25] mcp | complete_wr | s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] work-request-completed | S2 completed S3 Analysis Agent outcome contract WR
+- WR: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte.md
+- S2 persisted and propagated S3 result outcome fields: analysisOutcome, qualityOutcome, pocOutcome, recoveryTrace.
+- Clean Deep pass now requires completed + accepted_claims + accepted; non-clean valid S3 envelopes become completed results with warning/review signals.
+- Updated canonical docs: wiki/canon/api/shared-models.md, wiki/canon/specs/backend.md, wiki/canon/handoff/s2/readme.md, wiki/canon/handoff/s2/api-endpoints.md.
+- Evidence recorded in wiki/canon/handoff/s2/session-s2-s3-outcome-contract-20260425.md.
+
+## [2026-04-25] mcp | register_wr | s2-to-s1-s2-exposes-s3-deep-outcome-fields-and-cleanpass-for-ui-consumption
+- Registered notice WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-exposes-s3-deep-outcome-fields-and-cleanpass-for-ui-consumption.md
+
+## [2026-04-25] work-request-registered | S2 notified S1 about Deep outcome UI contract
+- Registered notify-style WR: wiki/canon/work-requests/s2-to-s1-s2-exposes-s3-deep-outcome-fields-and-cleanpass-for-ui-consumption.md
+- S1 should avoid treating status=completed as clean Deep pass without inspecting cleanPass / analysisOutcome / qualityOutcome.
+
+## [2026-04-25] mcp | complete_wr | s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s1-to-s1-redesign-analysishistorypage-run-table-onto-canonical-run-row-status-vocab
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s1-to-s1-redesign-reportpage-onto-analyst-s-document-tone
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] S3 research positioning report completed | s3/aegis-for-paper
+- Report artifact: /home/kosh/aegis-for-paper/artifacts/aegis-research-positioning-report-2026-04-25.md
+- Session history: wiki/canon/handoff/s3/session-019dbff3-5f14-7ad3-811c-963d3732e78b.md
+- Core framing: contract-governed claim-evidence state machine for static-analysis warning triage; empirical evidence remains pending.
+
+## [2026-04-25] Clarified S7 live model identity and DGX cleanup state | s7-qwen36-27b-noquant-doc-cleanup
+- S7 docs now state current live model is original dense Qwen/Qwen3.6-27B, not Qwen/Qwen3.6-27B-FP8, with no vLLM --quantization override.
+- Updated canonical llm-engine spec, llm-engine ops, S7 architecture, S7 handoff, llm-gateway spec, and llm-gateway API note; updated benchmark docs/targets in services/llm-gateway.
+- DGX verification: vLLM process command serves Qwen/Qwen3.6-27B with max_model_len 131072 and no FP8/quantization flags; only Qwen3.6-27B HF cache remains.
+
+## [2026-04-25] mcp | register_wr | s3-to-s4-system-stability-preflight-confirm-s4-sast-build-health-and-failure-boundary-con
+- Registered question WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-system-stability-preflight-confirm-s4-sast-build-health-and-failure-boundary-con.md
+
+## [2026-04-25] mcp | register_wr | s3-to-s5-system-stability-preflight-confirm-s5-kb-graphrag-readiness-and-evidence-role-se
+- Registered question WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-system-stability-preflight-confirm-s5-kb-graphrag-readiness-and-evidence-role-se.md
+
+## [2026-04-25] mcp | register_wr | s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail
+- Registered question WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail.md
+
+## [2026-04-25] mcp | register_wr | s1-to-s2-sdk-stepper-mapping-eta-retry-phase-specific-detail-filename-semantics
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-sdk-stepper-mapping-eta-retry-phase-specific-detail-filename-semantics.md
+
+## [2026-04-25] S3 system-stability code review and WR fanout | S3 Analysis Agent / Build Agent / agent-shared
+- Reviewed S3-owned code against claim-evidence state machine invariants.
+- Registered system-stability preflight WRs to S4, S5, and S7.
+- Verification: analysis-agent tests 359 passed; build-agent tests 243 passed.
+- Local artifact: /home/kosh/AEGIS/.omx/reviews/s3-system-stability-code-review-20260425.md
+
+## [2026-04-25] mcp | register_wr | s2-to-s1-s2-reply-sdk-upload-progress-contract-answers-for-stepper-timing-retry-log-and-a
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-reply-sdk-upload-progress-contract-answers-for-stepper-timing-retry-log-and-a.md
+
+## [2026-04-25] mcp | complete_wr | s1-to-s2-sdk-stepper-mapping-eta-retry-phase-specific-detail-filename-semantics
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] S2 completed S1 SDK progress contract WR and registered reply WR | S2 SDK upload progress API contract WR completed
+- Incoming WR: wiki/canon/work-requests/s1-to-s2-sdk-stepper-mapping-eta-retry-phase-specific-detail-filename-semantics.md
+- Reply WR: wiki/canon/work-requests/s2-to-s1-s2-reply-sdk-upload-progress-contract-answers-for-stepper-timing-retry-log-and-a.md
+- Updated canonical API docs for SDK phase mapping, ETA/timing absence, message/fileName semantics, retry/log/troubleshooting behavior, and artifact-kind phase flows.
+- Verification: SDK/API Vitest 157 passed; backend/shared tsc and build passed; architect verification approved after correcting progress-vs-log wording.
+
+## [2026-04-25] mcp | register_wr | s1-to-s2-sdk-2026-04-25-reply-eta-phase-timing-structured-detail-retry-endpoint-log-strea
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-sdk-2026-04-25-reply-eta-phase-timing-structured-detail-retry-endpoint-log-strea.md
+
+## [2026-04-25] mcp | register_wr | s1-to-s2-deep-outcome-cleanpass-ui-analysisoutcome-qualityoutcome-pocoutcome-recoverytrac
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-deep-outcome-cleanpass-ui-analysisoutcome-qualityoutcome-pocoutcome-recoverytrac.md
+
+## [2026-04-25] mcp | complete_wr | s2-to-s1-s2-reply-sdk-upload-progress-contract-answers-for-stepper-timing-retry-log-and-a
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s2-to-s1-s2-exposes-s3-deep-outcome-fields-and-cleanpass-for-ui-consumption
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | register_wr | s2-to-s1-s2-reply-deep-outcome-cleanpass-ui-contract-for-outcome-enums-recoverytrace-ws-c
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-reply-deep-outcome-cleanpass-ui-contract-for-outcome-enums-recoverytrace-ws-c.md
+
+## [2026-04-25] mcp | complete_wr | s1-to-s2-deep-outcome-cleanpass-ui-analysisoutcome-qualityoutcome-pocoutcome-recoverytrac
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] S2 completed S1 Deep outcome UI contract WR and registered reply WR | S2 Deep outcome / cleanPass contract WR completed
+- Incoming WR: wiki/canon/work-requests/s1-to-s2-deep-outcome-cleanpass-ui-analysisoutcome-qualityoutcome-pocoutcome-recoverytrac.md
+- Reply WR: wiki/canon/work-requests/s2-to-s1-s2-reply-deep-outcome-cleanpass-ui-contract-for-outcome-enums-recoverytrace-ws-c.md
+- Updated canonical docs for outcome enum copy, cleanPass derivation/display, recoveryTrace schema/display, WS/REST consistency, backwards/forward compatibility, and S1 surface priority guidance.
+- Verification: targeted backend tests 98 passed; backend/shared tsc and build passed; docs sanity grep passed.
+
+## [2026-04-25] S3 system-stability overhaul RALPLAN approved | S3 Analysis Agent / Build Agent / agent-shared
+- Deliberate RALPLAN consensus completed with Architect APPROVE and Critic APPROVE.
+- Created PRD: /home/kosh/AEGIS/.omx/plans/prd-s3-system-stability-overhaul-20260425.md
+- Created test spec: /home/kosh/AEGIS/.omx/plans/test-spec-s3-system-stability-overhaul-20260425.md
+- Created consumer migration matrix: /home/kosh/AEGIS/.omx/plans/s3-system-stability-consumer-migration-matrix.md
+
+## [2026-04-25] mcp | register_wr | s3-to-s2-s3-system-stability-agent-v1.1-response-schema-and-build-agent-compatibility-gat
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-system-stability-agent-v1.1-response-schema-and-build-agent-compatibility-gat.md
+
+## [2026-04-25] S3 WP0 system-stability contract update | Analysis Agent agent-v1.1 and Build Agent build-v1.1 compatibility gate
+- Updated canonical Analysis Agent API/spec with agent-v1.1 response schema semantics, cleanPass/evaluationVerdict/contextualEvidenceRefs/evidenceDiagnostics/qualityGate, and advisory timeout policy.
+- Updated state-machine API decisions to promote contextualEvidenceRefs and pin deadline semantics.
+- Updated Build Agent API with build-v1.1 proposal/compatibility-gate note while preserving v1.0.0 semantics.
+- Registered S2 notice WR for consumer migration.
+
+## [2026-04-25] mcp | register_wr | s2-to-s1-s2-reply-sdk-second-follow-up-a1-o2-decisions-for-timing-detail-retry-logs-lifec
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-reply-sdk-second-follow-up-a1-o2-decisions-for-timing-detail-retry-logs-lifec.md
+
+## [2026-04-25] mcp | complete_wr | s1-to-s2-sdk-2026-04-25-reply-eta-phase-timing-structured-detail-retry-endpoint-log-strea
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] S2 completed all open S1 WRs after Critic review | S2 Critic-approved Deep outcome and SDK follow-up WR completion
+- Critic verdict: APPROVED for completed Deep outcome/cleanPass state and SDK follow-up overclaim coverage.
+- Completed WR: wiki/canon/work-requests/s1-to-s2-sdk-2026-04-25-reply-eta-phase-timing-structured-detail-retry-endpoint-log-strea.md
+- Reply WR: wiki/canon/work-requests/s2-to-s1-s2-reply-sdk-second-follow-up-a1-o2-decisions-for-timing-detail-retry-logs-lifec.md
+- Updated docs: wiki/canon/api/shared-models.md §4.5.1, wiki/canon/handoff/s2/api-endpoints.md, wiki/canon/specs/backend.md.
+- Verification: post-deslop targeted backend tests 255 passed; backend/shared tsc and builds passed.
+
+## [2026-04-25] implementation_verified | S3 system-stability overhaul implemented
+- Implemented agent-v1.1 Analysis Agent response schema additions: cleanPass, evaluationVerdict, contextualEvidenceRefs, evidenceDiagnostics, qualityGate, extended recoveryTrace.
+- Added thin state-machine kernel and role-aware evidence catalog/validator; knowledge refs are contextual only.
+- Bounded S7 async ownership polling in shared LLM caller and exposed deadline health/config fields.
+- Preserved Build Agent v1 semantics while adding build-v1.1 proposal/outcome fields and health disclosure.
+- Verification: analysis-agent tests 388 passed; build-agent tests 247 passed; git diff --check clean; no certificate-maker production logic.
+
+## [2026-04-25] mcp | register_wr | s3-to-s4-s5-s7-s3-system-stability-contract-implemented-dependency-readiness-failure-boundary-f
+- Registered notice WR for s4, s5, s7
+- Path: wiki/canon/work-requests/s3-to-s4-s5-s7-s3-system-stability-contract-implemented-dependency-readiness-failure-boundary-f.md
+
+## [2026-04-25] mcp | complete_wr | s5-to-s3-reply-gateway-webserver-s5-context-drift-check-found-no-s5-drift-or-memory-bias
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | register_wr | s4-to-s3-reply-s4-confirms-sast-build-health-and-failure-boundary-rules-for-s3-stability-
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-confirms-sast-build-health-and-failure-boundary-rules-for-s3-stability-.md
+
+## [2026-04-25] mcp | complete_wr | s3-to-s4-system-stability-preflight-confirm-s4-sast-build-health-and-failure-boundary-con
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s3-to-s4-s5-s7-s3-system-stability-contract-implemented-dependency-readiness-failure-boundary-f
+- Lane s4 completed recipient-side handling
+- Status: open
+
+## [2026-04-25] mcp | register_wr | s4-to-s3-reply-s4-notice-specific-acknowledgement-for-s3-system-stability-contract
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-notice-specific-acknowledgement-for-s3-system-stability-contract.md
+
+## [2026-04-25] Installed DGX Qwen27 start/stop/restart control script | s7-qwen27-vllm-control-script
+- Created /home/accslab/aegis-llm-engine/bin/qwen27-vllm and symlink /home/accslab/qwen27-vllm on DGX Spark.
+- The script supports start, stop, restart, status, health, models, logs, and ps; it validates the current original dense Qwen/Qwen3.6-27B no-quantization identity.
+- Real restart verification passed and S7 wiki ops/spec/handoff docs were updated.
+
+## [2026-04-25] mcp | register_wr | s2-to-s1-s2-implemented-sdk-second-follow-up-runtime-surfaces-after-s1-clarification
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-implemented-sdk-second-follow-up-runtime-surfaces-after-s1-clarification.md
+
+## [2026-04-25] mcp | complete_wr | s3-to-s2-s3-system-stability-agent-v1.1-response-schema-and-build-agent-compatibility-gat
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] completed | S2 SDK follow-up implementation and WR reply
+- Implemented SDK ETA/phase timing/history/detail, structured errors/retryability, server-side retry, quota, log pagination/download, metrics, and app-level WS heartbeat in S2-owned code.
+- Updated canonical shared-models, S2 endpoint handoff, backend spec, and SDK troubleshooting runbook.
+- Registered reply WR: wiki/canon/work-requests/s2-to-s1-s2-implemented-sdk-second-follow-up-runtime-surfaces-after-s1-clarification.md.
+- Completed incoming S1 SDK follow-up WR and S3 system-stability notice for lane s2.
+- Verification: shared build, backend typecheck/build, targeted SDK/WS/contract tests, and full backend tests all passed.
+
+## [2026-04-25] mcp | register_wr | s7-to-s3-s7-reply-system-stability-async-timeout-strict-json-failure-boundary-contract-co
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-system-stability-async-timeout-strict-json-failure-boundary-contract-co.md
+
+## [2026-04-25] mcp | complete_wr | s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] completed_s3_wr_response | s7 system-stability WR response
+- Updated wiki/canon/api/llm-gateway-api.md with S3 system-stability interpretation contract.
+- Updated wiki/canon/specs/llm-gateway.md with S3 boundary confirmation.
+- Registered S7→S3 reply WR and completed both S3→S7/S3→S4,S5,S7 WRs for S7 lane.
+
+## [2026-04-25] mcp | register_wr | s5-to-s3-reply-s5-kb-graphrag-readiness-and-evidence-role-semantics-for-s3-system-stabili
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-reply-s5-kb-graphrag-readiness-and-evidence-role-semantics-for-s3-system-stabili.md
+
+## [2026-04-25] mcp | complete_wr | s3-to-s5-system-stability-preflight-confirm-s5-kb-graphrag-readiness-and-evidence-role-se
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] certificate-maker E2E smoke passed after Build Agent artifact discovery patch | S3 certificate-maker smoke
+- Initial smoke failed with EXPECTED_ARTIFACTS_MISMATCH because successful CMake build emitted build/certificate-maker while strict verifier searched only the generated script buildDir.
+- Patched services/build-agent/app/core/result_assembler.py and added regression test in services/build-agent/tests/test_result_assembler.py.
+- Rerun s3-system-stability-smoke-rerun-20260425-182537 passed all stages; PoC quality warning retained as next QualityGate hardening input.
+
+## [2026-04-25] mcp | complete_wr | s2-to-s1-s2-reply-sdk-second-follow-up-a1-o2-decisions-for-timing-detail-retry-logs-lifec
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s2-to-s1-s2-implemented-sdk-second-follow-up-runtime-surfaces-after-s1-clarification
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s2-to-s1-s2-reply-deep-outcome-cleanpass-ui-contract-for-outcome-enums-recoverytrace-ws-c
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | register_wr | s1-to-designer-canonical-handoff-components-nav.css-.nav-icon-.badge---severity-critical-doctri
+- Registered request WR for designer
+- Path: wiki/canon/work-requests/s1-to-designer-canonical-handoff-components-nav.css-.nav-icon-.badge---severity-critical-doctri.md
+
+## [2026-04-25] mcp | complete_wr | s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] mcp | complete_wr | s1-to-s1-redesign-approvalspage-as-canonical-triage-queue
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-25] Verified completed-outcome routing before certificate-maker hot-20 | S3 stability/QualityGate separation
+- Critic first pass blocked hot-20 due Build Agent treating QualityGate/build-domain deficiencies as task failures.
+- Patched Analysis Agent and Build Agent so alive-runtime, normal-input output deficiencies complete with inconclusive/quality diagnostics rather than internal task failure.
+- Fresh verification: analysis-agent tests 392 passed; build-agent tests 249 passed; diff check clean.
+- Session artifact: wiki/canon/handoff/s3/session-s3-stability-qualitygate-separation-20260425.md
+
+## [2026-04-26] Completed three-run certificate-maker E2E loop after service restart | S3 certificate-maker hot3 stability smoke
+- Counted base: hot3-20260426-155046.
+- Operational result: 3/3 attempts passed stages 2–6; build, S4 scan, S5 ingest, S3 deep-analyze, and S3 generate-poc all completed.
+- Health: 8/8 snapshots OK for S7, S3 analysis, S3 build, S4, S5, S2 backend, S1 frontend; final curl health HTTP 200 for all.
+- Logs: zero errors; five s3-agent recovery warnings, all recovered.
+- Quality watchpoints: PoC cleanPass=false in all runs, rubrics [6,4,4], one deep accepted_with_caveats. Stability goal met; QualityGate improvement remains.
+- Report: /home/kosh/aegis-for-paper/.stability-runs/hot3-20260426-155046-hot3-stability-report.md
+
+## [2026-04-26] mcp | register_wr | s1-to-s2-s1-s2-qualitygate-approvals-mock-h1-h2-h3-h4-h6-h7
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-s1-s2-qualitygate-approvals-mock-h1-h2-h3-h4-h6-h7.md
+
+## [2026-04-26] mcp | register_wr | s2-to-s1-s2-s1-qualitygate-approvals-mock-h1-h7-h5-optional-snapshot
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-s1-qualitygate-approvals-mock-h1-h7-h5-optional-snapshot.md
+
+## [2026-04-26] mcp | complete_wr | s1-to-s2-s1-s2-qualitygate-approvals-mock-h1-h2-h3-h4-h6-h7
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-26] S2 implemented S1 mock-absorption contract fields and replied | S2 QualityGate/Approvals contract WR
+- Incoming WR completed: wiki/canon/work-requests/s1-to-s2-s1-s2-qualitygate-approvals-mock-h1-h2-h3-h4-h6-h7.md
+- Reply WR: wiki/canon/work-requests/s2-to-s1-s2-s1-qualitygate-approvals-mock-h1-h7-h5-optional-snapshot.md
+- Verification: shared build, backend typecheck, targeted vitest 225 tests, full backend 488 tests passed
+
+## [2026-04-26] mcp | register_wr | s3-to-s2-s3-agent-shared-retirement-requires-bootstrap-charter-ownership-cleanup
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-agent-shared-retirement-requires-bootstrap-charter-ownership-cleanup.md
+
+## [2026-04-26] mcp | complete_wr | s2-to-s1-s2-s1-qualitygate-approvals-mock-h1-h7-h5-optional-snapshot
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-04-26] completed | S3 producer/critic/orchestrator refactor Ralph completion
+- Ralph session 019dc924-5195-79a3-a74c-dc63888cee82 completed with architect APPROVED.
+- Build result assembler now delegates final build outcome/category to app.quality.build_quality_gate; regression test proves runtime delegation.
+- Final evidence recorded in wiki/canon/handoff/s3/session-019dc924-5195-79a3-a74c-dc63888cee82.md.
+
+## [2026-04-27] mcp | complete_wr | s3-to-s2-s3-agent-shared-retirement-requires-bootstrap-charter-ownership-cleanup
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] updated | S3 shared runtime retirement documentation cleanup
+- Updated canonical charter, S3 handoff, S3 roadmap, state-machine specs, Analysis Agent spec, and Build Agent spec to reflect service-local runtime ownership.
+- Updated local docs/AEGIS.md bootstrap ownership map to remove the retired shared runtime path from active S3 owned paths.
+- Removed two dead imports in Analysis Agent discovered during post-refactor review.
+
+## [2026-04-27] mcp | register_wr | s1-to-designer-canonical-tokens.css-paperlogy-unified-mono-drift-design.md-1-4-vs-geist-mono
+- Registered request WR for designer
+- Path: wiki/canon/work-requests/s1-to-designer-canonical-tokens.css-paperlogy-unified-mono-drift-design.md-1-4-vs-geist-mono.md
+
+## [2026-04-27] mcp | register_wr | s1-to-designer-dynamicanalysispage-terminal-aesthetic---console-fg--bg--bg-hi--green--amber--re
+- Registered request WR for designer
+- Path: wiki/canon/work-requests/s1-to-designer-dynamicanalysispage-terminal-aesthetic---console-fg--bg--bg-hi--green--amber--re.md

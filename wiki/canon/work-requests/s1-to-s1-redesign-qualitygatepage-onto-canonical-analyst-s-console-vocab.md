@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab"
-last_verified: "2026-04-22"
+last_verified: "2026-04-25"
 service_tags: ["s1"]
 decision_tags: ["design-system-source-of-truth", "redesign-backlog"]
 related_pages: ["wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/design-system.md", "wiki/canon/handoff/s1/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-25T10:46:31.993Z","note":"2026-04-25 autopilot ABCD cycle Stream C 처리 완료.\n\n변경 (`services/frontend/src/pages/QualityGatePage/**` 7 files, +740 / -209):\n- QualityGatePage.tsx + .css 전면 재구성: `.page-shell + .panel + .panel-head + .panel-body` 계층\n- canonical `.gate.{blocked,warn,pass,running}` + `.cell-gate.{...}` vocab 100% 적용. 새 컬러 토큰 0\n- Status banner / Rule sections / Sidebar / Card / RuleResultRow 모두 canonical\n- running gate live pulse — `body.no-live` + `prefers-reduced-motion: reduce` 동시 종료 보장\n- caps-mono label (rule ID / timestamp / count) + Paperlogy prose 이분 적용\n- Tally row (FAIL/WARN/PASS counts) — gate signal context 라 severity ramp 사용 OK (doctrine §3.4 예외 명시)\n- 1100/900/640 viewport 모두 운영 신호 hidden 0 (§8.5 hard rule)\n- qualityGatePresentation.ts 의 `readQualityOutcome()` forward-compat helper — 미래 backend qualityOutcome 필드 등장 시 OutcomeChip review-tone palette 자동 활용\n\n검증:\n- typecheck PASS\n- 통합 682/682 tests PASS\n- build PASS, esbuild CSS warning 0\n- code-reviewer APPROVE (CRITICAL 0, MAJOR 0, QualityGate segment \"PASS strong\" 평가)\n- qa-tester Playwright 3 viewport 시각 + body.no-live + prefers-reduced-motion 모두 동작 확인\n\nConstraints 보존:\n- canonical handoff CSS 11개 무수정\n- 기존 라우팅/상태 계산 로직 보존\n- 새 토큰/색 0\n- mock 의 drift 흡수 0"}]
 registered_at: "2026-04-22T07:46:11.533Z"
+completed_at: "2026-04-25T10:46:31.993Z"
 ---
 
 # Redesign QualityGatePage onto canonical Analyst's Console vocab

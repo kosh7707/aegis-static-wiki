@@ -4,7 +4,7 @@ page_type: "canonical-roadmap"
 canonical: true
 source_refs:
   - "docs/s3-handoff/roadmap.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-27"
 service_tags: ["s3"]
 decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract"]
 related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md"]
@@ -13,7 +13,7 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-ag
 # S3 로드맵
 
 > S3 lane의 다음 작업과 최근 완료 사항.
-> **마지막 업데이트: 2026-04-14**
+> **마지막 업데이트: 2026-04-27**
 
 ---
 
@@ -50,7 +50,7 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-ag
 4. ✅ GraphRAG/code-graph readiness에 따라 phase-2 graph tools gating
 
 ### S7 async ownership surface 소비
-1. ✅ shared `agent_shared.llm.caller.LlmCaller`가 tool-less LLM 호출에서 새 async ownership surface 우선 사용
+1. ✅ service-local `app.agent_runtime.llm.caller.LlmCaller`가 tool-less LLM 호출에서 새 async ownership surface 우선 사용
 2. ✅ analysis-agent agent loop / `generate-poc`에 적용
 3. ✅ build-agent agent loop에 적용
 4. ✅ analysis-agent legacy `RealLlmClient` / `TaskPipeline` 경로에도 적용
@@ -111,3 +111,21 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-ag
 - S3는 다른 lane 코드로 계약을 추론하지 않는다.
 - public surface 변경이 없더라도, contract 의미가 달라지면 canonical docs는 반드시 갱신한다.
 - 현재 핵심은 **legacy outward contract 유지 + internal consumer hardening + health/no-result-loss rollout 정렬**이다.
+
+---
+
+## 2026-04-26 진행/완료
+
+### Producer / Critic / Orchestrator service-local ownership 전환
+1. ✅ retained shared-kernel 방향을 supersede하고 service-local ownership으로 전환
+2. ✅ Analysis/Build 양쪽에 `app/agent_runtime/` 로컬 runtime helper copy/specialization 도입
+3. ✅ Analysis/Build role boundary package 도입: `producers`, `quality`, `state_machine`
+4. ✅ requirements와 service start script에서 former shared-runtime 의존 제거
+5. ✅ Build v1.0.0 outward semantics 유지 + 현재 emitted additive fields 보존 방침 고정
+6. ✅ bootstrap/charter ownership 표면에서 retired shared-runtime path 제거 완료
+
+### fresh verification snapshot
+- Analysis Agent full suite: **397 passed**
+- Build Agent full suite: **252 passed**
+- Build boundary targeted suite: **23 passed**
+- `compileall` / `git diff --check`: **passed**

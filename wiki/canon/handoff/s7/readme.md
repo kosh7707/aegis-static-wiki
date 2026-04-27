@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/README.md"
-last_verified: "2026-04-21"
+last_verified: "2026-04-25"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,7 +15,7 @@ related_pages: []
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S7(LLM Gateway + LLM Engine 관리) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-04-14**
+> **마지막 업데이트: 2026-04-25**
 
 ---
 
@@ -43,7 +43,7 @@ related_pages: []
 | 서비스 | 포트/위치 | 역할 |
 |--------|-----------|------|
 | **LLM Gateway** | :8000 | 5개 taskType + `/v1/chat` 프록시 + opt-in strict JSON mode + async ownership surface (LLM 단일 관문) |
-| **LLM Engine** | 10.126.37.19:8000 (DGX Spark) | Qwen3.5-122B-A10B-GPTQ-Int4, vLLM 서빙 |
+| **LLM Engine** | 10.126.37.19:8000 (DGX Spark) | `Qwen/Qwen3.6-27B`, vLLM 0.19.1 서빙 |
 
 ### S7의 정체성
 
@@ -154,16 +154,16 @@ phase-2 no-result-loss semantics용 별도 surface.
 
 | 항목 | 상태 |
 |------|------|
-| 테스트 | **206 passed** (`.venv/bin/python3 -m pytest -q`, 2026-04-21 검증) |
+| 테스트 | **235 passed** (`.venv/bin/python -m pytest -q`, 2026-04-24 검증) |
 | LLM 모드 | `real` (DGX Spark vLLM) |
-| 모델 | Qwen3.5-122B-A10B-GPTQ-Int4 |
+| 모델 | `Qwen/Qwen3.6-27B` 원본 dense (`Qwen/Qwen3.6-27B-default`, contextLimit 131072, FP8/quantized 아님) |
 | Circuit Breaker | 구현 완료 (CLOSED/OPEN/HALF_OPEN) |
 | RAG (S5 KB) | 통합 완료 (`rag_enabled=true`) |
 | Prometheus 메트릭 | `/metrics` 제공 중 |
 | Request-aware health | **구현 완료** (`activeRequestCount`, `requestSummary`, `requestId` query targeting) |
 | Phase-2 방향 | **Option C — `/v1/chat`는 finite compatibility surface로 두고, stronger no-result-loss semantics는 새 async surface로 분리** |
 | Async ownership surface | **구현 완료** (`submit/status/result/cancel`, 15분 retention, `traceRequestId` echo, explicit expiry) |
-| 미완료 항목 | **live gateway 재기동 후 strict JSON + request-aware health + async ownership runtime rollout 확인 필요** |
+| 미완료 항목 | Qwen3.6-27B live cutover 완료. 남은 항목은 장기/대규모 S3 실사용 latency 관측치 축적 |
 
 ### 최근 변경 (2026-04-14)
 
@@ -233,3 +233,31 @@ phase-2 no-result-loss semantics용 별도 surface.
 | [llm-engine-ops.md](llm-engine-ops.md) | DGX Spark 접속, vLLM 기동/중지, 성능 실측, 트러블슈팅 |
 | [roadmap.md](roadmap.md) | 다음 작업 + LoRA 파인튜닝 장기 계획 |
 | session-*.md | 세션별 작업 로그 / OMX 세션 기록 |
+
+
+## Qwen3.6-27B rollout status (2026-04-24)
+
+- Status: **live cutover complete**. DGX Engine direct `/v1/models` returns `id/root=Qwen/Qwen3.6-27B`, `max_model_len=131072`; `/health` returns 200.
+- Gateway restarted with `AEGIS_LLM_MODEL=Qwen/Qwen3.6-27B`; `/v1/models` returns `Qwen/Qwen3.6-27B-default`, `contextLimit=131072`; `/v1/health.modelProfiles` returns the same profile.
+- Active recipe: vLLM `0.19.1`, `vllm-node:official-0.19.1-cu130`, `vllm serve Qwen/Qwen3.6-27B`, text-only `--language-model-only`, `--reasoning-parser qwen3`, `--enable-auto-tool-choice --tool-call-parser qwen3_coder`, TP=1, **no quantization override**. This is not `Qwen/Qwen3.6-27B-FP8`.
+- S3-facing contract is unchanged: strict JSON must return parseable JSON only; Gateway forces `response_format=json_object` and `enable_thinking=false`, strips `reasoning`, and fails instead of mixing thinking/tool-control text into final content.
+- Tool-call smoke passed: Gateway returned `finish_reason=tool_calls`, `message.content=null`, and OpenAI-compatible `message.tool_calls[0].function.arguments` JSON string.
+- Async strict JSON smoke passed: submit/status/result completed; wrapped response content parsed as JSON and `reasoning=null`; 15-minute result retention remains.
+- Benchmark decision: quality-first default is `Qwen/Qwen3.6-27B`. 35B-A3B is faster but lower-quality on the chosen hard benchmark; 3.5-122B remains baseline/archive rollback only.
+- Evidence/session artifact: `wiki/canon/handoff/s7/session-s7-qwen27-cutover-20260424.md`. S3 WR reply: canonical work request reply from S7 to S3 registered on 2026-04-24.
+
+
+## DGX cleanup/model identity note (2026-04-25)
+
+- Confirmed live vLLM process serves `Qwen/Qwen3.6-27B` directly; no `--quantization` flag and no FP8 checkpoint path.
+- Removed stale DGX caches/tools not needed for current serving: old 35B-A3B cache, old Qwen3.5-122B cache, stale 27B-FP8 cache, ollama tree, local `vllm-env`, remote IDE caches, Joern, `.nv`, `.triton`.
+- Preserved serving-critical state: `models--Qwen--Qwen3.6-27B`, `vllm-node:official-0.19.1-cu130`, `~/.cache/vllm`, `~/spark-vllm-docker`.
+- Post-cleanup proof: `/health=200`; `/v1/models id/root=Qwen/Qwen3.6-27B`, `max_model_len=131072`.
+
+
+## Qwen27 control script note (2026-04-25)
+
+- DGX Spark에 `/home/accslab/aegis-llm-engine/bin/qwen27-vllm`를 설치했다. Convenience symlink는 `/home/accslab/qwen27-vllm`.
+- 사용: `~/qwen27-vllm status|start|stop|restart|health|models|logs|ps`.
+- 목적: 집/개인 작업으로 DGX GPU/RAM을 비울 때 `stop`, AEGIS/S7 작업 재개 전 `start`를 안전하게 수행.
+- `restart` 실검증 완료: stop/remove 후 `qwen3.6-27b-origin` recipe로 재기동, `/health=200`, `/v1/models id/root=Qwen/Qwen3.6-27B`, `max_model_len=131072`.

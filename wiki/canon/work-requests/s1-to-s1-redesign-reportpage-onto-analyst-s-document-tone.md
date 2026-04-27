@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s1-redesign-reportpage-onto-analyst-s-document-tone"
-last_verified: "2026-04-22"
+last_verified: "2026-04-25"
 service_tags: ["s1"]
 decision_tags: ["design-system-source-of-truth", "redesign-backlog"]
 related_pages: ["wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/design-system.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-redesign-reportpage-onto-analyst-s-document-tone"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-25T06:28:08.171Z","note":"2026-04-25 autopilot Phase 2d 로 완료.\n\n변경 (12개 파일):\n- `ReportPage.css` — 전체 재작성. 하드코딩 hex / 장식 border-left / `--primary` non-interactive 사용 / 커스텀 timeline 클래스 제거. canonical `.distribution-*`, `.activity-item`, `.form-field` 통합. print 스타일 (`@media print` shadow 제거 + section break-inside) 보강\n- `components/ReportContent.tsx` — `.page-shell` 루트, 탭 active state 정합\n- `components/ReportHeader.tsx` — invalid `variant` prop 제거\n- `components/ReportExecutiveSummary.tsx` — 커스텀 summary bar → `.distribution-list/__row/__meta/__label/__count/__bar/__fill--sev-*` canonical\n- `components/ReportFiltersPanel.tsx` — `.panel + .panel-head + .panel-body + .form-field` 구조\n- `components/ReportFindingsSection.tsx` — `.panel + .panel-body` + caps-mono 컬럼 헤더\n- `components/ReportRunsSection.tsx`, `ReportApprovalsSection.tsx`, `ReportAuditLogSection.tsx` — `.panel` + `report-list-*` 어휘 통일\n- `components/ReportAuditTimelineCard.tsx` — `.activity-item + .activity-icon + .activity-content` canonical (dashboard.css §8.3 timeline rail 자동)\n- `components/ReportModuleBreakdown.tsx` — `.panel` 통일, `report-module-status--{warning,stable}` 텍스트 라벨 동반\n- `components/CustomReportModal.tsx` — `.form-field + .form-label + .form-input/textarea + .form-hint` 계층, native select 대신 SelectField (Radix)\n\nAcceptance criteria 매핑:\n- 모든 섹션 `.panel + .panel-head + .panel-body` 통일\n- executive summary / module breakdown = `.distribution-*` canonical 재사용\n- CustomReportModal = canonical form-field\n- audit log = activity-item timeline rail\n- print 스타일 유지\n- 섹션 리듬 `--space-9` (top-level) / `--space-5` (panel-body)\n- typography 이분: data/ID/timestamp = mono, prose = Paperlogy\n\n검증:\n- typecheck PASS, test 20/20 PASS (9 test files)\n- 통합 599 tests PASS, build PASS\n- code-reviewer (Phase 4a): CRITICAL 0, MINOR 5건 (border-radius 3px hardcoded, --font-code drift, activity-item--last dead class, inline style 다수, hardcoded radius 6px)\n- qa-tester (Phase 4b): 3 viewports PASS, console error 0\n\nConstraints 보존:\n- 데이터 모델 변경 0 (`reportPresentation.ts` 인터페이스 유지)\n- print target selector 보존\n- canonical handoff CSS 무수정\n- Paperlogy 강제, mock 의 Pretendard / `--source-rule-surface/-border` / `--source-ai-surface/-border` drift 무시 (베이스 토큰 `--source-rule`/`-ai` 는 tokens.css 에 정의됨, 사용 OK)\n\nbacklog (MINOR — 별도 PR/세션):\n- `activity-item--last` dead class 제거 (`:last-child` 가 이미 처리)\n- inline style → page CSS class 추출 (5건)\n- `--font-code` 사용처 → `--font-mono` 통일 (단 `tokens.css` 의 `--font-mono` Paperlogy drift 와 별개)\n- hardcoded `border-radius: 6px` → `var(--radius-sm)`"}]
 registered_at: "2026-04-22T07:46:59.407Z"
+completed_at: "2026-04-25T06:28:08.171Z"
 ---
 
 # Redesign ReportPage onto Analyst's Document tone

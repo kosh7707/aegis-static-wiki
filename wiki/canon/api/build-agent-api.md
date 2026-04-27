@@ -4,9 +4,9 @@ page_type: "canonical-api"
 canonical: true
 source_refs:
   - "docs/api/build-agent-api.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-25"
 service_tags: ["s3"]
-decision_tags: []
+decision_tags: ["build-v1.1-proposal", "compatibility-gate", "system-stability"]
 related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md"]
 ---
 
@@ -15,9 +15,9 @@ related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-14
+> **최종 업데이트**: 2026-04-25
 
-Build Agent의 public contract 문서다. 내부 router/handler 구조와 internal downstream calling strategy는 계속 정리되었지만, **strict contract와 public response 의미는 유지된다.**
+Build Agent의 public contract 문서다. 내부 router/handler 구조와 internal downstream calling strategy는 계속 정리되었지만, **strict contract와 public response 의미는 유지된다.** 2026-04-25 system-stability workstream에서도 v1.0.0 public semantics는 compatibility gate 전까지 유지된다.
 
 ---
 
@@ -206,3 +206,19 @@ HTTP `200` + 실패 `status`.
 - `sdk_analyze_support.py`
 - internal tool-less LLM turn에서 S7 async ownership surface 우선 사용 + sync fallback
 - unsupported async surface(404/405/501)는 짧은 cooldown으로 기억하여, 매 호출마다 같은 probe를 반복하지 않도록 internal fallback behavior를 완화
+
+---
+
+## 2026-04-25 build-v1.1 proposal / compatibility gate
+
+S3 system-stability planning proposes additive `build-v1.1` domain outcome fields, but this is **not** a silent default flip of Build Agent v1.0.0. Until WP6 compatibility gate and S2 notice complete, this page's v1.0.0 protected semantics remain authoritative.
+
+Proposed additive fields after gate:
+
+| Field | Meaning |
+|---|---|
+| `result.buildOutcome` | `built`, `compile_failed`, `missing_materials`, `sdk_mismatch`, `artifact_mismatch`, or `inconclusive`. |
+| `result.cleanPass` | True only when declared mode, try_build success evidence, and expected artifacts all pass. |
+| `result.buildDiagnostics` | Build-domain failure context separate from runtime/dependency failure. |
+
+No-fake-success remains non-negotiable: compile failure, missing material, SDK mismatch, and artifact mismatch must never be represented as a successful build. The proposed migration only separates build-domain outcomes from S3/S4/S7 runtime unavailability.

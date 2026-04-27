@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline"
-last_verified: "2026-04-22"
+last_verified: "2026-04-25"
 service_tags: ["s1"]
 decision_tags: ["design-system-source-of-truth", "redesign-backlog"]
 related_pages: ["wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/design-system.md", "wiki/canon/handoff/s1/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-projectsettingspage-phase-2-polish-after-canonical-baseline"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-25T06:27:29.940Z","note":"2026-04-25 autopilot Phase 2b 로 완료.\n\n변경:\n- `services/frontend/src/pages/ProjectSettingsPage/components/ProjectSettingsSidebar.tsx` — placeholder 3탭(build-targets/notifications/adapters)에 `pill--soon` modifier + `soon` caps-mono 뱃지 추가\n- `services/frontend/src/pages/ProjectSettingsPage/components/ProjectSettingsContent.tsx` — placeholder 탭 description 구체화 (기능 설명 + 현재 대안 안내)\n- `services/frontend/src/pages/ProjectSettingsPage/components/SdkManagementSection.tsx` — `.sdk-card__meta` 의 한국어 라벨을 `VER`/`TARGET` caps-mono key 로 교체 (`.sdk-card__meta-key`)\n- `services/frontend/src/pages/ProjectSettingsPage/ProjectSettingsPage.css` — `pill--soon` + `pill--soon__tag` (neutral surface, severity 색 무사용), `.sdk-card__meta-key` caps-mono, 960px 반응형 `.filter-pills--tabs flex-wrap` + `.sdk-card__header row-gap`. body.no-live + prefers-reduced-motion 동시 종료 추가\n\nAcceptance criteria 매핑:\n- A. placeholder 3탭: `pill--soon` 뱃지 (mock v2 의 `.tab.soon` + `.pill-soon` 정합) — 탭은 클릭 가능, panel 내부에서 reserved 안내\n- B. horizontal 정렬: General/SDK/Danger 모두 `.panel > .panel-body` 동일 padding 으로 이미 정렬됨, 추가 변경 불필요\n- C. SDK detail: `VER`/`TARGET` caps-mono key 패턴으로 정합. `.sdk-stepper` 는 baseline 에서 이미 canonical 정합 — 변경 없음\n- D. dirty gate: General 만 유지 (변경 없음)\n- E. 반응형: 960px `.filter-pills--tabs` flex-wrap, SDK 카드 row-gap\n\n검증:\n- typecheck PASS, test 23/23 PASS\n- 통합 599 tests PASS, build PASS\n- code-reviewer (Phase 4a): CRITICAL 0, MAJOR 0 (M1 fix 후), placeholder 3탭 처리 적정성 확인\n- qa-tester (Phase 4b): 6 tabs × 3 viewports PASS\n\nConstraints 보존:\n- baseline URL-synced section 라우팅 (`?section=`)\n- delete-project / updateProjectSettings API 계약\n- canonical handoff CSS 무수정\n- Paperlogy 강제 (mock Pretendard drift 무시)\n\nbacklog (MINOR):\n- `border-radius: 3px` hardcoded 5건 (canonical scale 외) — `--radius-xs` 통일 또는 `--radius-2xs` 토큰 제안 별도 WR"}]
 registered_at: "2026-04-22T07:47:53.448Z"
+completed_at: "2026-04-25T06:27:29.940Z"
 ---
 
 # ProjectSettingsPage phase-2 polish after canonical baseline

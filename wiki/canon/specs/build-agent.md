@@ -4,7 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "docs/specs/build-agent.md"
-last_verified: "2026-04-14"
+last_verified: "2026-04-27"
 service_tags: ["s3"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-api.md"]
@@ -13,7 +13,7 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-a
 # S3. Build Agent 기능 명세
 
 > **소유자**: S3
-> **최종 업데이트**: 2026-04-14
+> **최종 업데이트**: 2026-04-27
 
 Build Agent는 업로드된 프로젝트에 대해 **strict compile-first control plane** 으로 동작한다. 호출자가 선언한 BuildTarget, 빌드 모드, 기대 산출물을 기준으로 preflight → phase0 → bounded repair → artifact validation을 수행한다.
 
@@ -71,7 +71,22 @@ Build Agent는 업로드된 프로젝트에 대해 **strict compile-first contro
 | agent loop | `services/build-agent/app/core/agent_loop.py` |
 | result assembly | `services/build-agent/app/core/result_assembler.py` |
 | tool router wrapper | `services/build-agent/app/tools/router.py` |
-| shared caller / policy / router | `services/agent-shared/agent_shared/llm/caller.py`, `policy/termination.py`, `tools/router_core.py` |
+| service-local runtime caller / policy / router | `services/build-agent/app/agent_runtime/llm/caller.py`, `app/agent_runtime/policy/termination.py`, `app/agent_runtime/tools/router_core.py` |
+
+
+### Producer / Critic / Orchestrator boundary (2026-04-26)
+
+Build Agent의 역할 용어는 Analysis Agent와 같지만 build-domain 의미로 제한한다.
+
+| 역할 | 현재 표면 | 권한 경계 |
+|---|---|---|
+| Deterministic orchestration | `services/build-agent/app/core/phase_zero.py`, preflight/workspace setup | strict 입력 검증과 request-scoped 작업공간 준비 |
+| Producer | `services/build-agent/app/producers/`, producer-safe portions of handlers/agent loop | build script / SDK profile / command candidate 작성 |
+| Critic / QualityGate | `services/build-agent/app/quality/`, result assembler classification seams | strict contract, artifact verification, build-domain outcome classification |
+| Orchestrator / State Machine | `services/build-agent/app/state_machine/`, final envelope assembly path | dependency unavailable vs build-domain deficiency 분리, final envelope authority |
+| Service-local runtime | `services/build-agent/app/agent_runtime/` | former shared-runtime primitive helper의 local copy/specialization |
+
+former shared-runtime package는 더 이상 Build Agent runtime/test dependency가 아니다. `buildOutcome`, `cleanPass`, `buildDiagnostics`는 현재 emitted additive behavior를 보존하되, 별도 compatibility gate 전까지 Build v1.0.0 public default semantics로 승격하지 않는다.
 
 ---
 

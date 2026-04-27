@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-20"
+last_verified: "2026-04-25"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -231,6 +231,42 @@ interface SdkAnalyzedProfile {
   installLogPath?: string;
 }
 
+type SdkProgressPhase = Exclude<SdkRegistryStatus, "upload_failed" | "extract_failed" | "install_failed" | "verify_failed">;
+type SdkErrorPhase = Extract<SdkRegistryStatus, "upload_failed" | "extract_failed" | "install_failed" | "verify_failed">;
+type SdkPhase = SdkProgressPhase | SdkErrorPhase;
+
+type SdkErrorCode =
+  | "UPLOAD_INVALID_INPUT"
+  | "EXTRACT_ARCHIVE_EMPTY"
+  | "EXTRACT_UNSAFE_ENTRY"
+  | "EXTRACT_FAILED"
+  | "INSTALL_ETXTBSY"
+  | "INSTALL_PROCESS_FAILED"
+  | "INSTALL_TIMEOUT"
+  | "VERIFY_PATH_ESCAPED"
+  | "VERIFY_PATH_MISSING"
+  | "VERIFY_CONTENT_EMPTY"
+  | "VERIFY_PROFILE_PATH_INVALID"
+  | "ANALYZE_UNAVAILABLE"
+  | "RETRY_UNSUPPORTED_PHASE"
+  | "RETRY_QUOTA_EXCEEDED"
+  | "RETRY_COOLDOWN_ACTIVE"
+  | "RETRY_ARTIFACT_UNAVAILABLE"
+  | "UNKNOWN_SDK_ERROR";
+
+interface SdkPhaseDetail {
+  kind: string;
+  params?: Record<string, string | number | boolean>;
+}
+
+interface SdkPhaseHistoryEntry {
+  phase: SdkPhase;
+  startedAt: number;
+  endedAt?: number;
+  durationMs?: number;
+  message?: string;
+}
+
 interface RegisteredSdk {
   id: string;
   projectId: string;
@@ -243,6 +279,11 @@ interface RegisteredSdk {
   targetSystem?: string;
   installLogPath?: string;
   status: SdkRegistryStatus;
+  currentPhaseStartedAt?: number;
+  phaseHistory?: SdkPhaseHistoryEntry[];
+  retryCount?: number;
+  retryable?: boolean;
+  retryExpiresAt?: number;
   verifyError?: string;
   verified: boolean;
   createdAt: string;
@@ -347,6 +388,169 @@ interface AnalysisProgress {
   error?: string;
 }
 ```
+
+```ts
+type AgentAnalysisOutcome = "accepted_claims" | "no_accepted_claims" | "inconclusive";
+type AgentQualityOutcome =
+  | "accepted"
+  | "accepted_with_caveats"
+  | "rejected"
+  | "inconclusive"
+  | "repair_exhausted";
+type AgentPocOutcome = "poc_accepted" | "poc_rejected" | "poc_inconclusive" | "poc_not_requested";
+
+interface AgentRecoveryTraceEntry {
+  deficiency?: string;
+  action?: string;
+  outcome?: string;
+  detail?: string;
+}
+
+interface AnalysisResult {
+  id: string;
+  projectId: string;
+  buildTargetId?: string;
+  analysisExecutionId?: string;
+  module: AnalysisModule;
+  status: AnalysisStatus;
+  vulnerabilities: Vulnerability[];
+  summary: AnalysisSummary;
+  warnings?: AnalysisWarning[];
+  caveats?: string[];
+  confidenceScore?: number;
+  confidenceBreakdown?: ConfidenceBreakdown;
+  needsHumanReview?: boolean;
+  recommendedNextSteps?: string[];
+  policyFlags?: string[];
+  analysisOutcome?: AgentAnalysisOutcome;
+  qualityOutcome?: AgentQualityOutcome;
+  pocOutcome?: AgentPocOutcome;
+  recoveryTrace?: AgentRecoveryTraceEntry[];
+  agentAudit?: AgentAuditSummary;
+  createdAt: string;
+}
+```
+
+S3 Analysis Agent outcome semantics:
+
+- `status: "completed"` means S3 returned a schema-valid review envelope; it does **not** by itself mean a clean/deployable deep-analysis pass.
+- S2/S1 should treat a clean deep pass as `status === "completed" && analysisOutcome === "accepted_claims" && qualityOutcome === "accepted"`.
+- Valid-input S3 deficiencies (for example no accepted claims, caveats, rejected/repair-exhausted review quality, or inconclusive PoC) are represented in the result fields above and `recoveryTrace`; they are not transport failures.
+- True task failures remain failure envelopes / non-2xx paths for invalid caller input, unsafe/out-of-authority requests, dead dependencies, timeout/cancel, or impossible result-envelope assembly.
+
+### 2.6.1 Deep outcome / cleanPass UI contract (S2→S1)
+
+This subsection is the normative S2 answer for S1 Deep outcome display. It is grounded in `services/shared/src/models.ts`, `services/shared/src/dto.ts`, `services/backend/src/services/analysis-orchestrator.ts`, `services/backend/src/services/agent-client.ts`, and `services/backend/src/dao/analysis-result.dao.ts`.
+
+#### Outcome enum definitions and recommended copy
+
+`analysisOutcome` classifies whether the S3 claim/evidence review accepted at least one actionable claim. It is not a transport status.
+
+| value | Meaning | ko-KR copy | en copy | UI tone |
+|---|---|---|---|---|
+| `accepted_claims` | At least one claim passed the claim/evidence acceptance rules and became a finding candidate. | 유효 발견 있음 | Accepted findings | positive / complete |
+| `no_accepted_claims` | The task completed, but no claim was accepted as evidence-backed. This can mean proposed claims were rejected or none survived normalization. | 수용된 발견 없음 | No accepted findings | neutral-review |
+| `inconclusive` | The agent could not produce enough claim/evidence support to reach a reliable analysis conclusion. | 결론 불가 | Inconclusive analysis | caution-review |
+
+`qualityOutcome` classifies the review envelope quality. Clean pass requires exactly `accepted`.
+
+| value | Meaning | ko-KR copy | en copy | UI tone |
+|---|---|---|---|---|
+| `accepted` | Review quality passed without caveats that should block clean interpretation. | 품질 통과 | Quality accepted | positive / complete |
+| `accepted_with_caveats` | Review quality is usable but caveats remain. Render caveats from `AnalysisResult.caveats` and warnings when present. | 조건부 품질 통과 | Accepted with caveats | caution-review |
+| `rejected` | Review quality failed; do not present the run as a clean security conclusion. | 품질 게이트 실패 | Quality rejected | critical-review |
+| `inconclusive` | Quality evaluation itself could not reach a reliable conclusion. | 품질 결론 불가 | Quality inconclusive | caution-review |
+| `repair_exhausted` | Deterministic/agent recovery attempts were exhausted before a clean review envelope could be produced. Human review is required. | 복구 한도 초과 | Repair exhausted | critical-review |
+
+`pocOutcome` classifies optional proof-of-concept validation. Deep analysis defaults to `poc_not_requested` when PoC was not part of the task.
+
+| value | Meaning | ko-KR copy | en copy | UI tone |
+|---|---|---|---|---|
+| `poc_accepted` | PoC validation accepted/reproduced the vulnerable behavior. | PoC 재현 성공 | PoC accepted | confidence-boost |
+| `poc_rejected` | PoC validation did not reproduce the claim; the associated claim may need review. | PoC 재현 실패 | PoC rejected | review |
+| `poc_inconclusive` | PoC was attempted but could not reach a reliable conclusion. | PoC 결론 불가 | PoC inconclusive | caution-review |
+| `poc_not_requested` | PoC was not requested or not applicable for this analysis path. | PoC 미요청 | PoC not requested | quiet / omit when space is limited |
+
+Outcome colors/icons are S1-owned presentation choices, but S2 recommends not reusing vulnerability severity colors for non-severity outcomes. Use distinct neutral/caution/critical-review treatment rather than implying CVSS severity.
+
+#### `recoveryTrace` schema and display
+
+Current shared schema:
+
+```ts
+interface AgentRecoveryTraceEntry {
+  deficiency?: string;
+  action?: string;
+  outcome?: string;
+  detail?: string;
+}
+```
+
+`recoveryTrace` is an optional array on REST `AnalysisResult`. It is public, bounded recovery/deficiency summary text from S3, preserved by S2 when present. S2 does not currently enforce a numeric item cap in backend code; "bounded" means S3 must not emit raw prompt/log dumps or unbounded internal traces. S1 should defensively render a compact first N entries (recommend 3 inline, expandable for more) and tolerate absent/empty arrays.
+
+Recommended display pattern:
+
+- condensed surfaces: show a single "복구 이력 있음 / Recovery trace available" chip when `recoveryTrace.length > 0`;
+- detail surfaces: use an expandable accordion or timeline with `deficiency → action → outcome`, and put `detail` behind expansion;
+- do not treat `recoveryTrace` as an error by itself. It is context for non-clean or recovered outcomes.
+
+Localization: S2 currently preserves S3 text strings and does not emit locale variants or enum-kind/params for recoveryTrace. S1 may label the surrounding UI in ko/en, but should treat the inner strings as backend-provided technical summaries until a future structured-i18n WR exists.
+
+#### `cleanPass` semantics
+
+`cleanPass` is currently a **WS convenience field** on `analysis-deep-complete`, not a persisted field on REST `AnalysisResult`. REST consumers derive it as:
+
+```ts
+const cleanPass =
+  result.status === "completed" &&
+  result.analysisOutcome === "accepted_claims" &&
+  result.qualityOutcome === "accepted";
+```
+
+All other combinations are non-clean and should be rendered as review/warning states rather than as failed transports. `pocOutcome` does not currently participate in the cleanPass boolean, but non-accepted PoC outcomes produce warnings and should be surfaced where relevant.
+
+Recommended cleanPass display matrix:
+
+| Condition | Primary copy ko-KR | Primary copy en | Recommended treatment |
+|---|---|---|---|
+| `cleanPass === true` | 분석 완료 | Analysis complete | success/complete |
+| `qualityOutcome === "rejected"` | 품질 게이트 실패 | Quality gate failed | critical-review; show warnings/caveats |
+| `qualityOutcome === "repair_exhausted"` | 자동 복구 한도 초과 | Automatic repair exhausted | critical-review; request human review |
+| `qualityOutcome === "accepted_with_caveats"` | 주의 필요 · 조건부 통과 | Needs review · accepted with caveats | caution-review; show caveats |
+| `analysisOutcome === "no_accepted_claims"` | 수용된 발견 없음 | No accepted findings | neutral-review; do not imply no vulnerabilities globally |
+| `analysisOutcome === "inconclusive"` or `qualityOutcome === "inconclusive"` | 분석 결론 불가 | Analysis inconclusive | caution-review; suggest rerun/review |
+| unknown/missing outcome on old rows | 결과 상태 확인 필요 | Outcome needs review | fallback-review |
+
+Forward compatibility: live WS consumers may trust `payload.cleanPass` when present. REST consumers and historical-run views should derive it from enums. If future enum values appear, S1 must default to fallback-review, not success.
+
+#### WS and REST consistency
+
+- `analysis-deep-complete` currently includes `analysisOutcome?`, `qualityOutcome?`, `pocOutcome?`, and `cleanPass?`. In current S2 success paths these are populated, but the shared DTO remains optional for backward compatibility with older messages. `recoveryTrace` is **not** currently emitted on the WS complete payload; fetch REST result details for recovery trace.
+- `analysis-quick-complete` currently contains `{ analysisId, buildTargetId?, executionId?, findingCount }` only. Quick analysis does not carry S3 result-level outcome fields.
+- `analysis-error` currently contains `{ analysisId, buildTargetId?, executionId?, phase: "quick" | "deep", error, retryable, partial? }`. Error messages do not include outcome fields and S2 does not synthesize `analysisOutcome: "inconclusive"` for true task failures.
+- REST `AnalysisResult` may include `analysisOutcome`, `qualityOutcome`, `pocOutcome`, and `recoveryTrace`. Old rows or non-Deep rows may omit them; S1 must treat absence as fallback-review / legacy-not-available rather than success.
+
+#### Surface priority guidance for S1
+
+S2's guidance is advisory; S1 owns layout and visual design. Recommended noise levels:
+
+| Surface | Recommended outcome display | Noise level |
+|---|---|---|
+| Overview / SecurityPostureSection | One compact chip derived from `cleanPass`/quality outcome; avoid full enum table. | low |
+| Report / ExecutiveSummary | Show cleanPass state, quality outcome, analysis outcome, and caveats/warnings summary. | medium-high |
+| AnalysisHistory run table | Add compact outcome chip next to run status for Deep rows; fallback for legacy rows. | low-medium |
+| StaticAnalysis latest/deep summary | Show all three outcome chips plus recovery-trace affordance when present. | medium |
+| Detail/report drilldown | Show full enum copy, warnings, caveats, recoveryTrace accordion/timeline. | high |
+
+Backwards compatibility: these fields are additive. Existing S1 screens that ignore them should continue to work, but may overstate clean completion if they rely only on `status: "completed"`. S1 can adopt incrementally; S2 recommends Report and AnalysisHistory first because they are most likely to misrepresent Deep quality.
+
+#### Shared package and enum expansion policy
+
+- Source of truth order remains: `services/shared/src/models.ts` / `dto.ts`, then mounted S2 behavior, then this document. This document should be updated with code changes.
+- In the monorepo, `@aegis/shared` reflects `services/shared` source/build configuration; consumers should run shared/backend/frontend typecheck in their lane when adopting new fields.
+- S1 may adopt fields surface-by-surface; simultaneous rollout across all pages is not required.
+- Future enum additions are possible. Unknown values should be rendered as fallback-review / inconclusive-like, preserve the raw value for diagnostics, and never map to success by default.
+- Possible future S3 additive fields include `confidenceScore`, richer evidence counts, repair counts, or structured recovery events. Treat them as future/additive unless a WR freezes them.
 
 ```ts
 interface DynamicTestConfig {
@@ -639,19 +843,27 @@ Validation enforced today:
 |---|---|---|---|---|
 | GET | `/api/projects/:pid/sdk` | - | `200 { success, data: { builtIn: SdkProfile[], registered: RegisteredSdk[] } }` | `200`, `404` |
 | GET | `/api/projects/:pid/sdk/:id` | - | `200 { success, data: RegisteredSdk }` | `200`, `404` |
-| GET | `/api/projects/:pid/sdk/:id/log` | `?tailLines=<n>` optional | `200 { success, data: { sdkId, logPath, content, truncated } }` | `200`, `404` |
+| GET | `/api/projects/:pid/sdk/quota` | - | `200 { success, data: { usedBytes, maxBytes, sdkCount } }` | `200`, `404` |
+| GET | `/api/projects/:pid/sdk/metrics` | - | `200 { success, data: { sdkCount, readyCount, failedCount, averagePhaseDurationMs } }` | `200`, `404` |
+| GET | `/api/projects/:pid/sdk/:id/log` | `?tailLines=<n>` or `?offset=<n>&limit=<n>`; `download=true` optional | JSON: `200 { success, data: { sdkId, logPath, content, truncated, totalLines, nextOffset? } }`; download: `text/plain` attachment | `200`, `404` |
+| POST | `/api/projects/:pid/sdk/:id/retry` | `{ fromPhase?: "analyzing" | "verifying" }` | `202 { success, data: RegisteredSdk }` | `202`, `400`, `404` |
 | POST | `/api/projects/:pid/sdk` | see note below | `202 { success, data: RegisteredSdk }` | `202`, `400`, `404` |
 | DELETE | `/api/projects/:pid/sdk/:id` | - | `200 { success: true }` | `200`, `404` |
 
 `POST /api/projects/:pid/sdk` mounted behavior today:
 
 - required multipart field: `name`
-- accepted ingress: multipart `file` upload (single archive or single `.bin` in this milestone)
+- accepted ingress: multipart `file` upload (single archive, single `.bin`, or multi-file folder upload)
 - `localPath` is no longer the canonical/requested ingress
 - multiple uploaded files are treated as **folder upload** when the client preserves relative paths (for example via `webkitRelativePath`-derived filenames or explicit relative-path metadata)
 - returned `RegisteredSdk.status` is initially `"uploaded"`, then the async pipeline advances through upload materialization / analyze / verify terminal states
 - `.bin` installs materialize a canonical install log at `uploads/{projectId}/sdk/{sdkId}/install.log`
-- `GET /api/projects/:pid/sdk/:id/log` is the HTTP recovery/read surface for install-log tail content
+- `GET /api/projects/:pid/sdk/:id/log` is the HTTP recovery/read surface for install-log tail or paginated content; `download=true` returns a `text/plain` attachment.
+- `POST /api/projects/:pid/sdk/:id/retry` reuses a retained/materialized failed SDK artifact, increments `retryCount`, and currently restarts from `verifying` or optional `analyzing`; unsupported/non-retained failures must still be re-uploaded.
+- `GET /api/projects/:pid/sdk/quota` reports project SDK storage usage against `AEGIS_SDK_STORAGE_QUOTA_BYTES` (default 50 GiB).
+- `GET /api/projects/:pid/sdk/metrics` returns aggregate SDK counts and average phase durations from persisted `phaseHistory`.
+- `GET /api/projects/:pid/sdk/:id/log` returns server-side `logPath` for correlation/debugging plus log `content`; S1 should render the log content from the endpoint, not require users to SSH to the server path.
+- `sdk-error.troubleshootingUrl` is a wiki-canonical anchor path derived from structured `code` (for example `wiki/canon/troubleshooting/sdk#extract-failed`).
 
 ### SDK profile lookup routes
 
@@ -1008,6 +1220,85 @@ Validation notes:
 | POST | `/api/approvals/:id/decide` | `{ decision, comment?, actor? }` | `200 { success, data: ApprovalRequest }` | `200`, `400`, `404` |
 | GET | `/api/projects/:pid/activity` | query `limit=1..50` optional | `200 { success, data: ActivityEntry[] }` | `200` |
 
+
+
+#### Gate / approval additive mock-absorption fields (S1 WR 2026-04-26)
+
+S2 now exposes the QualityGate / Approvals mock-derived signals as additive shared fields. Existing consumers may ignore them; S1 should prefer these fields over frontend-side threshold maps or commit/branch derivation. Historical rows may omit them.
+
+```ts
+type GateRuleMetricUnit = "count" | "percent";
+
+interface GateRuleMetric {
+  current: number;
+  threshold: number;
+  unit?: GateRuleMetricUnit;
+}
+
+interface GateRuleResult {
+  ruleId: GateRuleId;
+  result: "passed" | "failed" | "warning";
+  message: string;
+  linkedFindingIds: string[];
+  current?: number;
+  threshold?: number;
+  unit?: GateRuleMetricUnit;
+  meta?: GateRuleMetric;
+}
+
+interface GateResult {
+  id: string;
+  runId: string;
+  projectId: string;
+  status: GateStatus;
+  rules: GateRuleResult[];
+  profileId?: string;
+  commit?: string;
+  branch?: string;
+  requestedBy?: string;
+  evaluatedAt: string;
+  override?: { overriddenBy: string; reason: string; approvalId: string; overriddenAt: string };
+  createdAt: string;
+}
+
+interface ApprovalImpactSummary {
+  failedRules: number;
+  ignoredFindings: number;
+  severityBreakdown?: Record<string, number>;
+}
+
+type ApprovalTargetSnapshot =
+  | { runId: string; commit?: string; branch?: string; profile?: string; action?: ApprovalActionType }
+  | { findingId: string; file?: string; line?: number; severity?: Severity };
+
+interface ApprovalRequest {
+  id: string;
+  actionType: ApprovalActionType;
+  requestedBy: string;
+  targetId: string;
+  projectId: string;
+  reason: string;
+  status: ApprovalStatus;
+  impactSummary?: ApprovalImpactSummary;
+  targetSnapshot?: ApprovalTargetSnapshot;
+  decision?: { decidedBy: string; decidedAt: string; comment?: string };
+  expiresAt: string;
+  createdAt: string;
+}
+```
+
+Current S2 population rules:
+
+- `GateRuleResult.current` / `threshold` / `unit` are emitted from backend policy evaluation. Current units are `count` for `no-critical`, `high-threshold`, `sandbox-unreviewed`; `percent` for `evidence-coverage` (`100` threshold). `meta` mirrors the same values for grouped consumers.
+- `GateResult.profileId` is the actual policy profile id used for evaluation (`default`, `strict`, `relaxed`, or a configured profile id when available).
+- `GateResult.requestedBy` is currently `system` for automatic run-completion gate evaluation unless a future caller-owned trigger path supplies a real actor.
+- `GateResult.commit` / `branch` are persisted and returned when S2 knows them; current automatic evaluation does not synthesize them from frontend state. S1 must render placeholders when absent.
+- `POST /api/gates/:id/override` creates `ApprovalRequest.impactSummary` and `targetSnapshot` from the target gate. `targetSnapshot.profile` maps to `GateResult.profileId`.
+- `finding.accepted_risk` approval creation paths populate `impactSummary` as one ignored finding with a severity breakdown and `targetSnapshot` as `{ findingId, file?, line?, severity? }` when the finding is visible.
+- All additions preserve the canonical `{ success, data }` envelope and do not change status codes.
+
+Mock source mapping: Quality Gate mock threshold cards map to `GateRuleResult.current/threshold/unit`; gate card profile/commit/branch/user map to `GateResult.profileId/commit/branch/requestedBy`; Approvals list/panel impact blocks map to `ApprovalRequest.impactSummary`; detail-pane rows map to `ApprovalRequest.targetSnapshot`.
+
 Notable current behavior:
 
 - `/api/projects/:pid/approvals?status=` only special-cases `pending`; other values currently fall back to the full list.
@@ -1163,10 +1454,35 @@ Role and recovery:
 
 | `type` | Payload |
 |---|---|
-| `sdk-progress` | `{ sdkId, phase: "uploading" \| "uploaded" \| "extracting" \| "extracted" \| "installing" \| "installed" \| "analyzing" \| "verifying" \| "ready", message, percent?, uploadedBytes?, totalBytes?, fileName? }` |
+| `sdk-progress` | `{ sdkId, phase: "uploading" \| "uploaded" \| "extracting" \| "extracted" \| "installing" \| "installed" \| "analyzing" \| "verifying" \| "ready", message, percent?, uploadedBytes?, totalBytes?, fileName?, etaSeconds?, phaseStartedAt?, phaseDetail? }` |
 | `sdk-log` | `{ sdkId, timestamp, source: "aegis" \| "installer", kind: "lifecycle" \| "heartbeat" \| "output" \| "terminal", stream?: "stdout" \| "stderr", message, logPath? }` |
 | `sdk-complete` | `{ sdkId, profile, path? }` |
-| `sdk-error` | `{ sdkId, phase: "upload_failed" \| "extract_failed" \| "install_failed" \| "verify_failed", error, logPath? }` |
+| `sdk-error` | `{ sdkId, phase: "upload_failed" \| "extract_failed" \| "install_failed" \| "verify_failed", error, logPath?, code?, retryable?, recoverable?, troubleshootingUrl?, userMessage?, technicalDetail?, failedAt?, correlationId? }` |
+
+Normative UI mapping:
+
+- S2 emits the 9 progress phases as backend state-machine facts. S1 may group them into the mock 5-step stepper as:
+
+| UI step | S2 phases |
+|---|---|
+| 업로드 | `uploading`, `uploaded` |
+| 설치/압축해제 | `extracting`, `extracted`, `installing`, `installed` |
+| AI 분석 | `analyzing` |
+| 검증 | `verifying` |
+| 완료 | `ready` |
+
+- The grouping is a frontend presentation decision, but this table is S2-approved and aligned with the current implementation.
+- Current phase flows differ by `artifactKind`:
+  - `archive`: `uploading → uploaded → extracting → extracted → analyzing → verifying → ready`
+  - `bin`: `uploading → uploaded → installing → installed → analyzing → verifying → ready`
+  - `folder`: `uploading → uploaded → extracting → extracted → analyzing → verifying → ready`
+- A phase may be absent when that artifact kind does not require it; S1 should not render a missing backend phase as an error by itself.
+- `sdk-progress.etaSeconds` is currently emitted for live upload progress only, computed from observed upload byte rate. S2 intentionally omits ETA for extract/install/analyze/verify when it cannot produce a reliable estimate.
+- `sdk-progress.phaseStartedAt` is backend epoch-ms for the current phase when available. `RegisteredSdk.currentPhaseStartedAt` and `RegisteredSdk.phaseHistory` are persisted for REST/reconnect recovery.
+- `phaseDetail` is additive structured detail shaped as `{ kind, params? }`. Current kinds include upload/materialization/analyze/verify/ready variants such as `sdk.uploaded`, `sdk.extracting.archive`, `sdk.installing.bin`, and retry variants like `sdk.verifying.retry`.
+- `message` remains human-readable ko-KR backend text. S1 should prefer `phaseDetail.kind + params` for future i18n and treat `message` as display fallback.
+- `fileName` is optional. It is emitted for upload progress, `uploaded`, archive `extracting`, and `.bin` `installing`; it is not guaranteed for `analyzing`, `verifying`, or `ready`. It is a sanitized display basename / submitted filename, not an absolute server path. Long-name truncation is S1 responsibility.
+- `sdk-error.code` is the structured SDK-domain error code (`SdkErrorCode`). `retryable` and `recoverable` are currently identical booleans from S2 retry policy; S1 may use either as a CTA gate but should prefer `retryable` for retry UI.
 
 Role and recovery:
 
@@ -1178,9 +1494,11 @@ Role and recovery:
   - success → `type: "sdk_ready", jobKind: "sdk", resourceId: sdkId, correlationId: sdkId`
   - failure → `type: "sdk_failed", jobKind: "sdk", resourceId: sdkId, correlationId: sdkId`
 - **Recovery / re-entry source of truth**:
-  - `GET /api/projects/:pid/sdk/:id` for a single SDK
+  - `GET /api/projects/:pid/sdk/:id` for a single SDK, including `currentPhaseStartedAt`, `phaseHistory`, `retryCount`, `retryable`, `retryExpiresAt`
   - `GET /api/projects/:pid/sdk` for collection/list recovery
-  - `GET /api/projects/:pid/sdk/:id/log` for install-log tail recovery
+  - `GET /api/projects/:pid/sdk/:id/log` for install-log tail/paginated recovery
+  - `GET /api/projects/:pid/sdk/quota` for project SDK storage summary
+  - `GET /api/projects/:pid/sdk/metrics` for aggregate SDK operational metrics
 
 `sdk-log` semantics:
 
@@ -1189,13 +1507,158 @@ Role and recovery:
 - `kind: "heartbeat"` means the installer child process is still alive at emit time; it is **not** a progress-percentage claim
 - `logPath` points to the canonical install log file when the client needs follow-up fetch
 
+WebSocket connection health:
+
+- Missing subscription key still closes with code `4000`.
+- The shared S2 `WsBroadcaster` now runs an app-level ping/pong heartbeat every 30 seconds. A client that misses a heartbeat is terminated and removed; send failures also remove clients.
+- `meta.seq` remains monotonic per broadcaster key while that key is active, and can still be used for gap detection.
+
+### 4.5.1 SDK follow-up implementation matrix (S1 WR 2026-04-25)
+
+This subsection answers the S1 SDK second follow-up WR after S2 implementation. Status vocabulary:
+
+- **implemented** = implemented in `services/shared` / `services/backend` and covered by targeted S2 tests in this cycle.
+- **implemented-limited** = implemented with explicitly bounded semantics; S1 must observe the stated limits.
+- **future** = accepted direction but not implemented in this cycle.
+- **rejected** = S2 should not expose the requested behavior as phrased.
+- **frontend autonomous** = S1 may decide presentation/mock behavior without S2 contract changes.
+
+#### A. Timing
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| A1 `etaSeconds` | implemented-limited | `sdk-progress.etaSeconds` is emitted for upload progress from byte-rate telemetry. Extract/install/analyze/verify omit it unless future reliable duration models exist. |
+| A2 `phaseStartedAt` | implemented | `sdk-progress.phaseStartedAt` and REST `RegisteredSdk.currentPhaseStartedAt` are epoch-ms backend timestamps. |
+| A3 `phaseHistory` | implemented | REST `RegisteredSdk.phaseHistory` persists `Array<{ phase, startedAt, endedAt?, durationMs?, message? }>` in `sdk_registry.phase_history`. |
+| A4 emit cadence | implemented | Upload emits `0`, then integer percent increases up to `99`, then `uploaded` emits `100`. There is no time-based throttle. Non-upload phases emit on state transition only. |
+| A5 `meta.timestamp` accuracy | implemented | WS envelope `meta.timestamp` is backend `Date.now()` epoch-ms. It is suitable for server-message ordering and server-relative elapsed from first observed phase; it is not client/server clock-skew corrected. |
+
+#### B. Structured detail / error shape
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| B1 `phaseDetail` / `messageKey` | implemented | S2 emits `phaseDetail: { kind, params? }` on SDK progress. Current `message` remains ko-KR fallback text. |
+| B2 `troubleshootingUrl` | implemented | `sdk-error.troubleshootingUrl` is wiki-canonical and backend-generated from structured code, e.g. `wiki/canon/troubleshooting/sdk#install-process-failed`. |
+| B3 `sdk-error.retryable` | implemented | `sdk-error.retryable` and `RegisteredSdk.retryable` are emitted. Current policy: non-upload failed phases are retryable when retained/materialized artifacts are available and retry limits allow. |
+| B4 structured error `code` | implemented | `sdk-error.code` is `SdkErrorCode`; S1 should branch on this instead of free-text `error`. |
+| B5 `recoverable` / error severity | implemented-limited | `sdk-error.recoverable` mirrors `retryable`. S2 does not yet emit a separate severity enum. |
+
+#### C. Retry endpoint
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| C1 `POST /sdk/:id/retry` | implemented-limited | Mounted as `POST /api/projects/:pid/sdk/:id/retry`. It reuses an existing failed SDK id and retained/materialized `sdk.path`; unsupported/unretained artifacts return `400`. |
+| C2 retry quota/cooldown | implemented | Current policy: max `3` retry attempts, `30s` cooldown from last update, `24h` retry retention window (`retryExpiresAt`). |
+| C3 retry phase flow | implemented-limited | Request body supports `{ fromPhase?: "analyzing" | "verifying" }`; default is `verifying`. Retry emits `analyzing` when requested, then `verifying`, then `ready` or `sdk-error`. |
+| C4 failed-artifact retention / `retryExpiresAt` | implemented-limited | Failed rows get `retryExpiresAt`; retry only succeeds if `sdk.path` still exists. Extract/install failures may still require fresh upload if no materialized path exists. |
+
+#### D. Log access
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| D1 `GET /sdk/:id/log` detail | implemented | Default `tailLines=200`; response now includes `{ sdkId, logPath, content, truncated, totalLines, nextOffset? }`. |
+| D2 streaming/pagination | implemented-limited | Offset pagination is supported via `?offset=&limit=` (limit capped to 10,000). Chunked/SSE log streaming remains future; live logs continue via `sdk-log` WS. |
+| D3 live log streaming WS | implemented | `sdk-log` live WS payload remains `{ sdkId, timestamp, source, kind, stream?, message, logPath? }`; envelope adds `meta.timestamp` and `meta.seq`. |
+| D4 `logPath` security | implemented | `logPath` remains server-side correlation/debug path. S1 should render log `content` or a “view/download log” action, not present `logPath` as the primary end-user instruction. |
+| D5 `installLogPath` vs `logPath` | implemented | Both refer to the canonical install log path in current SDK registration. `RegisteredSdk.installLogPath` / `profile.installLogPath` are persisted profile fields; `sdk-log.logPath` and `sdk-error.logPath` are event correlation fields. |
+| D6 log download | implemented | `GET /api/projects/:pid/sdk/:id/log?download=true` returns a `text/plain` attachment named `<sdkId>-install.log`. |
+
+#### E. i18n / locale
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| E1 message locale policy | implemented-limited | Current SDK `message` strings remain ko-KR backend text. New `phaseDetail.kind + params` is the structured seam for S1 i18n; S2 does not honor `Accept-Language` or WS locale query. |
+| E2 SDK metadata locale | implemented | `sdkVersion`, `targetSystem`, compiler fields, paths, defines, and include paths are technical/free-text metadata, not localized enums. |
+
+#### F. Precision / optimization
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| F1 `percent` precision | implemented | Current upload percent is integer `0..99`, with `100` on `uploaded`. No float precision today. |
+| F2 byte fields | implemented | `uploadedBytes` and `totalBytes` are JavaScript numbers. Current multer limit is 4 GiB per file and 2000 files; JS safe integer range is sufficient for current limits. |
+| F3 message length | frontend autonomous | No backend max length contract today. Current progress messages are short; long installer output belongs in `sdk-log`. S1 should truncate UI copy defensively. |
+
+#### G. Concurrent / quota
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| G1 concurrent SDK uploads | implemented current behavior; future limits possible | No explicit per-project concurrency limit or `MAX_CONCURRENT_SDK_UPLOADS_PER_PROJECT` today. Multiple SDK registrations can be started, bounded only by request/file limits and host resources. |
+| G2 SDK quota | implemented | `GET /api/projects/:pid/sdk/quota` returns `{ usedBytes, maxBytes, sdkCount }`. `maxBytes` defaults to 50 GiB and can be set with `AEGIS_SDK_STORAGE_QUOTA_BYTES`. |
+| G3 global quota | future | No instance-wide quota endpoint today. |
+
+#### H. Lifecycle
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| H1 DELETE in-flight job | rejected as cancel; future cancellation | `DELETE /sdk/:id` is not a safe cancellation contract for uploading/extracting/installing/analyzing/verifying. It deletes DB/files best-effort but does not coordinate/cancel the async pipeline or emit `USER_CANCELLED`. |
+| H2 reconnect phase consistency | implemented | Reconnect recovery source is `GET /api/projects/:pid/sdk/:id` / list. It returns current persisted status plus `currentPhaseStartedAt` and `phaseHistory`; missed live WS messages are still possible. |
+| H3 project DELETE cleanup | implemented | Project delete blocks active/non-terminal SDK registrations. If allowed, project upload root is quarantined and removed as part of project teardown, including terminal SDK files. |
+| H4 ready metadata mutation | future / currently rejected | No `PATCH /sdk/:id` today. Ready SDK metadata is read-only after registration except delete. |
+
+#### I. Test fixtures / mock support
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| I1 canonical SDK mock fixture export | frontend autonomous now; future shared fixture possible | No `services/shared/fixtures/sdk-mocks.ts` today. S1 may build mock data from shared DTO shapes. S2 test app mocks now include the new endpoint surface for backend contract tests. |
+| I2 dev phase simulator | rejected for current backend; frontend autonomous | No backend simulator endpoint today. S2 rejects adding runtime simulator behavior in this cycle; S1 mock mode may simulate phases. |
+| I3 e2e upload fixture | future | S2 tests create temporary SDK fixtures internally, but there is no canonical cross-lane small SDK fixture path yet. |
+
+#### J. Shared types versioning
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| J1 shared package reflection | implemented | Source fields live in `services/shared/src/dto.ts` and `services/shared/src/models.ts`; S2 rebuilt `services/shared/dist` during verification. S1 should run shared/frontend typecheck when adopting. |
+| J2 breaking-change policy | implemented policy | Additive fields/message types are preferred. Field removals/renames or semantic changes require canonical docs update plus WR/deprecation coordination before S1 depends on the change. |
+| J3 source-of-truth | implemented policy | Authority order for S1-S2 shared contract remains: `services/shared/src/models.ts`, `services/shared/src/dto.ts`, mounted S2 behavior, then this document. |
+
+#### K. Small clarifications
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| K1 `GET /sdk` ordering | implemented | Registered SDK list is `created_at DESC`. No `orderBy` / `order` query support today. |
+| K2 WS query params | implemented | `/ws/sdk?projectId=<projectId>` only. There is no `sdkId` filter today; clients receive project-scoped SDK messages. |
+| K3 WS envelope guarantees | implemented | SDK messages get flattened `meta` with `channel="sdk"`, `projectId` equal to subscription key, `timestamp` epoch-ms, and monotonic `seq` per key while a broadcaster key is active. No `meta.correlationId` today; `sdk-error.correlationId` uses the `sdkId`. |
+| K4 `sdk-complete.path?` | implemented | `path` is the server-side materialized SDK path. S1 should not use it as a client route or user-facing filesystem instruction. |
+| K5 duplicate upload detection | future | No hash/name duplicate detection today. Each successful upload gets a new SDK id. |
+| K6 status enum expansion | implemented policy | Unknown future SDK phases should render as fallback “SDK 상태 확인 필요”, keep polling/fetching REST state, and must not be treated as `ready` unless the value is explicitly `ready`. |
+
+#### L. artifactKind message copy
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| L1 message copy table | implemented | Current notable `sdk-progress.message` values: upload `SDK 업로드 중...`, `SDK 업로드 중... {percent}%`, `SDK 업로드 완료`; archive `SDK 압축 해제 중...`, `SDK 압축 해제 완료`; folder `SDK 폴더 업로드 정리 중...`, `SDK 폴더 업로드 정리 완료`; bin `SDK 설치 파일 실행 중...`, `SDK 설치 완료`; retry verify `S2가 SDK 구조를 다시 검증 중...`; ready `SDK 등록 완료` / `SDK 재시도 완료`. Prefer `phaseDetail` for stable branching. |
+| L2 archive/folder both use `extracting` | frontend autonomous with S2 guidance | Keep the stable step label “설치/압축해제”; use `artifactKind`, `phaseDetail.kind`, and `message` as sub-text if S1 wants dynamic nuance. |
+
+#### M. Outcome / profile
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| M1 `RegisteredSdk.profile` schema | implemented | `SdkAnalyzedProfile` fields are optional: `compiler`, `compilerPrefix`, `gccVersion`, `targetArch`, `languageStandard`, `sysroot`, `environmentSetup`, `includePaths`, `defines`, `artifactKind`, `sdkVersion`, `targetSystem`, `installLogPath`. |
+| M2 `sdk-complete.path?` | implemented | Same as K4: server-side materialized SDK path, not a client route. |
+| M3 extraction confidence | future | No `confidence` for `sdkVersion` / `targetSystem` today. `verified` means S2 verified materialized SDK tree/path constraints, not AI metadata confidence. |
+
+#### N. Error UX
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| N1 `userMessage` / `technicalDetail` split | implemented | `sdk-error` now includes both `userMessage` and `technicalDetail` while preserving legacy `error`. |
+| N2 error correlation id | implemented | `sdk-error.correlationId` uses `sdkId`; notifications also use `correlationId=sdkId`. WS envelope still has no separate `meta.correlationId`. |
+| N3 error timestamp | implemented | `sdk-error.failedAt` is payload-level epoch-ms. REST `RegisteredSdk.updatedAt` reflects last persisted status update. |
+
+#### O. Observability / metrics
+
+| Item | Decision | S2 answer |
+|---|---|---|
+| O1 SDK metrics endpoint | implemented | `GET /api/projects/:pid/sdk/metrics` returns `{ sdkCount, readyCount, failedCount, averagePhaseDurationMs }`. |
+| O2 WS connection health | implemented | Shared WS broadcaster sends ping every 30s, removes/terminates missed pong clients, removes send failures, and preserves `meta.seq` for gap detection. S1 still owns reconnect UI/backoff. |
+
 ### 4.6 Analysis WS — `/ws/analysis?analysisId=<analysisId>`
 
 | `type` | Payload |
 |---|---|
 | `analysis-progress` | `{ analysisId, buildTargetId?, executionId?, phase, message, targetName?, targetProgress?: { current, total } }` |
 | `analysis-quick-complete` | `{ analysisId, buildTargetId?, executionId?, findingCount }` |
-| `analysis-deep-complete` | `{ analysisId, buildTargetId?, executionId?, findingCount }` |
+| `analysis-deep-complete` | `{ analysisId, buildTargetId?, executionId?, findingCount, analysisOutcome?, qualityOutcome?, pocOutcome?, cleanPass? }` |
 | `analysis-error` | `{ analysisId, buildTargetId?, executionId?, phase: "quick" \| "deep", error, retryable, partial? }` |
 
 Current progress phases:

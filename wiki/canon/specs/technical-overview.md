@@ -53,7 +53,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
            S7 Gateway (:8000)  ← LLM 단일 관문
                 │
            LLM Engine (DGX Spark)
-           Qwen3.5-122B-A10B-GPTQ-Int4
+           Qwen/Qwen3.6-27B
 ```
 
 **기본 원칙**: S2가 모든 하위 서비스를 호출하는 플랫폼 오케스트레이터이다.
@@ -167,7 +167,7 @@ MSA(Microservice Architecture) 기반 7개 독립 서비스 구성.
 **LLM 단일 관문**. 모든 LLM 호출은 S7을 경유.
 
 - Gateway: 프롬프트 관리, 모델 라우팅, Circuit Breaker, 토큰 사용량 추적
-- Engine: DGX Spark에서 Qwen3.5-122B-A10B-GPTQ-Int4 서빙 (vLLM)
+- Engine: DGX Spark에서 Qwen/Qwen3.6-27B 서빙 (vLLM)
 - OpenAI-compatible API (`/v1/chat/completions`)
 
 ---
@@ -446,7 +446,7 @@ ECU Simulator → [S6 Adapter] → WS → [S2]
 ### v0 → v1 전환기 (현재)
 
 - [x] **7인 체제 재편** — S4(SAST Runner), S5(Knowledge Base), S6(Dynamic Analysis), S7(LLM Gateway+Engine) 신설
-- [x] **DGX Spark LLM Engine** — Qwen3.5-122B-A10B-GPTQ-Int4 전환 완료 (S7 관리)
+- [x] **DGX Spark LLM Engine** — Qwen/Qwen3.6-27B 전환 완료 (S7 관리)
 - [x] **S3 Agent 통합** — 311 tests pass, RE100 통합 테스트 완료 (49 SAST findings + 3 Agent claims)
 - [x] **분석 파이프라인 기반** — AgentClient, SastClient, AnalysisOrchestrator, ProjectSourceService 구현
 - [x] **소스코드 업로드** — ZIP/Git → `uploads/{projectId}/` 파일시스템 관리

@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s1-to-s1-redesign-approvalspage-as-canonical-triage-queue"
-last_verified: "2026-04-22"
+last_verified: "2026-04-25"
 service_tags: ["s1"]
 decision_tags: ["design-system-source-of-truth", "redesign-backlog"]
 related_pages: ["wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/design-system.md", "wiki/canon/work-requests/s1-to-s1-redesign-qualitygatepage-onto-canonical-analyst-s-console-vocab.md"]
 migration_status: "canonicalized"
 wr_id: "s1-to-s1-redesign-approvalspage-as-canonical-triage-queue"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s1"
 to_lanes: ["s1"]
-completed_by: []
+completed_by: [{"lane":"s1","completed_at":"2026-04-25T10:46:45.264Z","note":"2026-04-25 autopilot ABCD cycle Stream D 처리 완료.\n\n변경 (`services/frontend/src/pages/ApprovalsPage/**` + 추가 M1/M2 fix):\n- ApprovalsPage.tsx + .css 전면 재구성. AdminRegistrations v2 의 Triage Queue 패턴 흡수\n- filter-pills--tabs (PENDING/APPROVED/REJECTED/EXPIRED/ALL) + 기본 필터 = pending\n- Row 전체 클릭 affordance — onClick + Enter/Space 키보드 + tabIndex=0 + aria-label + focus-visible inset ring\n- Decision dialog: canonical `.panel + .panel-head + .panel-body + .form-field` (ConfirmDialog 는 textarea slot 부재로 재사용 불가, panel 직접 구성)\n- Empty state 5 필터별 actionable 카피 (doctrine §3.1 filler 금지 통과). Wireframe ghost cards / preview cells 제거\n- M1/M2 fix (Phase 4a reviewer 발견):\n  - `.approval-card--pending` 가 severity-medium → review-tone `--warning-*` 으로 교체\n  - StatusChip 의 `.sev-chip` (severity component) 사용 → 새 `.approval-status` + `.approval-status--{pending,approved,rejected,expired}` 페이지 local class. review-tone palette (positive/caution/critical-review/fallback-review)\n\nreview-tone 매핑 (doctrine §3.4 준수):\n- pending → caution-review (`--warning`)\n- approved → positive (`--success`)\n- rejected → critical-review (`--danger`)\n- expired → fallback-review (`--foreground-subtle`)\n\n검증:\n- typecheck PASS\n- 통합 682/682 tests PASS (baseline 681 + 1 신규)\n- build PASS\n- code-reviewer round 2 APPROVE (M1/M2 fix 확정. CRITICAL 0, MAJOR 0)\n- qa-tester Playwright 3 viewport + 탭 전환 + 다이얼로그 동작 확인\n\nConstraints 보존:\n- 기존 approve/reject API 계약 동일\n- canonical handoff CSS 무수정\n- 기존 Modal portal infrastructure 재사용\n- 새 토큰/색 0"}]
 registered_at: "2026-04-22T07:46:36.915Z"
+completed_at: "2026-04-25T10:46:45.264Z"
 ---
 
 # Redesign ApprovalsPage as canonical triage queue

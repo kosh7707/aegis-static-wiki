@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/backend.md"
 original_path: "docs/specs/backend.md"
-last_verified: "2026-04-20"
+last_verified: "2026-04-25"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -1007,11 +1007,20 @@ POST /api/auth/registration-requests/:id/reject
 - register: `5/min/IP`, `3 active pending requests / 24h / email`
 - password reset request: `5/min/IP`, `3/hour/email`
 
-### Cross-lane contract notes (2026-04-21)
+### Cross-lane contract notes (2026-04-25)
 - `BuildTarget.sdkChoiceState` is canonical and must be documented/consumed for Quick preflight. `sdk-unresolved` is not Quick-eligible; `sdk-selected` and `sdk-none-explicit` are Quick-eligible with other build prerequisites satisfied.
-- S2 preserves S3 `result.policyFlags`, including additive `structured_finalizer`, and treats S3 non-`completed` statuses such as `validation_failed` / `INVALID_SCHEMA` / `INVALID_GROUNDING` as Deep failures. S3 terminal task failures may arrive on non-2xx HTTP statuses (for example 422/413/504/503); S2 parses the structured JSON failure body and preserves `failureCode` / `failureDetail` instead of reducing it to a generic transport error.
+- S2 preserves S3 `result.policyFlags` and the additive result-level outcome fields `analysisOutcome`, `qualityOutcome`, `pocOutcome`, and `recoveryTrace`. S3 `status: "completed"` means a schema-valid honest review envelope; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Valid-input S3 deficiencies are persisted as completed results with outcome fields, warnings, and `needsHumanReview=true` where appropriate. True task failures may still arrive on non-2xx HTTP statuses (for example 422/413/504/503), and S2 preserves `failureCode` / `failureDetail` instead of reducing them to a generic transport error.
+- Deep outcome UI guidance is canonicalized in `wiki/canon/api/shared-models.md` §2.6.1: enum copy, cleanPass derivation, recoveryTrace display, WS/REST consistency, and unknown-enum fallback policy. `cleanPass` remains WS-only convenience and is derived for REST/historical views.
 - S2 strips local `buildProfile.sdkId = "custom"` before calling S4 scan endpoints; native/non-SDK S4 scans omit `sdkId`.
 - registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape with populated org fields.
+- SDK upload/progress UI contract is grounded in the current S2 implementation:
+- SDK second follow-up A1-O2 implementation details are canonicalized in `wiki/canon/api/shared-models.md` §4.5.1.
+  - backend emits 9 SDK progress phases and 4 terminal error phases; S1 may group them into a 5-step UI stepper using the mapping documented in `wiki/canon/api/shared-models.md`
+  - `sdk-progress` can include upload `etaSeconds`, `phaseStartedAt`, and structured `phaseDetail`; REST `RegisteredSdk` can include `currentPhaseStartedAt`, `phaseHistory`, `retryCount`, `retryable`, and `retryExpiresAt`
+  - `sdk-error` can include structured `code`, conservative `retryable`/`recoverable`, wiki-canonical `troubleshootingUrl`, `userMessage`, `technicalDetail`, `failedAt`, and `correlationId`
+  - SDK retry is `POST /api/projects/:pid/sdk/:id/retry` and only succeeds for retained/materialized failed SDK artifacts that pass quota/cooldown/retention checks
+  - SDK logs support tail, offset/limit pagination, and `download=true`; quota and metrics are exposed at `/sdk/quota` and `/sdk/metrics`
+  - shared WS broadcaster emits app-level `heartbeat` messages plus transport ping/pong; S1 still owns reconnect UI/backoff
 
 ### Password reset behavior
 - request endpoint is non-enumerating and returns `202 { accepted: true }` regardless of account existence.
@@ -1250,3 +1259,16 @@ services/backend/src/
 - [S1. UI Service](frontend.md)
 - [Adapter 명세](adapter.md) — ECU↔Backend 릴레이, WS 프로토콜, 메시지 형식
 - [ECU Simulator 명세](ecu-simulator.md) — CAN 트래픽 생성, 주입 응답 규칙, 시나리오
+
+
+## QualityGate / Approvals additive contract update (2026-04-26)
+
+S2 implements the S1 QualityGate / Approvals mock-absorption WR as an additive-only contract extension:
+
+- `GateRuleResult.current`, `threshold`, `unit`, and `meta` are emitted by backend gate policy evaluation.
+- `GateResult.profileId`, `commit`, `branch`, and `requestedBy` are persisted/returned directly on gate results. Current automatic runs set `profileId` from the selected gate profile and `requestedBy=system`; `commit/branch` are optional and not frontend-derived.
+- `ApprovalRequest.impactSummary` and `targetSnapshot` are persisted/returned. Gate override approval creation derives the gate impact snapshot; accepted-risk approval creation derives a finding snapshot when the finding is visible.
+- `gate_results` stores the new gate identity columns; `approvals` stores the new impact/snapshot JSON columns. Existing rows remain valid with absent fields.
+- Endpoint status codes and canonical `{ success, data }` envelopes are unchanged.
+
+Normative field-level contract: `wiki/canon/api/shared-models.md` § “Gate / approval additive mock-absorption fields (S1 WR 2026-04-26)”.
