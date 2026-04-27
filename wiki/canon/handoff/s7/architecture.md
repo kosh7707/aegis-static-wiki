@@ -292,6 +292,8 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
 | `scripts/.logs/llm-gateway.log` | 프로세스 stdout/stderr 캡처 (`start.sh` 기동 시) | -- |
 
 - `llm-exchange.jsonl`은 디버깅/프롬프트 분석용. 한 줄 = 한 LLM 호출
+- 2026-04-27 기준 `/v1/tasks`의 `RealLlmClient` 경로뿐 아니라 `/v1/chat` 및 `/v1/async-chat-requests` 경로도 `request`와 `response` 필드를 `llm-exchange.jsonl`에 기록한다. 즉 S3 chat/async 호출도 requestId로 프롬프트 전문과 LLM 응답 전문을 추적할 수 있어야 한다.
+- Gateway가 직접 생성하는 `/v1/chat` 및 async ownership 오류 응답은 공통 observability envelope(`success=false`, `error`, `retryable`, `errorDetail.code/message/requestId/retryable`)를 포함한다. 하위 vLLM backend의 원본 HTTP 오류 pass-through는 별도 backend payload 호환성을 우선할 수 있다.
 - 로그 정리: `scripts/common/reset-logs.sh` (S2 관리)
 
 ---
@@ -336,9 +338,9 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
 - strict mode일 때 Gateway가 `response_format={"type":"json_object"}`와 `chat_template_kwargs.enable_thinking=false`를 강제로 주입
 - 성공 응답에서는 `choices[0].message.content`가 JSON object 문자열인지 검증하고 compact JSON으로 정규화
 - backend가 `message.reasoning`을 포함해도 strict mode 응답에서는 `null`로 scrub
-- strict mode 계약 불만족 시 backend 200을 그대로 반환하지 않고 **502**로 명확히 실패
-- async ownership request에서 strict mode 계약 불만족 시 `completed`로 저장하지 않고 `failed` terminal state + `blockedReason=strict_json_contract_violation` + `errorDetail` + `retryable=true`를 status/result 응답에 남긴다
-- 2026-04-14 검증 시 repo/in-process 경로는 green이었고, 이미 떠 있는 localhost runtime은 재시작 전 코드로 보이는 stale behavior가 남아 있어 rollout restart가 필요
+- strict mode 계약 불만족 시 backend 200을 그대로 반환하지 않고 **502**로 명확히 실패하며, 공통 error envelope의 `errorDetail.code=LLM_PARSE_ERROR`로 노출한다.
+- async ownership request에서 strict mode 계약 불만족 시 `completed`로 저장하지 않고 `failed` terminal state + `blockedReason=strict_json_contract_violation` + structured `errorDetail` + `retryable=true`를 status/result 응답에 남긴다.
+- 2026-04-27 repo/in-process 회귀: `services/llm-gateway` 전체 pytest 238개 통과. `/v1/chat` 및 async exchange full request/response logging, generated/preserved `X-Request-Id` headers, structured Gateway error envelope를 contract test로 고정했다.
 
 ## Thinking 모드 제어
 

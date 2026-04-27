@@ -107,7 +107,7 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 
 | 파일 | 상태 |
 |---|---|
-| `tokens.css` | **drift (의도적, S1 lane-local 결정)** — `--font-mono` 매핑이 canonical 의 `'Geist Mono Variable'` ramp 대신 **Paperlogy-unified** (`'Paperlogy', 'Pretendard Variable', ..., sans-serif`). 추가 `--font-code` (실사용 0). `.mono { font-feature-settings: 'zero', 'ss01' }` 대신 `font-variant-numeric: tabular-nums`. 사유: `@fontsource-variable/geist-mono` 미설치 + 한국어 ↔ 데이터 시각 톤 통일. lane-local 정식 채택 — DESIGN.md §1·§4 권위와 본 sync table 사이 충돌은 본 row 기재로 명시 추적, 추후 디자이너 측 갱신 동기화 시 정합 |
+| `tokens.css` | **drift (의도적, S1 lane-local 결정)** — `--font-mono` 매핑이 canonical 의 `'Geist Mono Variable'` ramp 대신 **Paperlogy-unified** (`'Paperlogy', 'Pretendard Variable', ..., sans-serif`). 추가 `--font-code` (ASCII monospace ramp — `ui-monospace, 'SF Mono', ..., monospace`. **2026-04-27 deslop cycle 재확인**: production CSS 32 usage 실재 (정의 2건 별도) — handoff/components/status.css, handoff/app-shell.css, OverviewPage/StaticAnalysisPage page CSS, FindingList/FindingShared. 이전 "실사용 0" 기재 부정확). `.mono { font-feature-settings: 'zero', 'ss01' }` 대신 `font-variant-numeric: tabular-nums`. 사유: `@fontsource-variable/geist-mono` 미설치 + 한국어 ↔ 데이터 시각 톤 통일. lane-local 정식 채택 — DESIGN.md §1·§4 권위와 본 sync table 사이 충돌은 본 row 기재로 명시 추적, 추후 디자이너 측 갱신 동기화 시 정합 |
 | `base.css` | 바이트 동일 |
 | `auth-console.css` | **drift (의도적, S1 self-publish)** — SPA full-viewport 적응으로 `height: 100vh`, `overflow: hidden`, `min-height: 0`, `.form-panel { justify-content: flex-start }` (canonical은 `center`), `.form-wrap.wide { margin-block: auto }` 추가. 사유: SPA shell 안에서 form pane이 viewport 안에 안정적으로 들어가도록. canonical mock은 standalone HTML이라 viewport 가정이 다름 |
 | `components/*.css` (canonical 11) | 전부 바이트 동일 — button/input/panel/pill/seg/toggle/severity/lang-tag/divider/choreography/nav |
@@ -123,6 +123,36 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 신규 drift 발견 시 이 표를 갱신하고 원본 자산과의 관계를 명시한다.
 
 ## 6. Cycle 별 산출물 요약
+
+### 2026-04-27 cycle 2 (autopilot deslop — DynamicAnalysisPage badge token migration + type slop + dead fallback + auth status row 통합 + §2.2 정식 등록)
+- **DynamicAnalysisPage 비-console 영역 hex 5종 → canonical 토큰 마이그레이션** (handoff §2.1 review-tone palette 정합):
+  - `.monitoring-connection-badge--connected` / `.monitoring-injection-badge--normal` / `.dynamic-status-badge--monitoring` (`#10b981` family) → `var(--success)`
+  - `.monitoring-injection-badge--crash` (`#ef4444` family) → `var(--danger)`
+  - `.monitoring-injection-badge--anomaly` (`#f59e0b` family) → `var(--warning)`
+  - `.monitoring-injection-badge--timeout` (`#0ea5e9` family) → `var(--primary)`
+  - `.dark .monitoring-*` / `.dark .dynamic-status-badge--monitoring` 별도 override 6개 제거 (canonical 토큰은 theme-aware)
+  - 보존 영역: line 165+ console aesthetic 의 `--console-fg/-bg/-bg-hi/-green/-amber/-red/-red-soft` page-local 토큰 (handoff §8.3 lane-local 정식 채택, 이번 cycle 변경 없음)
+- **AI slop 정리**:
+  - `var(--warning, var(--info))` defensive fallback 2 위치 (`OverviewPage.css:151` `.overview-identity__stat--warn`, `StaticAnalysisPage.css:17` `.static-dashboard-identity__stat--warn`) → `var(--warning)` 단순화 (canonical token이라 fallback 무의미, dead defensive code)
+  - `StaticAnalysisPage.css:285` raw `oklch(0.62 0.14 150 / 0.3)` → `color-mix(in srgb, var(--success) 30%, transparent)` (oklch 직접 사용 금지 정책 정합)
+  - `as any` ConnectionStatusBanner cast 2 위치 (`DynamicAnalysisHistoryView:149`, `DynamicTestHistoryView:158`) → 제거. props 타입을 `string` → `ConnectionState` 로 narrow + hooks chain (`useDynamicAnalysisPage:128`, `useDynamicTestPage:18`) 동반 정합
+  - `loginStatusRows` const 3 위치 동일 복제 (LoginPage / ForgotPasswordPage / ResetPasswordPage) → `AUTH_CONSOLE_STATUS_ROWS` 로 `shared/auth/AuthConsoleShell.tsx` export, 3 페이지 모두 import 로 전환
+- **handoff §2.2 narrow whitelist 정식 확장** (이전 cycle 미등록 selector 형식화):
+  - **Severity-bound finding tags (sev-chip family)**: `.report-sev-tag.{--critical,--high,--medium,--low}` (+ `::before`), `.hist-sev-summary__val.{--critical,--high,--medium,--low}` — `.sev-chip` 의 page-local 동등 vocabulary
+  - **Gate verdict block (gate context family)**: `.hero-verdict--blocked` 의 `__bar`/`__icon`/`__title` (`--severity-critical`), `.hero-verdict--caution` 의 동일 3 selectors (`--severity-high`) — `.gate.{blocked,warn}` 의 page-local 동등 vocabulary. `--ok`/`--running` 은 review-tone (`--success`/`--primary`) 사용
+  - 사유: 이전 cycle 의 lint grep "leak 0건" 클레임이 위 selector 들을 누락. 형식화로 narrow whitelist 명시
+- **API 계약 정합 감사** (autopilot Phase 2.3): 14 frontend api 파일 × 50+ endpoint 전수 점검 — wiki/canon/api/* 및 `@aegis/shared` 와 **0 mismatch**. S2-WR 발행 불필요
+- **critic verdict (fresh context)**: APPROVE. MINOR 4건 (모두 documentation precision, blocking 0):
+  - `constants/languages.ts` 의 inline color 사용처는 2 위치 (`useFilesPage.tsx:220`, `FileDetailHeader.tsx:21,57`) — 이전 "단 1 위치" 기재가 undercount. keep 결정 자체는 유지 (GitHub linguist semantic data)
+  - `--cds-*` legacy token 25 usage (page CSS, compat layer 경유) 잔재. 이번 cycle out-of-scope, 다음 cycle 검토 대상
+  - `FileDetailHeader.tsx:21` 의 `"var(--cds-text-placeholder)"` fallback — 사전 존재 legacy, 별도 정합 cycle 대상
+  - `--font-code` usage count "14+" → 정확히 32 usage (정의 2 별도). 본 cycle 의 sync table row 정정 완료
+- **WS 정밀 감사 (사용자 follow-up 요청)**: 7 채널 × path/query/message-type/envelope/seq/heartbeat/reconnect 전수 점검 — `shared-models.md` §4 와 0 mismatch. 단 1건 MINOR 식별 → 본 cycle 안에서 해결:
+  - `utils/wsEnvelope.ts:167` `createReconnectingWs.onclose` 가 모든 close 를 동일 reconnect 시도 → close code `4000` (S2 missing subscription key, `shared-models.md` §4.5) 시 retry 중단 + `setState("failed")` + `onGiveUp` 호출 분기 추가
+  - 신규 단위 테스트 2건 (`utils/wsEnvelope.test.ts` `describe("createReconnectingWs close code handling")`): 4000 시 no-retry + onGiveUp / 1006 transient 시 reconnect 진행. MockWebSocket harness 추가
+  - 회귀 검증: 693 PASS / 109 files (이전 691/108 + 신규 2 tests). 첫 시도에서 8 wsReconnect + 2 hook tests 가 `event.code` 접근 throw 로 깨짐 → defensive `event?.code` (optional chaining) 으로 수정 (기존 mock `onclose: () => void` signature 호환), 모두 복구
+  - **critic verdict (fresh context)**: APPROVE. backend `ws-broadcaster.ts` 가 4000 만 사용하고 1000/1006 등은 retry 진행이 의도된 동작임을 확인. MINOR 3건 (handoff 파일카운트 trivia / mock signature 불일치 / 코드 주석 §4.5 ref → shared broadcaster 로 정정 — 본 cycle 내 정정 완료)
+- **검증**: 691 frontend tests PASS / 108 files (baseline 유지) · typecheck PASS · production CSS lint grep clean (hex 0 outside DynamicAnalysisPage console / oklch 0 outside handoff·index.css / drift token 0 / Pretendard 직접 0 / severity ramp leak now §2.2 갱신 화이트리스트 안에)
 
 ### 2026-04-27 cycle (drift 점검 + review-tone 정합 + lane-local 결정 채택)
 - **점검 결과 식별**:

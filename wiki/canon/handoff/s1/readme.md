@@ -127,6 +127,22 @@ action-icon 옆의 텍스트 라벨 ("GATE OVERRIDE" / "ACCEPTED RISK") — seve
 
 - `.appr-row.k-override .appr-eyebrow .lab` / `.appr-row.k-risk .appr-eyebrow .lab`
 
+#### Severity-bound finding tags (sev-chip family, 2026-04-27 정식 등록)
+
+`.sev-chip.*` 의 page-local 동등 vocabulary — finding/vulnerability 의 severity 직접 표시:
+
+- `.report-sev-tag.{--critical,--high,--medium,--low}` (+ `::before` dot) — ReportPage findings table tag
+- `.hist-sev-summary__val.{--critical,--high,--medium,--low}` — AnalysisHistoryPage 의 severity 카운트 (severity-bound numerals 의 chip 형태)
+
+#### Gate verdict block (gate context family, 2026-04-27 정식 등록)
+
+`.gate.{blocked,warn,...}` 의 page-local 동등 vocabulary — Gate 평가 verdict 의 severity-mapped 시각 신호:
+
+- `.hero-verdict--blocked` 의 `__bar`, `__icon`, `__title` — `--severity-critical` (gate fail 신호)
+- `.hero-verdict--caution` 의 `__bar`, `__icon`, `__title` — `--severity-high` (gate warning 신호)
+
+(`.hero-verdict--ok` / `.hero-verdict--running` 은 review-tone canonical 토큰 사용 — `--success` / `--primary`.)
+
 #### 추가 시 의무
 
 위 항목 외 모든 status/outcome/state UI 는 §2.1 review-tone palette 사용. 추가 예외 도입 시 **본 §2.2 갱신 PR 동반 의무** — broad permission 금지, narrow specific selector 만.

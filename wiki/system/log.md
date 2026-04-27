@@ -2173,3 +2173,35 @@ related_pages:
 ## [2026-04-27] mcp | register_wr | s1-to-designer-dynamicanalysispage-terminal-aesthetic---console-fg--bg--bg-hi--green--amber--re
 - Registered request WR for designer
 - Path: wiki/canon/work-requests/s1-to-designer-dynamicanalysispage-terminal-aesthetic---console-fg--bg--bg-hi--green--amber--re.md
+
+## [2026-04-27] mcp | complete_wr | s4-to-s3-reply-s4-confirms-sast-build-health-and-failure-boundary-rules-for-s3-stability-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] mcp | complete_wr | s4-to-s3-reply-s4-notice-specific-acknowledgement-for-s3-system-stability-contract
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] mcp | complete_wr | s5-to-s3-reply-s5-kb-graphrag-readiness-and-evidence-role-semantics-for-s3-system-stabili
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] mcp | complete_wr | s7-to-s3-s7-reply-system-stability-async-timeout-strict-json-failure-boundary-contract-co
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] completed | S3 WR inbox cleanup
+- Completed recipient-side handling for four stale S3 inbound replies: two S4 system-stability confirmations, one S5 KB/GraphRAG readiness reply, and one S7 async/strict-JSON boundary reply.
+- Rechecked S3 inbox after completion: no open S3 WRs remain.
+
+## [2026-04-27] Updated S7 implementation and handoff docs to align chat/async LLM exchange logging and Gateway error/requestId contracts. | S7 llm exchange audit contract correction
+- services/llm-gateway/app/routers/tasks.py now logs full request and response payloads for /v1/chat and /v1/async-chat-requests into llm-exchange.jsonl.
+- Gateway-originated chat/async errors now use the structured observability error envelope while preserving top-level compatibility fields.
+- GET/control endpoints now preserve or generate X-Request-Id response headers.
+- Verified with services/llm-gateway pytest: 238 passed.
+- Updated wiki/canon/handoff/s7/architecture.md Observability notes.
+
+## [2026-04-27] Consensus-approved S3 paper remediation plan created | s3-paper-remediation-ralplan
+- Generated `.omx/plans/prd-s3-paper-remediation-complete-20260427.md` and companion test spec from the complete OMC artifact set.
+- Architect and Critic final reviews approved after iterations on WP-0a wiki-first gate, Option A public claim-status surface, and expanded test matrix.
+- Session evidence recorded at `wiki/canon/handoff/s3/session-s3-paper-remediation-ralplan-20260427.md`.

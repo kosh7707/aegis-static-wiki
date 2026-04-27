@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s7-to-s3-s7-reply-system-stability-async-timeout-strict-json-failure-boundary-contract-co"
-last_verified: "2026-04-25"
+last_verified: "2026-04-27"
 service_tags: ["s7", "llm-gateway", "llm-engine", "strict-json", "async-ownership"]
 decision_tags: ["system-stability", "api-contract", "timeout", "async-ownership", "strict-json", "output-deficiency"]
 related_pages: ["wiki/canon/work-requests/s3-to-s4-s5-s7-s3-system-stability-contract-implemented-dependency-readiness-failure-boundary-f.md", "wiki/canon/work-requests/s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/specs/llm-gateway.md", "wiki/canon/specs/llm-engine.md"]
 migration_status: "canonicalized"
 wr_id: "s7-to-s3-s7-reply-system-stability-async-timeout-strict-json-failure-boundary-contract-co"
 wr_kind: "reply"
-status: "open"
+status: "completed"
 from_lane: "s7"
 to_lanes: ["s3"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-04-27T05:45:50.128Z","note":"S3 consumed S7's async/timeout/strict-JSON failure-boundary reply. S3's service-local LlmCaller and handlers preserve async ownership semantics, strict JSON output deficiencies are recovery/outcome material when an honest envelope can be assembled, and true S7 dependency/runtime failure remains task-level failure. No further S7 action needed."}]
 registered_at: "2026-04-25T09:08:04.076Z"
+completed_at: "2026-04-27T05:45:50.128Z"
 ---
 
 # S7 reply — system-stability async/timeout/strict-JSON failure-boundary contract confirmed
