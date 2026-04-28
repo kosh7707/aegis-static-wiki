@@ -98,8 +98,8 @@ Conceptual internal shape:
 | `accepted` | `pocOutcome=poc_accepted` | PoC is claim-bound, non-destructive, and quality-valid. |
 | `accepted_with_caveats` | `pocOutcome=poc_accepted`, `qualityOutcome=accepted_with_caveats` | PoC is acceptable but assumptions must be visible; this is completed but not strict clean pass. |
 | `repairable` | return to PoC repair | Failed items can be repaired. |
-| `rejected` | `pocOutcome=poc_rejected` | PoC cannot satisfy quality/safety after recovery. |
-| `inconclusive` | `pocOutcome=poc_inconclusive` | PoC cannot be produced honestly with available context. |
+| `rejected` | `pocOutcome=poc_rejected` | PoC is immediately unsafe, hallucinated-ref, or grounding-deficient. |
+| `inconclusive` | `pocOutcome=poc_inconclusive`, optionally `qualityOutcome=repair_exhausted` | PoC cannot be produced honestly with available context, including bounded quality-repair exhaustion. |
 
 ---
 
@@ -142,7 +142,7 @@ clean deep pass = completed + analysisOutcome=accepted_claims + qualityOutcome=a
 clean PoC pass = completed + pocOutcome=poc_accepted + qualityOutcome=accepted
 ```
 
-A completed `no_accepted_claims`, `inconclusive`, `accepted_with_caveats`, or `poc_rejected` response is task success but not strict clean pass unless a named non-strict policy explicitly counts it.
+A completed `no_accepted_claims`, `inconclusive`, `accepted_with_caveats`, `poc_rejected`, or `poc_inconclusive` response is task success but not strict clean pass unless a named non-strict policy explicitly counts it.
 
 ---
 

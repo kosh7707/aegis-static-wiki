@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-23"
+last_verified: "2026-04-28"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -191,7 +191,7 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 | AEGIS_LLM_MAX_RETRIES | `2` | LLM 출력 품질 재시도 횟수 (총 시도 = 1 + max_retries) |
 | AEGIS_CIRCUIT_BREAKER_THRESHOLD | `3` | 연속 실패 횟수 -> Circuit Breaker OPEN |
 | AEGIS_CIRCUIT_BREAKER_RECOVERY_SECONDS | `30` | OPEN -> HALF_OPEN 전환 대기 시간(초) |
-| AEGIS_RAG_ENABLED | `true` | RAG 위협 지식 DB |
+| AEGIS_RAG_ENABLED | `true` by normal integration; 2026-04-28 MTP benchmarks used `false` to isolate backend behavior | RAG 위협 지식 DB |
 | AEGIS_KB_ENDPOINT | `http://localhost:8002` | S5 Knowledge Base 엔드포인트 |
 | AEGIS_RAG_TOP_K | `5` | RAG 검색 결과 상위 k건 |
 | AEGIS_RAG_MIN_SCORE | `0.35` | 이 점수 미만의 RAG 결과 제외 |
@@ -211,9 +211,9 @@ confidence = 0.45 * grounding + 0.30 * deterministicSupport + 0.15 * ragCoverage
 
 ---
 
-## Qwen3.6-27B vLLM Engine recipe (verified 2026-04-25)
+## Qwen3.6-27B vLLM Engine recipe (verified 2026-04-28)
 
-S7 Gateway는 OpenAI-compatible `/v1/chat/completions` backend만 요구한다. 현재 DGX Spark live backend는 `Qwen/Qwen3.6-27B` 원본 dense checkpoint를 vLLM 0.19.1로 서빙한다.
+S7 Gateway는 OpenAI-compatible `/v1/chat/completions` backend만 요구한다. 현재 DGX Spark live backend는 `Qwen/Qwen3.6-27B` 원본 dense checkpoint를 vLLM 0.20.0로 서빙한다.
 
 현재 live command evidence:
 
@@ -227,6 +227,7 @@ vllm serve Qwen/Qwen3.6-27B \
   --enable-auto-tool-choice \
   --tool-call-parser qwen3_coder \
   --reasoning-parser qwen3 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
   --language-model-only \
   -tp 1
 ```
@@ -273,6 +274,33 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
 5. `cd services/llm-gateway && .venv/bin/python3 -m pytest -q`와 legacy `services/llm-gateway/scripts/integration-test-static.sh`로 회귀를 확인한다.
 
 ---
+
+
+## Qwen3.6-27B vLLM 0.20.0 + MTP=1 serving notes (verified 2026-04-28)
+
+S7 Gateway still targets a single OpenAI-compatible backend, but the live DGX backend is now the restored HF-fresh vLLM image with MTP enabled.
+
+| 항목 | 값 |
+|------|----|
+| Engine URL | `http://10.126.37.19:8000` |
+| Container/image | `vllm_node` / `qwen36-vllm:hf-fresh` |
+| vLLM | `0.20.0` (`/opt/vllm-official/bin/vllm`) |
+| Model | `Qwen/Qwen3.6-27B` original dense |
+| Recipe | `/home/accslab/spark-vllm-docker/recipes/qwen3.6-27b-origin.yaml` |
+| Context | `131072` |
+| MTP | `--speculative-config {"method":"mtp","num_speculative_tokens":1}` |
+| Tool calling | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
+| Reasoning parser | `--reasoning-parser qwen3` |
+
+Gateway-facing behavior is unchanged: `/v1/chat` remains OpenAI-compatible pass-through unless strict JSON is requested; strict JSON continues to force `response_format=json_object` and `enable_thinking=false`; tool calls remain `message.tool_calls[]` with JSON-string `function.arguments`. vLLM currently warns that `min_p` and `logit_bias` do not work with speculative decoding, so S7 callers should avoid relying on those fields while MTP is enabled.
+
+Verification artifacts:
+
+- `services/llm-gateway/bench/mtp_gateway_ab.py` — strict A/B harness using bubblewrap for generated-code validation.
+- `services/llm-gateway/bench/results/mtp-ab-qwen36-27b-strict-20260428T034632Z/s7-qwen36-mtp-benchmark-report.md` — no-MTP 7.638 tok/s vs MTP=1 15.132 tok/s aggregate.
+- `services/llm-gateway/bench/results/bfcl-v4-gateway-smoke-qwen36-27b-20260428T030647Z/` and `...033026Z/` — BFCL smoke 24/25 before/after MTP.
+- DGX runbook: `/home/accslab/spark-vllm-docker/docs/QWEN36_VLLM_RUNBOOK_20260428.md`.
+
 
 ## Observability
 

@@ -64,7 +64,8 @@ This table reflects the outcome/quality separation. It deliberately routes S3-ow
 | no claim can be accepted honestly | `analysisOutcome=no_accepted_claims` | `completed` |
 | evidence/tool partiality prevents conclusion | `analysisOutcome=inconclusive` | `completed` |
 | PoC accepted | `pocOutcome=poc_accepted` | `completed` |
-| PoC cannot satisfy quality/safety | `pocOutcome=poc_rejected` | `completed` |
+| PoC immediate unsafe/ref/grounding failure | `pocOutcome=poc_rejected` | `completed` |
+| PoC bounded quality-repair exhaustion / cannot conclude honestly | `pocOutcome=poc_inconclusive` | `completed` |
 
 ---
 

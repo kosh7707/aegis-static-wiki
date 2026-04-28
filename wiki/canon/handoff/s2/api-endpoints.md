@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-25"
+last_verified: "2026-04-27"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -30,8 +30,8 @@ migration_status: "canonicalized"
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | GET | `/health` | 헬스체크 (`?requestId=` optional). LLM Gateway, S3 Agent, S4 SAST Runner, S5 KB, Build Agent, Adapter 상태를 집계하고, downstream `requestSummary`가 있으면 normalized `control.pollDecision`을 함께 반환 |
-| POST | `/api/projects` | 프로젝트 생성 |
-| GET | `/api/projects` | 프로젝트 목록 |
+| POST | `/api/projects` | 프로젝트 생성. 인증된 요청이면 생성자 프로필을 `owner`로 저장 |
+| GET | `/api/projects` | 프로젝트 목록. `ProjectListItem.owner?` 포함 가능(미보유/migrated row는 omit) |
 | GET | `/api/projects/:id` | 프로젝트 상세 |
 | PUT | `/api/projects/:id` | 프로젝트 수정 (`name`이 공백만 오면 `400`) |
 | DELETE | `/api/projects/:id` | 프로젝트 삭제 (`409` blocker / uploads quarantine / DB delete / DB 실패 시 restore) |
@@ -40,6 +40,13 @@ migration_status: "canonicalized"
 | GET | `/api/files/:fileId/content` | 파일 내용 조회 |
 | GET | `/api/files/:fileId/download` | 파일 다운로드 |
 | DELETE | `/api/projects/:projectId/files/:fileId` | 프로젝트 파일 삭제 |
+
+프로젝트 owner 메모 (2026-04-27):
+
+- `ProjectListItem.owner?: ProjectOwnerSummary`가 추가됐다. `id`, `name`, `avatar?`, `kind?`를 포함한다.
+- `POST /api/projects`는 `req.user`가 있는 경우 해당 사용자 프로필을 프로젝트 owner로 저장한다.
+- 기존/migrated 프로젝트나 soft-auth unauthenticated 생성처럼 S2가 생성자 정보를 보유하지 못한 경우 `owner`를 omit한다.
+- owner 변경, multi-owner, 이미지 avatar URL은 현 cycle 범위 밖이다.
 
 프로젝트 CRUD 메모 (2026-04-09):
 
@@ -126,6 +133,7 @@ Auth v1 메모 (2026-04-20):
 - registration approve/reject/lookup returns the full `RegistrationRequest` shape with populated `organizationCode` / `organizationName`.
 - BuildTarget Quick preflight uses canonical `BuildTarget.sdkChoiceState`; `sdk-unresolved` means Quick must be disabled until SDK choice is explicit.
 - For S4 native/custom scans, S2 strips local `buildProfile.sdkId: "custom"` before calling S4; native scans omit `sdkId`.
+- S3 `/v1/tasks` `status=completed` means the Analysis Agent returned a valid review envelope, not necessarily a clean Deep pass. S2 preserves additive `claimDiagnostics` / `evidenceDiagnostics`; `claims[]` remains accepted-final-only.
 - S3 `/v1/tasks` `status=completed` means the Analysis Agent returned a valid review envelope, not necessarily a clean Deep pass. S2 persists `analysisOutcome` / `qualityOutcome` / `pocOutcome` / `recoveryTrace`; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Non-clean but valid-input outcomes remain completed results with review/warning signals, while true task failures may return non-2xx and preserve `failureCode` / `failureDetail`.
 - rate limits:
   - org verify `10/min/IP`

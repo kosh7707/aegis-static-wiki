@@ -40,7 +40,7 @@ Task-level failure is reserved for invalid input, unsafe/out-of-authority reques
 | `REFS_DEFICIENT` | hallucinated refs, wrong-role refs, knowledge refs in final refs | explicit audited ref repair; correlated local ref recomputation; evidence acquisition | completed with no accepted claim / inconclusive |
 | `GROUNDING_DEFICIENT` | missing local slots | targeted S4/S5/code/source/build acquisition; clean retry | completed with `analysisOutcome=no_accepted_claims` or `inconclusive` |
 | `QUALITY_DEFICIENT` | failed quality rubric | failed-item repair actions; bounded LLM repair; evidence acquisition if needed | completed with rejected/inconclusive quality outcome |
-| `POC_DEFICIENT` | PoC schema/ref/quality/safety issue | PoC schema repair; PoC quality repair; claim rebinding | completed with `pocOutcome=poc_rejected` |
+| `POC_DEFICIENT` | PoC schema/ref/quality/safety issue | PoC schema repair; PoC quality repair; claim rebinding | completed with `pocOutcome=poc_inconclusive` for bounded quality-repair exhaustion, or `pocOutcome=poc_rejected` for immediate unsafe/ref/grounding-deficient output |
 | `LLM_OUTPUT_DEFICIENT` | non-JSON, malformed finalizer output, instruction drift | structured retry; strict finalizer; clean S3 retry | completed with inconclusive outcome if valid envelope can be assembled |
 | `ALL_CANDIDATE_CLAIMS_REJECTED` | canonicalization rejects all claims | clean retry; optional evidence acquisition; outcome classification | completed with `analysisOutcome=no_accepted_claims` |
 | `PARTIAL_EVIDENCE` | S4/S5 partial/timeout/readiness caveat but runtime can continue | alternative acquisition; caveat; quality classification | completed with `analysisOutcome=inconclusive` if no claim can be accepted |
@@ -113,7 +113,8 @@ Recovery exhaustion is not automatically task failure. It should be classified l
 | no claim can be locally grounded | `analysisOutcome=no_accepted_claims` |
 | evidence/tool partiality prevents a confident claim | `analysisOutcome=inconclusive` |
 | quality repair exhausted for claims | `qualityOutcome=rejected` or `qualityOutcome=repair_exhausted` |
-| PoC cannot satisfy safety/quality | `pocOutcome=poc_rejected` |
+| PoC quality repair exhausts without a safe conclusion | `pocOutcome=poc_inconclusive`, `qualityOutcome=repair_exhausted` |
+| PoC is immediately unsafe, hallucinated-ref, or grounding-deficient | `pocOutcome=poc_rejected` |
 | final envelope cannot be assembled at all | task-level `INTERNAL_ERROR` |
 | runtime/dependency unavailable before any result can be built | task-level unavailable/timeout failure |
 

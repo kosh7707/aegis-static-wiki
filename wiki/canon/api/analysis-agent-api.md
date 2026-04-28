@@ -6,10 +6,15 @@ source_refs:
   - "docs/api/analysis-agent-api.md"
   - ".omx/plans/prd-s3-fail-never-state-machine-20260424.md"
   - ".omx/plans/prd-s3-system-stability-overhaul-20260425.md"
-last_verified: "2026-04-25"
-service_tags: ["s3", "analysis-agent", "api-contract"]
-decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass"]
-related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md"]
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-paper-remediation-complete-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-post-ralplan-followup-defects-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-post-ralplan-followup-defects-20260427.md"
+  - "mcp://aegis-static-wiki.write_page"
+last_verified: "2026-04-28"
+service_tags: ["s3", "analysis-agent", "api-contract", "s2"]
+decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1"]
+related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"]
 ---
 
 # Analysis Agent API 명세
@@ -17,7 +22,7 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3  
 > **포트**: 8001  
 > **호출자**: S2  
-> **최종 업데이트**: 2026-04-25  
+> **최종 업데이트**: 2026-04-28
 > **계약 방향**: S3 claim-evidence state-machine `agent-v1.1` additive response schema contract.
 
 Analysis Agent의 public contract 문서다. 2026-04-24부터 S3는 `completed`와 clean security pass를 분리한다. `completed`는 **schema-valid honest review result envelope**를 뜻하며, accepted claim / accepted PoC / clean hot-gate pass를 뜻하지 않는다.
@@ -182,12 +187,25 @@ Consumer 규칙:
 | grounded accepted claims exist | `analysisOutcome=accepted_claims`, `qualityOutcome=accepted` or caveated | `completed` |
 | no claim can be accepted honestly | `analysisOutcome=no_accepted_claims` | `completed` |
 | partial evidence/tool limits prevent conclusion | `analysisOutcome=inconclusive` | `completed` |
-| quality repair exhausted | `qualityOutcome=repair_exhausted` or `rejected` | `completed` |
+| quality repair exhausted | `qualityOutcome=repair_exhausted`; for `generate-poc`, exhausted quality repair uses `pocOutcome=poc_inconclusive` | `completed` |
 | PoC accepted | `pocOutcome=poc_accepted` | `completed` |
 | PoC rejected or inconclusive for valid PoC request/runtime | `pocOutcome=poc_rejected` or `poc_inconclusive` | `completed` |
 
 Clean deep pass = `completed + analysisOutcome=accepted_claims + qualityOutcome=accepted + cleanPass=true`.  
 Clean PoC pass = `completed + pocOutcome=poc_accepted + qualityOutcome=accepted + cleanPass=true`.
+
+### 2026-04-28 PoC quality exhaustion refinement
+
+For valid `generate-poc` requests where S3 performs bounded quality repair but exhausts the configured quality-repair cap or request-scoped repair budget, the completed envelope uses:
+
+```text
+qualityOutcome = repair_exhausted
+pocOutcome = poc_inconclusive
+recoveryTrace.action = poc_quality_repair_exhausted
+cleanPass = false
+```
+
+This distinguishes “S3 tried to produce a safe, claim-bound PoC but could not conclude” from ordinary `poc_rejected` cases. Immediate unsafe, hallucinated-ref, or grounding-deficient PoC outputs remain `poc_rejected`. This is a result-semantic refinement only; `/v1/tasks` top-level response shape and `completed` survival semantics are unchanged.
 
 ---
 
@@ -247,3 +265,62 @@ This contract supersedes the 2026-04-21 terminal-output-failure wording for vali
 ## 2026-04-25 `agent-v1.1` deadline note
 
 `constraints.timeoutMs` remains advisory by default. It shapes downstream/tool budgets and timeout hints but is not reinterpreted as a hard caller abort. Enforced S3 assembly/async-poll deadlines are S3-owned service configuration. If callers need a hard public deadline, S3 must introduce an explicit opt-in field/header such as `constraints.hardDeadlineMs` or `X-AEGIS-Hard-Deadline-Ms` through a separate contract notice.
+
+<!-- S3-WP0A-20260427:START -->
+## 2026-04-27 WP-0a/WP-1 public claim lifecycle contract gate
+
+This section is the canonical pre-code/public-contract gate for the S3 paper-remediation implementation plan. WP-1 refined the exact bounded diagnostic shape while preserving the WP-0a placement rule.
+
+### Accepted-only final claim surface
+
+```text
+result.claims[] = accepted final claims only
+```
+
+`result.claims[]` MUST NOT contain raw `candidate`, `under_evidenced`, `rejected`, or other non-accepted lifecycle candidates. A claim may appear in `result.claims[]` only after schema, ref, required-evidence, grounding, and quality-gate acceptance invariants hold.
+
+Accepted final claims expose the legacy four fields plus additive lifecycle fields:
+
+- legacy: `statement`, `detail`, `supportingEvidenceRefs`, `location`;
+- additive: `claimId`, `status`, `requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, `queryHistory`, `revisionHistory`.
+
+Public `status` values inside `result.claims[]` are restricted to accepted/caveated final states such as `grounded` or an explicitly accepted `needs_human_review`; non-final `candidate`, `under_evidenced`, and `rejected` stay out of this array.
+
+### Non-accepted lifecycle diagnostic surface
+
+S3 exposes non-accepted lifecycle information through bounded `result.claimDiagnostics` and detailed audit/recovery records, not through final accepted claims. Current additive shape:
+
+```json
+{
+  "claimDiagnostics": {
+    "lifecycleCounts": { "under_evidenced": 1 },
+    "nonAcceptedClaims": [
+      {
+        "claimId": "claim-0",
+        "status": "under_evidenced",
+        "family": "command_injection",
+        "primaryLocation": "src/main.c:42",
+        "missingEvidence": ["local_or_derived_support", "source_location", "sink_or_dangerous_api", "caller_chain_or_source_slice"],
+        "invalidRefs": [],
+        "supportingEvidenceRefs": ["eref-knowledge-CWE-78"],
+        "outcomeContribution": "no_accepted_claims"
+      }
+    ]
+  }
+}
+```
+
+`result.claimDiagnostics.nonAcceptedClaims[]` is bounded for frontend/developer consumption. Full attempt history, raw rejected narratives, and verbose tool records remain in audit/debug artifacts.
+
+### Evidence diagnostics and completed-vs-clean interpretation
+
+`result.evidenceDiagnostics` may include `negativeAttempts[]` / `attemptedAcquisitions[]`. Negative, operational, knowledge-only, and rejected records do not become claim-support refs.
+
+Consumer interpretation remains:
+
+- `HTTP 200 + status="completed"` means S3 returned a schema-valid honest review envelope.
+- Clean/security success must be read from `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `cleanPass`, final accepted `claims[]`, `claimDiagnostics`, and `evidenceDiagnostics`.
+- Valid input + live required services + no accepted claims is `completed` with `analysisOutcome="no_accepted_claims"` or `analysisOutcome="inconclusive"`, not a task-level `INVALID_SCHEMA` / `LLM_BUSY` failure.
+
+This remains notify-style canonical: S3 may implement the additive contract immediately after notifying S2; S2 approval wait is not required for S3-owned contract changes.
+<!-- S3-WP0A-20260427:END -->

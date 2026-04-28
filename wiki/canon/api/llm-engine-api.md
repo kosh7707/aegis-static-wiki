@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-engine-api.md"
 original_path: "docs/api/llm-engine-api.md"
-last_verified: "2026-04-09"
+last_verified: "2026-04-28"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -30,6 +30,23 @@ S7 환경변수 `AEGIS_LLM_ENDPOINT`로 변경 가능.
 
 **주의**: S7 Gateway(WSL2)와 LLM Engine(DGX Spark)는 서로 다른 머신이므로 `localhost`가 아닌 DGX Spark IP를 사용한다.
 
+
+
+## Current deployment notes (verified 2026-04-28)
+
+| 항목 | 값 |
+|------|----|
+| Served model | `Qwen/Qwen3.6-27B` |
+| Engine URL | `http://10.126.37.19:8000` |
+| vLLM/image | `0.20.0` / `qwen36-vllm:hf-fresh` |
+| Context | `max_model_len=131072` |
+| Tool parser | `qwen3_coder` |
+| Reasoning parser | `qwen3` |
+| Speculative decoding | MTP enabled: `{"method":"mtp","num_speculative_tokens":1}` |
+
+MTP is transparent to the OpenAI-compatible API contract. It does not change request/response schema, `message.tool_calls[]`, `function.arguments` JSON-string semantics, or Gateway strict JSON behavior. Current vLLM warns that `min_p` and `logit_bias` do not work with speculative decoding; avoid depending on those parameters while MTP is enabled.
+
+
 ---
 
 ## POST /v1/chat/completions
@@ -40,7 +57,7 @@ LLM 추론 요청. OpenAI-compatible 형식.
 
 ```json
 {
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "messages": [
     {
       "role": "system",
@@ -61,7 +78,7 @@ LLM 추론 요청. OpenAI-compatible 형식.
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| model | string | O | 모델 식별자 (`Qwen/Qwen3.5-122B-A10B-GPTQ-Int4`) |
+| model | string | O | 모델 식별자 (`Qwen/Qwen3.6-27B`) |
 | messages | Message[] | O | 대화 메시지 리스트 |
 | max_tokens | number | X | 최대 생성 토큰 수 (S7 기본: `4096`) |
 | temperature | number | X | 생성 온도 (S7 기본: `0.3`) |
@@ -74,8 +91,8 @@ LLM 추론 요청. OpenAI-compatible 형식.
 
 | 항목 | 값 | 비고 |
 |------|-----|------|
-| max_model_len | 262,144 토큰 | 모델 컨텍스트 윈도우 |
-| 실질 입력 한도 | max_model_len - max_tokens | 요청별 가변. max_tokens=4096이면 입력 최대 258,048 토큰 |
+| max_model_len | 131,072 토큰 | 현재 live vLLM `/v1/models` 기준 모델 컨텍스트 윈도우 |
+| 실질 입력 한도 | max_model_len - max_tokens | 요청별 가변. max_tokens=4096이면 입력 최대 126,976 토큰 |
 | 초과 시 응답 | HTTP 400 | `VLLMValidationError` 메시지에 실제 토큰 수 포함 |
 
 **주의**: S7은 LLM Engine 호출 전에 프롬프트 크기를 사전 검증하여 400 에러를 방지해야 한다. 대량 소스 코드 입력 시 truncation 또는 chunking 필요.
@@ -108,7 +125,7 @@ vLLM의 `--reasoning-parser qwen3` 옵션으로 OpenAI-compatible API에서 thin
   "id": "chatcmpl-abc123",
   "object": "chat.completion",
   "created": 1741830575,
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "choices": [
     {
       "index": 0,
@@ -135,7 +152,7 @@ vLLM의 `--reasoning-parser qwen3` 옵션으로 OpenAI-compatible API에서 thin
   "id": "chatcmpl-def456",
   "object": "chat.completion",
   "created": 1741830600,
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "choices": [
     {
       "index": 0,
@@ -228,7 +245,7 @@ Agentic SAST를 위한 tool calling. vLLM에 `--enable-auto-tool-choice --tool-c
 
 ```json
 {
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "messages": [
     { "role": "system", "content": "..." },
     { "role": "user", "content": "..." }
@@ -265,7 +282,7 @@ Agentic SAST를 위한 tool calling. vLLM에 `--enable-auto-tool-choice --tool-c
 {
   "id": "chatcmpl-ghi789",
   "object": "chat.completion",
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "choices": [
     {
       "index": 0,
@@ -300,7 +317,7 @@ Agentic SAST를 위한 tool calling. vLLM에 `--enable-auto-tool-choice --tool-c
 
 ```json
 {
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "messages": [
     { "role": "system", "content": "..." },
     { "role": "user", "content": "..." },
@@ -342,7 +359,7 @@ Agentic SAST를 위한 tool calling. vLLM에 `--enable-auto-tool-choice --tool-c
 
 ```json
 {
-  "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+  "model": "Qwen/Qwen3.6-27B",
   "messages": [...],
   "response_format": { "type": "json_object" },
   "max_tokens": 4096,
@@ -364,7 +381,7 @@ Agentic SAST를 위한 tool calling. vLLM에 `--enable-auto-tool-choice --tool-c
   "object": "list",
   "data": [
     {
-      "id": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+      "id": "Qwen/Qwen3.6-27B",
       "object": "model",
       "created": 1741776000,
       "owned_by": "vllm"
@@ -428,7 +445,7 @@ curl http://10.126.37.19:8000/health
 curl -X POST http://10.126.37.19:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+    "model": "Qwen/Qwen3.6-27B",
     "messages": [
       {"role": "system", "content": "당신은 보안 전문가입니다."},
       {"role": "user", "content": "gets() 함수의 위험성을 설명하세요."}
@@ -442,7 +459,7 @@ curl -X POST http://10.126.37.19:8000/v1/chat/completions \
 curl -X POST http://10.126.37.19:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "Qwen/Qwen3.5-122B-A10B-GPTQ-Int4",
+    "model": "Qwen/Qwen3.6-27B",
     "messages": [
       {"role": "system", "content": "당신은 보안 전문가입니다."},
       {"role": "user", "content": "gets() 함수의 위험성을 설명하세요."}
@@ -459,7 +476,7 @@ curl -X POST http://10.126.37.19:8000/v1/chat/completions \
 # S7 환경변수 설정
 export AEGIS_LLM_MODE=real
 export AEGIS_LLM_ENDPOINT=http://10.126.37.19:8000
-export AEGIS_LLM_MODEL=Qwen/Qwen3.5-122B-A10B-GPTQ-Int4
+export AEGIS_LLM_MODEL=Qwen/Qwen3.6-27B
 
 # S7 Gateway 기동 후 v1 Task 테스트
 curl -X POST http://localhost:8000/v1/tasks \

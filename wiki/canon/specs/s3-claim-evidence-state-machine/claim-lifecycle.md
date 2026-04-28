@@ -6,10 +6,13 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/s3-agent-state-machine-work-breakdown-20260423.md"
   - "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"
   - "wiki/canon/specs/s3-claim-evidence-state-machine/retry-repair-policy.md"
-last_verified: "2026-04-23"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-paper-remediation-complete-20260427.md"
+  - "mcp://aegis-static-wiki.write_page"
+last_verified: "2026-04-27"
 service_tags: ["s3", "analysis-agent"]
-decision_tags: ["claim-lifecycle", "state-machine", "grounding", "quality-gate"]
-related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md", "wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart.md", "wiki/canon/specs/s3-claim-evidence-state-machine/quality-gates.md"]
+decision_tags: ["claim-lifecycle", "state-machine", "grounding", "quality-gate", "wp-0a", "accepted-only-claims", "claim-diagnostics"]
+related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md", "wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart.md", "wiki/canon/specs/s3-claim-evidence-state-machine/quality-gates.md", "wiki/canon/api/analysis-agent-api.md"]
 ---
 
 # S3 Claim Lifecycle Statechart
@@ -181,3 +184,16 @@ Claim states roll up to TaskRun states:
 2. Should `SchemaQualified -> EvidenceRefsQualified -> SlotsDeclared` be represented as separate runtime states, or only as validation phases in code?
 3. How should S3 expose rejected claims in audit without leaking noisy LLM speculation into user-facing output?
 4. Should non-SAST-backed claims be accepted in product mode, paper/evaluation mode, both, or neither?
+
+<!-- S3-WP0A-20260427:START -->
+## 2026-04-27 WP-0a public placement decision: accepted-only claims
+
+Open decision #3 is resolved for the current implementation pass by **Option A**:
+
+- `result.claims[]` is an accepted-final-claim surface only.
+- `Candidate`, `SchemaDeficient`, `EvidenceRefsDeficient`, `GroundingDeficient`, `QualityDeficient`, `EvidenceAcquiring`, and all `Rejected*` states are excluded from `result.claims[]`.
+- Non-accepted lifecycle states appear in bounded `result.claimDiagnostics[]` plus audit/recovery records.
+- A rejected or under-evidenced candidate contributes to `analysisOutcome="no_accepted_claims"` or `analysisOutcome="inconclusive"` when no accepted claim remains, but it does not become a task-level failure under valid-input/live-runtime conditions.
+
+This keeps developer-facing final findings clean while preserving enough diagnostic detail for evidence consumption, repair planning, and hotN/evaluation grouping.
+<!-- S3-WP0A-20260427:END -->

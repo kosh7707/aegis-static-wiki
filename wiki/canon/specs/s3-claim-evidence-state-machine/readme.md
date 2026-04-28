@@ -76,6 +76,7 @@ analysisOutcome:
 pocOutcome:
   poc_accepted
   poc_rejected
+  poc_inconclusive
   poc_not_requested
 
 qualityOutcome:
@@ -180,7 +181,7 @@ flowchart LR
 2. `completed` does not imply accepted claims, accepted PoC, or clean hot-gate pass.
 3. `accepted_claims` implies each accepted claim has local or derived-from-local refs.
 4. `no_accepted_claims` and `inconclusive` are valid result-level outcomes, not task failures, when the task input/runtime are valid.
-5. `poc_rejected` is a valid result-level outcome, not task failure, when claim input is valid but PoC quality/safety cannot be accepted.
+5. `poc_rejected` and `poc_inconclusive` are valid result-level outcomes, not task failures, when claim input/runtime are valid but PoC quality/safety cannot produce a clean accepted PoC. Repair exhaustion maps to `poc_inconclusive`; immediate unsafe/ref/grounding failure maps to `poc_rejected`.
 6. Knowledge refs cannot satisfy local grounding slots.
 7. Internal deficiencies must pass through RecoveryTriage before outcome classification.
 8. Task-level failure is reserved for invalid input, out-of-authority/unsafe request, unavailable runtime/dependency, hard timeout/cancellation, or internal exception preventing any valid response.

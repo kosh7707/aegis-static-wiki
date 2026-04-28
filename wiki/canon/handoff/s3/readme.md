@@ -4,16 +4,18 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s3-handoff/README.md"
-last_verified: "2026-04-27"
+  - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+last_verified: "2026-04-28"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-04-27**
+> **마지막 업데이트: 2026-04-28**
 
 이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-27 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
@@ -238,3 +240,98 @@ S3는 retained shared-kernel 방향을 폐기하고, Analysis Agent와 Build Age
 후속 ownership coordination:
 - 2026-04-27 기준 canonical charter와 로컬 bootstrap ownership map은 S3 active path를 `services/analysis-agent`, `services/build-agent`로 정렬했다.
 - 앞으로 공유 런타임 디렉터리를 active S3 owned path로 다시 추가하지 않는다. 필요한 primitive helper는 각 서비스 내부 `app/agent_runtime/`에서 독립적으로 소유한다.
+
+---
+
+<!-- S3-PAPER-REMEDIATION-20260427:START -->
+## 10. 2026-04-27 Paper-remediation / system-stability Ralph status
+
+The S3 paper-remediation stabilization run is final-verified after Critic/Architect blocker fixes and canonical session/test evidence recording. This pass exists to make the S3 state machine obey the “valid input + live dependencies ⇒ completed result envelope” rule while still preserving honest quality outcomes.
+
+Implemented surfaces:
+- Analysis Agent evidence ledger now preserves append-only history and separates negative/operational attempts from final proof refs.
+- Final accepted claims carry first-class lifecycle/status/slot diagnostics; rejected/under-evidenced candidates are exposed through `result.claimDiagnostics.nonAcceptedClaims[]`, not `result.claims[]`.
+- Recovery/outcome routing uses an SSoT outcome-for-deficiency path for schema/ref/grounding/quality/repair-exhausted deficiencies.
+- Phase 2 prompts receive live recovery/evidence ledger summaries and deterministic next-acquisition suggestions wired through the live `deep-analyze` runtime.
+- PoC generation has structural quality gates and bounded configurable quality-repair attempts (default 2) with request-scoped budget guard; repair exhaustion returns completed non-clean outcome instead of ordinary endpoint failure.
+- Readiness gating removes unavailable knowledge/code-graph tools and tells the model not to request them.
+- Build Agent response schema is active `build-v1.1`; `EXPECTED_ARTIFACTS_MISMATCH` is a completed non-clean build-domain outcome with diagnostics.
+- Producer/Critic/Orchestrator role boundaries are now test-guarded without adding import-linter dependency.
+- Evaluation/hotN scaffold reports task completion separately from accepted claims, no accepted claims, inconclusive results, PoC accepted/rejected/inconclusive, strict clean pass, and silent-200 diagnostic coverage.
+
+Fresh verification captured during this Ralph run:
+- Analysis Agent full suite after Critic/Architect blocker fixes, direct slot-test reinforcement, and deslop: `449 passed in 4.64s` at that closeout checkpoint; superseded by the 2026-04-28 post-fix polish verification below.
+- Build Agent full suite: `254 passed in 0.50s`.
+- Wiki validation after canonical API/spec updates: PASS.
+- Critic/Architect first pass rejected WP-4 planner wiring; the live runtime wiring and negative-ref diagnostic fixes were then implemented and reverified.
+- Second review rejected WP-5 budget/config/repairHint closure and missing canonical session evidence; PoC repair budget/config/repairHint wiring and `record_session_history`/`append_test_evidence` evidence were then completed. Refreshed closeout review then rejected family-slot honesty and generate-poc repaired-success telemetry/spec drift; deterministic family slot enforcement, deep quality slot sufficiency, repaired-success latency/log timing, and spec corrections were applied.
+
+Relevant WRs emitted to S2:
+- `wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice.md`
+- `wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement.md`
+- `wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md`
+
+Operational reminder for next S3 sessions:
+- Do not run hot20 until unit/contract/static verification stays green after final deslop/architect review.
+- For live hotN, count completed-but-non-clean results as task survival success only if diagnostics/audit/recovery trace explain why they are non-clean.
+<!-- S3-PAPER-REMEDIATION-20260427:END -->
+
+---
+
+<!-- S3-POST-RALPLAN-FOLLOWUP-20260428:START -->
+## 11. 2026-04-28 Post-ralplan followup defects Ralph status
+
+The S3 self-followup WR `s3-to-s3-post-ralplan-execution-followup-defects-20260427` has been implemented and verified. This pass closes the seven post-execution defects from the 2026-04-27 critic package without widening scope into fake build-agent test padding.
+
+Implemented followups:
+- `transition_claim_status()` now appends append-only `revisionHistory` entries with `fromStatus`, `toStatus`, deterministic `reason`, and `timestampMs`.
+- Phase 2 readiness gating is centralized through pre-AgentLoop `ToolRegistry` filtering. Neo4j-not-ready removes `code_graph.callers`, `code_graph.callees`, and `code_graph.search`; GraphRAG-not-ready removes only `code_graph.search`; KB-not-ready removes `knowledge.search`.
+- `outcome_for_deficiency()` is pinned for all 13 `DeficiencyClass` values with contextual outcome matrix tests.
+- `generate-poc` quality-repair exhaustion now returns `pocOutcome=poc_inconclusive` with `qualityOutcome=repair_exhausted`; immediate unsafe/ref/grounding failures remain `poc_rejected`.
+- `callee_path` / `callee_chain` planner slots route to `code_graph.callees` using the current `function_name` schema.
+- PoC quality gate now rejects base64-encoded destructive payloads and quote/subshell/IFS escape patterns while preserving well-formed non-destructive canary PoCs.
+
+Fresh verification after implementation and post-fix P1/P2 polish:
+- Analysis Agent full suite: `492 passed in 5.36s`.
+- Build Agent full suite: `254 passed in 0.48s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app`: PASS.
+
+Contract notice:
+- F-4 is a visible result-semantic refinement, so S3 issued a notify-style S3→S2 WR for the `poc_rejected` → `poc_inconclusive` repair-exhaustion change.
+
+Operational reminder:
+- The Build Agent test count remains 254 because F-1..F-7 touched Analysis Agent behavior only; no padding tests were added.
+- certificate-maker hotN may proceed after this pass remains green through architect/deslop verification.
+<!-- S3-POST-RALPLAN-FOLLOWUP-20260428:END -->
+
+<!-- S3-POST-FIX-POLISH-20260428:START -->
+## 12. 2026-04-28 Post-fix polish / test-gap closeout
+
+After the 2026-04-27 critic/meta-retract package, S3 completed the P1/P2 polish handoff without changing the already-accepted F-1..F-7 semantics.
+
+Closed polish items:
+- `agentAudit` now carries typed evidence-catalog diagnostics instead of an undocumented raw dict extension.
+- `attemptedAcquisitions` and `negativeAttempts` are semantically distinct: attempted acquisitions include positive and negative attempts, while negative attempts remain the failed/operational subset.
+- `strictCleanPassRate` now filters state-machine fixture observations instead of duplicating the ordinary clean pass rate.
+- PoC quality-repair exceptions emit warning diagnostics and still return completed non-clean outcomes when the request/runtime are valid.
+- advisory `diagnose_claim_evidence()` calls pass explicit allowed-local refs.
+- non-dict LLM claim entries are logged before being skipped.
+- `_missing_required_slots()` documents its production precondition: `transition_claim_status()` must set `missingEvidence` before deep quality gating.
+
+Closed priority test gaps:
+- KB/CVE timeout smoke produces an honest completed envelope with operational diagnostics instead of task failure.
+- PoC repair-cycle timeout remains `completed + qualityOutcome=repair_exhausted + pocOutcome=poc_inconclusive`.
+- partial Phase 1 failure propagates into Phase 2 prompt/tool gating, including code-graph-not-ready tool removal.
+- multi-turn duplicate acquisition is deduplicated through planner/session state.
+- deterministic SAST phase is asserted exactly once and SAST is not advertised as a Phase 2 LLM tool.
+
+Fresh verification at this closeout:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `492 passed in 5.36s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `254 passed in 0.48s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app` → PASS.
+
+Contract clarification:
+- `pocOutcome=poc_inconclusive` is the canonical result for bounded PoC quality-repair exhaustion under valid caller input and live runtime.
+- `pocOutcome=poc_rejected` remains the canonical result for immediate unsafe, hallucinated-ref, or grounding-deficient PoC output.
+- Both are task-level `completed` outcomes, not public task failures.
+<!-- S3-POST-FIX-POLISH-20260428:END -->

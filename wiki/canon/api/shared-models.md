@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-25"
+last_verified: "2026-04-27"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -109,10 +109,25 @@ Only the currently relevant shared types for active S1↔S2 surfaces are repeate
 ### 2.1 Project
 
 ```ts
+type ProjectOwnerKind = "user" | "system";
+
+interface ProjectOwnerSummary {
+  /** 안정 식별자 — user id 또는 system id */
+  id: string;
+  /** 화면 표시명. ko-KR 한글 및 latin1/영문 이름 모두 UTF-8 JSON 문자열로 전달된다. */
+  name: string;
+  /** 1~2자 이니셜. null/undefined이면 S1이 name에서 derive 가능. */
+  avatar?: string | null;
+  /** 사람 사용자 vs 시스템 생성 프로젝트. */
+  kind?: ProjectOwnerKind;
+}
+
 interface Project {
   id: string;
   name: string;
   description: string;
+  /** 프로젝트 생성자/1차 담당자. 기존 migrated row는 없을 수 있다. */
+  owner?: ProjectOwnerSummary;
   createdAt: string;
   updatedAt: string;
 }
@@ -124,8 +139,17 @@ interface ProjectListItem extends Project {
   severitySummary?: { critical: number; high: number; medium: number; low: number };
   gateStatus?: "pass" | "fail" | "warning";
   unresolvedDelta?: number;
+  /** Project Explorer 담당 컬럼용 primary owner. S2가 보유하지 못한 경우 omit. */
+  owner?: ProjectOwnerSummary;
 }
 ```
+
+`GET /api/projects` owner policy (2026-04-27):
+
+- Authenticated project creation stores the current `req.user` profile as `owner` (`id`, `displayName`/`username`, 1~2 character `avatar`, `kind: "user"`).
+- Existing/migrated projects whose `projects.owner_*` columns are empty omit `owner`; S1 should keep the dim `—` placeholder for those rows.
+- No owner mutation endpoint exists in this cycle. Backfill/migration, owner reassignment, multi-owner roles, and avatar image URLs are future WR scope.
+- Soft-auth / unauthenticated development creation may omit `owner`; S2 intentionally does not invent a fake person.
 
 ### 2.2 Uploaded file (DB-backed file API)
 
@@ -406,6 +430,15 @@ interface AgentRecoveryTraceEntry {
   detail?: string;
 }
 
+interface AgentClaimDiagnosticsSummary {
+  lifecycleCounts?: Record<string, number>;
+  nonAcceptedClaims?: Array<Record<string, unknown>>;
+}
+
+interface AgentEvidenceDiagnosticsSummary {
+  [key: string]: unknown;
+}
+
 interface AnalysisResult {
   id: string;
   projectId: string;
@@ -426,10 +459,21 @@ interface AnalysisResult {
   qualityOutcome?: AgentQualityOutcome;
   pocOutcome?: AgentPocOutcome;
   recoveryTrace?: AgentRecoveryTraceEntry[];
+  /** S3 claim lifecycle diagnostics; claims[] remains accepted-final-only. */
+  claimDiagnostics?: AgentClaimDiagnosticsSummary;
+  /** Evidence acquisition diagnostics, including failed/negative attempts. */
+  evidenceDiagnostics?: AgentEvidenceDiagnosticsSummary;
   agentAudit?: AgentAuditSummary;
   createdAt: string;
 }
 ```
+
+S3 Analysis Agent claim diagnostics policy (2026-04-27):
+
+- `claims[]` is accepted-final-only. S2/S1 must not expect raw candidate, under-evidenced, rejected, or other non-accepted lifecycle states in `claims[]`.
+- Non-accepted claim lifecycle data is preserved under `claimDiagnostics` using S3 WP-1 object shape (`lifecycleCounts`, `nonAcceptedClaims[]`).
+- Negative or failed evidence acquisition attempts are preserved under `evidenceDiagnostics`; diagnostic evidence references are not supporting refs for accepted claims.
+- These fields are additive and optional; old rows/non-Deep rows may omit them.
 
 S3 Analysis Agent outcome semantics:
 

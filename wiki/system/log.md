@@ -2205,3 +2205,127 @@ related_pages:
 - Generated `.omx/plans/prd-s3-paper-remediation-complete-20260427.md` and companion test spec from the complete OMC artifact set.
 - Architect and Critic final reviews approved after iterations on WP-0a wiki-first gate, Option A public claim-status surface, and expanded test matrix.
 - Session evidence recorded at `wiki/canon/handoff/s3/session-s3-paper-remediation-ralplan-20260427.md`.
+
+## [2026-04-27] mcp | register_wr | s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice.md
+
+## [2026-04-27] s3-wp0a-contract-gate | S3 Analysis Agent claim diagnostics and accepted-only claims contract gate
+- Updated canonical Analysis Agent API/spec and state-machine pages for WP-0a before schema-changing code.
+- Registered S3→S2 notice WR: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice.md.
+- Public surface fixed: result.claims[] accepted final claims only; non-accepted lifecycle states in result.claimDiagnostics/audit.
+
+## [2026-04-27] mcp | register_wr | s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement.md
+
+## [2026-04-27] s3-wp1-claim-diagnostics-contract-refinement | S3 Analysis Agent claimDiagnostics object shape fixed
+- Updated Analysis Agent API page to record WP-1 claimDiagnostics object shape with lifecycleCounts/nonAcceptedClaims.
+- Registered S3→S2 follow-up notice WR: wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement.md.
+
+## [2026-04-27] mcp | register_wr | s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md
+
+## [2026-04-27] WP-8/WP-9 Build Agent contract gate completed | S3 Build Agent build-v1.1 active contract
+- Updated canonical Build Agent API/spec to mark build-v1.1 as active default response schema rather than proposal-only.
+- Documented EXPECTED_ARTIFACTS_MISMATCH as completed build-domain outcome with cleanPass=false and buildDiagnostics.
+- Registered S3→S2 notice WR for consumer handling of cleanPass/buildDiagnostics.
+- Verification: services/build-agent full pytest → 252 passed in 0.56s.
+
+## [2026-04-27] WP-20 canonical docs/session evidence sync started | S3 paper-remediation documentation sync
+- Updated S3 state-machine implementation work packages with actual Ralph execution order.
+- Updated S3 handoff with 2026-04-27 paper-remediation status, implemented surfaces, verification snapshot, and WR pointers.
+- Next: final verification bundle, Critic/Architect review, deslop pass, and post-deslop rerun.
+
+## [2026-04-27] Post-review fixes applied | S3 paper-remediation Critic/Architect blocker fixes
+- Wired deterministic acquisition planner into live deep-analyze prompt construction after Phase 1/catalog ingestion and readiness gating.
+- Fixed negative-ref diagnostics so eref-negative-* cannot be reported as available local evidence or fallback-local.
+- Added configurable PoC quality repair cap and BudgetManager repair projection helper with tests.
+- Verification after fixes: analysis focused suite 82 passed; analysis full suite 439 passed in 4.68s.
+
+## [2026-04-27] Final verification and canonical session evidence recorded | S3 paper-remediation final evidence
+- Final verification: analysis-agent 440 passed in 4.63s; build-agent 254 passed in 0.49s; compileall passed; active shared-runtime grep passed; wiki validate PASS; git diff --check passed.
+- Recorded canonical session history and appended test evidence under wiki/canon/handoff/s3/session-omx-1777019958462-zau7uq.md.
+- Closed Critic/Architect blocker fixes for WP-4 planner wiring, negative-ref diagnostic honesty, WP-5 PoC repair budget/config/repairHint, and WP-20 session evidence.
+
+## [2026-04-27] S3 recorded final pre-deslop regression/session evidence for paper-remediation Ralph run | S3 paper-remediation final evidence closeout
+- Analysis Agent pytest: 440 passed in 4.63s.
+- Build Agent pytest: 254 passed in 0.49s.
+- compileall, active-code shared-runtime grep, wiki validate, and git diff --check passed.
+- Canonical session/test evidence recorded at wiki/canon/handoff/s3/session-omx-1777019958462-zau7uq.md.
+
+## [2026-04-27] S3 fixed refreshed Critic/Architect blockers before final Ralph review | S3 closeout blocker fixes
+- Claim lifecycle now derives family-specific required evidence slots and deep quality gate rejects unfilled slot claims.
+- generate-poc success latency/log telemetry now runs after bounded quality repair loop.
+- Analysis Agent canonical spec now aligns recoverable deficiencies with completed result-level outcomes.
+
+## [2026-04-27] S3 refreshed canonical session evidence after closeout blocker fixes | S3 canonical session evidence refreshed
+- Session artifact now records focused closeout suite 58 passed and Analysis Agent 443 passed after family-slot/PoC telemetry fixes.
+- Build Agent 254-pass evidence and static/wiki/diff checks were re-attached to the canonical session page.
+
+## [2026-04-27] S3 refreshed closeout session evidence after direct slot-test reinforcement | S3 final slot-test evidence refreshed
+- Focused closeout suite: 64 passed in 0.85s.
+- Analysis Agent full suite: 449 passed in 4.94s.
+- Build Agent full suite: 254 passed in 0.50s.
+- compileall, active shared-runtime grep, wiki validate, and git diff --check passed.
+
+## [2026-04-27] S3 fixed final canonical doc drift before closeout approval | S3 final wiki drift fix
+- Build Agent spec verification count updated from 252 to 254 passed in 0.50s.
+- Analysis Agent API body header updated to 2026-04-27 and claimDiagnostics example aligned with family-specific missing slots.
+
+## [2026-04-27] S3 aligned S3 handoff Build Agent verification count with canonical session/spec evidence | S3 handoff count drift fixed
+- S3 handoff now records Build Agent final full suite as 254 passed in 0.50s.
+- wiki validate, wiki diff-check, and AEGIS git diff-check passed after the correction.
+
+## [2026-04-27] mcp | register_wr | s2-to-s1-reply-projectlistitem-owner-field-implemented-for-dashboard-project-explorer
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-projectlistitem-owner-field-implemented-for-dashboard-project-explorer.md
+
+## [2026-04-27] mcp | complete_wr | s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] mcp | complete_wr | s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] mcp | complete_wr | s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-04-27] S3 completed Ralph mandatory deslop pass and post-deslop verification | S3 post-deslop final verification
+- Scoped cleanup removed redundant local json imports in generate_poc_handler.py only.
+- Post-deslop Analysis Agent suite: 449 passed in 4.64s.
+- Post-deslop Build Agent suite: 254 passed in 0.50s.
+- compileall, active shared-runtime grep, wiki validate, wiki diff-check, and git diff-check passed.
+
+## [2026-04-27] S2 implemented ProjectListItem.owner, preserved S3 claim/evidence diagnostics, and aligned Build Agent cleanPass handling | S2 project owner and S3 diagnostics/build-v1.1 WR handling
+- Project owner: authenticated POST /api/projects persists req.user profile; GET /api/projects omits owner for migrated/unowned rows.
+- Analysis diagnostics: claimDiagnostics/evidenceDiagnostics are persisted and returned on AnalysisResult.
+- Build Agent v1.1: completed cleanPass=false now becomes resolve_failed pipeline outcome; SDK analysis only consumes clean completed payloads.
+- S1 reply WR registered: wiki/canon/work-requests/s2-to-s1-reply-projectlistitem-owner-field-implemented-for-dashboard-project-explorer.md.
+
+## [2026-04-27] S3 removed stale pre-closeout Analysis Agent verification count from handoff summary | S3 final handoff stale pre-review count removed
+- S3 handoff now only advertises final post-deslop Analysis Agent verification: 449 passed in 4.64s.
+- wiki validate and diff checks passed after the edit.
+
+## [2026-04-28] mcp | register_wr | s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive.md
+
+## [2026-04-28] completed | s3 post-ralplan followup defects
+- S3 Ralph completed F-1..F-7 implementation and post-deslop verification.
+- Focused regression 105 passed; analysis-agent 475 passed; build-agent 254 passed; compileall ok; wiki validate PASS.
+- Final architect sign-off APPROVED.
+- Legacy self-followup WR normalized from wr_kind=followup to wr_kind=request and marked completed because complete_wr could not resolve the legacy entry.
+
+## [2026-04-28] Updated S3 handoff/spec/state-machine docs for post-fix polish closeout | S3 wiki canonical docs
+- Recorded current verification counts: analysis-agent 492 passed, build-agent 254 passed, compileall PASS.
+- Clarified generate-poc bounded quality-repair exhaustion as poc_inconclusive + repair_exhausted.
+- Kept immediate unsafe/ref/grounding-deficient PoC as poc_rejected.
+
+## [2026-04-28] Updated S7 canonical docs with DGX Qwen3.6-27B vLLM 0.20.0 HF-fresh image, MTP=1 serving recipe, benchmark/BFCL evidence, cleanup/runbook references, and API contract notes that MTP is transparent to callers. | S7 documentation refresh for Qwen3.6 vLLM 0.20.0 MTP backend
+- Updated S7 handoff, LLM Engine spec/API, LLM Engine ops, LLM Gateway spec, and S7 architecture docs.
+- Documented current image qwen36-vllm:hf-fresh, recipe qwen3.6-27b-origin.yaml, max_model_len=131072, MTP speculative config, BFCL 24/25 before/after MTP, and strict bwrap A/B throughput 7.638 -> 15.132 tok/s.
+- Referenced DGX runbook /home/accslab/spark-vllm-docker/docs/QWEN36_VLLM_RUNBOOK_20260428.md and S7 session evidence pages.

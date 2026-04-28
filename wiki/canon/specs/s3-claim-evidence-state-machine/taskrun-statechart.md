@@ -137,7 +137,10 @@ completed + analysisOutcome=no_accepted_claims
 = task completed, analysis quality/evaluation not clean pass
 
 completed + pocOutcome=poc_rejected
-= task completed, PoC quality/evaluation not clean pass
+= task completed, PoC output rejected for immediate unsafe/ref/grounding reasons, not clean pass
+
+completed + pocOutcome=poc_inconclusive
+= task completed, PoC quality repair exhausted or context cannot support a safe conclusion, not clean pass
 ```
 
 ---

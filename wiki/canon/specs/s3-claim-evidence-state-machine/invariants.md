@@ -85,7 +85,7 @@ Invariants are rules that must remain true regardless of prompt wording, model b
 | `INV-POC-001` | `generate-poc` requires an accepted-claim-compatible input. | handler tests |
 | `INV-POC-002` | PoC cannot invent source locations or supporting refs. | PoC validator tests |
 | `INV-POC-003` | PoC repair cannot change accepted claim identity. | repair tests |
-| `INV-POC-004` | `poc_rejected` is a result-level completed outcome for valid input/runtime. | PoC controller tests |
+| `INV-POC-004` | `poc_rejected` and `poc_inconclusive` are result-level completed outcomes for valid input/runtime. | PoC controller tests |
 | `INV-POC-005` | Hot gates inspect `pocOutcome`, not only task status. | hotN tests |
 
 ---

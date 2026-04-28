@@ -17,7 +17,7 @@ related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "w
 > Scope: `generate-poc` task state machine after `deep-analyze` accepted claim(s)
 > Parent: [[wiki/canon/specs/s3-claim-evidence-state-machine/readme|S3 Claim-Evidence State Machine]]
 
-`generate-poc` is claim-bound. If the claim input is valid and runtime is alive, S3 should return `completed` with `pocOutcome=poc_accepted` or `poc_rejected`, not task-level quality failure.
+`generate-poc` is claim-bound. If the claim input is valid and runtime is alive, S3 should return `completed` with `pocOutcome=poc_accepted`, `poc_rejected`, or `poc_inconclusive`, not task-level quality failure.
 
 ---
 
@@ -31,7 +31,7 @@ related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "w
 - evidence ledger or trusted refs sufficient to bind the claim;
 - safety constraints.
 
-A missing/invalid claim is caller input failure. A valid claim that cannot yield an acceptable PoC is result-level `poc_rejected`.
+A missing/invalid claim is caller input failure. A valid claim that cannot yield an acceptable PoC is result-level `poc_rejected` or `poc_inconclusive`: immediate unsafe/ref/grounding-deficient output is rejected, while bounded quality-repair exhaustion is inconclusive.
 
 ---
 
@@ -88,8 +88,8 @@ stateDiagram-v2
 |---|---|---|
 | `poc_accepted` | PoC is claim-bound, non-destructive, quality-valid | `completed` |
 | `poc_accepted` | PoC is acceptable but assumptions/limits are visible | `completed` |
-| `poc_rejected` | PoC cannot satisfy quality/safety after repair | `completed` |
-| `poc_inconclusive` | PoC cannot be produced honestly with available context | `completed` |
+| `poc_rejected` | PoC is immediately unsafe, hallucinated-ref, or grounding-deficient | `completed` |
+| `poc_inconclusive` | PoC cannot be produced honestly with available context, including bounded quality-repair exhaustion | `completed` |
 
 ---
 
@@ -112,7 +112,7 @@ Task-level failure is limited to:
 2. PoC cannot invent source locations or supporting refs.
 3. PoC must preserve or correctly subset claim local refs.
 4. PoC must be non-destructive by default.
-5. PoC quality rejection is represented by `pocOutcome=poc_rejected`, not task failure, when the input/runtime are valid.
+5. PoC non-clean outcomes are represented by `pocOutcome=poc_rejected` or `poc_inconclusive`, not task failure, when the input/runtime are valid. Quality-repair exhaustion uses `poc_inconclusive`; immediate unsafe/ref/grounding-deficient output uses `poc_rejected`.
 6. Hot gates must inspect `pocOutcome`, not only task status.
 
 ---

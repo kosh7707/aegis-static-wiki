@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/llm-engine-ops.md"
 original_path: "docs/s7-handoff/llm-engine-ops.md"
-last_verified: "2026-04-25"
+last_verified: "2026-04-28"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -46,14 +46,14 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 'hostname && docker ps | grep vllm_
 | 메모리 | 128GB LPDDR5x unified (가용 약 119.7GB) |
 | 디스크 | 3.7TB NVMe |
 | Docker | 29.1.3 + NVIDIA Container Runtime 1.18.2 |
-| 2026-04-25 cleanup 후 디스크 | 약 118GB used / 3.4TB available |
+| 2026-04-28 cleanup 후 Docker 상태 | Images 10 total / 1 active, 87.18GB, reclaimable 71.48GB; Build Cache 46.22GB reclaimable 0B |
 
 현재 유지해야 하는 큰 항목:
 
 | 항목 | 크기/이유 |
 |------|-----------|
 | `~/.cache/huggingface/hub/models--Qwen--Qwen3.6-27B` | 약 52GiB, 현재 serving model |
-| `vllm-node:official-0.19.1-cu130` | 약 28.9GB, active Docker image |
+| `qwen36-vllm:hf-fresh` | active Docker image / vLLM 0.20.0 HF fresh |
 | `~/.cache/vllm` | 약 1.5GiB, torch compile cache |
 | `~/spark-vllm-docker` | 약 1GiB, serving recipe/tooling |
 
@@ -75,6 +75,7 @@ vllm serve Qwen/Qwen3.6-27B \
   --enable-auto-tool-choice \
   --tool-call-parser qwen3_coder \
   --reasoning-parser qwen3 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
   --language-model-only \
   -tp 1
 ```
@@ -217,7 +218,7 @@ curl -sS http://10.126.37.19:8000/v1/chat/completions \
 |------|----|
 | hard benchmark qualityScore | 0.74 |
 | hard benchmark passRate | 0.70 |
-| hard benchmark mean completion tok/s | 4.65 |
+| hard benchmark mean completion tok/s | 4.65 (pre-MTP hard benchmark); MTP A/B aggregate 15.132 tok/s vs no-MTP 7.638 tok/s |
 | hard benchmark p50/p95 latency | 약 660.6s / 1244.8s |
 | strict JSON smoke | 약 4.975s |
 | tool-call smoke | 약 6.274s |
@@ -247,6 +248,18 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 'docker logs vllm_node --tail 120'
 
 ---
 
+
+## 2026-04-28 복구/벤치/정리 기록
+
+- Current image: `qwen36-vllm:hf-fresh` (vLLM `0.20.0` HF fresh). Old `vllm-node:*` image tags were removed after verification.
+- Current recipe: `/home/accslab/spark-vllm-docker/recipes/qwen3.6-27b-origin.yaml`. Recipe args include MTP: `--speculative-config '{{"method":"mtp","num_speculative_tokens":1}}'`.
+- Current process command uses `/opt/vllm-official/bin/vllm serve Qwen/Qwen3.6-27B ... --speculative-config '{"method":"mtp","num_speculative_tokens":1}' --language-model-only -tp 1`.
+- Runbook on DGX: `/home/accslab/spark-vllm-docker/docs/QWEN36_VLLM_RUNBOOK_20260428.md` (Korean; errors, MTP brace escaping, tool_calls, BFCL, benchmark, rollback, cleanup notes).
+- Cleanup completed: stale `/tmp` build logs/detour files and Dockerfile backups/detours removed; only `Dockerfile`, `Dockerfile.mxfp4`, current recipes/docs remain in `spark-vllm-docker` among suspicious build files.
+- Health after cleanup: `~/qwen27-vllm status` reports `health_http=200`; `/v1/models` reports `id/root=Qwen/Qwen3.6-27B`, `max_model_len=131072`.
+- Benchmark: strict bwrap-backed Gateway A/B no-MTP `7.638 tok/s` vs MTP=1 `15.132 tok/s` aggregate completion throughput. BFCL smoke remains 24/25 before/after MTP.
+
+
 ## 기술 전환 이력
 
 | 시기 | 변경 | 상태 |
@@ -254,4 +267,4 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 'docker logs vllm_node --tail 120'
 | Phase 1 | ollama + Qwen3 32B | 폐기, `~/ollama` 삭제됨 |
 | Phase 2 | vLLM + Qwen3.5/3.6 후보 비교 | 완료 |
 | 2026-04-23~24 | clean-lifecycle benchmark | 27B 품질 우선 결정 |
-| **현재** | **vLLM 0.19.1 + `Qwen/Qwen3.6-27B` 원본 dense** | **운영 기본값** |
+| **현재** | **vLLM 0.20.0 + `Qwen/Qwen3.6-27B` 원본 dense + MTP=1** | **운영 기본값** |

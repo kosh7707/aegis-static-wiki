@@ -5,10 +5,15 @@ canonical: true
 source_refs:
   - "/home/kosh/AEGIS/.omx/plans/s3-agent-state-machine-work-breakdown-20260423.md"
   - "wiki/canon/specs/s3-claim-evidence-state-machine/transition-table.md"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-paper-remediation-complete-20260427.md"
+  - "mcp://aegis-static-wiki.write_page"
+  - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
+  - "mcp://aegis-static-wiki.record_session_history"
 last_verified: "2026-04-27"
 service_tags: ["s3", "analysis-agent", "build-agent"]
-decision_tags: ["implementation-plan", "state-machine", "retry-policy", "testing", "ai-slop-cleanup"]
-related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/transition-table.md", "wiki/canon/specs/s3-claim-evidence-state-machine/invariants.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md"]
+decision_tags: ["implementation-plan", "state-machine", "retry-policy", "testing", "ai-slop-cleanup", "wp-0a", "execution-order", "paper-remediation", "paper-remediation-complete", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty"]
+related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/transition-table.md", "wiki/canon/specs/s3-claim-evidence-state-machine/invariants.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement.md", "wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-claim-diagnostics-additive-schema-wp-0a-notice.md"]
 ---
 
 # S3 State Machine Implementation Work Packages
@@ -54,7 +59,7 @@ Deliverables:
 
 Acceptance:
 
-- S2 can distinguish `completed + accepted_claims` from `completed + no_accepted_claims` and `completed + poc_rejected`;
+- S2 can distinguish `completed + accepted_claims` from `completed + no_accepted_claims`, `completed + poc_rejected`, and `completed + poc_inconclusive`;
 - hot/evaluation tooling can distinguish completed rate from clean pass rate;
 - no proposed outcome fields are exposed by default before API/S2 alignment; WR-only work must remain internal/non-default gated.
 
@@ -159,7 +164,7 @@ Deliverables:
 
 - claim-bound PoC lifecycle;
 - PoC quality outcome classifier;
-- `poc_rejected` completed result.
+- `poc_rejected` / `poc_inconclusive` completed result separation.
 
 Acceptance:
 
@@ -228,7 +233,7 @@ Minimum fixtures:
 - missing local slots yield completed no-accepted/inconclusive after recovery;
 - quality rejected yields completed quality outcome;
 - no accepted claims yields completed `analysisOutcome=no_accepted_claims`;
-- PoC quality rejected yields completed `pocOutcome=poc_rejected`;
+- PoC immediate unsafe/ref/grounding failure yields completed `pocOutcome=poc_rejected`; bounded quality-repair exhaustion yields completed `pocOutcome=poc_inconclusive`;
 - hotN clean pass differs from task completed.
 
 ---
@@ -243,3 +248,36 @@ Each implementation slice should include:
 4. Build Agent suite if shared/build-adjacent code changes;
 5. hotN classification report only after fixtures pass;
 6. static grep/review for benchmark-specific patches.
+
+<!-- S3-WP0A-20260427:START -->
+## 2026-04-27 paper-remediation execution record
+
+For the S3 paper-remediation stabilization pass, this page is superseded in execution order by `/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md` and its companion test spec. The approved Ralph run executed the work in this order:
+
+1. `WP-0` baseline test snapshot.
+2. `WP-0a` public contract/doc gate before Analysis Agent schema-changing code.
+3. `WP-2a` EvidenceCatalog foundation: history-preserving records, CWE regex fix, `negative` evidence class, and final-ref filtering.
+4. `WP-2b` negative/operational evidence emission.
+5. `WP-2c` live recovery/evidence ledger diagnostics.
+6. `WP-1` first-class Claim status/slots and `result.claimDiagnostics` for non-accepted candidates.
+7. `WP-3` outcome-for-deficiency SSoT.
+8. `WP-4` deterministic advisory acquisition planner.
+9. `WP-5/WP-7` PoC quality retry and structural-safety hardening.
+10. `WP-6` readiness gating for unavailable graph/knowledge tools.
+11. `WP-8/WP-9` Build Agent contract gate: active `build-v1.1`, `EXPECTED_ARTIFACTS_MISMATCH` as completed non-clean build-domain result, and S3→S2 notice WR.
+12. `WP-13/WP-14/WP-16/WP-17` cleanup/boundary hardening: removed dead `CLEAN_RETRY`, documented producer boundaries, added codegraph callers terminology shim, and added no-dependency producer-boundary tests.
+13. `WP-19` evaluation/hotN reporting scaffold: multi-family fixture matrix, separated completion/quality/Poc/clean-pass buckets, and silent-200 diagnostic coverage.
+14. Critic/Architect blocker fix: wired `plan_next_action` into live `deep-analyze` prompt construction and excluded `eref-negative-*` from local diagnostics.
+15. WP-5 follow-up blocker fix: `poc_quality_repair_max_attempts` now follows the PRD default/range, generate-poc uses request-scoped repair budget projection, and QualityGate repair prompts include `repairHint` plus failedItems.
+16. Closeout blocker fix: deterministic claim requirements now include family-specific local evidence slots (for example command injection requires source location, sink/dangerous API, and caller-chain or source-slice support), and deep quality gate rejects accepted claims with unfilled required slots.
+17. Closeout blocker fix: `generate-poc` repaired-success telemetry now computes latency and emits success logs after the quality-repair loop, so repaired successes do not under-report repair cost.
+18. `WP-20-doc` final canonical session/test evidence sync recorded via `record_session_history` and `append_test_evidence`.
+
+Current canonical contract notes:
+- `result.claims[]` is reserved for accepted/grounded claims; non-accepted lifecycle states appear under `result.claimDiagnostics.nonAcceptedClaims[]` and audit diagnostics.
+- Build Agent `build-v1.1` fields are active by default; S2 must use `result.cleanPass` and diagnostics rather than treating `status=completed` as build success.
+- Hot/evaluation reporting must separate task completion from accepted-claim quality, PoC outcome, and strict clean pass.
+- Deterministic acquisition suggestions are advisory, but must be computed after Phase 1/catalog ingestion and readiness gating so the live prompt cannot drift from the state-machine planner. Accepted-claim promotion must also enforce the family slot policy from the evidence-ref contract; a generic local ref alone is insufficient for command injection, path traversal, memory-bounds, null-deref, integer-overflow, or dependency-vulnerability families unless it carries the required roles.
+
+The older WP numbering on this page remains useful as design lineage, but implementation must follow the PRD above until another canonical S3 plan supersedes it.
+<!-- S3-WP0A-20260427:END -->

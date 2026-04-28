@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-engine.md"
 original_path: "docs/specs/llm-engine.md"
-last_verified: "2026-04-25"
+last_verified: "2026-04-28"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,7 +15,7 @@ migration_status: "canonicalized"
 
 # S7. LLM Engine 기능 명세
 
-> **Current serving default (verified 2026-04-25): `Qwen/Qwen3.6-27B`.**
+> **Current serving default (verified 2026-04-28): `Qwen/Qwen3.6-27B`.**
 > This is the original dense 27B checkpoint, not `Qwen/Qwen3.6-27B-FP8`, and S7 does not pass any model-quantization override to vLLM.
 > Cutover evidence: `wiki/canon/handoff/s7/session-s7-qwen27-cutover-20260424.md` and `wiki/canon/handoff/s7/session-s7-qwen27-s3-wr-20260424.md`.
 
@@ -64,13 +64,13 @@ LLM Engine은 S7이 관리하는 LLM 추론 모델 서빙 계층이다. S7(LLM G
 |------|------|
 | Serving model | `Qwen/Qwen3.6-27B` |
 | HF cache | `~/.cache/huggingface/hub/models--Qwen--Qwen3.6-27B` (~52GiB) |
-| vLLM image | `vllm-node:official-0.19.1-cu130` |
-| vLLM version | 0.19.1 |
+| vLLM image | `qwen36-vllm:hf-fresh` |
+| vLLM version | 0.20.0 |
 | Model load memory evidence | 약 50.22GiB |
 | Available KV cache memory evidence | 약 54.35GiB |
 | GPU KV cache capacity evidence | 221,872 tokens |
 | Max concurrency estimate | 6.64x @ 131072 tokens/request |
-| Disk cleanup status | 2026-04-25 기준 old model caches / ollama / local venv / remote IDE caches removed |
+| Disk cleanup status | 2026-04-28 기준 old model caches / stale Docker images / detour build files / remote IDE caches 정리 완료 |
 
 ---
 
@@ -103,11 +103,12 @@ vllm serve Qwen/Qwen3.6-27B \
   --enable-auto-tool-choice \
   --tool-call-parser qwen3_coder \
   --reasoning-parser qwen3 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
   --language-model-only \
   -tp 1
 ```
 
-`--quantization`, FP8 checkpoint path, FP8 served model name은 없다.
+`--quantization`, FP8 checkpoint path, FP8 served model name은 없다. `--speculative-config`는 MTP=1 backend 최적화이며 API 계약을 바꾸지 않는다.
 
 ### 모델 행동 특성
 
@@ -124,7 +125,7 @@ vllm serve Qwen/Qwen3.6-27B \
 
 | 기준 | 근거 |
 |------|------|
-| GB10 GPU 지원 | CUDA 13 / Blackwell 경로에서 vLLM 0.19.1 container 검증 |
+| GB10 GPU 지원 | CUDA 13 / Blackwell 경로에서 vLLM 0.20.0 HF fresh container 검증 |
 | OpenAI 호환성 | `/v1/chat/completions`, `/v1/models`, `/health` 제공 |
 | Thinking 제어 | `--reasoning-parser qwen3` + request `chat_template_kwargs.enable_thinking` |
 | Tool calling | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
@@ -135,8 +136,8 @@ vllm serve Qwen/Qwen3.6-27B \
 ```text
 DGX Spark 10.126.37.19
   └── Docker container: vllm_node
-        └── image: vllm-node:official-0.19.1-cu130
-              └── vLLM 0.19.1
+        └── image: qwen36-vllm:hf-fresh
+              └── vLLM 0.20.0
                     └── Qwen/Qwen3.6-27B original dense checkpoint
                           ├── no FP8 model checkpoint
                           ├── no --quantization override
@@ -168,6 +169,7 @@ ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 \
 | `--reasoning-parser` | qwen3 | Thinking field/content 분리 지원 |
 | `--enable-auto-tool-choice` | enabled | Tool calling 자동 선택 |
 | `--tool-call-parser` | qwen3_coder | Qwen tool-call parser |
+| `--speculative-config` | `{"method":"mtp","num_speculative_tokens":1}` | MTP speculative decoding; API schema 변화 없음 |
 | `-tp` | 1 | Tensor parallelism |
 | `--quantization` | **미사용** | 모델 양자화 없음 |
 | FP8 checkpoint | **미사용** | `Qwen/Qwen3.6-27B-FP8` 아님 |
@@ -317,3 +319,65 @@ Gateway /v1/models: Qwen/Qwen3.6-27B-default, contextLimit=131072
 | `Qwen/Qwen3.6-35B-A3B` | 빠른/simple 후보였으나 품질 우선 benchmark에서 27B보다 낮아 cache 삭제됨 |
 | `Qwen/Qwen3.5-122B-A10B-GPTQ-Int4` | 이전 baseline/archive. cache 삭제됨 |
 | ollama/Qwen3 32B | 폐기된 이전 경로. `~/ollama` 삭제됨 |
+
+
+## 12. 2026-04-28 vLLM 0.20.0 HF fresh / MTP=1 운영 업데이트
+
+### 현재 serving identity
+
+| 항목 | 값 |
+|------|----|
+| Host/IP | `spark-be83` / `10.126.37.19` |
+| Container | `vllm_node` |
+| Image | `qwen36-vllm:hf-fresh` |
+| vLLM | `0.20.0` HF fresh install path (`/opt/vllm-official`) |
+| Model | `Qwen/Qwen3.6-27B` original dense checkpoint |
+| Context | `max_model_len=131072` |
+| Speculative decoding | MTP enabled, `num_speculative_tokens=1` |
+| Recipe | `/home/accslab/spark-vllm-docker/recipes/qwen3.6-27b-origin.yaml` |
+| Control script | `/home/accslab/qwen27-vllm status|start|stop|restart|health|models|logs|ps` |
+
+Current command shape:
+
+```bash
+/opt/vllm-official/bin/vllm serve Qwen/Qwen3.6-27B \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 131072 \
+  --max-num-batched-tokens 8192 \
+  --gpu-memory-utilization 0.9 \
+  --enable-auto-tool-choice \
+  --tool-call-parser qwen3_coder \
+  --reasoning-parser qwen3 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
+  --language-model-only \
+  -tp 1
+```
+
+Recipe YAML must double the braces because `run-recipe.sh`/format expansion otherwise consumes them:
+
+```bash
+--speculative-config '{{"method":"mtp","num_speculative_tokens":1}}' \
+```
+
+### MTP behavior and API contract
+
+- MTP is a backend serving optimization, not a Gateway/API contract change. OpenAI-compatible `/v1/chat/completions`, `/v1/models`, tool-call format, and Gateway strict JSON semantics stay unchanged.
+- vLLM logs should include `Resolved architecture: Qwen3_5MTP` and `Detected MTP model. Sharing target model embedding weights...`.
+- vLLM warns that `min_p` and `logit_bias` do not work with speculative decoding; S7/Gateway callers should not depend on those parameters while MTP is enabled.
+- BFCL v4 Gateway smoke was unchanged at 24/25 before/after MTP. The remaining miss is an expression-format mismatch in `parallel_multiple_4`, not a parser/tool-call regression.
+
+### Benchmark evidence
+
+| Run | Success | Aggregate completion tok/s | Mean latency | p50 | p95 |
+|-----|---------|----------------------------|--------------|-----|-----|
+| no-MTP baseline | 8/8 | 7.638 | 21004.5 ms | 19691 ms | 39523 ms |
+| MTP=1 | 8/8 | 15.132 | 10243 ms | 11115 ms | 23735 ms |
+
+Workload notes: code `+77.6% tok/s`, generation `+55.2% tok/s`, tool_call `+67.6% tok/s`; tiny short-output latency is noisy. Report artifact: `services/llm-gateway/bench/results/mtp-ab-qwen36-27b-strict-20260428T034632Z/s7-qwen36-mtp-benchmark-report.md`.
+
+### DGX runbook / cleanup evidence
+
+- Korean DGX runbook: `/home/accslab/spark-vllm-docker/docs/QWEN36_VLLM_RUNBOOK_20260428.md`.
+- Removed old `vllm-node:*` images (`official-0.19.1-cu130`, `official-base-rebuilt`, `restore-base`) and stale detour/build files. Kept `qwen36-vllm:hf-fresh`.
+- `~/qwen27-vllm status` after cleanup: `health_http=200`, `/v1/models id/root=Qwen/Qwen3.6-27B`, `max_model_len=131072`.

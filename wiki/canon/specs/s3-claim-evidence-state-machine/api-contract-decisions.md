@@ -230,7 +230,7 @@ Before default runtime exposure, S3 must notify S2 with:
 - new result-level outcome fields and values;
 - statement that `completed` no longer means clean quality pass;
 - hot/evaluation clean-pass interpretation;
-- UI implication for `no_accepted_claims`, `inconclusive`, `repair_exhausted`, and `poc_rejected`;
+- UI implication for `no_accepted_claims`, `inconclusive`, `repair_exhausted`, `poc_rejected`, and `poc_inconclusive`;
 - statement that HTTP 200 + terminal task failure remains forbidden;
 - statement that true task failure remains non-2xx for invalid input, unsafe request, dead dependency, hard timeout/cancel, or impossible envelope assembly.
 

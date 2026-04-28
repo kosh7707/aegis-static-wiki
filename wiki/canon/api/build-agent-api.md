@@ -1,23 +1,27 @@
 ---
-title: "Build Agent API 명세 (v1.0.0)"
+title: "Build Agent API 명세 (build-v1.1 active)"
 page_type: "canonical-api"
 canonical: true
 source_refs:
   - "docs/api/build-agent-api.md"
-last_verified: "2026-04-25"
+  - ".omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+  - "services/build-agent/app/routers/tasks.py"
+  - "services/build-agent/app/core/result_assembler.py"
+  - "mcp://aegis-static-wiki.write_page"
+last_verified: "2026-04-27"
 service_tags: ["s3"]
-decision_tags: ["build-v1.1-proposal", "compatibility-gate", "system-stability"]
-related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md"]
+decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "system-stability", "contract-notify"]
+related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
 ---
 
-# Build Agent API 명세 (v1.0.0)
+# Build Agent API 명세 (build-v1.1 active)
 
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-25
+> **최종 업데이트**: 2026-04-27
 
-Build Agent의 public contract 문서다. 내부 router/handler 구조와 internal downstream calling strategy는 계속 정리되었지만, **strict contract와 public response 의미는 유지된다.** 2026-04-25 system-stability workstream에서도 v1.0.0 public semantics는 compatibility gate 전까지 유지된다.
+Build Agent의 public contract 문서다. 서비스 버전 문자열은 `/v1/health.version = "1.0.0"`으로 유지하지만, 응답 schema surface는 **build-v1.1이 현재 active default**다. 2026-04-27 S3 remediation workstream에서 기존 “proposal” 표기를 종료했고, runtime은 `schemaVersion: "build-v1.1"` 및 additive build-domain fields를 기본 방출한다.
 
 ---
 
@@ -40,9 +44,9 @@ http://localhost:8003
 | 메서드 | 경로 | 용도 |
 |---|---|---|
 | POST | `/v1/tasks` | `build-resolve`, `sdk-analyze` |
-| GET | `/v1/health` | 상태 + agent config |
+| GET | `/v1/health` | 상태 + agent config + active response schema |
 
-> 2026-04-14 이후 Build Agent는 내부적으로 tool-less LLM turn에서 S7 async ownership surface를 우선 사용할 수 있지만, 이 변화는 Build Agent outward API shape를 바꾸지 않는다.
+> Build Agent는 내부적으로 tool-less LLM turn에서 S7 async ownership surface를 우선 사용할 수 있지만, 이 변화는 Build Agent outward API shape를 바꾸지 않는다.
 
 ---
 
@@ -58,8 +62,6 @@ http://localhost:8003
 ---
 
 ## `build-resolve` strict contract
-
-### 핵심 의미
 
 호출자는 아래를 명시해야 한다.
 1. 어느 BuildTarget을 빌드할지
@@ -91,19 +93,19 @@ http://localhost:8003
 ### strict 불변조건
 1. `buildTargetPath` 누락 시 invalid contract
 2. undeclared native/sdk fallback 금지
-3. `expectedArtifacts` 미충족이면 성공 금지
+3. `expectedArtifacts` 미충족이면 clean pass 금지
 4. caller build script hint는 text-only / reference-only
 5. compile DB 가능성만으로 성공 처리 금지
 
 ---
 
-## 성공 응답
+## 성공 응답 / completed envelope
 
-성공 시 HTTP `200` + `status: "completed"`.
+well-formed request가 처리되어 Build Agent가 빌드-domain 판단을 끝냈다면 HTTP `200` + `status: "completed"`가 기본이다. 여기서 `completed`는 “빌드가 성공했다”가 아니라 “검토가 끝났고 결과를 가져가라”는 envelope 의미다.
 
 핵심 필드:
 - `taskId`, `taskType`, `contractVersion`, `strictMode`, `status`
-- `modelProfile`, `promptVersion`, `schemaVersion`
+- `modelProfile`, `promptVersion`, `schemaVersion = "build-v1.1"`
 - `validation.valid`
 - `result.summary`
 - `result.buildResult.success`
@@ -115,11 +117,39 @@ http://localhost:8003
 - `result.buildResult.producedArtifacts`
 - `result.buildResult.artifactVerification`
 - `result.buildPreparation`
+- `result.buildOutcome`
+- `result.cleanPass`
+- `result.buildDiagnostics`
 - `audit`
+
+### build-v1.1 additive fields
+
+| Field | Meaning |
+|---|---|
+| `result.buildOutcome.outcome` | `built`, `compile_failed`, `missing_materials`, `sdk_mismatch`, `artifact_mismatch`, or `inconclusive`. |
+| `result.buildOutcome.cleanPass` | True only when declared mode, try_build success evidence, and expected artifacts all pass. |
+| `result.cleanPass` | Top-level result convenience mirror of `buildOutcome.cleanPass`. |
+| `result.buildDiagnostics.failureCode` | Build-domain diagnostic code when `cleanPass=false`. |
+| `result.buildDiagnostics.expectedArtifacts` | Caller-declared expected artifact names/paths normalized for diagnostics. |
+| `result.buildDiagnostics.producedArtifacts` | Observed produced artifact names/paths. |
+| `result.buildDiagnostics.missingArtifacts` | Expected artifacts not observed. |
+
+### `EXPECTED_ARTIFACTS_MISMATCH` contract
+
+S3 chooses **Option A** from the 2026-04-27 remediation plan:
+
+- artifact mismatch is a **build-domain outcome**, not a top-level task failure;
+- response remains `status: "completed"`;
+- `result.cleanPass = false`;
+- `result.buildOutcome.outcome = "artifact_mismatch"`;
+- `result.buildDiagnostics.failureCode = "EXPECTED_ARTIFACTS_MISMATCH"`;
+- `result.buildDiagnostics.expectedArtifacts`, `producedArtifacts`, and `missingArtifacts` carry the comparison evidence.
+
+No-fake-success remains non-negotiable: compile failure, missing material, SDK mismatch, and artifact mismatch must never be represented as a clean successful build.
 
 ### `result.buildPreparation`
 
-`build-resolve` 성공 응답은 기존 `result.buildResult`를 유지하면서, 다음 단계 orchestration을 위한 명시적 번들을 추가로 반환한다.
+`build-resolve` completed 응답은 기존 `result.buildResult`를 유지하면서, 다음 단계 orchestration을 위한 명시적 번들을 추가로 반환한다.
 
 주요 필드:
 - `declaredMode`
@@ -141,23 +171,25 @@ http://localhost:8003
 
 ## 실패 응답
 
-HTTP `200` + 실패 `status`.
+HTTP `200` + 실패 `status`는 “입력/런타임/예산/모델/타임아웃 때문에 build-domain 판단까지 도달하지 못한 경우”에 사용한다.
 
 대표 분류:
 
-| status | failureCode 예시 |
-|---|---|
-| `validation_failed` | `INVALID_SCHEMA`, `SDK_MISMATCH`, `MISSING_BUILD_MATERIALS`, `EXPECTED_ARTIFACTS_MISMATCH` |
-| `failed` | `COMPILE_FAILED`, `BUILD_SCRIPT_SYNTHESIS_FAILED` |
-| `timeout` | `TIMEOUT` |
-| `model_error` | `MODEL_UNAVAILABLE` |
-| `budget_exceeded` | `TOKEN_BUDGET_EXCEEDED`, `MAX_STEPS_EXCEEDED`, `ALL_TOOLS_EXHAUSTED` |
+| status | failureCode 예시 | 의미 |
+|---|---|---|
+| `validation_failed` | `INVALID_SCHEMA`, invalid strict contract | 요청 자체가 잘못되어 정상 검토를 시작할 수 없음 |
+| `failed` | `BUILD_SCRIPT_SYNTHESIS_FAILED` 등 | envelope 생성 전 build-agent 내부 절차 실패 |
+| `timeout` | `TIMEOUT` | deadline 초과 |
+| `model_error` | `MODEL_UNAVAILABLE` | LLM/runtime unavailable |
+| `budget_exceeded` | `TOKEN_BUDGET_EXCEEDED`, `MAX_STEPS_EXCEEDED`, `ALL_TOOLS_EXHAUSTED` | budget/loop limit로 판단 중단 |
+
+`COMPILE_FAILED`, `MISSING_BUILD_MATERIALS`, `SDK_MISMATCH`, `EXPECTED_ARTIFACTS_MISMATCH`처럼 빌드-domain 판단이 가능한 결론은 가능한 한 completed envelope + `cleanPass=false` + diagnostics로 표현한다.
 
 ---
 
 ## `sdk-analyze`
 
-`sdk-analyze`는 SDK/툴체인 디렉토리를 읽고 `sdkProfile`을 반환한다.
+`sdk-analyze`는 SDK/툴체인 디렉토리를 읽고 `sdkProfile`을 반환한다. `/v1/health.activeResponseSchemas["sdk-analyze"]`도 `build-v1.1`로 표기한다. 이는 동일한 S3 Build Agent response envelope version을 뜻한다.
 
 대표 결과 필드:
 - `compiler`
@@ -182,6 +214,11 @@ HTTP `200` + 실패 `status`.
   "status": "ok",
   "version": "1.0.0",
   "llmMode": "real",
+  "activeResponseSchemas": {
+    "build-resolve": "build-v1.1",
+    "sdk-analyze": "build-v1.1"
+  },
+  "proposedResponseSchemas": {},
   "agentConfig": {
     "maxSteps": 15,
     "maxCompletionTokens": 20000,
@@ -192,13 +229,13 @@ HTTP `200` + 실패 `status`.
 
 보호 의미:
 - `version = 1.0.0` 유지
-- strict contract 해석과 무관하게 health 의미는 stable해야 함
+- active response schema는 `build-v1.1`
+- strict contract 해석과 health 의미는 stable해야 함
 
 ---
 
-## 2026-04-14 구현 메모
+## 2026-04-27 구현 메모
 
-내부 구현은 다음처럼 정리/확장되었지만 public contract는 동일하다.
 - `tasks.py` → thin router
 - `build_resolve_handler.py`
 - `build_route_support.py`
@@ -206,19 +243,4 @@ HTTP `200` + 실패 `status`.
 - `sdk_analyze_support.py`
 - internal tool-less LLM turn에서 S7 async ownership surface 우선 사용 + sync fallback
 - unsupported async surface(404/405/501)는 짧은 cooldown으로 기억하여, 매 호출마다 같은 probe를 반복하지 않도록 internal fallback behavior를 완화
-
----
-
-## 2026-04-25 build-v1.1 proposal / compatibility gate
-
-S3 system-stability planning proposes additive `build-v1.1` domain outcome fields, but this is **not** a silent default flip of Build Agent v1.0.0. Until WP6 compatibility gate and S2 notice complete, this page's v1.0.0 protected semantics remain authoritative.
-
-Proposed additive fields after gate:
-
-| Field | Meaning |
-|---|---|
-| `result.buildOutcome` | `built`, `compile_failed`, `missing_materials`, `sdk_mismatch`, `artifact_mismatch`, or `inconclusive`. |
-| `result.cleanPass` | True only when declared mode, try_build success evidence, and expected artifacts all pass. |
-| `result.buildDiagnostics` | Build-domain failure context separate from runtime/dependency failure. |
-
-No-fake-success remains non-negotiable: compile failure, missing material, SDK mismatch, and artifact mismatch must never be represented as a successful build. The proposed migration only separates build-domain outcomes from S3/S4/S7 runtime unavailability.
+- build-v1.1 active default: `schemaVersion`, `result.buildOutcome`, `result.cleanPass`, `result.buildDiagnostics`, `/v1/health.activeResponseSchemas`

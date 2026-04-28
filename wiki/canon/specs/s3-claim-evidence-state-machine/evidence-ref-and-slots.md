@@ -7,10 +7,13 @@ source_refs:
   - "wiki/canon/api/sast-runner-api.md"
   - "wiki/canon/api/knowledge-base-api.md"
   - "User S3 agent hardening discussion, 2026-04-23"
-last_verified: "2026-04-23"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-paper-remediation-complete-20260427.md"
+  - "mcp://aegis-static-wiki.write_page"
+last_verified: "2026-04-27"
 service_tags: ["s3", "analysis-agent", "s4", "s5"]
-decision_tags: ["evidence-ref", "grounding", "state-machine", "graphrag", "sast"]
-related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/knowledge-base-api.md"]
+decision_tags: ["evidence-ref", "grounding", "state-machine", "graphrag", "sast", "wp-0a", "negative-evidence", "evidence-diagnostics", "claim-diagnostics"]
+related_pages: ["wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md"]
 ---
 
 # S3 EvidenceRef and EvidenceSlot Contract
@@ -437,3 +440,19 @@ Expected behavior:
 - knowledge-only support cannot produce an accepted claim;
 - local slots are either filled, acquired, or diagnosed as missing;
 - no task-level failure is returned for grounding deficiency when S3 can assemble a completed no-accepted/inconclusive response after repair/acquisition budgets are exhausted.
+
+<!-- S3-WP0A-20260427:START -->
+## 2026-04-27 WP-0a evidence diagnostics and negative-evidence placement
+
+The paper-remediation implementation adds an internal `negative` evidence class/diagnostic role for failed acquisition attempts, not-found tool results, rejected candidate evidence, and other records that should influence state-machine outcomes without becoming support for a vulnerability claim.
+
+Rules:
+
+1. `negative` / failed-acquisition records are never claim-support refs.
+2. `as_evidence_refs()` / final ref projection must exclude `negative`, `operational`, `knowledge`-only, and derived-without-local-source records from `usedEvidenceRefs` and `claims[].supportingEvidenceRefs`.
+3. Negative attempts appear in `result.evidenceDiagnostics`, `result.claimDiagnostics[]`, `result.recoveryTrace[]`, and/or audit, with bounded public summaries.
+4. Knowledge/context refs may appear in `contextualEvidenceRefs[]`, but they remain outside final local proof lists.
+5. If required slots remain missing after targeted acquisition, S3 must return an honest `completed` result-level outcome such as `no_accepted_claims` or `inconclusive` rather than fabricating support or task-failing.
+
+This resolves the practical placement for negative evidence before `EvidenceCatalog` and claim lifecycle code changes land.
+<!-- S3-WP0A-20260427:END -->
