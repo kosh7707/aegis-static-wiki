@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-04-25"
+last_verified: "2026-04-28"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -36,6 +36,7 @@ http://localhost:8000
 | `X-Model` | 응답 | `/v1/chat` 전용. Gateway가 실제 사용한 모델명 (오버라이드 후). 호출자가 어떤 모델명을 보냈든 실제 적용된 모델을 확인할 수 있다. |
 | `X-Gateway-Latency-Ms` | 응답 | `/v1/chat` 전용. Gateway 측정 지연시간 (밀리초). LLM Engine 호출 + 전후 처리 포함. |
 | `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 및 `/v1/async-chat-requests` opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용한다. `/v1/chat` 동기 응답에는 `applied`를 돌려준다. async ownership 경로에서는 terminal status/result body에 strict JSON 실패 정보를 명시한다. |
+| `X-AEGIS-Effective-Thinking` | 응답 | `/v1/chat` 전용. Gateway가 LLM Engine에 전달한 effective `chat_template_kwargs.enable_thinking` 값. 기본값은 `true`; caller가 boolean `false`를 명시한 경우에만 `false`. |
 
 ---
 
@@ -60,7 +61,7 @@ OpenAI chat completion 포맷을 그대로 수용한다:
   ],
   "max_tokens": 4096,
   "temperature": 0.3,
-  "chat_template_kwargs": {"enable_thinking": false},
+  "chat_template_kwargs": {"enable_thinking": true},
   "tools": [...],
   "tool_choice": "auto",
   "response_format": {"type": "json_object"}
@@ -69,16 +70,25 @@ OpenAI chat completion 포맷을 그대로 수용한다:
 
 **모델 오버라이드**: 요청의 `model` 필드는 Gateway가 실제 운영 모델로 교체한다. 호출자는 어떤 모델명을 보내도 되며, Gateway가 현재 Engine에 배포된 모델로 자동 매핑한다. 그 외 필드는 기본적으로 LLM Engine에 그대로 전달된다.
 
+#### Thinking mode default (2026-04-28)
+
+S7 Gateway의 effective 기본값은 **항상 `chat_template_kwargs.enable_thinking=true`** 이다. `/v1/chat`, `/v1/async-chat-requests`, `/v1/tasks` real-client path 모두 caller가 boolean 값을 명시하지 않거나 잘못된 타입을 보내면 Gateway가 `enable_thinking=true`를 주입한다. caller가 `false`를 명시한 경우에만 mechanical/non-reasoning finalization 요청으로 보고 보존한다.
+
+- 동기 `/v1/chat` 성공 응답은 `X-AEGIS-Effective-Thinking: true|false` 헤더를 포함한다.
+- `logs/llm-exchange.jsonl`에는 forwarded request와 함께 `effectiveThinking`을 기록한다.
+- strict JSON도 더 이상 thinking을 강제로 끄지 않는다. Gateway는 `response_format={"type":"json_object"}`만 강제하고, effective thinking 기본값은 `true`로 유지한다. 단, strict JSON 성공 응답에서는 parseable `choices[0].message.content` JSON object만 caller 계약으로 삼고 backend-specific `message.reasoning`은 기존처럼 `null`로 scrub한다. 원본 reasoning 존재 여부는 LLM exchange log에서 확인한다.
+- thinking-on은 reasoning 토큰을 소비하므로 S3 hotN/hot20 같은 deep-analysis path는 충분한 `max_tokens`와 `X-Timeout-Seconds` 예산을 잡아야 한다. `finish_reason=length`와 빈 final content는 token budget 부족으로 취급한다.
+
 #### opt-in strict JSON 모드
 
 요청 헤더 `X-AEGIS-Strict-JSON: true`(또는 `1`/`yes`/`on`)를 보내면 Gateway가 strict JSON 모드를 적용한다.
 
 strict JSON 모드에서 Gateway는 다음을 보장하려고 시도한다:
 - 요청 body에 `response_format={"type":"json_object"}`를 강제로 적용
-- 요청 body의 `chat_template_kwargs.enable_thinking=false`를 강제로 적용
+- 요청 body에 effective 기본값 `chat_template_kwargs.enable_thinking=true`를 적용한다. caller가 boolean `false`를 명시한 경우에만 보존한다.
 - 성공 응답(200)에서 `choices[0].message.content`가 **JSON object 문자열**인지 검증
 - 유효한 경우 `message.content`를 compact JSON 문자열로 정규화
-- backend-specific `message.reasoning` 필드는 `null`로 scrub
+- backend-specific `message.reasoning` 필드는 성공 응답에서 `null`로 scrub한다. 원본 response/reasoning은 exchange log에 기록된다.
 
 strict JSON 모드에서 이 계약을 만족하지 못하면 Gateway는 backend payload를 그대로 통과시키지 않고 `502`로 명확히 실패시킨다.
 
@@ -151,7 +161,7 @@ OpenAI-compatible chat completion body를 거의 그대로 받는다. `model`은
 - `messages`는 필수이며 비어 있으면 안 된다
 - `X-Request-Id`는 원래 trace/correlation ID로 유지된다
 - async surface의 durable ownership ID는 별도의 `requestId`다
-- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 `/v1/chat`과 동일하게 `response_format={"type":"json_object"}`와 `enable_thinking=false`를 강제하고, final response content가 JSON object가 아니면 completed로 처리하지 않는다
+- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 `/v1/chat`과 동일하게 `response_format={"type":"json_object"}`를 강제하고, effective thinking 기본값은 `true`로 유지한다. final response content가 JSON object가 아니면 completed로 처리하지 않는다
 
 #### 응답
 
@@ -921,7 +931,7 @@ Interpretation rule: if S7 is reachable and the failure proves the model produce
 
 ### Strict JSON stability
 
-`X-AEGIS-Strict-JSON: true` is stable for current Qwen/vLLM OpenAI-compatible serving. Gateway forces `response_format={"type":"json_object"}` and `chat_template_kwargs.enable_thinking=false`, parses `choices[0].message.content` as a top-level JSON object, compact-normalizes successful content, and scrubs `message.reasoning` to `null`. Tool-call turns should remain separate from final strict JSON calls.
+`X-AEGIS-Strict-JSON: true` is stable for current Qwen/vLLM OpenAI-compatible serving. Gateway forces `response_format={"type":"json_object"}` and defaults `chat_template_kwargs.enable_thinking=true`, parses `choices[0].message.content` as a top-level JSON object, compact-normalizes successful content, and scrubs `message.reasoning` to `null`. Tool-call turns should remain separate from final strict JSON calls.
 
 ### Health, capacity, and traceability
 
@@ -944,7 +954,7 @@ The live S7 default is now `Qwen/Qwen3.6-27B` on DGX Spark vLLM `0.19.1`. This i
 
 - `/v1/models` and `/v1/health.modelProfiles` are the authoritative Gateway audit surfaces. They expose `Qwen/Qwen3.6-27B-default`, `modelName=Qwen/Qwen3.6-27B`, and `contextLimit=131072`. Direct Engine `/v1/models` exposes `id/root=Qwen/Qwen3.6-27B` and `max_model_len=131072`.
 - `/v1/chat` remains OpenAI-compatible pass-through with Gateway model override to the active model. The response header `X-Model` records the actual model.
-- `X-AEGIS-Strict-JSON: true` semantics are unchanged: Gateway injects JSON-object response format, forces `chat_template_kwargs.enable_thinking=false`, validates `choices[0].message.content` as a top-level JSON object, compacts successful content, scrubs `message.reasoning` to `null`, and fails explicitly instead of returning mixed thinking/text content. S3 strict finalizer content must therefore be JSON-only.
+- `X-AEGIS-Strict-JSON: true` semantics are unchanged: Gateway injects JSON-object response format, defaults `chat_template_kwargs.enable_thinking=true`, validates `choices[0].message.content` as a top-level JSON object, compacts successful content, scrubs `message.reasoning` to `null`, and fails explicitly instead of returning mixed thinking/text content. S3 strict finalizer content must therefore be JSON-only; strict finalizer calls are still allowed to think, but callers must budget enough tokens for final content after reasoning.
 - Async ownership endpoints are unchanged. Strict JSON async failures remain terminal `failed` with `blockedReason=strict_json_contract_violation`, `errorDetail`, and `retryable=true`; successful results wrap the normal `/v1/chat` response under `response`. Retention remains 15 minutes after terminal state.
 - Tool-call serving uses vLLM `--enable-auto-tool-choice --tool-call-parser qwen3_coder`; Qwen reasoning parser is `--reasoning-parser qwen3`. Tool calls are returned as OpenAI-compatible `message.tool_calls[]` and should be kept separate from final tool-less strict JSON finalizer requests.
 - Effective deployment context is `131072` total model tokens. `/v1/tasks.constraints.maxTokens` remains 1..8192(default 2048). `/v1/chat` forwards caller `max_tokens`; S7 does not silently truncate oversized prompts. Exceeding Gateway char guard or Engine token/context limits fails explicitly.

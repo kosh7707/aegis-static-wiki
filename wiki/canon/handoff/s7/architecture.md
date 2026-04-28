@@ -292,7 +292,7 @@ S7 Gateway still targets a single OpenAI-compatible backend, but the live DGX ba
 | Tool calling | `--enable-auto-tool-choice --tool-call-parser qwen3_coder` |
 | Reasoning parser | `--reasoning-parser qwen3` |
 
-Gateway-facing behavior is unchanged: `/v1/chat` remains OpenAI-compatible pass-through unless strict JSON is requested; strict JSON continues to force `response_format=json_object` and `enable_thinking=false`; tool calls remain `message.tool_calls[]` with JSON-string `function.arguments`. vLLM currently warns that `min_p` and `logit_bias` do not work with speculative decoding, so S7 callers should avoid relying on those fields while MTP is enabled.
+Gateway-facing behavior is unchanged: `/v1/chat` remains OpenAI-compatible pass-through unless strict JSON is requested; strict JSON continues to force `response_format=json_object` while effective `enable_thinking` defaults to `true`; tool calls remain `message.tool_calls[]` with JSON-string `function.arguments`. vLLM currently warns that `min_p` and `logit_bias` do not work with speculative decoding, so S7 callers should avoid relying on those fields while MTP is enabled.
 
 Verification artifacts:
 
@@ -359,11 +359,17 @@ Verification artifacts:
 
 ---
 
+## Thinking mode default (2026-04-28)
+
+- Gateway forwarded request의 기본 effective thinking은 `true`다. `_prepare_chat_forward`는 누락/잘못된 `chat_template_kwargs.enable_thinking`을 `true`로 보정한다.
+- strict JSON도 thinking을 끄지 않는다. `_enforce_strict_json_request_controls`는 `response_format={"type":"json_object"}`와 기본 thinking 보정만 수행한다.
+- `/v1/chat` 성공 응답은 `X-AEGIS-Effective-Thinking` 헤더를 반환하고, `llm_exchange` 로그는 `effectiveThinking`을 남긴다.
+
 ## `/v1/chat` opt-in strict JSON mode (2026-04-14)
 
 - 활성화 헤더: `X-AEGIS-Strict-JSON: true` (`1`/`yes`/`on`도 허용)
 - 기본 `/v1/chat`은 기존과 동일한 pass-through 동작 유지
-- strict mode일 때 Gateway가 `response_format={"type":"json_object"}`와 `chat_template_kwargs.enable_thinking=false`를 강제로 주입
+- strict mode일 때 Gateway가 `response_format={"type":"json_object"}`를 강제로 주입하고 `chat_template_kwargs.enable_thinking`은 effective default `true`를 적용한다
 - 성공 응답에서는 `choices[0].message.content`가 JSON object 문자열인지 검증하고 compact JSON으로 정규화
 - backend가 `message.reasoning`을 포함해도 strict mode 응답에서는 `null`로 scrub
 - strict mode 계약 불만족 시 backend 200을 그대로 반환하지 않고 **502**로 명확히 실패하며, 공통 error envelope의 `errorDetail.code=LLM_PARSE_ERROR`로 노출한다.
@@ -372,7 +378,7 @@ Verification artifacts:
 
 ## Thinking 모드 제어
 
-- `RealLlmClient`가 `chat_template_kwargs: {"enable_thinking": false}`로 thinking 비활성화
+- `RealLlmClient`가 기본적으로 `chat_template_kwargs: {"enable_thinking": true}`를 주입한다. caller가 boolean `false`를 명시한 `/v1/chat`/async 요청만 non-thinking으로 보존한다
 - `response_format: {"type": "json_object"}`로 JSON 출력 보장 (structured output)
 - `V1ResponseParser`에서 `<think>...</think>` 태그 strip (safety net)
 - 프롬프트에 `/no_think` 포함 (추가 safety net)

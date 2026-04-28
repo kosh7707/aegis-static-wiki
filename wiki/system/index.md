@@ -23,7 +23,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/adapter|Adapter 기능 명세]] — ECU ↔ Backend 사이의 WebSocket 릴레이 서비스 *(verified 2026-04-09; s6)*
 - [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-28; s3/analysis-agent)*
 - [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-04-27; s2)*
-- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-27; s3)*
+- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/specs/container-gateway|S8. Container Gateway 기능 명세]] — S8은 프로젝트별 업로드 워크스페이스와 프로젝트당 1개 컨테이너를 관리하는 독립 HTTP 서비스다. *(verified 2026-04-15; s8)*
 - [[wiki/canon/specs/ecu-simulator|ECU Simulator 기능 명세]] — 가상 ECU — CAN 트래픽 생성 + 주입 응답 시뮬레이션 *(verified 2026-04-09; s6)*
 - [[wiki/canon/specs/frontend|S1 Frontend 현재 구현 스펙]] — services/frontend/의 현재 실제 구현 기준 S1 프론트 스펙이다. *(verified 2026-04-18; s1)*
@@ -54,7 +54,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — Base URL: *(verified 2026-04-15; s8)*
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-04-14; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
-- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-25; s7)*
+- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-28; s7)*
 - [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-14; s4)*
 - [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-27; platform)*
 
@@ -213,6 +213,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-structured-output-fallback-20260421|Session history — s3 / s3-structured-output-fallback-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-system-stability-code-review-20260425|Session history — s3 / s3-system-stability-code-review-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
 - [[wiki/canon/handoff/s3/session-s3-system-stability-overhaul-ralplan-20260425|Session history — s3 / s3-system-stability-overhaul-ralplan-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
+- [[wiki/canon/handoff/s3/session-s3-thinking-on-hot20-readiness-20260428|Session history — s3 / session-s3-thinking-on-hot20-readiness-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/handoff/s3/session-s3-wr-inbox-20260421|Session history — s3 / s3-wr-inbox-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-13; s4)*
 - [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-14; s4)*
@@ -302,6 +303,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s7/session-s7-qwen27-s3-wr-20260424|Session history — s7 / s7-qwen27-s3-wr-20260424]] — - Lane: s7 *(verified 2026-04-24; s7)*
 - [[wiki/canon/handoff/s7/session-s7-qwen36-mtp-benchmark-20260428|Session history — s7 / session-s7-qwen36-mtp-benchmark-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
 - [[wiki/canon/handoff/s7/session-s7-system-stability-wr-response-20260425|Session history — s7 / s7-system-stability-wr-response-20260425]] — - Lane: s7 *(verified 2026-04-25; s7)*
+- [[wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428|Session history — s7 / session-s7-thinking-default-true-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
 - [[wiki/canon/handoff/s7/session-s7-vllm-image-restore-20260428|Session history — s7 / s7-vllm-image-restore-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
 - [[wiki/canon/handoff/s8/readme|S8. Container Gateway 인수인계서]] — 먼저 docs/AEGIS.md를 읽을 것. *(verified 2026-04-15; s8)*
 
@@ -425,6 +427,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s7-investigate-live-v1-chat-json-only-control-leak-seen-in-s3-smoke|investigate live /v1/chat JSON-only control leak seen in S3 smoke]] — - Kind: request *(verified 2026-04-14; s3/s7)*
 - [[wiki/canon/work-requests/s3-to-s7-phase-2-decision-needed-how-should-s7-support-recoverable-wait-while-alive-beyon|phase-2 decision needed: how should S7 support recoverable wait-while-alive beyond finite /v1/chat transport timeout?]] — - Kind: question *(verified 2026-04-14; s3/s7/health/timeout-policy/ack-liveness/llm-gateway/phase-2)*
 - [[wiki/canon/work-requests/s3-to-s7-s3-now-depends-on-s7-strict-json-behavior-for-deep-analyze-structured-finalizer|S3 now depends on S7 strict JSON behavior for deep-analyze structured finalizer]] — - Kind: notice *(verified 2026-04-21; s3/s7/analysis-agent/llm-gateway)*
+- [[wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin|S3 requires thinking-on LLM Gateway semantics for hotN; clarify/remove S7 thinking-off overrides]] — - Kind: request *(verified 2026-04-28; s3/s7/llm-gateway/analysis-agent/strict-json/thinking-mode)*
 - [[wiki/canon/work-requests/s3-to-s7-s3-review-approve-separate-async-ownership-surface-with-narrow-contract-adjustme|S3 review: approve separate async ownership surface with narrow contract adjustments; S7 may start implementation]] — - Kind: reply *(verified 2026-04-14; s3/s7/llm-gateway/async-surface/phase-2/ownership)*
 - [[wiki/canon/work-requests/s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat|start immediate S7 work on opt-in strict JSON mode for /v1/chat]] — - Kind: request *(verified 2026-04-14; s3/s7)*
 - [[wiki/canon/work-requests/s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail|System-stability preflight: confirm S7 LLM ownership, timeout, and strict-JSON failure semantics]] — - Kind: question *(verified 2026-04-25; s3/s7/analysis-agent/llm-gateway/strict-json/system-stability)*

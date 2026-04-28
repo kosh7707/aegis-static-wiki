@@ -8,8 +8,8 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
 last_verified: "2026-04-28"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
@@ -335,3 +335,27 @@ Contract clarification:
 - `pocOutcome=poc_rejected` remains the canonical result for immediate unsafe, hallucinated-ref, or grounding-deficient PoC output.
 - Both are task-level `completed` outcomes, not public task failures.
 <!-- S3-POST-FIX-POLISH-20260428:END -->
+
+---
+
+<!-- S3-THINKING-ON-HOT20-READINESS-20260428:START -->
+## 13. 2026-04-28 S7 thinking-on WR 소비 / hot20 readiness
+
+S7이 S3 hotN WR을 완료하여 Gateway의 effective thinking 기본값이 `chat_template_kwargs.enable_thinking=true`로 정렬되었다. Strict JSON도 더 이상 thinking을 강제로 끄지 않으며, caller가 boolean `false`를 명시한 경우에만 mechanical/non-reasoning 요청으로 보존한다. 관련 canonical evidence는 `wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md`와 `wiki/canon/api/llm-gateway-api.md`를 기준으로 한다.
+
+S3 follow-up 반영 사항:
+- Analysis Agent / Build Agent의 service-local `LlmCaller` 기본값은 `enable_thinking=True`다. Tool-call turn과 tool-less strict JSON finalizer 모두 S7에 thinking-on 요청을 보낸다.
+- Analysis Phase 2 prompt, Build build-resolve prompt, legacy task prompt registry에서 `/no_think` suffix를 제거했다. Prompt는 내부 reasoning 사용은 허용하되 최종 content는 순수 JSON만 포함하도록 명시한다.
+- `eval_runner`도 explicit `enable_thinking=true`와 `X-AEGIS-Strict-JSON=true`를 사용한다.
+- S3 code grep guard 기준: `services/analysis-agent`와 `services/build-agent`의 active source/test 표면에 `enable_thinking=False`, `enable_thinking.*False`, `/no_think` 잔존이 없어야 한다.
+
+Fresh verification for this thinking-on readiness pass:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `493 passed in 5.51s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `257 passed in 0.55s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app` → PASS.
+- `rg -n "enable_thinking.*False|enable_thinking=False|/no_think" services/analysis-agent services/build-agent -g '!**/__pycache__/**' -g '!**/.venv/**'` → no matches.
+
+Operational reminder:
+- Thinking-on consumes reasoning tokens. For hot20/deep-analysis prompts, treat `finish_reason=length` with empty final content as token-budget deficiency, not proof that the model failed semantically.
+- hot20 may proceed after external Claude review, using S7's `X-AEGIS-Effective-Thinking` header/logs plus S3 silent-200 diagnostics to distinguish true completed envelopes from hidden internal failure.
+<!-- S3-THINKING-ON-HOT20-READINESS-20260428:END -->

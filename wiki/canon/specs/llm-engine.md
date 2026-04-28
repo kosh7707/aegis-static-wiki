@@ -113,7 +113,7 @@ vllm serve Qwen/Qwen3.6-27B \
 ### 모델 행동 특성
 
 - **Thinking 모드**: `enable_thinking=true`인 hard reasoning에서는 긴 사고 토큰을 사용할 수 있어 latency가 길다.
-- **Strict JSON**: S7 Gateway strict mode는 `enable_thinking=false`와 `response_format=json_object`를 강제하고 content를 JSON object로 검증한다.
+- **Strict JSON**: S7 Gateway strict mode는 `response_format=json_object`와 content JSON object 검증을 강제한다. effective thinking 기본값은 `enable_thinking=true`이며, caller가 boolean `false`를 명시한 경우에만 꺼진다.
 - **Tool calling**: OpenAI-compatible `message.tool_calls[]`로 분리된다. Final strict JSON call은 tool-less로 보내는 것이 S3 계약이다.
 - **멀티모달**: 현재 AEGIS/S7은 text-only workload만 사용한다. Engine도 `--language-model-only`로 기동한다.
 
@@ -203,10 +203,10 @@ DGX Spark에는 현재 Qwen27 serving lifecycle 전용 script가 있다.
 
 ### Thinking 모드 제어
 
-- 비활성화: `"chat_template_kwargs": {"enable_thinking": false}` → final content 직접 응답
-- 활성화: `"enable_thinking": true` 또는 기본 경로 → reasoning parser가 reasoning/content 분리를 시도
+- 기본/활성화: `"enable_thinking": true` 또는 생략 → S7 Gateway가 `true`를 주입하고 reasoning parser가 reasoning/content 분리를 시도
+- 비활성화: `"chat_template_kwargs": {"enable_thinking": false}`를 caller가 명시한 경우에만 mechanical/non-reasoning 요청으로 보존
 
-S7 strict JSON 경로에서는 Gateway가 thinking을 강제로 비활성화한다.
+S7 strict JSON 경로도 thinking을 강제로 비활성화하지 않는다. strict JSON은 `response_format=json_object`와 final content JSON object 검증/정규화 경로이며, thinking-on에서는 충분한 `max_tokens` 예산이 필요하다.
 
 ---
 
@@ -265,14 +265,14 @@ Gateway /v1/models: Qwen/Qwen3.6-27B-default, contextLimit=131072
 | hard p50 latency | 약 660.6s | thinking-heavy prompts |
 | hard p95 latency | 약 1244.8s | thinking-heavy prompts |
 | mean completion throughput | 4.65 tok/s | hard benchmark 평균 |
-| strict JSON smoke | 4.975s | Gateway strict JSON, thinking off |
+| strict JSON smoke | 4.975s | historical smoke; 2026-04-28 이후 strict JSON effective default는 thinking on |
 | tool-call smoke | 6.274s | OpenAI-compatible tool call separated |
 | async strict JSON smoke | ~3.8s | submit/status/result completed |
 
 ### 운영 팁
 
-- 일반 control/tool turn은 non-thinking 또는 제한된 output budget을 사용한다.
-- 품질 우선 deep reasoning만 thinking을 켠다.
+- 일반 control/tool turn도 기본은 thinking-on이다. 정말 mechanical finalization이 필요할 때만 caller가 `enable_thinking=false`를 명시한다.
+- 품질 우선 deep reasoning/hotN 경로는 thinking-on을 전제로 충분한 output budget을 잡는다.
 - 최종 strict JSON finalizer는 반드시 `X-AEGIS-Strict-JSON: true`로 보내 Gateway 검증을 사용한다.
 - 장문 요청은 `/v1/health?requestId=`의 `transport-only` 상태를 alive 신호로 해석하고 elapsed time만으로 중단하지 않는다.
 - 첫 요청/재기동 후에는 torch compile/KV cache warmup이 지연될 수 있다.

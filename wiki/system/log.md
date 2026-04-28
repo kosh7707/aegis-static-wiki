@@ -2329,3 +2329,16 @@ related_pages:
 - Updated S7 handoff, LLM Engine spec/API, LLM Engine ops, LLM Gateway spec, and S7 architecture docs.
 - Documented current image qwen36-vllm:hf-fresh, recipe qwen3.6-27b-origin.yaml, max_model_len=131072, MTP speculative config, BFCL 24/25 before/after MTP, and strict bwrap A/B throughput 7.638 -> 15.132 tok/s.
 - Referenced DGX runbook /home/accslab/spark-vllm-docker/docs/QWEN36_VLLM_RUNBOOK_20260428.md and S7 session evidence pages.
+
+## [2026-04-28] mcp | register_wr | s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md
+
+## [2026-04-28] Handled S3 hotN WR by changing S7 Gateway thinking semantics: RealLlmClient and forwarded chat/async requests now default to enable_thinking=true, strict JSON no longer forces thinking off, and /v1/chat/log diagnostics expose effective thinking mode. | S7 thinking default set to enable_thinking=true for Gateway/Engine calls
+- Code changed under services/llm-gateway only: real client default, app bootstrap, task pipeline fallback, chat forwarding controls, exchange log effectiveThinking, X-AEGIS-Effective-Thinking response header, focused contract tests.
+- Docs updated: llm-gateway API/spec, llm-engine spec, S7 readme, S7 architecture.
+- Verification: 239 llm-gateway tests passed; py_compile passed; live thinking-on smoke returned AEGIS_OK with reasoning present; live strict JSON thinking-on smoke returned compact JSON with X-AEGIS-Effective-Thinking=true.
+
+## [2026-04-28] mcp | complete_wr | s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin
+- Lane s7 completed recipient-side handling
+- Status: completed
