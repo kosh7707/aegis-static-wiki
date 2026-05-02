@@ -2342,3 +2342,94 @@ related_pages:
 ## [2026-04-28] mcp | complete_wr | s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin
 - Lane s7 completed recipient-side handling
 - Status: completed
+
+## [2026-04-28] ralplan-approved | S3 Pass-A semantic defect remediation plan
+- Created final PRD and test spec under /home/kosh/AEGIS/.omx/plans for S3 Pass-A semantic defects.
+- Architect verdict: APPROVE after Phase 0a contract/wiki/WR gate, contract-safe WP-4, ownership map, evidence closeout, and Build Agent parity corrections.
+- Critic verdict: APPROVE after concrete Build Agent active targets/tests, WP-4 anti-synthetic-local guard, DPA→WP matrix, DPA-18→WP-12 ownership, and system-stability fallback/hotN_script_absent evidence rule were added.
+- Session history recorded at wiki/canon/handoff/s3/session-s3-pass-a-ralplan-20260428.md.
+
+## [2026-04-28] mcp | register_wr | s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only.md
+
+## [2026-04-28] completed | S3 Pass-A semantic remediation
+- Implemented WPs 1-17 for S3 Pass-A semantic defect remediation.
+- Final verification: Analysis Agent 520 passed; Build Agent 260 passed; compileall PASS; system-stability eval 6 passed.
+- Critic follow-up approved after NHR accepted-only and recovery audit_order blockers were fixed.
+- Notice WR registered to S2 for claimDiagnostics lifecycle proof fields and generate-poc accepted-only lifecycle behavior.
+
+## [2026-04-29] mcp | register_wr | s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract.md
+
+## [2026-04-29] mcp | register_wr | s7-to-s3-s3-generation-controls-alignment-after-s7-caller-owned-contract
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-generation-controls-alignment-after-s7-caller-owned-contract.md
+
+## [2026-04-29] mcp | register_wr | s7-to-s3-s3-llm-readiness-follow-up-required-after-s7-generation-observability-update
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-llm-readiness-follow-up-required-after-s7-generation-observability-update.md
+
+## [2026-04-29] mcp | register_wr | s7-to-s5-s5-s7-rag-policy-alignment-for-llm-gateway-task-pipeline-enrichment
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s7-to-s5-s5-s7-rag-policy-alignment-for-llm-gateway-task-pipeline-enrichment.md
+
+## [2026-04-29] Recorded S7 temperature-policy closeout evidence | s7 temperature-policy Ralph closeout
+- Updated `wiki/canon/handoff/s7/session-omx-1777438836294-vm2fva.md` with hidden-default zero-gate, pytest, compileall evidence.
+- Kept P2/P4/P15 and cross-lane dependencies as open-risk where S7 cannot close unilaterally.
+
+## [2026-04-29] Completed S7 Ralph evidence closeout for temperature policy | s7 temperature-policy Ralph complete
+- Architect approved S7 evidence closeout before deslop.
+- Post-deslop hidden-default zero gate passed.
+- Post-deslop S7 pytest passed: 267 passed in 6.19s.
+- Post-deslop compileall passed for S7 app/tests.
+
+## [2026-04-29] Applied S7 temperature-policy review follow-up fixes | s7 review follow-up M1-M3
+- M1 resolved by documenting `/v1/chat` and `/v1/async-chat-requests` sampling omission as a transient caller-migration gap in canonical wiki docs, preserving pass-through semantics.
+- M2 resolved by extracting shared generation observability helpers.
+- M3 resolved by adding bounded `aegis_llm_tool_choice_total` metric and tests.
+- m1 resolved by documenting why `SamplingPreset` excludes max_tokens.
+
+## [2026-04-29] Completed S7 review follow-up with post-deslop verification | s7 M1-M3 Ralph follow-up complete
+- M1 documented as chat/async transient sampling gap, preserving pass-through semantics.
+- M2 shared generation observability helper retained after cleanup.
+- M3 bounded tool_choice metric retained after cleanup.
+- Post-deslop verification passed: focused 7 tests, full S7 268 tests, compileall, wiki validation, hidden-default gate.
+
+## [2026-04-29] mcp | register_wr | s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr.md
+
+## [2026-04-29] mcp | register_wr | s7-to-s3-s7-gateway-generation-control-contract-updated-s3-chat-callers-must-send-full-tu
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-gateway-generation-control-contract-updated-s3-chat-callers-must-send-full-tu.md
+
+## [2026-04-29] mcp | register_wr | s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields.md
+
+## [2026-04-29] mcp | complete_wr | s7-to-s3-s7-gateway-generation-control-contract-updated-s3-chat-callers-must-send-full-tu
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-29] mcp | complete_wr | s7-to-s3-s3-generation-controls-alignment-after-s7-caller-owned-contract
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-29] mcp | complete_wr | s7-to-s3-s3-llm-readiness-follow-up-required-after-s7-generation-observability-update
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-04-29] S3 completed S7 caller-owned generation-control WR implementation and docs/WR closeout | S3 generation-controls / P16-P17 readiness
+- Analysis Agent full suite: 556 passed in 5.63s.
+- Build Agent full suite: 299 passed in 0.57s.
+- Compileall PASS; hidden temperature=0.3 static guard PASS.
+- S3→S2 additive public constraints notice registered.
+- Three S7→S3 WRs completed for S3 lane.
+
+## [2026-04-29] S3 generation-controls reverify tightened P11/P7 and refreshed evidence | s3-generation-controls-reverify
+- Re-read temperature-policy-analysis-20260428-s3-summary.md and temperature-policy-analysis-20260428.md.
+- Added S3-local TimeoutDefaults and wired caller/eval/config defaults to the 1800/600/120s policy.
+- Added P7 preset-rationale comments for Generate-PoC and structured finalizer call sites.
+- Verification: analysis-agent 558 passed; build-agent 301 passed; compileall PASS; hidden temperature guard PASS; static coverage guard 274 hits.

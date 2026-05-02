@@ -10,10 +10,12 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-paper-remediation-complete-20260427.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-post-ralplan-followup-defects-20260427.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-post-ralplan-followup-defects-20260427.md"
+  - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
+  - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-04-28"
+last_verified: "2026-04-29"
 service_tags: ["s3", "analysis-agent", "api-contract", "s2"]
-decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1"]
+decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary"]
 related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"]
 ---
 
@@ -22,7 +24,7 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3  
 > **포트**: 8001  
 > **호출자**: S2  
-> **최종 업데이트**: 2026-04-28
+> **최종 업데이트**: 2026-04-29
 > **계약 방향**: S3 claim-evidence state-machine `agent-v1.1` additive response schema contract.
 
 Analysis Agent의 public contract 문서다. 2026-04-24부터 S3는 `completed`와 clean security pass를 분리한다. `completed`는 **schema-valid honest review result envelope**를 뜻하며, accepted claim / accepted PoC / clean hot-gate pass를 뜻하지 않는다.
@@ -106,6 +108,19 @@ Consumer 규칙:
 | `evidenceRefs` | array | X | S2가 제공한 증적 ref 목록 |
 | `constraints.maxTokens` | int | X | 생성 토큰 제한 |
 | `constraints.timeoutMs` | int | X | advisory downstream/tool budget 힌트. elapsed wall-clock time만으로 S3 agent loop를 hard-abort시키는 값은 아니다. |
+| `constraints.enableThinking` | bool | X | S3 generation preset의 thinking flag override. 기본은 thinking-on. |
+| `constraints.temperature` | number | X | optional generation temperature override (`0..2`). |
+| `constraints.topP` | number | X | optional top-p override (`0..1`). |
+| `constraints.topK` | int | X | optional top-k override (`>=1`). Public S3 API는 S7의 `-1` sentinel을 노출하지 않는다. |
+| `constraints.minP` | number | X | optional min-p override (`0..1`). |
+| `constraints.presencePenalty` | number | X | optional presence penalty override (`-2..2`). |
+| `constraints.repetitionPenalty` | number | X | optional repetition penalty override (`0..2`). |
+
+### Generation-control constraints (2026-04-29)
+
+The public `constraints.*` generation override surface is camelCase-only. Snake_case keys such as `top_p`, `top_k`, `min_p`, `presence_penalty`, and `repetition_penalty` are rejected at the S3 API boundary. Internally S3 serializes to S7 snake_case when calling `/v1/chat` or `/v1/async-chat-requests`.
+
+If callers omit these optional fields, S3 applies service-owned named presets and still sends the complete S7-required tuple. `constraints.maxTokens` accepts `1..32768`; stricter sub-call caps such as the structured finalizer cap remain internal per-call policy and do not change the public acceptance range.
 
 ### `deep-analyze`용 `context.trusted`
 
@@ -284,7 +299,7 @@ Accepted final claims expose the legacy four fields plus additive lifecycle fiel
 - legacy: `statement`, `detail`, `supportingEvidenceRefs`, `location`;
 - additive: `claimId`, `status`, `requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, `queryHistory`, `revisionHistory`.
 
-Public `status` values inside `result.claims[]` are restricted to accepted/caveated final states such as `grounded` or an explicitly accepted `needs_human_review`; non-final `candidate`, `under_evidenced`, and `rejected` stay out of this array.
+Public `status` values inside `result.claims[]` are restricted to accepted/caveated final states. In the current automated path this means `grounded` only. `needs_human_review` is sticky but diagnostic-only until S3 introduces an explicit human-acceptance path; `candidate`, `under_evidenced`, `needs_human_review`, and `rejected` stay out of this array.
 
 ### Non-accepted lifecycle diagnostic surface
 
@@ -300,7 +315,13 @@ S3 exposes non-accepted lifecycle information through bounded `result.claimDiagn
         "status": "under_evidenced",
         "family": "command_injection",
         "primaryLocation": "src/main.c:42",
+        "requiredEvidence": ["local_or_derived_support", "source_location", "sink_or_dangerous_api", "caller_chain_or_source_slice"],
+        "presentEvidence": [],
         "missingEvidence": ["local_or_derived_support", "source_location", "sink_or_dangerous_api", "caller_chain_or_source_slice"],
+        "evidenceTrail": [],
+        "revisionHistory": [
+          { "fromStatus": "candidate", "toStatus": "under_evidenced", "reason": "missing:local_or_derived_support,source_location,sink_or_dangerous_api,caller_chain_or_source_slice", "timestampMs": 1710000000000 }
+        ],
         "invalidRefs": [],
         "supportingEvidenceRefs": ["eref-knowledge-CWE-78"],
         "outcomeContribution": "no_accepted_claims"
@@ -311,6 +332,11 @@ S3 exposes non-accepted lifecycle information through bounded `result.claimDiagn
 ```
 
 `result.claimDiagnostics.nonAcceptedClaims[]` is bounded for frontend/developer consumption. Full attempt history, raw rejected narratives, and verbose tool records remain in audit/debug artifacts.
+
+2026-04-28 Pass-A refinement: `nonAcceptedClaims[]` now carries the same bounded lifecycle proof fields needed for developer-facing evidence consumption: `requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, and `revisionHistory`. `outcomeContribution="rejected_unsupported"` is used when all cited claim refs are invalid/missing and the state machine classifies the candidate as `rejected`.
+`outcomeContribution="needs_human_review"` is used when the state machine preserves sticky NHR but no explicit human acceptance has promoted the claim into the public accepted surface.
+
+`generate-poc` follows the same accepted-only rule. Raw producer candidates are passed through the claim/evidence state machine before they can appear in `result.claims[]`. Trusted upstream bare ref IDs may satisfy allowlisting / generic `local_or_derived_support` only; they do not fabricate family-specific slots such as `sink_or_dangerous_api`, `caller_chain_or_source_slice`, or `source_slice` unless request/file/catalog evidence actually provides those roles. If zero PoC claims survive as accepted, S3 still returns a completed envelope with `analysisOutcome="no_accepted_claims"` and diagnostics rather than a task-level output error.
 
 ### Evidence diagnostics and completed-vs-clean interpretation
 

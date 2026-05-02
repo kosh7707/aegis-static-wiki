@@ -196,4 +196,12 @@ Open decision #3 is resolved for the current implementation pass by **Option A**
 - A rejected or under-evidenced candidate contributes to `analysisOutcome="no_accepted_claims"` or `analysisOutcome="inconclusive"` when no accepted claim remains, but it does not become a task-level failure under valid-input/live-runtime conditions.
 
 This keeps developer-facing final findings clean while preserving enough diagnostic detail for evidence consumption, repair planning, and hotN/evaluation grouping.
+
+2026-04-28 Pass-A refinement:
+- `Rejected` is a reachable lifecycle status when a candidate cites at least one ref and all cited refs are invalid/missing.
+- Mixed valid/invalid refs remain `UnderEvidenced`, not rejected.
+- `NeedsHumanReview` is sticky under automatic re-diagnosis; S3 does not demote it to ordinary evidence-acquisition work without an explicit human decision path. Until such a human-acceptance path exists in code, NHR is diagnostic-only and does not enter `result.claims[]`.
+- `transition_claim_status()` accepts deterministic timestamp injection for reproducible tests and paper/evaluation ledgers.
+- `generate-poc` now uses this same lifecycle path before exposing claims. Bare upstream ref IDs are allowlisted/generic local support only; family-specific slots require actual slot-bearing evidence from request/catalog/file content.
+- Non-accepted diagnostics include bounded lifecycle proof fields (`requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, `revisionHistory`) plus `outcomeContribution`.
 <!-- S3-WP0A-20260427:END -->

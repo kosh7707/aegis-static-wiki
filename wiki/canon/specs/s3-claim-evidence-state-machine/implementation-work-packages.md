@@ -279,5 +279,12 @@ Current canonical contract notes:
 - Hot/evaluation reporting must separate task completion from accepted-claim quality, PoC outcome, and strict clean pass.
 - Deterministic acquisition suggestions are advisory, but must be computed after Phase 1/catalog ingestion and readiness gating so the live prompt cannot drift from the state-machine planner. Accepted-claim promotion must also enforce the family slot policy from the evidence-ref contract; a generic local ref alone is insufficient for command injection, path traversal, memory-bounds, null-deref, integer-overflow, or dependency-vulnerability families unless it carries the required roles.
 
+2026-04-28 Pass-A semantic remediation update:
+- The five public claim lifecycle statuses are now executable in code; `rejected` is reached for all-invalid cited refs, while mixed valid/invalid refs remain `under_evidenced`.
+- `needs_human_review` is sticky under automatic diagnosis and is excluded from ordinary acquisition planning.
+- `generate-poc` raw producer claims run through the same lifecycle before public exposure. Accepted PoC claims may appear in `result.claims[]`; non-accepted PoC candidates go to `result.claimDiagnostics.nonAcceptedClaims[]`.
+- Structured finalizer/schema-repair and PoC schema/quality repair calls must cap `max_tokens` by remaining request-local completion budget. Low remaining budget returns a completed recovery/fallback envelope rather than an over-budget LLM call.
+- Analysis Agent and Build Agent parser/token-counter fixes are intentionally duplicated in service-local active paths; shared runtime resurrection remains forbidden.
+
 The older WP numbering on this page remains useful as design lineage, but implementation must follow the PRD above until another canonical S3 plan supersedes it.
 <!-- S3-WP0A-20260427:END -->

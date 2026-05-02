@@ -6,16 +6,16 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-04-28"
+last_verified: "2026-04-29"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract"]
 related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-04-28**
+> **마지막 업데이트: 2026-04-29**
 
 이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-27 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
@@ -359,3 +359,72 @@ Operational reminder:
 - Thinking-on consumes reasoning tokens. For hot20/deep-analysis prompts, treat `finish_reason=length` with empty final content as token-budget deficiency, not proof that the model failed semantically.
 - hot20 may proceed after external Claude review, using S7's `X-AEGIS-Effective-Thinking` header/logs plus S3 silent-200 diagnostics to distinguish true completed envelopes from hidden internal failure.
 <!-- S3-THINKING-ON-HOT20-READINESS-20260428:END -->
+
+---
+
+<!-- S3-PASS-A-SEMANTIC-REMEDIATION-20260428:START -->
+## 14. 2026-04-28 Pass-A semantic defect remediation Ralph status
+
+S3 Pass-A semantic remediation (`.omx/plans/prd-s3-pass-a-semantic-defect-remediation-20260428.md`) has been implemented through WPs 1-17. DPA-8/DPA-20 remain retracted and WP-18/DPA-11 remains intentionally deferred.
+
+Implemented surfaces:
+- Claim lifecycle: `rejected` is reachable for all-invalid cited refs; mixed valid/invalid refs remain `under_evidenced`; sticky `needs_human_review` is preserved but diagnostic-only until an explicit human-acceptance path exists.
+- Accepted-only output: `result.claims[]` now promotes only grounded claims. `under_evidenced`, `rejected`, and sticky NHR candidates remain in `result.claimDiagnostics.nonAcceptedClaims[]` with bounded lifecycle proof fields.
+- Recovery/audit: recovery-eligible malformed/uncertain content turns do not consume forward-progress slots and now carry stable `audit_order` so `audit.agentAudit.turns[]` remains chronological and unambiguous.
+- Budget survival: structured finalizer/schema repair and generate-poc schema/quality repair cap repair calls by remaining request-local completion budget and classify low-budget repair as completed non-clean outcome.
+- Generate-PoC: raw producer claims run through `diagnose_claim_evidence()` and `transition_claim_status()` before public exposure. Trusted upstream bare refs satisfy allowlisting/generic support only and cannot fabricate family-specific slots.
+- Evidence catalog/result diagnostics: support-capable local evidence is not downgraded by later operational collisions; operational/negative refs are excluded from LLM-facing evidence refs; attempted acquisitions include Phase-1 SAST/caller/source events.
+- Parser/token parity: Analysis Agent and Build Agent active service-local parser/token-counter paths now recover unclosed `<think>`/trailing JSON safely and count prompt + completion tokens. No shared runtime or `agent-shared` resurrection.
+
+Fresh verification after Critic blocker fixes:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `520 passed in 5.46s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `260 passed in 0.51s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app` → PASS.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_system_stability_eval.py -q` → `6 passed in 0.01s`.
+- Static guards: no `agent-shared`, no direct `RecoveryTraceEntry(` in `agent_loop.py`, no implementation hits for out-of-scope DPA-8/DPA-20/WP-18, no NHR accepted-claims promotion site.
+
+Reviewer status:
+- First critic pass rejected NHR accepted-surface leakage and ambiguous recovery-turn audit ordering.
+- Follow-up critic pass approved after grounded-only claim promotion and `audit_order` chronology fixes.
+
+Contract/notice:
+- Canonical API and claim-lifecycle pages now document bounded lifecycle proof fields in `nonAcceptedClaims[]`, sticky NHR diagnostic-only behavior, and generate-poc accepted-only lifecycle gating.
+- S3 issued notify-style S3→S2 WR: `wiki/canon/work-requests/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only.md`.
+
+Operational reminder:
+- Hot20 is now unit/contract/static-ready from the S3 Pass-A side, but still should be run only when the live S7/KB/code-graph/S4 stack is intentionally allocated for a long latency test.
+<!-- S3-PASS-A-SEMANTIC-REMEDIATION-20260428:END -->
+
+---
+
+<!-- S3-GENERATION-CONTROLS-S7-WR-20260429:START -->
+## 15. 2026-04-29 S7 generation-controls WR 소비 / P16-P17 readiness
+
+S3 consumed the 2026-04-29 S7 caller-owned generation-control WRs for Analysis Agent and Build Agent. The implementation is S3-only and does not edit S2/S7 code.
+
+Implemented surfaces:
+- Analysis Agent and Build Agent now have service-local `app/agent_runtime/llm/generation_policy.py` named presets.
+- Both service-local `LlmCaller` implementations emit the full S7 tuple on sync and async chat paths: `max_tokens`, `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty`, `repetition_penalty`, `chat_template_kwargs.enable_thinking`.
+- `constraints.maxTokens`, `agent_llm_max_tokens`, and `agent_max_completion_tokens` are aligned to `32768`.
+- Public optional generation overrides are camelCase-only: `enableThinking`, `temperature`, `topP`, `topK`, `minP`, `presencePenalty`, `repetitionPenalty`; snake_case public keys are rejected.
+- Analysis/build loops use named presets plus request overrides and conservatively require first-turn tool use only before any successful tool call.
+- Generate-PoC uses coding preset for initial draft and strict-repair preset for retry/repair paths. Source snippets are wrapped as untrusted LLM-facing content.
+- Timeout constants are centralized in service-local `TimeoutDefaults` mirrored from the S7 contract: chat/default 1800s, eval client read 600s, repair/strict JSON 600s, tool execution 120s.
+- P7 temperature-rationale comments are present at Generate-PoC draft/repair and structured-finalizer call sites.
+- `eval_runner` sends the full tuple and consumes `TimeoutDefaults.TASK_CLIENT_READ_SECONDS`.
+- P17: tool-call arguments are validated against registered schemas before implementation dispatch; violations return retryable `schema_violation` tool results without budget/dispatch/trace success.
+- P16: tool result messages and Generate-PoC source snippets are wrapped/sanitized at the LLM-facing boundary while raw evidence/audit data remains intact.
+
+Fresh verification:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `558 passed in 5.58s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `301 passed in 0.55s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app services/analysis-agent/eval` → PASS.
+- Static guard for hidden `temperature=0.3` defaults over S3 services → no matches.
+- Static guard for S7 full tuple / timeout / schema-validation / input-boundary fields → 266 implementation+test hits, confirming coverage after the reverify patch.
+
+Execution note:
+- The work was planned under `.omx/plans/prd-s3-generation-controls-wr-20260429.md` and `.omx/plans/test-spec-s3-generation-controls-wr-20260429.md`.
+- A user-requested final Critic pre-flight recommended team execution; foundation was completed first, then request/call-site/eval, P17 router validation, and P16 input-boundary lanes were split.
+- 2026-04-29 follow-up autopilot re-read `temperature-policy-analysis-20260428-s3-summary.md` and the full `temperature-policy-analysis-20260428.md`; it found P11 timeout centralization and P7 rationale comments needed one more tightening pass, then reverified full suites.
+- Do not autonomously summon Critic in future sessions; use Critic only when the user explicitly requests it.
+<!-- S3-GENERATION-CONTROLS-S7-WR-20260429:END -->

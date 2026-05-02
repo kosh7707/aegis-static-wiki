@@ -321,8 +321,25 @@ Verification artifacts:
 
 - `llm-exchange.jsonl`은 디버깅/프롬프트 분석용. 한 줄 = 한 LLM 호출
 - 2026-04-27 기준 `/v1/tasks`의 `RealLlmClient` 경로뿐 아니라 `/v1/chat` 및 `/v1/async-chat-requests` 경로도 `request`와 `response` 필드를 `llm-exchange.jsonl`에 기록한다. 즉 S3 chat/async 호출도 requestId로 프롬프트 전문과 LLM 응답 전문을 추적할 수 있어야 한다.
+- 2026-04-29 기준 모든 LLM exchange log는 `generation` block을 포함한다: `maxTokens`, `temperature`, `topP`, `topK`, `minP`, `presencePenalty`, `repetitionPenalty`, `enableThinking`. Prometheus도 같은 생성 제어값을 low-cardinality histogram/counter로 노출한다.
 - Gateway가 직접 생성하는 `/v1/chat` 및 async ownership 오류 응답은 공통 observability envelope(`success=false`, `error`, `retryable`, `errorDetail.code/message/requestId/retryable`)를 포함한다. 하위 vLLM backend의 원본 HTTP 오류 pass-through는 별도 backend payload 호환성을 우선할 수 있다.
 - 로그 정리: `scripts/common/reset-logs.sh` (S2 관리)
+
+### Generation-control Prometheus metrics (2026-04-29)
+
+| Metric | Meaning | Labels |
+|---|---|---|
+| `aegis_llm_temperature` | observed request temperature | endpoint, task_type |
+| `aegis_llm_top_p` | observed request top_p | endpoint, task_type |
+| `aegis_llm_top_k` | observed request top_k (`-1` is bucketed as 0) | endpoint, task_type |
+| `aegis_llm_min_p` | observed request min_p | endpoint, task_type |
+| `aegis_llm_presence_penalty` | observed request presence_penalty | endpoint, task_type |
+| `aegis_llm_repetition_penalty` | observed request repetition_penalty | endpoint, task_type |
+| `aegis_llm_thinking_requests_total` | effective thinking request count | endpoint, task_type, enabled |
+| `aegis_llm_thinking_token_count` | backend-reported reasoning/thinking tokens when available | endpoint, task_type |
+| `aegis_llm_finish_reason_total` | backend finish reason counts | endpoint, task_type, reason |
+
+Endpoint labels are intentionally low-cardinality (`tasks`, `chat_proxy`, `async_chat`), and `task_type` is bounded to the five task types or `none` for chat/async. Per-request details remain in `logs/llm-exchange.jsonl`.
 
 ---
 
@@ -352,6 +369,7 @@ Verification artifacts:
   - optional `requestId` query targeting
   을 additive하게 제공한다.
 - `requestSummary`는 full history dump가 아니라 현재 in-flight request 하나의 control signal이며, active request가 없으면 `state=\"idle\"` summary로 접힌다.
+- `/v1/health.rag`는 RAG 정책 control signal(`topK`, `minScore`, `policy`)을 포함한다. 현재 정책은 `task-pipeline-context-enrichment`이며 RAG hit는 evidence catalog authority가 아니다.
 - 현재 S7에서 true local ack source로 취급하는 것은 queue exit / phase transition / terminal transition이다.
 - non-streaming `llm-inference` 구간은 세부 progress proof가 없으므로 `localAckState=\"transport-only\"`로 노출한다.
 - 현재 `/v1/chat`의 finite transport timeout은 그대로 유지되므로 timeout이 발생한 transport attempt는 terminal failure이고, `/health`는 완료/실패 history를 보존하지 않는다.
@@ -382,3 +400,18 @@ Verification artifacts:
 - `response_format: {"type": "json_object"}`로 JSON 출력 보장 (structured output)
 - `V1ResponseParser`에서 `<think>...</think>` 태그 strip (safety net)
 - 프롬프트에 `/no_think` 포함 (추가 safety net)
+
+## S7 generation policy constants (2026-04-29)
+
+- `app/generation_policy.py` holds S7-owned `SamplingDefaults` and `TimeoutDefaults`.
+- The file includes the required model-pin warning: Qwen3.6 values were validated against the HF model card retrieved on 2026-04-28 and must be revalidated on model-family/card change.
+- These constants do **not** reintroduce hidden Gateway defaults for `/v1/tasks`; that public surface remains caller-owned. They are for warmup, examples/tests, and cross-lane coordination.
+
+## `/v1/tasks` caller-owned generation contract (2026-04-29)
+
+- `/v1/tasks` generation controls are caller-owned and required under camelCase `constraints.*`: `enableThinking`, `maxTokens`, `temperature`, `topP`, `topK`, `minP`, `presencePenalty`, `repetitionPenalty`.
+- `TaskRequest.constraints` is required. Missing `constraints` or any generation control is an intentional 422 contract failure.
+- `TaskPipeline._call_llm()` reads generation controls only from `request.constraints`; the previous hard-coded task-path `temperature=0.3` policy is removed.
+- `LlmClient.generate()` / `RealLlmClient.generate()` receive the full generation tuple and per-request `enable_thinking`, then forward vLLM/OpenAI-compatible snake_case fields (`max_tokens`, `top_p`, `top_k`, `min_p`, `presence_penalty`, `repetition_penalty`, `chat_template_kwargs.enable_thinking`).
+- Observability must cover both exchange-log paths: the task path inside `RealLlmClient.generate()` and the chat/async router `_log_llm_exchange()` path.
+- `/v1/chat` remains snake_case passthrough; `/v1/async-chat-requests` accepts the same snake_case sampling fields additively. These surfaces are not part of the `/v1/tasks` breaking required contract.
