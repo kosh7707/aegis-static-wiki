@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-gateway.md"
 original_path: "docs/specs/llm-gateway.md"
-last_verified: "2026-04-29"
+last_verified: "2026-05-06"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -712,6 +712,22 @@ S7 Gateway는 더 이상 `temperature=0.3` 또는 `enable_thinking=true` 같은 
 - Strict JSON은 예외적으로 thinking을 주입하거나 끄는 경로가 아니다. Gateway는 strict JSON에서 `response_format={"type":"json_object"}`와 final content JSON object 검증/정규화만 적용하고 caller-supplied thinking 값을 보존한다.
 
 S7의 추가 책임 범위: temperature-policy analysis의 P12는 코드로 반영되어 exchange log + Prometheus에서 generation tuple, finish reason, bounded tool-choice bucket을 볼 수 있어야 한다. P13/P14는 현재 제한을 명시한다: model routing은 single default profile + circuit breaker이며 자동 fallback은 없고, RAG는 task-pipeline context enrichment로만 동작한다. P10/P11/P16/P17은 S3/S2 소유 caller/tool-router 영역이므로 S7은 API/WR로 고지하고 직접 수정하지 않는다.
+
+### Tool-choice and response-contract guard (2026-05-06)
+
+The 2026-05-03 S3/S7 production blocker showed that `tool_choice="required"` can produce an OpenAI-incompatible response under the current Qwen3/vLLM/MTP stack: `finish_reason="tool_calls"` with an empty `tool_calls` array and sometimes reasoning-only empty content. S7 therefore treats tool-choice support as a Gateway-owned compatibility contract.
+
+Current Gateway rules:
+
+- `/v1/chat` and `/v1/async-chat-requests` accept only omitted `tool_choice`, `"auto"`, or `"none"`.
+- `"required"` and named-function tool choice objects are rejected before backend dispatch with HTTP 422 `INVALID_TOOL_CHOICE`.
+- Successful backend responses are checked before forwarding/completion: `finish_reason="tool_calls"` must include non-empty `message.tool_calls`.
+- Backend responses that have no actionable content/tool calls but contain `message.reasoning` are treated as response-contract violations rather than successful content.
+- Sync `/v1/chat` reports response-contract violations as retryable HTTP 503 `LLM_PARSE_RETRY`.
+- Async ownership stores the same condition as terminal `failed` with `blockedReason="response_contract_violation"` and `retryable=true`.
+- Prometheus records bounded contract-violation counts through `aegis_llm_response_contract_violation_total{endpoint,reason}` and tool-call emptiness through `aegis_llm_tool_call_empty_total{endpoint,task_type,reason,tool_calls_empty}`.
+
+S7 does not edit S3 callers. S3 compatibility is tracked through `wiki/canon/work-requests/s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement.md`.
 
 
 ### Qwen3.6-27B MTP=1 benchmark / tool-call status (2026-04-28)

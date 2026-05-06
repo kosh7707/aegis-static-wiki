@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-06"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -40,7 +40,7 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 382개 (24 files, 2026-04-13 재검증) |
+| 테스트 | 399개 통과 (24 test files, 2026-05-06 전체 pytest 재확인) |
 
 ---
 

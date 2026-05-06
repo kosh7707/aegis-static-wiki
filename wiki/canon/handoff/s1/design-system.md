@@ -10,9 +10,9 @@ source_refs:
   - "wiki/canon/feedback/s1_frontend_working_guide.md"
   - "services/frontend/src/styles/handoff/**"
   - "services/frontend/src/shared/auth/AuthConsoleShell.tsx"
-last_verified: "2026-04-27"
+last_verified: "2026-05-06"
 service_tags: ["s1"]
-decision_tags: ["external-ui-handoff", "design-system-source-of-truth", "handoff-css-system", "review-tone-palette", "workflow-state-axis"]
+decision_tags: ["external-ui-handoff", "design-system-source-of-truth", "handoff-css-system", "review-tone-palette", "workflow-state-axis", "claim-diagnostics-viewer"]
 related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/handoff/s1/usecase-visibility-matrix.md", "wiki/canon/feedback/s1_frontend_working_guide.md", "wiki/canon/specs/frontend.md"]
 ---
 
@@ -103,7 +103,7 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 - 유스케이스 가시성 매트릭스 (`wiki/canon/handoff/s1/usecase-visibility-matrix.md`) 의 MUST 항목은 DESIGN.md 규칙과 모순되지 않도록 유지한다.
 - **lint grep 자동 검증 (handoff §8.1)** — `oklch(/hex` (excluding color-mix), drift token 어휘 (`--pass/--fail/--warn/--pending/--neutral/--sb-`), `Pretendard/Geist Mono` 직접, `.sb-/.crumb` 흡수 → 모두 production CSS 0건 의무
 
-## 5. Mock ↔ Impl 동기화 현황 (2026-04-27)
+## 5. Mock ↔ Impl 동기화 현황 (2026-05-06)
 
 | 파일 | 상태 |
 |---|---|
@@ -119,10 +119,62 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 | `pages/dashboard.css` | **base 추출 + scope 재맵핑 (의도적, S1 self-publish)** — canonical의 `.page-head { display:flex; ... }` / `.section-head` base 룰을 `services/frontend/src/styles/handoff/app-shell.css` 로 추출하고, `pages/dashboard.css` 는 `.dashboard-main .page-head h1 em` 등 dashboard-unique scope로 재맵핑. 활동 아이콘 spacing / load-more 패딩 / center-cell 추가 룰 유지 |
 | `fonts.css` | CDN → 로컬 경로 (의도적 번들 adaptation), 헤더 주석 제거 |
 | `compat.css` / `page-surfaces.css` / `app-shell.css` | handoff-only 확장, 원본 없음 |
+| `services/frontend/src/pages/FilesPage/components/BuildTargetCreateDialog/BuildTargetScriptHintTree/BuildTargetScriptHintTree.css` (page-local, handoff layer 아님) | **2026-05-06 cycle 2 도입** — single-pick file picker tree (`.script-hint-tree`, `__row(--folder/--file/--selected/--disabled)`, `__indent`, `__radio(/-spacer)`, `__chevron(-spacer)`, `__folder-icon`, `__file-icon`, `__name(--folder/--file)`, `__count`). 모든 토큰 canonical (`--border`, `--surface-sunken`, `--border-strong`, `--foreground`, `--foreground-muted`, `--font-code`, `--text-xs/-sm`, `--weight-semibold`, `--space-*`, `--radius-sm`, `--primary` for focus outline only). 새 토큰 0, hex 0, oklch 0, severity ramp 0. selection state affordance 는 `--surface-sunken` bg + `--border-strong` 2px left rail + bold (workflow-active-pending whitelist 외 영역이라 primary tint 회피, neutral selection 표현). `BuildTargetTreeSelector` (multi-check) 와 의미 분리된 별도 component — 단일 file pick semantics 명확화 |
+| `services/frontend/src/pages/FilesPage/components/BuildTargetCreateDialog/BuildTargetScriptHintField/BuildTargetScriptHintField.css` (page-local, handoff layer 아님) | **2026-05-06 cycle 2 도입** — section frame container (`__selected`, `__selected-meta/-label/-path/-relative/-warning`, `__clear`, `__placeholder`). selection card 는 `--surface-sunken` bg + `--border-subtle` 1px outer + `--border-strong` 3px left rail + `--font-code` mono path display. root-mismatch warning 는 `--warning` color only (review-tone caution-review tone 정합, severity ramp 미사용 — handoff §2.1 정합). placeholder 는 dashed `--border-subtle` + italic muted text. clear button ghost (`--border` → hover `--border-strong`). 모든 토큰 canonical, 새 토큰 0, hex 0, oklch 0, severity ramp 0. dialog body 의 기존 section vocab (`build-target-create-dialog__section` + `__section-title` + `__help`) 재사용 — IncludedPathsField 와 동일 frame |
+| `services/frontend/src/common/ui/findings/FindingDetailView.css` (page-local, handoff layer 아님) | **2026-05-06 PoC outcome surface 도입** — `.finding-poc-outcome-row` (OutcomeChip 3개 horizontal row) + `.finding-poc-diagnostics` + `__title/__counts/__code/__count` (caution-review tone — `--warning` / `--warning-surface`) + `.finding-poc-claims-list` + `.finding-poc-claim` + `__head/__chip-row/__family/__code/__primary/__meta/__body/__field/__evidence/__trail/__history` (NonAcceptedClaimsList collapsible viewer). 모든 토큰 canonical (`--success` / `--warning` / `--primary` / `--surface-sunken` / `--border-subtle` / `--space-*` / `--text-*` / `--weight-*` / `--font-code` / `--radius-sm` / `--foreground{,-muted}`). 새 토큰 0, hex 0, oklch 0, severity ramp 0 (severity 표시는 `SeverityBadge` primitive 경유 — handoff §2.2 sev-chip whitelist 정합). `common/ui/findings/` 는 multi-page 재사용 디렉토리이므로 다른 page 가 동일 caution-review claim viewer 패턴 도입 시 (a) 본 component 추출 또는 (b) page-scoped class 신설로 협상 — 두 page 가 같은 `.finding-poc-*` selector 에 직접 의존하면 anti-pattern |
 
 신규 drift 발견 시 이 표를 갱신하고 원본 자산과의 관계를 명시한다.
 
 ## 6. Cycle 별 산출물 요약
+
+### 2026-05-06 cycle 2 (S2 notice — BuildTarget scriptHintPath full-port wire-up)
+- **Trigger**: WR `s2-to-s1-s2-notice-buildtarget-scripthintpath-...` (kind=notice). S2 가 BuildTarget 에 optional `scriptHintPath?: string` 추가, POST/PUT 양쪽 endpoint 수용 (`null` = clear), 8가지 boundary validation → `400 INVALID_INPUT`. 사용자 요청: 풀 포팅 + 신규 UI.
+- **데이터 채널**: `pipeline.ts` create/update body type 확장 (null pass-through for clear semantic, undefined omit for no-op). `useBuildTargets.add()` 5번째 인자 `scriptHintPath?: string` (empty/undefined → omit).
+- **신규 컴포넌트 (frontend-design pass)**:
+  - `BuildTargetScriptHintTree` — single-pick variant (radio-style indicator via `Circle` / `CircleDot`, file-only clickable, folder click = expand-only). `BuildTargetTreeSelector` (multi-check) 와 의미 분리된 별도 component.
+  - `BuildTargetScriptHintField` — section frame (handoff §3.4 doctrine §10 Extending 준수 — 기존 dialog `__section`/`__section-title`/`__help` vocab 재사용), display row (uploaded path mono + computed root-relative subtitle), root-mismatch warning (`role="alert"`, `--warning` color only — review-tone caution, severity ramp 미사용), clear button ghost. `deriveRootRelative()` helper export.
+- **CSS 디자인 결정 (handoff §3.3 정합)**:
+  - selection state affordance: `--surface-sunken` bg + `--border-strong` 2px left rail + bold. workflow-active-pending whitelist 외 영역이므로 primary tint 회피 — neutral selection 표현.
+  - root-mismatch warning: `--warning` color only (caution-review tone). severity ramp 미사용.
+  - 모든 토큰 canonical (`--border`, `--border-subtle`, `--border-strong`, `--surface-sunken`, `--foreground`, `--foreground-muted`, `--font-code`, `--text-xs/-sm`, `--weight-semibold`, `--space-*`, `--radius-sm`, `--primary` for focus only, `--warning` only for caution warning). 새 토큰 0, hex 0, oklch 0, severity ramp 0.
+- **Dialog wire**: `useBuildTargetCreateDialog` 가 `scriptHintPath` state + `initialScriptHintPath` + `initialRelativePath` props 추가, edit-mode reconstruct (`${root}${initialScriptHintPath}`), submit 시 `toApiScriptHintPath()` 로 root-strip. `BuildTargetCreateDialog` 가 `BuildTargetScriptHintField` mount + `buildTargetRoot` 계산. 400 INVALID_INPUT preflight toast (hint-specific text — handoff §9 정합, generic 실패 toast 와 분리).
+- **Path semantics**: state = raw uploaded path. submit 시 BuildTarget root prefix strip → backend root-relative. mismatch 시 raw path 송신 + 사전 alert 경고 → S2 reject → preflight toast.
+- **handoff §5 sync table 갱신** (이 문서) — 2 신규 page-local CSS row 등록 (BuildTargetScriptHintTree.css + BuildTargetScriptHintField.css), canonical 토큰 어휘 + 의미 분리 명시.
+- **WR closure (MCP)**: `complete_wr s2-to-s1-s2-notice-buildtarget-scripthintpath-...` lane=s1.
+- **critic verdict (oh-my-claudecode:critic, fresh context)**: ACCEPT-WITH-RESERVATIONS → 처리 완료. M1 (`INVALID_INPUT` toast 가이드 hint 외 leak) → `error.detailMessage` 우선 fallback chain. M2 (`buildTargets` 객체 useCallback dep ref 불안정) → `addBuildTarget = buildTargets.add` stable ref 추출. 추가 방어 (`initialScriptHintPath` leading-slash strip, double-slash 방지). MINOR 4건 + Open Q 1건 deferred (pre-existing 또는 a11y enhancement).
+- **검증**: 714 frontend tests PASS / 101 files (cycle 2 baseline 679 → +35 신규 — pipeline +5 / hook +4 / ScriptHintTree +7 / ScriptHintField +11 / dialog scriptHintPath surface +8 incl. critic-driven 2). typecheck PASS. vite build PASS. production CSS lint grep clean.
+
+### 2026-05-06 cycle (non-dynamic full-pipeline contract audit follow-through — F1 Git clone body fix + F2 PoC outcome wire-up + NonAcceptedClaim typed viewer)
+- **Audit context**: `wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md` 의 F1·F2 follow-through. F3 (S7 `tool_choice="required"`) / F4 (S3 internal) 는 S1 무관, 본 cycle 외.
+- **F1 — `cloneSource` body mismatch (S1 단독)**:
+  - `services/frontend/src/common/api/source.ts:80-90` — `cloneSource` 인자명 `url` → `gitUrl`, body `{url, branch}` → `{gitUrl, branch}`. canonical contract `wiki/canon/api/shared-models.md:915` + backend controller 정합. UI caller 변수명도 이미 `gitUrl` 이었으므로 의미 정합.
+  - `services/frontend/src/common/api/client.test.ts` — `cloneSource` 회귀 테스트 2건 추가 (canonical body 키 검증 + branch omit + `body.url` undefined 명시).
+- **F2 — PoC outcome wire-up (S1 ↔ S2 협상)**:
+  - WR `s1-to-s2-poc-facade-result-outcome-gating-pocoutcome-qualityoutcome-cleanpass` 발행 → S2 reply `s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui` (S2 가 `pocOutcome` / `qualityOutcome` / `cleanPass` / `claimDiagnostics?` forward 구현 + `@aegis/shared` `PocResponseData` 정식 export, BC 정책 명시).
+  - S1 wire-up:
+    - `services/frontend/src/common/api/analysis.ts` — local `PocResponse` 인터페이스 제거, `@aegis/shared` `PocResponseData` 채택 + re-export.
+    - `services/frontend/src/common/ui/findings/FindingDetailView.tsx` — PoC 카드에 `OutcomeChip` 3개 (`cleanPass` headline + `poc` + `quality` sm) + non-clean (`!cleanPass`) 시 `lifecycleCounts` caution-review surface. Clean PoC predicate 하드코딩 0 — `pocData.cleanPass` 직접 사용 (S2-prescribed). `tokenUsage` optional guard.
+    - `latencyMs <100ms` 시 `<0.1초` 표시 (cosmetic 정직성 — `0.0초` 모호성 제거).
+- **F2 후속 — typed `NonAcceptedClaim` viewer (S1 ↔ S2 follow-up)**:
+  - WR `s1-to-s2-request-typed-nonacceptedclaim-export-from-aegis-shared-so-s1-can-render-poc-cla` 발행 → S2 reply `s2-to-s1-reply-nonacceptedclaim-typed-export-is-available-from-aegis-shared-for-poc-claim` + S2 notice `s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-and-malformed-diagnost`.
+  - S2 가 `NonAcceptedClaim` + `NonAcceptedClaimLifecycleStage` + `NonAcceptedClaimOutcomeContribution` + `NonAcceptedClaimEvidenceTrailEntry` + `NonAcceptedClaimRevisionHistoryEntry` 정식 export, `AgentClaimDiagnosticsSummary.nonAcceptedClaims?: NonAcceptedClaim[]` narrow, S2 boundary runtime validation 추가 (malformed = omit, untyped 노출 0).
+  - S1 측 신규: `services/frontend/src/common/ui/findings/NonAcceptedClaimsList.tsx` — collapsible per-claim viewer.
+    - `status` 필드 canonical lifecycle key 사용 (S2 가 `lifecycleStage` alias 합성 안 함 — S1 도 alias 0).
+    - status→review-tone 매핑: `rejected/repair_exhausted=critical-review`, `under_evidenced/needs_human_review/retried/inconclusive/candidate=caution-review`, `withdrawn=neutral-review`, unknown=`fallback-review` (절대 success 매핑 안 함).
+    - sort priority: `rejected → repair_exhausted → needs_human_review → under_evidenced → retried → inconclusive → candidate → withdrawn`, 동률 시 `retryCount` desc.
+    - viewer gate `claimDiagnostics?.nonAcceptedClaims?.length > 0` (S2 notice prescription).
+    - severity 표시는 `SeverityBadge` primitive (handoff §2.2 sev-chip whitelist 정합 — review-tone 절대 미사용).
+    - body 영역: rejectionReason / detail / outcomeContribution / requiredEvidence (present-missing tinting `--success`/`--warning`) / evidenceTrail / revisionHistory / invalidRefs.
+    - 타입 access: `NonAcceptedClaim` 만 (handoff §9 정합, untyped `Record<string, unknown>` access 0).
+  - 신규 page-local CSS — `.finding-poc-claims-list` + `.finding-poc-claim*`. canonical 토큰만, 새 토큰 0.
+  - 신규 unit test `NonAcceptedClaimsList.test.tsx` — 9 테스트 (status→tone helper 3 / sortClaims invariants 2 / render head 1 / expand body 1 / empty array smoke 1 / claimId-absent fallback 1).
+- **handoff §5 sync table 갱신** (이 문서) — `FindingDetailView.css` page-local row 신규 등록 + 다른 page 재사용 협상 정책 명시.
+- **WR 정리 (모두 MCP)**:
+  - `complete_wr s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui` lane=s1 (2026-05-06T03:57:47.370Z)
+  - `complete_wr s2-to-s1-reply-nonacceptedclaim-typed-export-...` lane=s1 (2026-05-06T05:52:51.922Z)
+  - `complete_wr s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-...` lane=s1 (2026-05-06T05:52:56.280Z)
+- **critic verdict (oh-my-claudecode:critic, fresh context)**: **APPROVE**. 3 MINOR (evidenceTrail fallback chain 문서화 / `claims=[]` defensive smoke test / `latencyMs` cosmetic) → 본 cycle 안에서 모두 처리. 추가 위반 0.
+- **검증**: 679 frontend tests PASS / 99 files (baseline 670 → +9 신규 — cloneSource 2 + generatePoc outcome 1 + NonAcceptedClaimsList 6+1 idx 1 empty 1; 본 cycle 시작 670 → +9). typecheck PASS. vite build PASS. production CSS lint grep clean (hex 0 outside DynamicAnalysisPage console / oklch 0 / drift token 0 / Pretendard 직접 0 / severity ramp leak 0).
 
 ### 2026-04-27 cycle 2 (autopilot deslop — DynamicAnalysisPage badge token migration + type slop + dead fallback + auth status row 통합 + §2.2 정식 등록)
 - **DynamicAnalysisPage 비-console 영역 hex 5종 → canonical 토큰 마이그레이션** (handoff §2.1 review-tone palette 정합):

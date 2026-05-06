@@ -2491,3 +2491,216 @@ related_pages:
 - Scope excluded dynamic analysis and S3 implementation internals per user instruction.
 - Report records S1/S2 clone payload drift, S2 PoC outcome drift, and S7 tool_choice guard gap.
 - No product code changes were made for this audit.
+
+## [2026-05-06] S2 implemented PoC facade outcome forwarding for S1 WR | s2-poc-facade-outcomes
+- POST /api/analysis/poc now returns pocOutcome, qualityOutcome, cleanPass, and optional claimDiagnostics on completed S3 envelopes.
+- Updated canonical shared-models PoC facade contract and shared TypeScript DTO/model types.
+- Verification: targeted PoC contract tests, shared/backend builds, and full backend Vitest passed.
+
+## [2026-05-06] mcp | register_wr | s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui.md
+
+## [2026-05-06] mcp | register_wr | s5-to-s7-reply-s5-accepts-s7-task-pipeline-rag-enrichment-policy-as-context-only-kb-usage
+- Registered reply WR for s7
+- Path: wiki/canon/work-requests/s5-to-s7-reply-s5-accepts-s7-task-pipeline-rag-enrichment-policy-as-context-only-kb-usage.md
+
+## [2026-05-06] mcp | complete_wr | s7-to-s5-s5-s7-rag-policy-alignment-for-llm-gateway-task-pipeline-enrichment
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | complete_wr | s5-to-s7-reply-s5-accepts-s7-task-pipeline-rag-enrichment-policy-as-context-only-kb-usage
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | register_wr | s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement.md
+
+## [2026-05-06] Updated S3 canonical handoff/API docs for non-dynamic API audit follow-up and ToolIntent runtime-dispatch supersession | S3 documentation
+- Updated wiki/canon/handoff/s3/readme.md with 2026-05-06 ToolIntent/P10 supersession and non-dynamic audit follow-up.
+- Updated wiki/canon/api/analysis-agent-api.md and wiki/canon/api/build-agent-api.md with tool_choice policy: no required, ToolIntent runtime dispatch for mandatory acquisition.
+- Recorded remaining S7 defense-in-depth risk and S3 optional caller-side contract-violation hardening gap.
+
+## [2026-05-06] Updated S4 SAST Runner wiki docs with current test inventory and audit evidence clarification | S4 documentation refresh
+- wiki/canon/handoff/s4/readme.md: test inventory now says 399 tests / 24 files with 2026-05-06 collect-only evidence
+- wiki/canon/specs/sast-runner.md: service overview test count updated from 382 to 399
+- wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md: S4 verification row now notes selector caveat and separate build/readiness verification commands
+- wiki/system/index.md rebuilt via update_index
+
+## [2026-05-06] mcp | complete_wr | s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b
+- Lane s7 completed recipient-side handling
+- Status: open
+
+## [2026-05-06] mcp | register_wr | s1-to-s2-request-typed-nonacceptedclaim-export-from-aegis-shared-so-s1-can-render-poc-cla
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-request-typed-nonacceptedclaim-export-from-aegis-shared-so-s1-can-render-poc-cla.md
+
+## [2026-05-06] mcp | complete_wr | s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | complete_wr | s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] completed | S3 / S7 tool_choice response-contract WR closeout
+- Closed wiki/canon/work-requests/s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement.md for lane s3.
+- Analysis/Build service-local LlmCaller now rejects unsupported required/named tool_choice before HTTP dispatch, preserves reasoning diagnostics, and maps empty tool_calls/reasoning-only/async response_contract violations to retryable LlmContractViolationError.
+- Verification recorded in wiki/canon/handoff/s3/session-omx-1778037641464-duha0m.md: analysis full 579 passed, build full 318 passed, focused suites and compileall passed.
+
+## [2026-05-06] mcp | register_wr | s2-to-s1-reply-nonacceptedclaim-typed-export-is-available-from-aegis-shared-for-poc-claim
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-nonacceptedclaim-typed-export-is-available-from-aegis-shared-for-poc-claim.md
+
+## [2026-05-06] mcp | complete_wr | s1-to-s2-request-typed-nonacceptedclaim-export-from-aegis-shared-so-s1-can-render-poc-cla
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] S2 completed S1 WR for typed NonAcceptedClaim export | s2-nonacceptedclaim-typed-export
+- Added @aegis/shared NonAcceptedClaim lifecycle/evidence/revision types and narrowed AgentClaimDiagnosticsSummary.nonAcceptedClaims to NonAcceptedClaim[].
+- Kept S3 status as canonical lifecycle-stage field and rejectionCode as open optional string.
+- POST /api/analysis/poc forwards populated claimDiagnostics.nonAcceptedClaims[] unchanged and is contract-tested.
+- Updated canonical shared-models, analysis-agent API vocabulary notes, and S2 handoff docs.
+- Verification passed: shared/backend builds, targeted PoC/diagnostics contract tests, full backend suite 28 files / 498 tests, LSP diagnostics 0, diff check, Critic APPROVED.
+- Completed WR wiki/canon/work-requests/s1-to-s2-request-typed-nonacceptedclaim-export-from-aegis-shared-so-s1-can-render-poc-cla.md and registered S2 reply WR.
+
+## [2026-05-06] mcp | register_wr | s3-to-s7-s3-reply-caller-side-tool_choice-guard-and-response-contract-enforcement-complet
+- Registered reply WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-reply-caller-side-tool_choice-guard-and-response-contract-enforcement-complet.md
+
+## [2026-05-06] registered | S3 reply to S7 caller-side tool_choice WR
+- Registered reply WR: wiki/canon/work-requests/s3-to-s7-s3-reply-caller-side-tool_choice-guard-and-response-contract-enforcement-complet.md
+- Reply summarizes S3 caller allowlist, reasoning diagnostics, retryable response-contract handling, and verification evidence.
+
+## [2026-05-06] mcp | register_wr | s7-to-s3-s3-clarify-live-s7-first-turn-tool-call-smoke-evidence-for-tool_choice-follow-up
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-clarify-live-s7-first-turn-tool-call-smoke-evidence-for-tool_choice-follow-up.md
+
+## [2026-05-06] mcp | complete_wr | s3-to-s7-s3-reply-caller-side-tool_choice-guard-and-response-contract-enforcement-complet
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] S2 added runtime schema validation for typed claimDiagnostics | s2-claim-diagnostics-runtime-validation
+- Added services/backend/src/lib/claim-diagnostics.ts runtime guard for AgentClaimDiagnosticsSummary / NonAcceptedClaim shape.
+- AnalysisResultDAO rejects malformed new claimDiagnostics writes and omits malformed historical/manual rows on read.
+- POST /api/analysis/poc omits malformed optional claimDiagnostics rather than exposing untyped nonAcceptedClaims records.
+- Updated shared-models, S2 handoff docs, and S2 reply WR with validation policy.
+- Verification passed: shared/backend build, targeted DAO tests 5, targeted PoC/diagnostics tests 5, full backend suite 28 files / 501 tests, LSP 0, diff check.
+
+## [2026-05-06] mcp | register_wr | s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-and-malformed-diagnost
+- Registered notice WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-and-malformed-diagnost.md
+
+## [2026-05-06] S2 sent S1 follow-up WR for claimDiagnostics runtime validation policy | s2-to-s1-claim-diagnostics-validation-notice
+- Registered S2→S1 notice WR: wiki/canon/work-requests/s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-and-malformed-diagnost.md
+- Clarifies malformed claimDiagnostics are omitted rather than exposed as untyped records.
+- Clarifies S1 should gate NonAcceptedClaimsList on claimDiagnostics?.nonAcceptedClaims?.length and must not treat absent diagnostics as clean success.
+
+## [2026-05-06] verified | S4 full pytest verification
+- services/sast-runner full pytest gate passed: 399 passed in 11.08s.
+- Updated S4 API/spec/handoff wiki docs from collect-only wording to full pytest evidence.
+
+## [2026-05-06] mcp | register_wr | s3-to-s7-s3-reply-live-s7-first-turn-tool-call-smoke-evidence-recorded
+- Registered reply WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-reply-live-s7-first-turn-tool-call-smoke-evidence-recorded.md
+
+## [2026-05-06] mcp | complete_wr | s7-to-s3-s3-clarify-live-s7-first-turn-tool-call-smoke-evidence-for-tool_choice-follow-up
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] completed | S3 live S7 first-turn tool-call smoke evidence
+- Analysis live smoke requestId=s3-analysis-live-tool-smoke-20260506-144632: finishReason=tool_calls, tool=knowledge_search, S7 trace HTTP 200 upstream chat/completions.
+- Build live smoke requestId=s3-build-live-tool-smoke-20260506-144657: finishReason=tool_calls, tool=try_build, S7 trace HTTP 200 upstream chat/completions.
+- Registered reply WR wiki/canon/work-requests/s3-to-s7-s3-reply-live-s7-first-turn-tool-call-smoke-evidence-recorded.md and completed S7 question WR.
+
+## [2026-05-06] mcp | complete_wr | s3-to-s7-s3-reply-live-s7-first-turn-tool-call-smoke-evidence-recorded
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | complete_wr | s2-to-s1-reply-nonacceptedclaim-typed-export-is-available-from-aegis-shared-for-poc-claim
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | complete_wr | s2-to-s1-notice-poc-claimdiagnostics-now-has-s2-runtime-validation-and-malformed-diagnost
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | register_wr | s3-to-s2-request-s2-to-switch-build-agent-build-script-hint-contract-from-inline-text-to-
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-request-s2-to-switch-build-agent-build-script-hint-contract-from-inline-text-to-.md
+
+## [2026-05-06] registered | S3→S2 Build Agent scriptHintPath contract request
+- Registered WR wiki/canon/work-requests/s3-to-s2-request-s2-to-switch-build-agent-build-script-hint-contract-from-inline-text-to-.md
+- Requested S2 alignment to replace inline scriptHintText/buildScriptHintText with uploaded-project-relative build.scriptHintPath.
+- S3 intends to remove inline hint legacy after S2 confirms/adjusts the API shape.
+
+## [2026-05-06] mcp | register_wr | s2-to-s3-s2-reply-build.scripthintpath-contract-review-for-build-agent-build-resolve
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s2-reply-build.scripthintpath-contract-review-for-build-agent-build-resolve.md
+
+## [2026-05-06] mcp | complete_wr | s3-to-s2-request-s2-to-switch-build-agent-build-script-hint-contract-from-inline-text-to-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | register_wr | s3-to-s2-s3-reply-build-agent-build.scripthintpath-contract-implemented
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-reply-build-agent-build.scripthintpath-contract-implemented.md
+
+## [2026-05-06] mcp | complete_wr | s2-to-s3-s2-reply-build.scripthintpath-contract-review-for-build-agent-build-resolve
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] completed | S3 Build Agent scriptHintPath contract implementation
+- Implemented S2-reviewed build.scriptHintPath contract in Build Agent.
+- Removed inline script hint aliases and made scriptHintPath effective-BuildTarget-root-relative.
+- Verification: focused 27 passed, build-agent full 334 passed, compileall/diff-check PASS, wiki npm test 8 passed.
+- Reply WR: wiki/canon/work-requests/s3-to-s2-s3-reply-build-agent-build.scripthintpath-contract-implemented.md
+
+## [2026-05-06] approved | S3 Build Agent scriptHintPath Critic re-review
+- Initial Critic review rejected scriptHintPath implementation for missing runtime direct-exec guard, weak reference-only test, and raw prompt boundary.
+- S3 fixed TryBuildTool generated-script-only enforcement, build_dir wiring, untrusted-source prompt wrapping, and tests.
+- Fresh verification: focused 57 passed, full build-agent 339 passed, compileall/diff-check PASS.
+- Follow-up Critic verdict: PASS; no blockers/non-blockers for release/tagging from this review pass.
+
+## [2026-05-06] mcp | register_wr | s3-to-s2-s3-reply-build.scripthintpath-implementation-passed-critic-after-runtime-guard-h
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-reply-build.scripthintpath-implementation-passed-critic-after-runtime-guard-h.md
+
+## [2026-05-06] S3 registered final WR reply to S2 after Critic PASS on build.scriptHintPath implementation | S3 to S2 build.scriptHintPath final reply
+- WR: wiki/canon/work-requests/s3-to-s2-s3-reply-build.scripthintpath-implementation-passed-critic-after-runtime-guard-h.md
+- Post-Critic hardening includes request-scoped TryBuildTool guard against direct uploaded/reference script execution and untrusted prompt boundary wrapping for script hint content.
+- Verification evidence: focused build-agent tests 57 passed; full build-agent suite 339 passed; compileall and git diff --check passed.
+- Critic re-review verdict: PASS / no blockers.
+
+## [2026-05-06] mcp | register_wr | s2-to-s1-s2-notice-buildtarget-scripthintpath-is-available-for-uploaded-build-script-sele
+- Registered notice WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-notice-buildtarget-scripthintpath-is-available-for-uploaded-build-script-sele.md
+
+## [2026-05-06] S2 implemented positive scriptHintPath support after S3 contract freeze | S2 BuildTarget scriptHintPath implementation
+- Added S1-facing BuildTarget.scriptHintPath and target create/update plumbing.
+- S2 validates effective-BuildTarget-root-relative uploaded script hints and forwards them to S3 Build Agent as context.trusted.build.scriptHintPath.
+- Updated S2 canonical shared-models/api-endpoints/architecture docs and sent S2->S1 notice WR.
+
+## [2026-05-06] mcp | complete_wr | s3-to-s2-s3-reply-build-agent-build.scripthintpath-contract-implemented
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] mcp | complete_wr | s3-to-s2-s3-reply-build.scripthintpath-implementation-passed-critic-after-runtime-guard-h
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-06] S2 acknowledged S3 post-Critic runtime guard hardening | S2 reviewed S3 scriptHintPath Critic pass reply
+- Confirmed S3 now runtime-rejects direct uploaded script execution and chained uploaded script execution.
+- Confirmed S2 implementation emits canonical context.trusted.build.scriptHintPath only and does not emit inline aliases.
+- Completed the follow-up S3->S2 reply WR for S2.
+
+## [2026-05-06] S2 completed Critic-driven implementation review/fix for BuildTarget scriptHintPath. | S2 BuildTarget scriptHintPath Critic pass
+- Fixed stale scriptHintPath invariant on relativePath-only BuildTarget updates by revalidating existing hints against the new effective BuildTarget root.
+- Added service/API/pipeline tests for validator edge cases, stale update rejection, and isolated BuildTarget emission.
+- Verification passed: targeted backend scriptHint suites, shared/backend builds, full backend test suite, git diff --check.
+- Critic sub-agent 019dfc40-2f5e-7b62-85ec-dd69a42a3acd returned PASS with no blockers.
+
+## [2026-05-06] mcp | complete_wr | s2-to-s1-s2-notice-buildtarget-scripthintpath-is-available-for-uploaded-build-script-sele
+- Lane s1 completed recipient-side handling
+- Status: completed

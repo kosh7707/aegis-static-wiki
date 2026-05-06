@@ -29,7 +29,7 @@ source_refs:
   - "services/knowledge-base/app/routers/code_graph_api.py"
   - "services/llm-gateway/app/routers/tasks.py"
   - "services/llm-gateway/app/schemas/request.py"
-last_verified: "2026-05-04"
+last_verified: "2026-05-06"
 service_tags: ["s1", "s2", "s3", "s4", "s5", "s7", "pipeline"]
 decision_tags: ["api-contract", "non-dynamic-pipeline", "audit", "no-code-change"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/shared-models.md"]
@@ -69,7 +69,7 @@ No product code was intentionally edited for this audit. The AEGIS working tree 
 | `npm test -- src/__tests__/contract/client-contract.test.ts src/services/__tests__/pipeline-orchestrator.test.ts src/services/__tests__/analysis-orchestrator.test.ts src/services/__tests__/llm-task-client.test.ts` in `services/backend` | 4 files / 72 tests passed. |
 | `npm test -- src/common/api/client.test.ts src/common/hooks/useAnalysisWebSocket.test.ts src/common/hooks/usePipelineProgress.test.ts src/common/hooks/useUploadProgress.test.ts src/common/hooks/useSdkProgress.test.ts` in `services/frontend` | 5 files / 49 tests passed. |
 | `.venv/bin/python -m pytest tests/test_contract_input_validation.py tests/test_real_client_generation_controls.py -q` in `services/llm-gateway` | 53 tests passed. |
-| `.venv/bin/python -m pytest tests/test_scan_endpoint.py -q -k "build_endpoint or discover_targets or scan_with_compile_commands or build_readiness or sdk"` in `services/sast-runner` | 10 tests passed. |
+| `.venv/bin/python -m pytest tests/test_scan_endpoint.py -q -k "build_endpoint or discover_targets or scan_with_compile_commands or build_readiness or sdk"` in `services/sast-runner` | 10 tests passed. 2026-05-06 S4 follow-up: this selector currently covers discover-targets/sdk cases only; build/readiness coverage was separately reconfirmed with `tests/test_build_contract.py -q` (3 passed) and `tests/test_scan_endpoint.py -q -k "test_build_ or test_build_and_analyze"` (10 passed). |
 | `.venv/bin/python -m pytest tests/test_api_contract.py::TestCodeGraphIngestContract tests/test_api_contract.py::TestCodeGraphStatsContract tests/test_api_contract.py::TestReadyContract tests/test_api_contract.py::TestTimeoutHeaderEnforcement -q` in `services/knowledge-base` | 20 tests passed. |
 | `npm run build -w @aegis/shared && npm run build -w @aegis/backend` | Passed. |
 | `npm run typecheck` in `services/frontend` | Passed. |

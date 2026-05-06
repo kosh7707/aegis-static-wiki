@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-04-25"
+last_verified: "2026-05-06"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-04-25**
+> **마지막 업데이트: 2026-05-06**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -109,12 +109,12 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 
 ---
 
-## 3. 현재 상태 (2026-04-20)
+## 3. 현재 상태 (2026-05-06)
 
 | 항목 | 값 |
 |------|---|
-| TypeScript 에러 | **0개** |
-| 테스트 | **479개 통과** (vitest, 2026-04-20 mock-to-real auth bridge 추가 후 재검증) |
+| TypeScript 에러 | **0개** (services/backend + services/shared, 2026-05-06 LSP/tsc 기준) |
+| 테스트 | **498개 통과** (backend vitest, 2026-05-06 PoC facade outcome/claim-diagnostics 계약 포함) |
 | DB 테이블 | **35개** (SQLite, WAL) — 기존 26개 활성 표면 + execution/persistence seam 9개 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 (`/pipeline/prepare*`, `/analysis/quick`, `/analysis/deep`) |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
@@ -289,6 +289,16 @@ S5 notice `s5-to-s2-s3-s5-runtime-semantics-aligned-on-2026-04-14-real-timeout-e
 - `PipelineOrchestrator`는 더 이상 `/v1/ready` 결과로 code-graph ingest 자체를 pre-gate 하지 않는다.
   - code GraphRAG readiness의 authoritative signal은 계속 `POST /v1/code-graph/{project_id}/ingest` 응답의 `status + readiness.graphRag` 다.
 - `/v1/graph/stats` mixed-graph totals 드리프트는 현재 S2 runtime path에서 직접 사용하지 않는다.
+
+
+### 3-0d. PoC facade / claim-diagnostics 타입 계약 메모 (2026-05-06)
+
+S2는 S1 WR 처리로 `POST /api/analysis/poc` 응답을 `PocResponseData`로 고정했다. REST envelope `success: true`는 transport/envelope 성공일 뿐이며 clean PoC 판단은 `pocOutcome + qualityOutcome + cleanPass` 조합으로 해야 한다.
+
+후속 S1 WR 처리로 `@aegis/shared`는 `NonAcceptedClaimLifecycleStage`, `NonAcceptedClaim`, `NonAcceptedClaimEvidenceTrailEntry`, `NonAcceptedClaimRevisionHistoryEntry`를 export한다. `AgentClaimDiagnosticsSummary.nonAcceptedClaims?`는 더 이상 `Array<Record<string, unknown>>`가 아니라 `NonAcceptedClaim[]`이다. S2는 S3 wire key `status`를 별도 `lifecycleStage`로 rename하지 않고, `status`를 canonical lifecycle-stage field로 문서화했다.
+
+S2 facade는 `claimDiagnostics.nonAcceptedClaims[]`를 변형하지 않고 round-trip forward한다. 새로운 안정 per-claim key를 S1이 소비해야 하면 S2/shared-models 업데이트 + WR 응답을 먼저 거친다.
+S2는 `services/backend/src/lib/claim-diagnostics.ts` 런타임 가드로 malformed optional diagnostics를 저장/노출하지 않는다. DAO 신규 저장은 invalid shape이면 거부하고, historical/manual row 또는 PoC optional diagnostics가 malformed이면 해당 `claimDiagnostics`를 omit한다.
 
 ### 3-1. 프로젝트 CRUD hardening 메모 (2026-04-09)
 

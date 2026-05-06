@@ -6,18 +6,18 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-03"
+last_verified: "2026-05-06"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "topk-alignment", "transitional-deprecation", "regression-gate"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-03**
+> **마지막 업데이트: 2026-05-06**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-27 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-06 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
@@ -113,9 +113,11 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | analysis handlers | `services/analysis-agent/app/routers/deep_analyze_handler.py`, `generate_poc_handler.py` |
 | analysis phase1 façade / flow | `services/analysis-agent/app/core/phase_one*.py` |
 | analysis loop / result assembly | `services/analysis-agent/app/core/agent_loop.py`, `result_assembler.py` |
+| analysis ToolIntent dispatch | `services/analysis-agent/app/core/agent_loop.py`, `services/analysis-agent/app/agent_runtime/llm/caller.py` |
 | build public router | `services/build-agent/app/routers/tasks.py` |
 | build handlers | `services/build-agent/app/routers/build_resolve_handler.py`, `sdk_analyze_handler.py` |
 | build phase0 / loop / result assembly | `services/build-agent/app/core/phase_zero.py`, `agent_loop.py`, `result_assembler.py` |
+| build ToolIntent dispatch | `services/build-agent/app/core/agent_loop.py`, `services/build-agent/app/agent_runtime/llm/caller.py` |
 | service-local caller / policy / router | `services/analysis-agent/app/agent_runtime/**`, `services/build-agent/app/agent_runtime/**` |
 | analysis legacy direct caller | `services/analysis-agent/app/clients/real.py` |
 | analysis eval helper | `services/analysis-agent/eval/eval_runner.py` |
@@ -432,24 +434,103 @@ Execution note:
 ---
 
 <!-- S3-TEMPERATURE-FOLLOWUP-20260503:START -->
-## 16. 2026-05-03 Temperature-policy follow-up closeout
+## 16. 2026-05-03 Temperature-policy follow-up closeout / 2026-05-06 ToolIntent supersession
 
-S3 re-read `wiki/context/decisions/temperature-policy-analysis-20260428-s3-followup-20260503.md` and closed the remaining Step 1 follow-up items for Analysis Agent and Build Agent.
+S3 originally closed the Step 1 temperature-policy follow-up items after reading `wiki/context/decisions/temperature-policy-analysis-20260428-s3-followup-20260503.md`. That 2026-05-03 closeout has since been superseded at the tool-dispatch boundary by the 2026-05-03/05-06 `tool_choice="required"` root-cause work and the ToolIntent runtime-dispatch implementation.
 
-Closeout decisions:
-- **P10**: both agent loops keep `tool_choice="required"` for the first acquisition/build tool turn only while tools are available, no successful tool call has happened, and no forced-report/finalizer path is active. This is intentionally broader than the WR shorthand “Phase 2 first turn”: failed/schema-violating tool attempts have not acquired evidence yet, so S3 keeps acquisition required until the first successful tool call. It relaxes to `auto` after success or when tools are removed.
+Current decisions as of 2026-05-06:
+- **P10 supersession**: Analysis Agent and Build Agent no longer use vLLM/OpenAI `tool_choice="required"` for mandatory first evidence/build acquisition. `_tool_choice_for_turn(...)` returns `"auto"` when tools are present. Mandatory acquisition is enforced in S3 runtime, not by vLLM guided tool-choice.
+- **ToolIntent runtime dispatch**: while no successful tool call exists and tools are available, the agent loop performs a tool-intent planning call with `tools=None`, no `tool_choice`, strict JSON, and thinking enabled. The returned ToolIntent JSON is converted by S3 into a synthetic `ToolCallRequest` and then dispatched through the normal tool router.
+- **Reason for divergence from old P10 wording**: vLLM/Qwen reasoning-parser stacks can return `finish_reason="tool_calls"` with empty `tool_calls` when `enable_thinking=true` and `tool_choice="required"`. S3 therefore treats `required` as unsupported for current production use and preserves the original P10 safety intent via runtime gating.
 - **P16**: LLM-facing tool results and source snippets remain wrapped/sanitized by `app/agent_runtime/security/input_boundary.py`; raw evidence/audit content remains unmutated outside the prompt boundary. Literal injected boundary delimiters are neutralized to `[BOUNDARY-MARKER-NEUTRALIZED]` before wrapping to avoid delimiter confusion.
-- **P18**: S3 chose option **(a)**. Analysis Agent and Build Agent public `constraints.topK` now align with S7's `top_k` range by accepting `ge=-1`, preserving the vLLM/S7 unlimited sampling escape hatch. Named presets remain positive (`top_k=20` for thinking, `top_k=1` for strict repair).
-- **P19**: scalar `LlmCaller.call(temperature=...)` is now explicitly transitional. It emits a `DeprecationWarning`, and the removal milestone is: remove the scalar argument after S3 readiness-gate evidence shows all active call sites pass named `GenerationControls` presets.
-- **Regression gate**: durable pytest gate `services/analysis-agent/tests/test_s3_llm_readiness_gate.py` checks P10/P16/P18/P19 static markers across both S3 services and includes `eval/eval_runner.py` P6 generation tuple coverage. Local context gate `.omx/context/s3-llm-readiness-gate-20260503.py` mirrors the same readiness check for session evidence.
+- **P18**: Analysis Agent and Build Agent public `constraints.topK` align with S7's `top_k` range by accepting `ge=-1`, preserving the vLLM/S7 unlimited sampling escape hatch. Named presets remain positive (`top_k=20` for thinking, `top_k=1` for strict repair).
+- **P19**: scalar `LlmCaller.call(temperature=...)` is transitional compatibility only and emits a `DeprecationWarning`; new S3 LLM call sites must pass named `GenerationControls` presets.
+- **Regression gate**: durable pytest gate `services/analysis-agent/tests/test_s3_llm_readiness_gate.py` now checks for ToolIntent/P10-disable markers, P16 boundary markers, P18/P19 static markers, and `eval/eval_runner.py` P6 generation tuple coverage.
 
-Fresh verification:
-- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `565 passed in 5.82s`.
-- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `304 passed in 0.60s`.
+Fresh verification from the ToolIntent stabilization closeout:
+- Analysis Agent full suite: `600 passed in 5.74s`.
+- Build Agent full suite: `331 passed in 0.67s`.
+- Focused ToolIntent tests: Analysis Agent `tests/test_tool_intent_runtime_dispatch.py`; Build Agent `tests/test_tool_intent_runtime_dispatch.py`.
 - `python3 -m compileall -q services/analysis-agent/app services/build-agent/app services/analysis-agent/eval` → PASS.
-- `python3 .omx/context/s3-llm-readiness-gate-20260503.py` → PASS, including `eval/eval_runner.py` P6 generation tuple coverage.
-- Active-source static guards for hidden `temperature=0.3`, thinking-off markers, `/no_think`, old `topK ge=1`, and old `top_k >= 1` validation → no matches.
+- certificate-maker hot3 operational-only run on 2026-05-06: 3/3 attempts PASS for system stability, with Generate-PoC quality gate intentionally excluded from that operational verdict.
 
 Operational reminder:
-- The scalar `temperature` compatibility path is deprecated compatibility only. New S3 LLM call sites must pass `generation=controls_from_constraints(<named preset>, constraints)` and must not pass scalar `temperature=`.
+- Do not reintroduce `tool_choice="required"` or named tool choice in S3 until S7/vLLM explicitly proves that the current model + reasoning parser + tool parser + speculative/MTP stack supports it. Current allowed caller values are `auto`/`none`; S3-owned mandatory acquisition must remain ToolIntent/runtime-dispatched.
+- Clean success remains result-level: `completed` is an honest envelope, not a clean finding/PoC/build proof.
 <!-- S3-TEMPERATURE-FOLLOWUP-20260503:END -->
+
+---
+
+<!-- S3-NON-DYNAMIC-API-AUDIT-FOLLOWUP-20260506:START -->
+## 17. 2026-05-06 Non-dynamic API contract audit follow-up
+
+S3 re-read `wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md` and routed S3-relevant findings through current code. The audit intentionally excluded S3 implementation internals at the time; this section records the follow-up state after S3 ToolIntent stabilization.
+
+S3-relevant audit findings:
+- **F2 / S2 PoC facade**: S3's public contract requires consumers to inspect `pocOutcome`, `qualityOutcome`, and `cleanPass`. S3 currently emits those fields for `generate-poc` accepted/rejected/inconclusive outcomes. The drift was in S2 facade shaping, not in S3's response contract. Current AEGIS working tree contains non-S3 changes that appear to address this, but S3 does not own their verification/commit state.
+- **F3 / S7 tool_choice guard**: S3 no longer sends `tool_choice="required"`; this mitigates S3's active risk. After the S7→S3 WR, service-local Analysis/Build `LlmCaller` now also rejects caller attempts to pass unsupported `required` or named function tool choices before HTTP submission. S7 still owns gateway-side request allowlisting for non-S3 callers.
+- **F4 / S3 implementation unverified**: Follow-up inspection now confirms S3 has an implementation-level mitigation for the old P10 risk: ToolIntent runtime dispatch avoids vLLM `required` guided tool-choice while preserving mandatory acquisition semantics.
+
+Current code anchors:
+- Analysis ToolIntent path: `services/analysis-agent/app/core/agent_loop.py` and `services/analysis-agent/app/agent_runtime/llm/caller.py`.
+- Build ToolIntent path: `services/build-agent/app/core/agent_loop.py` and `services/build-agent/app/agent_runtime/llm/caller.py`.
+- S3 caller response-contract hardening: `services/analysis-agent/app/agent_runtime/errors.py`, `services/analysis-agent/app/agent_runtime/policy/retry.py`, `services/analysis-agent/app/agent_runtime/schemas/agent.py`, `services/build-agent/app/agent_runtime/errors.py`, `services/build-agent/app/agent_runtime/policy/retry.py`, `services/build-agent/app/agent_runtime/schemas/agent.py`.
+- Generate-PoC outcome shaping: `services/analysis-agent/app/routers/generate_poc_handler.py`, `services/analysis-agent/app/schemas/response.py`.
+- Readiness/static guard: `services/analysis-agent/tests/test_s3_llm_readiness_gate.py`.
+
+S7→S3 WR closeout on 2026-05-06:
+- Analysis Agent and Build Agent `LlmCaller` now allow only `tool_choice="auto"` or `"none"`; unsupported `required` and named function choices raise before HTTP dispatch.
+- `LlmResponse.reasoning` is preserved for diagnostics and logged as `reasoningChars`.
+- `finish_reason="tool_calls"` with an empty parsed `tool_calls[]`, and reasoning-only responses with no actionable content/tool call, become retryable `LlmContractViolationError` instances with bounded diagnostic excerpts.
+- Async ownership `response_contract_violation` / `LLM_PARSE_RETRY` status payloads map to the same retryable contract-violation class; strict JSON contract failures remain `StrictJsonContractError` and are now included in retry policy.
+- HTTP `422 INVALID_TOOL_CHOICE` remains a non-retryable caller-shaping/configuration failure; HTTP `503 LLM_PARSE_RETRY` remains retryable transport/output-contract failure.
+
+Fresh verification for this S7→S3 WR closeout:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_llm_caller.py tests/test_retry_policy.py tests/test_s3_llm_readiness_gate.py -q` → `50 passed in 0.49s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest tests/test_llm_caller.py tests/test_policy_retry.py -q` → `20 passed in 0.18s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `579 passed in 6.10s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `318 passed in 0.71s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_tool_intent_runtime_dispatch.py tests/test_skeleton_smoke.py -q` → `12 passed in 0.21s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest tests/test_tool_intent_runtime_dispatch.py -q` → `4 passed in 0.04s`.
+- `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval services/build-agent/app` → PASS.
+- Static grep for active `tool_choice="required"` / named function emission under `services/analysis-agent` and `services/build-agent` found only guard tests/comments, not active emission code.
+
+Remaining S3-facing risks:
+- S7 gateway F3 remains a cross-lane defense-in-depth gap for non-S3 callers until unsupported tool choice values are rejected at the gateway and empty `finish_reason="tool_calls"` responses are converted to retryable contract violations there too.
+- S3 still avoids vLLM `required` for mandatory acquisition; do not reinterpret the new caller allowlist as permission to reintroduce guided required/named choices.
+- API/handoff docs before this section may predate ToolIntent; when conflicts appear, this section and the API pages last verified on 2026-05-06 supersede older P10 wording.
+<!-- S3-NON-DYNAMIC-API-AUDIT-FOLLOWUP-20260506:END -->
+
+---
+
+<!-- S3-BUILD-SCRIPTHINTPATH-20260506:START -->
+## 18. 2026-05-06 Build Agent `scriptHintPath` contract transition
+
+S3 consumed S2's contract review reply for replacing inline Build Agent script hints with an uploaded-project-relative path. S2 accepted the `context.trusted.build.scriptHintPath` direction and reported no current S2 runtime emission of the old inline hint fields.
+
+S3 implementation decision:
+- `build.scriptHintPath` is canonical and relative to the **effective BuildTarget root** (`projectPath/buildTargetPath`, or `projectPath` when `buildTargetPath="."` / empty).
+- Inline script hint aliases are removed rather than maintained:
+  - `build.scriptHintText`
+  - `build.scriptHint`
+  - top-level `buildScriptHint`
+  - top-level `buildScriptHintText`
+- Top-level `scriptHintPath` is also rejected; S2/S1 should send only `context.trusted.build.scriptHintPath`.
+
+Build Agent safety contract:
+- reject empty, absolute, Windows drive/UNC, backslash, NUL, and traversal paths;
+- resolve symlinks and reject escapes outside the effective BuildTarget root;
+- require a regular UTF-8 text file under a 20,000 byte cap;
+- hash and audit the referenced file material;
+- expose bounded content to the LLM as reference-only prompt material;
+- never execute the original uploaded script directly; only generated request-scoped `build-aegis-*/aegis-build.sh` may be passed to `try_build`.
+
+Code anchors:
+- `services/build-agent/app/schemas/request.py`
+- `services/build-agent/app/validators/build_request_contract.py`
+- `services/build-agent/app/routers/build_resolve_handler.py`
+- `services/build-agent/app/routers/build_route_support.py`
+- `services/build-agent/tests/test_build_request_contract.py`
+- `services/build-agent/tests/test_build_resolve_handler.py`
+- `services/build-agent/tests/test_build_route_support.py`
+<!-- S3-BUILD-SCRIPTHINTPATH-20260506:END -->

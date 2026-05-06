@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-05-02"
+last_verified: "2026-05-06"
 service_tags: ["platform"]
-decision_tags: []
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -357,6 +357,8 @@ interface BuildTarget {
   /** SDK selection preflight state. Quick is allowed only when this is sdk-selected or sdk-none-explicit. */
   sdkChoiceState: BuildTargetSdkChoiceState;
   buildSystem?: "cmake" | "make" | "custom";
+  /** Effective-BuildTarget-root-relative uploaded script hint; reference-only for S3 Build Agent. */
+  scriptHintPath?: string;
   buildCommand?: string;
   status: BuildTargetStatus;
   compileCommandsPath?: string;
@@ -440,14 +442,67 @@ interface AgentRecoveryTraceEntry {
   detail?: string;
 }
 
+type NonAcceptedClaimLifecycleStage =
+  | "candidate"
+  | "under_evidenced"
+  | "needs_human_review"
+  | "rejected"
+  | "retried"
+  | "inconclusive"
+  | "repair_exhausted"
+  | "withdrawn";
+
+type NonAcceptedClaimOutcomeContribution =
+  | "no_accepted_claims"
+  | "rejected_unsupported"
+  | "needs_human_review"
+  | "poc_rejected"
+  | "poc_inconclusive"
+  | (string & {});
+
+interface NonAcceptedClaimEvidenceTrailEntry {
+  evidenceRef?: string;
+  evidenceRefId?: string;
+  refId?: string;
+  role?: string;
+  status?: string;
+  detail?: string;
+}
+
+interface NonAcceptedClaimRevisionHistoryEntry {
+  fromStatus?: NonAcceptedClaimLifecycleStage | (string & {});
+  toStatus?: NonAcceptedClaimLifecycleStage | (string & {});
+  reason?: string;
+  timestampMs?: number;
+}
+
+interface NonAcceptedClaim {
+  claimId?: string;
+  /** Canonical S3 lifecycle stage. This is the lifecycle-stage field for S1 sorting/filtering. */
+  status: NonAcceptedClaimLifecycleStage | (string & {});
+  family?: string;
+  primaryLocation?: string;
+  /** Open-string reason code; examples are documented in analysis-agent-api.md. */
+  rejectionCode?: string;
+  rejectionReason?: string;
+  statement?: string;
+  detail?: string;
+  retryCount?: number;
+  severity?: Severity;
+  requiredEvidence?: string[];
+  presentEvidence?: string[];
+  missingEvidence?: string[];
+  evidenceTrail?: NonAcceptedClaimEvidenceTrailEntry[];
+  revisionHistory?: NonAcceptedClaimRevisionHistoryEntry[];
+  invalidRefs?: string[];
+  supportingEvidenceRefs?: string[];
+  outcomeContribution?: NonAcceptedClaimOutcomeContribution;
+}
+
 interface AgentClaimDiagnosticsSummary {
   lifecycleCounts?: Record<string, number>;
-  /**
-   * Bounded diagnostic-only records for candidate claims that did not become accepted final claims.
-   * S3 may include lifecycle proof fields such as requiredEvidence, presentEvidence,
-   * missingEvidence, evidenceTrail, revisionHistory, and outcomeContribution.
-   */
-  nonAcceptedClaims?: Array<Record<string, unknown>>;
+  /** Typed diagnostic-only records for candidate claims that did not become accepted final claims. */
+  nonAcceptedClaims?: NonAcceptedClaim[];
 }
 
 interface AgentEvidenceDiagnosticsSummary {
@@ -490,6 +545,10 @@ S3 Analysis Agent claim diagnostics policy (2026-04-27):
 - Negative or failed evidence acquisition attempts are preserved under `evidenceDiagnostics`; diagnostic evidence references are not supporting refs for accepted claims.
 - These fields are additive and optional; old rows/non-Deep rows may omit them.
 - `claimDiagnostics.nonAcceptedClaims[]` may include S3 Pass-A proof fields (`requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, `revisionHistory`) and `outcomeContribution` values such as `rejected_unsupported` or `needs_human_review`. S1 should treat these as diagnostic detail, not as accepted findings.
+- 2026-05-06 S2 typed export: `claimDiagnostics.nonAcceptedClaims[]` is now `NonAcceptedClaim[]` in `@aegis/shared`. S2 does not rename S3 `status`; consumers should treat `status` as the canonical lifecycle-stage key.
+- `rejectionCode` is open-string and optional. Current examples are documented in `wiki/canon/api/analysis-agent-api.md`; unknown codes must fall back to review/diagnostic display, not client-side success.
+- S2 forwards stable optional S3 lifecycle proof keys unchanged. New stable per-claim keys require S2/shared-models update before S1 consumes them.
+- S2 validates `claimDiagnostics` before persisting/exposing stored analysis results and before returning the PoC facade. New writes with malformed diagnostics are rejected at the DAO boundary; malformed historical/manual rows or malformed optional PoC diagnostics are omitted rather than exposed as untyped records.
 
 S3 Analysis Agent outcome semantics:
 
@@ -612,6 +671,57 @@ Backwards compatibility: these fields are additive. Existing S1 screens that ign
 - S1 may adopt fields surface-by-surface; simultaneous rollout across all pages is not required.
 - Future enum additions are possible. Unknown values should be rendered as fallback-review / inconclusive-like, preserve the raw value for diagnostics, and never map to success by default.
 - Possible future S3 additive fields include `confidenceScore`, richer evidence counts, repair counts, or structured recovery events. Treat them as future/additive unless a WR freezes them.
+
+### 2.6.2 PoC facade outcome contract — `POST /api/analysis/poc` (S2→S1)
+
+This subsection is the S2 answer to S1 WR `s1-to-s2-poc-facade-result-outcome-gating-pocoutcome-qualityoutcome-cleanpass`. The route remains a synchronous facade over S3 `generate-poc`; `success: true` means S2 received a schema-valid S3 completed envelope and does **not** by itself mean the generated PoC is cleanly accepted.
+
+Request body is unchanged:
+
+```ts
+interface GeneratePocRequest {
+  projectId: string;
+  findingId: string;
+}
+```
+
+Response data now forwards S3 result-level PoC outcomes alongside the generated/accepted PoC claim surface:
+
+```ts
+interface PocResponseData {
+  findingId: string;
+  poc: {
+    statement: string;
+    detail: string;
+  };
+  audit: {
+    latencyMs: number;
+    tokenUsage?: { prompt: number; completion: number };
+  };
+
+  /** S3 result.pocOutcome. Required on the S2 facade response. */
+  pocOutcome: AgentPocOutcome;
+  /** S3 result.qualityOutcome. Required on the S2 facade response. */
+  qualityOutcome: AgentQualityOutcome;
+  /** S3 result.cleanPass when present; otherwise S2 derives the conservative PoC-clean predicate. */
+  cleanPass: boolean;
+  /** S3 result.claimDiagnostics. Optional diagnostic surface for non-accepted claims. */
+  claimDiagnostics?: AgentClaimDiagnosticsSummary;
+}
+```
+
+S2 forwards `pocOutcome`, `qualityOutcome`, `cleanPass`, and `claimDiagnostics` for both accepted-claim and zero-claim completed envelopes. When S3 omits optional legacy outcome fields, S2 fills conservative defaults for backward compatibility:
+
+- `pocOutcome`: defaults to `poc_accepted` only when an accepted PoC claim is present; otherwise `poc_inconclusive`.
+- `qualityOutcome`: defaults to `accepted` only when an accepted PoC claim is present; otherwise `inconclusive`.
+- `cleanPass`: uses S3 `result.cleanPass` when present; otherwise derives `pocOutcome === "poc_accepted" && qualityOutcome === "accepted"`.
+
+Interpretation rules:
+
+- Clean PoC pass is `pocOutcome === "poc_accepted" && qualityOutcome === "accepted" && cleanPass === true`.
+- Non-clean outcomes (`poc_rejected`, `poc_inconclusive`, `qualityOutcome=accepted_with_caveats|rejected|inconclusive|repair_exhausted`, or `cleanPass=false`) are still transport/envelope success and should render as review-needed, not as HTTP failure.
+- If future enum values appear, S1 must fall back to review/fallback tone and must not map unknown values to success.
+- If `claimDiagnostics` is malformed at runtime, S2 omits that optional field rather than returning untyped `nonAcceptedClaims[]` records. The outcome fields remain authoritative for clean/non-clean PoC interpretation.
 
 ```ts
 interface DynamicTestConfig {
@@ -931,11 +1041,19 @@ Notes:
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
 | GET | `/api/projects/:pid/targets` | - | `200 { success, data: BuildTarget[] }` | `200`, `404` |
-| POST | `/api/projects/:pid/targets` | `{ name, relativePath, buildProfile, buildSystem?, includedPaths? }` | `201 { success, data: BuildTarget }` | `201`, `400`, `404` |
-| PUT | `/api/projects/:pid/targets/:id` | `{ name?, relativePath?, buildProfile?, buildSystem? }` | `200 { success, data: BuildTarget }` | `200`, `400`, `404` |
+| POST | `/api/projects/:pid/targets` | `{ name, relativePath, buildProfile, buildSystem?, includedPaths?, scriptHintPath? }` | `201 { success, data: BuildTarget }` | `201`, `400`, `404` |
+| PUT | `/api/projects/:pid/targets/:id` | `{ name?, relativePath?, buildProfile?, buildSystem?, scriptHintPath?: string \| null }` | `200 { success, data: BuildTarget }` | `200`, `400`, `404` |
 | DELETE | `/api/projects/:pid/targets/:id` | - | `200 { success: true }` | `200`, `404` |
 | GET | `/api/projects/:pid/targets/:id/build-log` | - | `200 { success, data: { buildLog: string \| null, status: BuildTargetStatus, updatedAt: string } }` | `200`, `404` |
 | POST | `/api/projects/:pid/targets/discover` | empty body | `200 { success, data: { discovered, created, targets, elapsedMs } }` | `200`, `400`, `404` |
+
+`scriptHintPath` semantics (2026-05-06):
+
+- Optional selected uploaded build-script hint for S3 Build Agent `context.trusted.build.scriptHintPath`.
+- The path is relative to the **effective BuildTarget root**: if S2 uses an isolated `sourcePath`, it is relative to that isolated root; otherwise it is relative to `projectPath/buildTargetPath`.
+- S2 validates the path on create/update: non-empty string, no absolute path, no Windows drive/UNC prefix, no backslashes, no NUL, no traversal, symlink-resolved containment inside the effective BuildTarget root, regular file only, max 20,000 bytes, valid UTF-8 text, and no NUL-containing content.
+- `scriptHintPath: null` on PUT clears the saved hint.
+- S2 forwards the path as reference-only material. The uploaded script must not be treated as directly executable by S1/S2/S3.
 
 Validation enforced today:
 

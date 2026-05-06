@@ -13,10 +13,10 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-05-03"
+last_verified: "2026-05-06"
 service_tags: ["s3", "analysis-agent", "api-contract", "s2"]
-decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate"]
-related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"]
+decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
+related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
 ---
 
 # Analysis Agent API 명세
@@ -24,7 +24,7 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3  
 > **포트**: 8001  
 > **호출자**: S2  
-> **최종 업데이트**: 2026-05-03
+> **최종 업데이트**: 2026-05-06
 > **계약 방향**: S3 claim-evidence state-machine `agent-v1.1` additive response schema contract.
 
 Analysis Agent의 public contract 문서다. 2026-04-24부터 S3는 `completed`와 clean security pass를 분리한다. `completed`는 **schema-valid honest review result envelope**를 뜻하며, accepted claim / accepted PoC / clean hot-gate pass를 뜻하지 않는다.
@@ -121,6 +121,20 @@ Consumer 규칙:
 The public `constraints.*` generation override surface is camelCase-only. Snake_case keys such as `top_p`, `top_k`, `min_p`, `presence_penalty`, and `repetition_penalty` are rejected at the S3 API boundary. Internally S3 serializes to S7 snake_case when calling `/v1/chat` or `/v1/async-chat-requests`.
 
 If callers omit these optional fields, S3 applies service-owned named presets and still sends the complete S7-required tuple. `constraints.maxTokens` accepts `1..32768`; `constraints.topK` accepts `-1` or any positive integer to align with S7. Stricter sub-call caps such as the structured finalizer cap remain internal per-call policy and do not change the public acceptance range.
+
+### Tool dispatch and `tool_choice` policy (2026-05-06)
+
+Analysis Agent does **not** use vLLM/OpenAI `tool_choice="required"` for mandatory evidence acquisition. Current production policy is:
+
+| Situation | S7 request shape | Enforcement authority |
+|---|---|---|
+| Ordinary tool-capable LLM turn | `tools=[...]`, `tool_choice="auto"` | vLLM may choose tool call or content; S3 validates/handles the result. |
+| Mandatory first acquisition before any successful tool call | `tools=None`, no `tool_choice`, strict JSON ToolIntent, thinking enabled | S3 runtime converts the ToolIntent JSON into a synthetic `ToolCallRequest` and dispatches it. |
+| Finalizer / forced report / no tools available | tool-less strict JSON or ordinary content path | S3 result assembly / schema repair / outcome classification. |
+
+This supersedes the older P10 shorthand that used `tool_choice="required"`. The reason is the 2026-05-03 Qwen/vLLM incompatibility where `enable_thinking=true` plus `tool_choice="required"` can produce `finish_reason="tool_calls"` with empty `tool_calls`. S3 therefore preserves the safety goal — no report before required acquisition — through ToolIntent runtime dispatch rather than guided tool-choice.
+
+Callers must not infer clean success from this dispatch policy. The public contract remains result-level: `status="completed"` is an honest envelope, while clean deep/PoC success must be read from `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `cleanPass`, and diagnostics.
 
 ### `deep-analyze`용 `context.trusted`
 
@@ -335,6 +349,32 @@ S3 exposes non-accepted lifecycle information through bounded `result.claimDiagn
 
 2026-04-28 Pass-A refinement: `nonAcceptedClaims[]` now carries the same bounded lifecycle proof fields needed for developer-facing evidence consumption: `requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, and `revisionHistory`. `outcomeContribution="rejected_unsupported"` is used when all cited claim refs are invalid/missing and the state machine classifies the candidate as `rejected`.
 `outcomeContribution="needs_human_review"` is used when the state machine preserves sticky NHR but no explicit human acceptance has promoted the claim into the public accepted surface.
+
+#### `nonAcceptedClaims[]` typed consumer vocabulary (S2 export, 2026-05-06)
+
+S2 exposes the per-claim diagnostic surface to S1 through `@aegis/shared` as `NonAcceptedClaim[]`. The S3 wire key remains `status`; S2 treats that key as the lifecycle-stage field and does not synthesize a separate `lifecycleStage` alias on the REST facade. Current documented lifecycle-stage examples are:
+
+| `status` value | Meaning | Consumer policy |
+|---|---|---|
+| `candidate` | Candidate existed before acceptance checks completed. | Diagnostic only; not an accepted finding. |
+| `under_evidenced` | Required evidence slots were not fully satisfied. | Show missing evidence and review/rerun guidance. |
+| `needs_human_review` | State machine preserved sticky human-review state without accepted promotion. | Human-review diagnostic; not clean success. |
+| `rejected` | Claim was rejected by evidence/quality checks. | Negative diagnostic; show reason/code when present. |
+| `retried` | Claim participated in a repair/retry loop. | Display retry context when present. |
+| `inconclusive` | Lifecycle could not reach accepted/rejected confidence. | Review/fallback tone. |
+| `repair_exhausted` | Repair budget exhausted before clean acceptance. | Critical-review/human-review tone. |
+| `withdrawn` | Candidate was withdrawn/superseded. | Low-priority diagnostic unless paired with stronger outcome. |
+
+`rejectionCode` is an optional **open string**. S3 may emit stable codes over time without forcing a closed enum rollout; S1/S2 must not reject unknown codes. Current examples only:
+
+| Example code | Meaning |
+|---|---|
+| `evidence_missing` | Required evidence was absent or insufficient. |
+| `rejected_unsupported` | Cited refs were invalid/missing and the claim was rejected as unsupported. |
+| `quality_repair_exhausted` | Repair loop could not produce an acceptable claim/PoC envelope. |
+| `unsafe_or_out_of_scope` | Candidate was unsafe, irrelevant, or outside authorized analysis scope. |
+
+`outcomeContribution` remains the S3-owned aggregate contribution hint. Current examples include `no_accepted_claims`, `rejected_unsupported`, `needs_human_review`, `poc_rejected`, and `poc_inconclusive`; additional values are additive diagnostics and must default to review/fallback presentation.
 
 `generate-poc` follows the same accepted-only rule. Raw producer candidates are passed through the claim/evidence state machine before they can appear in `result.claims[]`. Trusted upstream bare ref IDs may satisfy allowlisting / generic `local_or_derived_support` only; they do not fabricate family-specific slots such as `sink_or_dangerous_api`, `caller_chain_or_source_slice`, or `source_slice` unless request/file/catalog evidence actually provides those roles. If zero PoC claims survive as accepted, S3 still returns a completed envelope with `analysisOutcome="no_accepted_claims"` and diagnostics rather than a task-level output error.
 

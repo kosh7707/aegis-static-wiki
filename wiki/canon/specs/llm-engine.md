@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/llm-engine.md"
 original_path: "docs/specs/llm-engine.md"
-last_verified: "2026-04-28"
+last_verified: "2026-05-06"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -366,6 +366,20 @@ Recipe YAML must double the braces because `run-recipe.sh`/format expansion othe
 - vLLM logs should include `Resolved architecture: Qwen3_5MTP` and `Detected MTP model. Sharing target model embedding weights...`.
 - vLLM warns that `min_p` and `logit_bias` do not work with speculative decoding; S7/Gateway callers should not depend on those parameters while MTP is enabled.
 - BFCL v4 Gateway smoke was unchanged at 24/25 before/after MTP. The remaining miss is an expression-format mismatch in `parallel_multiple_4`, not a parser/tool-call regression.
+
+### Caller-side `tool_choice` compatibility (2026-05-06)
+
+The current live stack is vLLM 0.20.0 + `--reasoning-parser qwen3` + `--tool-call-parser qwen3_coder` + MTP=1. Under this stack, S7 supports only the tool-choice values that have been validated as stable through the Gateway contract.
+
+| caller `tool_choice` | Status | Rationale |
+|---|---|---|
+| omitted | ✅ supported | Normal OpenAI-compatible default path. |
+| `"auto"` | ✅ supported | Validated tool-call path for S3/Build-Agent first-turn tool use. |
+| `"none"` | ✅ supported | Tool suppression path. |
+| `"required"` | ❌ unsupported | 2026-05-03 blocker: can produce `finish_reason="tool_calls"` with empty `tool_calls` under Qwen3 reasoning/parser/MTP. |
+| named function object | ❌ unsupported | Guided-decoding path has not been revalidated; treat as unsafe until a dedicated S7 compatibility pass updates this table. |
+
+Gateway enforcement: `/v1/chat` and `/v1/async-chat-requests` reject unsupported request-side values with HTTP 422 `INVALID_TOOL_CHOICE`, and also validate backend responses so empty `tool_calls` cannot be silently forwarded as successful tool output. Re-enable `required` or named tool choice only after a vLLM stack change plus S7 smoke/evaluation evidence updates this spec and `wiki/canon/api/llm-gateway-api.md`.
 
 ### Benchmark evidence
 

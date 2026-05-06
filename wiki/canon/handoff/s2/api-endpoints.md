@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-05-02"
+last_verified: "2026-05-06"
 service_tags: ["s2"]
-decision_tags: []
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -168,6 +168,13 @@ SDK delete project-scope 메모 (2026-05-02):
 
 ### 소스 / 빌드 타겟 / 파이프라인 / 분석
 
+PoC facade 메모 (2026-05-06):
+
+- `POST /api/analysis/poc` returns `PocResponseData` with `pocOutcome`, `qualityOutcome`, `cleanPass`, and optional `claimDiagnostics`.
+- `claimDiagnostics.nonAcceptedClaims[]` is typed in `@aegis/shared` as `NonAcceptedClaim[]` and is forwarded unchanged from the S3 completed envelope.
+- `success: true` on this route is not a clean PoC signal; S1 must inspect the outcome fields.
+- If optional `claimDiagnostics` is malformed, S2 omits it rather than exposing untyped `nonAcceptedClaims[]` records.
+
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | POST | `/api/projects/:pid/source/upload` | ZIP/tar.gz 소스 업로드 |
@@ -177,11 +184,19 @@ SDK delete project-scope 메모 (2026-05-02):
 | GET | `/api/projects/:pid/source/file` | 파일 내용 읽기 (`?path=` 필수) |
 | DELETE | `/api/projects/:pid/source` | 소스 삭제 |
 | GET | `/api/projects/:pid/targets` | 빌드 타겟 목록 |
-| POST | `/api/projects/:pid/targets` | 빌드 타겟 생성 `{ name, relativePath, buildProfile?, buildSystem?, includedPaths? }` |
-| PUT | `/api/projects/:pid/targets/:id` | 빌드 타겟 수정 (`includedPaths` 변경은 현재 `400 InvalidInput`) |
+| POST | `/api/projects/:pid/targets` | 빌드 타겟 생성 `{ name, relativePath, buildProfile?, buildSystem?, includedPaths?, scriptHintPath? }` |
+| PUT | `/api/projects/:pid/targets/:id` | 빌드 타겟 수정 (`includedPaths` 변경은 현재 `400 InvalidInput`; `scriptHintPath?: string | null` 저장/해제 지원) |
 | DELETE | `/api/projects/:pid/targets/:id` | 빌드 타겟 삭제 |
 | GET | `/api/projects/:pid/targets/:id/build-log` | 타겟 빌드 로그 조회 |
 | POST | `/api/projects/:pid/targets/discover` | 빌드 타겟 자동 탐색 (S4 호출) |
+
+Build script hint path 메모 (2026-05-06):
+
+- `BuildTarget.scriptHintPath?` is an uploaded-file selection relative to the effective BuildTarget root.
+- S1 can select it from `GET /api/projects/:pid/source/files` and save it through target create/update.
+- S2 validates path safety, regular-file status, 20,000-byte max, and UTF-8 text before persisting.
+- During pipeline prepare/run, S2 forwards it to S3 Build Agent as `context.trusted.build.scriptHintPath` under `context.trusted.build`; no inline script text aliases are sent.
+- `scriptHintPath: null` on PUT clears the hint.
 | POST | `/api/projects/:pid/pipeline/prepare` | 빌드 준비만 실행 (`202 { preparationId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/prepare/:targetId` | 단일 타겟 빌드 준비만 실행 (`202 { preparationId, targetId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |

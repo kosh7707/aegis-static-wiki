@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/sast-runner-api.md"
 original_path: "docs/api/sast-runner-api.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-06"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -19,6 +19,13 @@ migration_status: "canonicalized"
 >
 > S2(AEGIS Core) 또는 S3(Analysis Agent)가 SAST Runner를 호출할 때 참조하는 API 계약서.
 > SAST Runner는 AEGIS의 **결정론적 전처리 엔진**으로, 6개 SAST 도구 + SCA + 코드 구조 + 빌드 자동화를 제공한다.
+
+---
+
+## 검증 상태
+
+- 2026-05-06: `services/sast-runner` 전체 pytest 게이트 재확인 — `399 passed in 11.08s`.
+- API 계약 범위는 `/v1/build` explicit readiness, `/v1/scan` `compileCommands`/`thirdPartyPaths`, `/v1/libraries`, `/v1/discover-targets`, `/v1/health` request-aware summary를 포함한다.
 
 ---
 

@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/architecture.md"
 original_path: "docs/s2-handoff/architecture.md"
-last_verified: "2026-04-10"
+last_verified: "2026-05-06"
 service_tags: ["s2"]
-decision_tags: []
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
 related_pages: []
 migration_status: "canonicalized"
 ---
@@ -29,6 +29,14 @@ S2의 실제 런타임 표면은 다음 3개 축이다.
 1. **Backend API / Orchestration** — `services/backend/`
 2. **Shared contracts** — `services/shared/`
 3. **S2 소유 운영 스크립트** — `scripts/`
+
+### 2026-05-06 shared contract / PoC facade refresh
+
+- `services/shared/src/models.ts` is the canonical S2-owned shared contract surface for S1-facing analysis result and PoC facade types.
+- `AgentClaimDiagnosticsSummary.nonAcceptedClaims?` is typed as `NonAcceptedClaim[]`; S2 forwards S3 diagnostic records unchanged and documents `status` as the lifecycle-stage key.
+- `services/backend/src/controllers/analysis.controller.ts` owns `POST /api/analysis/poc` facade response construction and preserves result-level `pocOutcome`, `qualityOutcome`, `cleanPass`, and `claimDiagnostics`.
+- Contract regression coverage lives in `services/backend/src/__tests__/contract/api-contract.test.ts`; update it when shared model semantics change.
+- `services/backend/src/lib/claim-diagnostics.ts` is the local runtime guard for this optional diagnostics contract; DAO saves reject malformed new writes and read/facade paths omit malformed optional diagnostics instead of exposing untyped records.
 
 연동 판단은 항상 **다른 서비스 코드가 아니라** `wiki/canon/api/*.md` 계약서를 기준으로 한다.
 
@@ -225,7 +233,10 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 
 1. 소스 업로드/clone
 2. 빌드 타겟 탐색/수정
+   - `scriptHintPath?` stores a user-selected uploaded build-script hint relative to the effective BuildTarget root.
 3. Build Agent resolve
+   - `pipeline-orchestrator.ts` forwards `context.trusted.build.mode`, optional `sdkId`, and optional `scriptHintPath` to S3 Build Agent.
+   - Inline script hint text aliases are not emitted by S2.
 4. S4 build/scan
 5. S5 code-graph ingest
 6. 타겟 라이브러리 및 SDK 레지스트리 반영
