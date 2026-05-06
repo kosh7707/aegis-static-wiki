@@ -11,16 +11,16 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-05-03"
+last_verified: "2026-05-06"
 service_tags: ["s3"]
 decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "producer-critic-orchestrator-boundary", "system-stability", "generation-controls", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate"]
-related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
+related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/build-agent-state-machine.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
 ---
 
 # S3. Build Agent 기능 명세
 
 > **소유자**: S3
-> **최종 업데이트**: 2026-05-03
+> **최종 업데이트**: 2026-05-06
 
 Build Agent는 업로드된 프로젝트에 대해 **strict compile-first control plane** 으로 동작한다. 호출자가 선언한 BuildTarget, 빌드 모드, 기대 산출물을 기준으로 preflight → phase0 → bounded repair → artifact validation을 수행한다.
 
@@ -109,7 +109,7 @@ POST /v1/tasks (build-resolve)
   -> phase0
   -> bounded repair loop
   -> artifact validation
-  -> completed / validation_failed / failed / timeout / model_error / budget_exceeded
+  -> completed / validation_failed / timeout / model_error / budget_exceeded / unsafe_output / empty_result
 ```
 
 ### Preflight 검증
@@ -162,7 +162,7 @@ Public `/v1/tasks.constraints` remains backward compatible and adds optional cam
 
 `TimeoutDefaults` is service-local and mirrors the S7 timeout contract: chat/default 1800s, eval client read 600s where applicable, repair/strict JSON 600s, and tool execution 120s. Build Agent tool executor defaults consume this constant; `try_build` continues to send `X-Timeout-Ms: 120000`.
 
-The first evidence/build-acquisition LLM turn uses `tool_choice="required"` only when tools are available and no successful tool call has happened; forced-report/finalizer paths remain flexible. Tool-call arguments are validated before dispatch and schema violations return retryable tool errors without execution. Tool results are wrapped at the LLM-facing untrusted-data boundary while raw audit/evidence content remains intact; literal injected boundary delimiters are neutralized before wrapping. Scalar `LlmCaller.call(temperature=...)` is deprecated transitional compatibility only and must be removed after S3 readiness-gate evidence shows every active call site uses named `GenerationControls` presets.
+Build Agent does **not** use vLLM/OpenAI `tool_choice="required"` for mandatory first acquisition. Ordinary tool-capable turns use `tool_choice="auto"`; mandatory first acquisition is enforced by Build Agent runtime ToolIntent dispatch (`tools=None`, no `tool_choice`, strict JSON ToolIntent, thinking enabled), then converted into a synthetic `ToolCallRequest` and dispatched through the normal tool router. This supersedes the older 2026-04-29 P10 shorthand because Qwen/vLLM reasoning-parser stacks can return `finish_reason="tool_calls"` with empty `tool_calls[]` under `enable_thinking=true` + `tool_choice="required"`. Tool-call arguments are validated before dispatch and schema violations return retryable tool errors without execution. Tool results are wrapped at the LLM-facing untrusted-data boundary while raw audit/evidence content remains intact; literal injected boundary delimiters are neutralized before wrapping. Scalar `LlmCaller.call(temperature=...)` is deprecated transitional compatibility only and must be removed after S3 readiness-gate evidence shows every active call site uses named `GenerationControls` presets.
 
 ### S7 async ownership / thinking-on 소비
 Build Agent도 tool 없는 LLM turn에서 S7의 async ownership surface를 우선 사용한다. 2026-04-28 S7 WR 소비 후 tool-call turn과 tool-less strict JSON finalizer 모두 기본 `enable_thinking=true` 요청을 보낸다.

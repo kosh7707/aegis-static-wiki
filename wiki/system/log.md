@@ -2704,3 +2704,8 @@ related_pages:
 ## [2026-05-06] mcp | complete_wr | s2-to-s1-s2-notice-buildtarget-scripthintpath-is-available-for-uploaded-build-script-sele
 - Lane s1 completed recipient-side handling
 - Status: completed
+
+## [2026-05-06] Created canonical Build Agent state/outcome contract page for stabilization test oracle | S3 Build Agent state/outcome contract
+- Page: wiki/canon/specs/build-agent-state-machine.md
+- Defines task status vs build result outcome, canonical states/transitions, cleanPass=true conditions, completed_non_clean boundaries, task-level failure boundary, scriptHintPath/generated-script invariant, ToolIntent/tool_choice invariant, and stabilization test oracle.
+- Purpose: anchor upcoming Build Agent multi-dataset stabilization beyond certificate-maker.
