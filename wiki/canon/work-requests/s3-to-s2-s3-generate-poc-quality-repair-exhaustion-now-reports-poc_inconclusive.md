@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive"
-last_verified: "2026-04-28"
+last_verified: "2026-05-02"
 service_tags: ["s3", "s2", "analysis-agent", "api-contract", "generate-poc"]
 decision_tags: ["poc-outcome", "repair-exhausted", "agent-v1.1", "notify-style-contract"]
 related_pages: ["wiki/canon/api/analysis-agent-api.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/work-requests/s3-to-s3-post-ralplan-execution-followup-defects-20260427.md"]
 migration_status: "canonicalized"
 wr_id: "s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-05-02T16:15:39.947Z","note":"Canonical S2 shared model contract now documents S3 generate-poc quality-repair exhaustion as status=completed with pocOutcome=poc_inconclusive, qualityOutcome=repair_exhausted, and recoveryTrace action poc_quality_repair_exhausted. S2/S1 should treat it as non-clean review state, not transport failure."}]
 registered_at: "2026-04-28T01:44:52.550Z"
+completed_at: "2026-05-02T16:15:39.947Z"
 ---
 
 # S3 generate-poc quality repair exhaustion now reports poc_inconclusive

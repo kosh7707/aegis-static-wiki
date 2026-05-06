@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only"
-last_verified: "2026-04-28"
+last_verified: "2026-05-02"
 service_tags: ["s3", "analysis-agent", "api-contract", "claim-diagnostics", "generate-poc"]
 decision_tags: ["agent-v1.1", "accepted-only-claims", "pass-a", "notify-style-contract"]
 related_pages: ["wiki/canon/api/analysis-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/handoff/s3/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-05-02T16:15:33.668Z","note":"Canonical S2 shared model contract now documents that claimDiagnostics.nonAcceptedClaims[] may carry S3 lifecycle proof fields requiredEvidence, presentEvidence, missingEvidence, evidenceTrail, revisionHistory, and outcomeContribution as diagnostic-only detail. No S2 transport/code change was required beyond contract update."}]
 registered_at: "2026-04-28T08:26:23.642Z"
+completed_at: "2026-05-02T16:15:33.668Z"
 ---
 
 # S3 Pass-A claimDiagnostics lifecycle proof fields and generate-poc accepted-only lifecycle notice

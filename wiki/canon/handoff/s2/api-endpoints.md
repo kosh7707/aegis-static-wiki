@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-04-27"
+last_verified: "2026-05-02"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -18,6 +18,8 @@ migration_status: "canonicalized"
 > S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트
 > 진입점: `README.md` → 필요 시 이 문서 참조
 > 엔드투엔드 맥락이 먼저 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 함께 본다.
+> 2026-05-02 구현 감사: `router-setup.ts`와 mounted controllers 기준으로 재점검했고,
+> SDK delete project-scope, upload/analysis WS subscribe-time snapshot, S7 caller-owned generation tuple 반영 상태를 보강했다.
 
 ---
 
@@ -156,6 +158,11 @@ Auth v1 메모 (2026-04-20):
 | POST | `/api/projects/:pid/sdk/:id/retry` | 실패 SDK 재시도 (`fromPhase?: analyzing|verifying`, retained/materialized artifact 필요) |
 | POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 multipart project-scoped upload; 단일 archive / 단일 `.bin` / multi-file folder upload 지원. 폴더 업로드는 클라이언트가 상대경로를 보존해서 보내야 함) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
+
+SDK delete project-scope 메모 (2026-05-02):
+
+- `DELETE /api/projects/:pid/sdk/:id`는 route `:pid`와 SDK 소유 project가 일치할 때만 삭제한다.
+- SDK id가 존재해도 다른 project 소속이면 `404 NOT_FOUND`로 응답하고 삭제하지 않는다.
 | GET | `/api/projects/:pid/targets/:tid/libraries` | 타겟별 서드파티 라이브러리 목록 |
 | PATCH | `/api/projects/:pid/targets/:tid/libraries` | 라이브러리 포함 여부 일괄 수정 |
 
@@ -259,6 +266,7 @@ QualityGate / Approvals mock-absorption contract memo (2026-04-26):
 
 - `/ws/upload`, `/ws/sdk`, `/ws/analysis`, `/ws/pipeline` 는 **foreground progress** 채널이다.
 - `/ws/notifications` 는 **background completion awareness** 채널이다.
+- `/ws/upload?uploadId=` 와 `/ws/analysis?analysisId=` 는 새 구독자가 붙을 때 backend가 보유 중인 최신 snapshot을 즉시 1회 보낼 수 있다. 이는 durable replay가 아니라 편의 기능이며, REST recovery endpoint가 여전히 authoritative source다.
 - 사용자가 화면을 이동하거나 재연결한 뒤에는 WS replay를 기대하지 말고, 위 표의 REST/status surface를 authoritative recovery path로 사용해야 한다.
 
 Deep outcome / cleanPass UI contract memo (2026-04-25):
@@ -275,6 +283,13 @@ SDK second follow-up implementation memo (2026-04-25):
 - Current-cycle S2 now implements additive SDK runtime fields and endpoints: upload `etaSeconds`, `phaseStartedAt`, persisted `phaseHistory`, `phaseDetail`, conservative `retryable` / `recoverable`, structured SDK error `code`, wiki-canonical `troubleshootingUrl`, server-side retry endpoint, quota endpoint, log pagination/download, SDK metrics endpoint, and app-level WS heartbeat messages.
 - Current usable surfaces: integer upload percent cadence, server `meta.timestamp`/`seq`, project-scoped `/ws/sdk`, live `sdk-log`, REST log tail/pagination/download, `GET /sdk` ordering by `created_at DESC`, optional profile metadata, `GET /sdk/quota`, `GET /sdk/metrics`, and `POST /sdk/:id/retry` for retained/materialized failed SDKs.
 - In-flight `DELETE /sdk/:id` is still not a supported cancellation contract; S1 must not show it as guaranteed cancel until a future S2 cancellation WR is implemented.
+- 2026-05-02 감사 기준 `DELETE /api/projects/:pid/sdk/:id`는 project-scoped delete다. SDK id가 존재해도 route `:pid`와 소유 project가 다르면 `404 NOT_FOUND`로 응답하고 삭제하지 않는다.
+
+S7 caller-owned generation-control 메모 (2026-05-02):
+
+- S2 direct LLM calls through `LlmTaskClient` now send the full S7 `/v1/tasks.constraints` generation tuple required by `wiki/canon/api/llm-gateway-api.md`.
+- Backfilled defaults for missing fields are `enableThinking=true`, `maxTokens=16384`, `temperature=0.6`, `topP=0.95`, `topK=20`, `minP=0.0`, `presencePenalty=0.0`, `repetitionPenalty=1.0`.
+- Existing caller-provided `maxTokens`, `timeoutMs`, and `outputSchema` are preserved.
 
 SDK 진행률 계약 메모 (2026-04-25 updated):
 

@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-04-29"
+last_verified: "2026-05-04"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -21,9 +21,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## Specifications
 
 - [[wiki/canon/specs/adapter|Adapter 기능 명세]] — ECU ↔ Backend 사이의 WebSocket 릴레이 서비스 *(verified 2026-04-09; s6)*
-- [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-29; s3/analysis-agent)*
-- [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-04-27; s2)*
-- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-04-29; s3)*
+- [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-05-03; s3/analysis-agent)*
+- [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-05-02; s2)*
+- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-05-03; s3)*
 - [[wiki/canon/specs/container-gateway|S8. Container Gateway 기능 명세]] — S8은 프로젝트별 업로드 워크스페이스와 프로젝트당 1개 컨테이너를 관리하는 독립 HTTP 서비스다. *(verified 2026-04-15; s8)*
 - [[wiki/canon/specs/ecu-simulator|ECU Simulator 기능 명세]] — 가상 ECU — CAN 트래픽 생성 + 주입 응답 시뮬레이션 *(verified 2026-04-09; s6)*
 - [[wiki/canon/specs/frontend|S1 Frontend 현재 구현 스펙]] — services/frontend/의 현재 실제 구현 기준 S1 프론트 스펙이다. *(verified 2026-04-18; s1)*
@@ -49,14 +49,14 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## API contracts
 
 - [[wiki/canon/api/adapter-api|Adapter WebSocket API 명세 (v0.1.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-06; s6)*
-- [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-04-29; s3/analysis-agent/api-contract/s2)*
-- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-04-29; s3)*
+- [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-05-03; s3/analysis-agent/api-contract/s2)*
+- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-05-03; s3)*
 - [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — Base URL: *(verified 2026-04-15; s8)*
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-04-14; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
 - [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-04-29; s7)*
 - [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-14; s4)*
-- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-04-27; platform)*
+- [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-05-02; platform)*
 
 ## Handoff
 
@@ -112,7 +112,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s1/session-omx-1777022137115-38345z|Session history — s1 / omx-1777022137115-38345z]] — - Lane: s1 *(verified 2026-04-24; s1)*
 - [[wiki/canon/handoff/s1/session-omx-1777200640087-wvg8du|Session history — S1 / omx-1777200640087-wvg8du]] — - Lane: S1 *(verified 2026-04-28; s1)*
 - [[wiki/canon/handoff/s1/usecase-visibility-matrix|S1 Frontend 유스케이스 · Must-Show 가시성 매트릭스]] — 목적: 각 프론트 유스케이스가 화면에 반드시 존재해야 할 DOM 관측 항목을 QA가 그 자리에서 pass/fail 판단할 수 있는 단위로 명시한다. *(verified 2026-04-18; s1/s1-qa)*
-- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-04-27; s2)*
+- [[wiki/canon/handoff/s2/api-endpoints|S2 API 엔드포인트 전체 목록]] — S2(AEGIS Core)가 S1에 제공하는 모든 REST API + WebSocket 엔드포인트 *(verified 2026-05-02; s2)*
 - [[wiki/canon/handoff/s2/architecture|S2 아키텍처 상세]] — 구현 현황, DB 스키마, 핵심 로직, 의존성, 실행/운영 메모 *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/readme|S2. AEGIS Core (Backend) 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-25; s2)*
 - [[wiki/canon/handoff/s2/session-1|세션 1 — 문서-코드 감사]] — 날짜: 2026-03-17 *(verified 2026-04-06; s2)*
@@ -143,6 +143,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-omx-1776663923341-syfhj2|Session history — s2 / omx-1776663923341-syfhj2]] — - Lane: s2 *(verified 2026-04-20; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1776741877955-8hk59x|Session history — s2 / omx-1776741877955-8hk59x]] — - Lane: s2 *(verified 2026-04-21; s2)*
 - [[wiki/canon/handoff/s2/session-omx-1777019931673-x88kty|Session history — S2 / omx-1777019931673-x88kty]] — - Lane: S2 *(verified 2026-04-26; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1777737323870-pb7yff-s2-api-contract-drift-20260502|Session history — S2 / omx-1777737323870-pb7yff-s2-api-contract-drift-20260502]] — - Lane: S2 *(verified 2026-05-02; s2)*
+- [[wiki/canon/handoff/s2/session-omx-1777737323870-pb7yff|Session history — s2 / omx-1777737323870-pb7yff]] — - Lane: s2 *(verified 2026-05-02; s2)*
 - [[wiki/canon/handoff/s2/session-omx-20260410-s2-sdk-upload-failure-notification|Session history — s2 / omx-20260410-s2-sdk-upload-failure-notification]] — - Lane: s2 *(verified 2026-04-10; s2)*
 - [[wiki/canon/handoff/s2/session-omx-20260413-s2-sdk-source-isolation-observability|Session history — s2 / omx-20260413-s2-sdk-source-isolation-observability]] — - Lane: s2 *(verified 2026-04-13; s2)*
 - [[wiki/canon/handoff/s2/session-s2-critic-all-wrs-20260425|Session history — S2 / s2-critic-all-wrs-20260425]] — - Lane: S2 *(verified 2026-04-25; s2)*
@@ -150,7 +152,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-s2-project-owner-buildv11-20260427|Session history — s2 / s2-project-owner-buildv11-20260427]] — - Lane: s2 *(verified 2026-04-27; s2)*
 - [[wiki/canon/handoff/s2/session-s2-s3-outcome-contract-20260425|Session history — s2 / s2-s3-outcome-contract-20260425]] — - Lane: s2 *(verified 2026-04-25; s2)*
 - [[wiki/canon/handoff/s2/session-s2-sdk-progress-contract-wr-20260425|Session history — S2 / s2-sdk-progress-contract-wr-20260425]] — - Lane: S2 *(verified 2026-04-25; s2)*
-- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-04-29; s3)*
+- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-05-03; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine]] — - Lane: s3 *(verified 2026-04-24; s3)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef]] — - Lane: s3 *(verified 2026-04-24; s3)*
@@ -194,6 +196,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-agent-shared-doc-cleanup-20260427|Session history — s3 / s3-agent-shared-doc-cleanup-20260427]] — - Lane: s3 *(verified 2026-04-27; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-hot3-20260426|Session history — s3 / s3-certificate-maker-hot3-20260426]] — - Lane: s3 *(verified 2026-04-26; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-smoke-20260425|Session history — s3 / s3-certificate-maker-smoke-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
+- [[wiki/canon/handoff/s3/session-s3-certificate-maker-spot-20260503-015411|Session history — s3 / s3-certificate-maker-spot-20260503-015411]] — - Lane: s3 *(verified 2026-05-02; s3)*
+- [[wiki/canon/handoff/s3/session-s3-certificate-maker-toolcall-probe-20260503-030111|Session history — s3 / s3-certificate-maker-toolcall-probe-20260503-030111]] — - Lane: s3 *(verified 2026-05-02; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claim-evidence-state-machine-20260423|Session history — s3 / s3-claim-evidence-state-machine-20260423]] — - Lane: s3 *(verified 2026-04-23; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claims-schema-repair-20260421|Session history — s3 / session-s3-claims-schema-repair-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralph-20260422|Session history — s3 / s3-final-output-clean-refactor-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
@@ -220,7 +224,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-structured-output-fallback-20260421|Session history — s3 / s3-structured-output-fallback-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-system-stability-code-review-20260425|Session history — s3 / s3-system-stability-code-review-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
 - [[wiki/canon/handoff/s3/session-s3-system-stability-overhaul-ralplan-20260425|Session history — s3 / s3-system-stability-overhaul-ralplan-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
+- [[wiki/canon/handoff/s3/session-s3-temperature-followup-20260503|Session history — s3 / s3-temperature-followup-20260503]] — - Lane: s3 *(verified 2026-05-02; s3)*
 - [[wiki/canon/handoff/s3/session-s3-thinking-on-hot20-readiness-20260428|Session history — s3 / session-s3-thinking-on-hot20-readiness-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
+- [[wiki/canon/handoff/s3/session-s3-toolintent-runtime-dispatch-20260504|Session history — s3 / session-s3-toolintent-runtime-dispatch-20260504]] — - Lane: s3 *(verified 2026-05-04; s3)*
 - [[wiki/canon/handoff/s3/session-s3-wr-inbox-20260421|Session history — s3 / s3-wr-inbox-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-13; s4)*
 - [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-04-14; s4)*
@@ -355,6 +361,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s1-to-s2-s1-s2-signup-organization-verify-password-reset-api-auth-surface|S1 → S2: Signup · Organization verify · password-reset API 계약 신설 요청 (auth surface 확장)]] — - Kind: request *(verified 2026-04-20; frontend/backend/auth)*
 - [[wiki/canon/work-requests/s1-to-s2-sdk-2026-04-25-reply-eta-phase-timing-structured-detail-retry-endpoint-log-strea|SDK 업로드 진행 표면 — 2026-04-25 reply 후속: ETA / phase timing / structured detail / retry endpoint / log streaming / locale / quota / lifecycle / mock fixtures 보강 일괄 요청]] — - Kind: request *(verified 2026-04-25; s1/s2/frontend/backend/sdk/websocket/shared-api)*
 - [[wiki/canon/work-requests/s1-to-s2-sdk-stepper-mapping-eta-retry-phase-specific-detail-filename-semantics|SDK 업로드 진행 표면 — stepper mapping / ETA / retry / phase-specific detail / fileName semantics 계약 명시 요청]] — - Kind: request *(verified 2026-04-25; s1/s2/frontend/backend/sdk/websocket)*
+- [[wiki/canon/work-requests/s1-to-s2-ws-notifications-handshake-close|/ws/notifications 핸드셰이크 즉시 close 원인 확인 요청]] — - Kind: question *(verified 2026-05-03; s1/s2/websocket/notifications)*
 - [[wiki/canon/work-requests/s1-to-s2-ws-static-analysis|/ws/static-analysis 채널 향후 계획 확인]] — - Kind: question *(verified 2026-04-07; s1/s2/websocket/static-analysis)*
 - [[wiki/canon/work-requests/s2-to-s1-adopt-explicit-build-preparation-then-quick-then-deep-ux-on-the-new-s2-additive-|adopt explicit build-preparation then Quick then Deep UX on the new S2 additive contract surfaces]] — - Kind: request *(verified 2026-04-14; s1/s2)*
 - [[wiki/canon/work-requests/s2-to-s1-audit-remaining-s1-consumer-surfaces-for-buildtarget-only-analysis-lineage-and-r|Audit remaining S1 consumer surfaces for BuildTarget-only analysis lineage and remove any final project-owned assumptions]] — - Kind: request *(verified 2026-04-14; s1/s2/frontend/api-contract/buildtarget)*
@@ -414,9 +421,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte|S3 Analysis Agent state-machine result outcome contract will become default after current test-gated implementation]] — - Kind: notice *(verified 2026-04-25; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement|S3 Analysis Agent WP-1 claimDiagnostics shape refinement]] — - Kind: notice *(verified 2026-04-27; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice|S3 Build Agent active build-v1.1 contract notice]] — - Kind: notice *(verified 2026-04-27; s3)*
-- [[wiki/canon/work-requests/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive|S3 generate-poc quality repair exhaustion now reports poc_inconclusive]] — - Kind: notice *(verified 2026-04-28; s3/s2/analysis-agent/api-contract/generate-poc)*
-- [[wiki/canon/work-requests/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields|S3 optional generation-control constraints are additive public API fields]] — - Kind: notice *(verified 2026-04-29; s3/analysis-agent/build-agent/frontend)*
-- [[wiki/canon/work-requests/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only|S3 Pass-A claimDiagnostics lifecycle proof fields and generate-poc accepted-only lifecycle notice]] — - Kind: notice *(verified 2026-04-28; s3/analysis-agent/api-contract/claim-diagnostics/generate-poc)*
+- [[wiki/canon/work-requests/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive|S3 generate-poc quality repair exhaustion now reports poc_inconclusive]] — - Kind: notice *(verified 2026-05-02; s3/s2/analysis-agent/api-contract/generate-poc)*
+- [[wiki/canon/work-requests/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields|S3 optional generation-control constraints are additive public API fields]] — - Kind: notice *(verified 2026-05-02; s3/analysis-agent/build-agent/frontend)*
+- [[wiki/canon/work-requests/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only|S3 Pass-A claimDiagnostics lifecycle proof fields and generate-poc accepted-only lifecycle notice]] — - Kind: notice *(verified 2026-05-02; s3/analysis-agent/api-contract/claim-diagnostics/generate-poc)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-strict-assessment-contract-now-rejects-missing-fields-and-unsupported-evidenc|S3 strict Assessment contract now rejects missing fields and unsupported evidence refs]] — - Kind: notice *(verified 2026-04-21; s3/s2)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-structured-finalization-contract-update-consume-structured_finalizer-policy-f|S3 structured finalization contract update: consume structured_finalizer policy flag and preserve failure semantics]] — - Kind: request *(verified 2026-04-21; s3/s2/analysis-agent/backend)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-system-stability-agent-v1.1-response-schema-and-build-agent-compatibility-gat|S3 system-stability agent-v1.1 response schema and Build Agent compatibility-gate notice]] — - Kind: notice *(verified 2026-04-25; s3/s2/analysis-agent/build-agent/api-contract/system-stability)*
@@ -460,8 +467,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s5-to-s3-reply-s5-kb-graphrag-readiness-and-evidence-role-semantics-for-s3-system-stabili|Reply: S5 KB/GraphRAG readiness and evidence-role semantics for S3 system stability]] — - Kind: reply *(verified 2026-04-27; s5/s3/knowledge-base/analysis-agent/graphrag/system-stability)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-api-66-shape|S5 API 계약 테스트 66건 완료 — 전 엔드포인트 응답 shape 검증됨]] — - Kind: notice *(verified 2026-04-08; s5/s3)*
 - [[wiki/canon/work-requests/s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b|S7 notice — LLM Engine default serving model changed to Qwen3.6-27B]] — - Kind: notice *(verified 2026-04-24; s7/llm-gateway/llm-engine)*
-- [[wiki/canon/work-requests/s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract|S2 caller update required for S7 /v1/tasks caller-owned generation contract]] — - Kind: request *(verified 2026-04-29; s7/s2/llm-gateway)*
-- [[wiki/canon/work-requests/s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr|S7 Gateway generation-control contract updated — S2 callers must follow wiki contract]] — - Kind: request *(verified 2026-04-29; s7/s2/llm-gateway/api-contract)*
+- [[wiki/canon/work-requests/s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract|S2 caller update required for S7 /v1/tasks caller-owned generation contract]] — - Kind: request *(verified 2026-05-02; s7/s2/llm-gateway)*
+- [[wiki/canon/work-requests/s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr|S7 Gateway generation-control contract updated — S2 callers must follow wiki contract]] — - Kind: request *(verified 2026-05-02; s7/s2/llm-gateway/api-contract)*
 - [[wiki/canon/work-requests/s7-to-s3-phase-2-proposal-new-async-ownership-surface-for-no-result-loss-inference-path-p|Phase-2 proposal: new async ownership surface for no-result-loss inference path — please review before S7 implementation]] — - Kind: question *(verified 2026-04-14; s7/s3/llm-gateway/async-surface/phase-2/ownership)*
 - [[wiki/canon/work-requests/s7-to-s3-reply-async-ownership-surface-implemented-in-s7-repo-with-reviewed-state-model-a|Reply: async ownership surface implemented in S7 repo with reviewed state model and wrapped result retrieval]] — - Kind: reply *(verified 2026-04-14; s7/s3/llm-gateway/async-surface/phase-2/ownership)*
 - [[wiki/canon/work-requests/s7-to-s3-reply-async-strict-json-terminal-failure-contract-tightened-for-s3-structured-fi|Reply: async strict JSON terminal failure contract tightened for S3 structured finalizer]] — - Kind: reply *(verified 2026-04-21; s7/s3/llm-gateway/analysis-agent)*
@@ -507,7 +514,12 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## Decision context
 
 - [[wiki/context/decisions/canonical-wiki|Why the wiki is canonical]] — aegis-static-wiki is the canonical home for migrated AEGIS documentation rather than a secondary summary layer. *(verified 2026-04-05; platform)*
+- [[wiki/context/decisions/llm-tool-choice-required-incompat-20260503|LLM tool_choice=\"required\" × Qwen3 reasoning-parser × MTP — production blocker 분석 + 다중 lane 처방 (2026-05-03)]] — 상태: production blocker. 2026-05-03 certificate-maker E2E spot test (Stage 2) 실패. Build agent 첫 턴 100% 실패 재현. *(verified 2026-05-03; s3/s7)*
+- [[wiki/context/decisions/llm-tool-choice-required-rootcause-20260503|tool_choice=\"required\" empty tool_calls — root cause (caller-side flag combination, 2026-05-03)]] — 운영 가정: vLLM 0.20.0 + qwen3 reasoning + qwen3coder tool + MTP=1 stack는 정상 동작한다고 가정. 결함 원인은 caller(=AEGIS) 측 코드/설정에서 찾는다. *(verified 2026-05-03; s3)*
 - [[wiki/context/decisions/mcp-over-obsidian|Why agents should use MCP over Obsidian]] — Agents should retrieve wiki content through a wiki-focused MCP rather than relying on Obsidian or Obsidian CLI as the primary interface. *(verified 2026-04-05; platform)*
+- [[wiki/context/decisions/s3-toolintent-runtime-dispatch-20260504|S3 ToolIntent runtime-dispatch architecture (2026-05-04)]] — Decision for the active S3 remediation goal: implement ToolIntent runtime dispatch with tests first, then verify with unit suites and certificate-maker pipeline. *(verified 2026-05-04; s3/analysis-agent/build-agent)*
+- [[wiki/context/decisions/temperature-policy-analysis-20260428-s2-summary|Temperature Policy Audit — S2 lane 발췌 요약 (2026-04-28, S2 발행 2026-05-03)]] — 이 문서는 요약본이다. 모든 file:line 인용·외부 근거·반론 대응은 원본에 있다. *(verified 2026-05-03; s2)*
+- [[wiki/context/decisions/temperature-policy-analysis-20260428-s3-followup-20260503|Temperature Policy Audit — S3 후속 WR (2026-05-03)]] — 선행 문서: S3 lane 발췌 (2026-04-28) — S3가 받은 1차 work item. *(verified 2026-05-03; s3)*
 - [[wiki/context/decisions/temperature-policy-analysis-20260428-s3-summary|Temperature Policy Audit — S3 lane 발췌 요약 (2026-04-28)]] — 이 문서는 요약본이다. 모든 file:line 인용·외부 근거·반론 대응은 원본에 있다. *(verified 2026-04-29; s3)*
 - [[wiki/context/decisions/temperature-policy-analysis-20260428-s7-summary|Temperature Policy Audit — S7 lane 요약 (2026-04-28)]] — 이 문서는 요약본이다. 모든 file:line 인용·외부 근거·반론 대응은 원본에 있다. *(verified 2026-04-28; s7)*
 - [[wiki/context/decisions/temperature-policy-analysis-20260428|AEGIS LLM Temperature Policy Analysis (2026-04-28)]] — 상태: synthesized context / decision-support 문서. canonical 정책 아님. *(verified 2026-04-28; s7/s3/s2/platform)*
@@ -519,7 +531,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-04-29; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-04; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*

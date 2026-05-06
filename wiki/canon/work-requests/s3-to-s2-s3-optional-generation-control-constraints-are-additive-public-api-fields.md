@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields"
-last_verified: "2026-04-29"
+last_verified: "2026-05-02"
 service_tags: ["s3", "analysis-agent", "build-agent", "frontend"]
 decision_tags: ["generation-controls", "api-contract", "additive", "s2-notice"]
 related_pages: ["wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/handoff/s3/session-s3-generation-controls-s7-wr-20260429.md"]
 migration_status: "canonicalized"
 wr_id: "s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-05-02T16:15:39.990Z","note":"Reviewed for S2 impact during API drift audit. Existing S2-to-S3 behavior remains valid because S3 generation-control fields are additive/optional. S2 direct S7 caller path was separately updated for required S7 generation controls. No S2 code change required for this S3 optional notice."}]
 registered_at: "2026-04-29T10:25:11.285Z"
+completed_at: "2026-05-02T16:15:39.990Z"
 ---
 
 # S3 optional generation-control constraints are additive public API fields

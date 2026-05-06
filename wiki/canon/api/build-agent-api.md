@@ -10,9 +10,9 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-04-29"
+last_verified: "2026-05-03"
 service_tags: ["s3"]
-decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "system-stability", "contract-notify", "generation-controls", "api-contract", "tool-schema-validation", "input-boundary"]
+decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "system-stability", "contract-notify", "generation-controls", "api-contract", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate"]
 related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md"]
 ---
 
@@ -21,7 +21,7 @@ related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/readme
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-04-29
+> **최종 업데이트**: 2026-05-03
 
 Build Agent의 public contract 문서다. 서비스 버전 문자열은 `/v1/health.version = "1.0.0"`으로 유지하지만, 응답 schema surface는 **build-v1.1이 현재 active default**다. 2026-04-27 S3 remediation workstream에서 기존 “proposal” 표기를 종료했고, runtime은 `schemaVersion: "build-v1.1"` 및 additive build-domain fields를 기본 방출한다.
 
@@ -74,7 +74,7 @@ Build Agent accepts the existing optional `constraints` object and adds caller-o
 | `constraints.enableThinking` | bool | Optional thinking flag override; default is thinking-on. |
 | `constraints.temperature` | number | Optional generation temperature override (`0..2`). |
 | `constraints.topP` | number | Optional top-p override (`0..1`). |
-| `constraints.topK` | int | Optional top-k override (`>=1`); S3 does not expose S7 `-1` sentinel in public API. |
+| `constraints.topK` | int | Optional top-k override (`>=-1`); `-1` preserves the S7/vLLM unlimited top-k sentinel while named S3 presets keep positive defaults. |
 | `constraints.minP` | number | Optional min-p override (`0..1`). |
 | `constraints.presencePenalty` | number | Optional presence penalty override (`-2..2`). |
 | `constraints.repetitionPenalty` | number | Optional repetition penalty override (`0..2`). |

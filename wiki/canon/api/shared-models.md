@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-04-27"
+last_verified: "2026-05-02"
 service_tags: ["platform"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -20,10 +20,20 @@ migration_status: "canonicalized"
 > Authority order for this document:
 > 1. `services/shared/src/models.ts`
 > 2. `services/shared/src/dto.ts`
-> 3. mounted backend controllers under `services/backend/src/controllers/*.ts`
+> 3. `services/shared/src/llm-sampling.ts`
+> 4. mounted backend controllers under `services/backend/src/controllers/*.ts`
 >
 > This file is intentionally backend-owned. If S2 behavior changes, update this document first and treat it as the canonical contract for S1.
 > If you need the bigger end-to-end request/WS flow before reading field-level contracts, see [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]].
+>
+> 2026-05-02 implementation audit: this page was checked against `services/shared/src/models.ts`,
+> `services/shared/src/dto.ts`, `services/backend/src/router-setup.ts`, and mounted S2 controllers.
+> The audit clarified project-scoped SDK delete behavior, limited WS subscribe-time snapshots,
+> and the S2-owned direct S7 task caller generation-control tuple.
+>
+> 2026-05-03 implementation audit: S2 added `services/shared/src/llm-sampling.ts` as the
+> S2-owned shared generation-control vocabulary. This page describes S2 caller/shared-type
+> behavior only; S3 and S7 public API ownership remains in their canonical API documents.
 
 ---
 
@@ -432,6 +442,11 @@ interface AgentRecoveryTraceEntry {
 
 interface AgentClaimDiagnosticsSummary {
   lifecycleCounts?: Record<string, number>;
+  /**
+   * Bounded diagnostic-only records for candidate claims that did not become accepted final claims.
+   * S3 may include lifecycle proof fields such as requiredEvidence, presentEvidence,
+   * missingEvidence, evidenceTrail, revisionHistory, and outcomeContribution.
+   */
   nonAcceptedClaims?: Array<Record<string, unknown>>;
 }
 
@@ -474,6 +489,7 @@ S3 Analysis Agent claim diagnostics policy (2026-04-27):
 - Non-accepted claim lifecycle data is preserved under `claimDiagnostics` using S3 WP-1 object shape (`lifecycleCounts`, `nonAcceptedClaims[]`).
 - Negative or failed evidence acquisition attempts are preserved under `evidenceDiagnostics`; diagnostic evidence references are not supporting refs for accepted claims.
 - These fields are additive and optional; old rows/non-Deep rows may omit them.
+- `claimDiagnostics.nonAcceptedClaims[]` may include S3 Pass-A proof fields (`requiredEvidence`, `presentEvidence`, `missingEvidence`, `evidenceTrail`, `revisionHistory`) and `outcomeContribution` values such as `rejected_unsupported` or `needs_human_review`. S1 should treat these as diagnostic detail, not as accepted findings.
 
 S3 Analysis Agent outcome semantics:
 
@@ -481,6 +497,7 @@ S3 Analysis Agent outcome semantics:
 - S2/S1 should treat a clean deep pass as `status === "completed" && analysisOutcome === "accepted_claims" && qualityOutcome === "accepted"`.
 - Valid-input S3 deficiencies (for example no accepted claims, caveats, rejected/repair-exhausted review quality, or inconclusive PoC) are represented in the result fields above and `recoveryTrace`; they are not transport failures.
 - True task failures remain failure envelopes / non-2xx paths for invalid caller input, unsafe/out-of-authority requests, dead dependencies, timeout/cancel, or impossible result-envelope assembly.
+- For `generate-poc`, S3 quality-repair exhaustion is represented as `status="completed"` with `pocOutcome="poc_inconclusive"` and `qualityOutcome="repair_exhausted"` plus recovery trace detail such as `action="poc_quality_repair_exhausted"`. This is non-clean and requires review, but is not a task transport failure.
 
 ### 2.6.1 Deep outcome / cleanPass UI contract (S2→S1)
 
@@ -744,6 +761,61 @@ interface ProjectReport {
 
 ---
 
+### 2.7 S2-owned LLM generation-control vocabulary
+
+`services/shared/src/llm-sampling.ts` defines the shared TypeScript vocabulary S2 uses for
+generation-control request fields. It intentionally preserves three distinct shapes instead of
+creating one universal downstream contract:
+
+```ts
+interface GenerationControlFields {
+  enableThinking: boolean;
+  maxTokens: number;
+  temperature: number;
+  topP: number;
+  topK: number;
+  minP: number;
+  presencePenalty: number;
+  repetitionPenalty: number;
+}
+
+type S7TaskGenerationConstraints = GenerationControlFields;
+type PartialS7TaskGenerationConstraints = Partial<S7TaskGenerationConstraints>;
+type S3GenerationOverrides = Partial<GenerationControlFields>;
+```
+
+S2 semantics:
+
+- **Core field vocabulary**: the eight fields above are the canonical camelCase names S2 uses at
+  TypeScript/API-client boundaries.
+- **S7 task path**: direct S2 calls to S7 `/v1/tasks` through `LlmTaskClient` must emit the full
+  required tuple. S2 normalizes missing generation fields at the S7 client boundary.
+- **S3 task paths**: S2-facing `AgentClient` and `BuildAgentClient` request types accept optional
+  camelCase generation overrides because S3 owns named presets when callers omit them. S2 does not
+  emit shared defaults to existing S2→S3 orchestration paths by default.
+
+Current S2 S7 default tuple is:
+
+```ts
+{
+  enableThinking: true,
+  maxTokens: 16384,
+  temperature: 0.6,
+  topP: 0.95,
+  topK: 20,
+  minP: 0.0,
+  presencePenalty: 0.0,
+  repetitionPenalty: 1.0,
+}
+```
+
+`maxTokens` acceptance range is `1..32768` in current S3/S7 public contracts, but S2's default
+remains `16384` until a separate policy decision changes it. Current canonical S3/S7 API docs both
+accept `topK >= -1`; S2 still keeps S7-required and S3-optional shapes separate because requiredness
+and preset ownership differ by downstream. Timeout guidance remains separate from generation fields:
+direct S2→S7 task calls use S2's ≤ `300000ms` timeout budget, while S2→S3 orchestration paths may use
+S3-facing advisory timeouts up to `900000ms` where their canonical API contracts allow it.
+
 ## 3. REST surface contract
 
 ## 3.1 Project surface
@@ -908,6 +980,7 @@ Validation enforced today:
 - `GET /api/projects/:pid/sdk/metrics` returns aggregate SDK counts and average phase durations from persisted `phaseHistory`.
 - `GET /api/projects/:pid/sdk/:id/log` returns server-side `logPath` for correlation/debugging plus log `content`; S1 should render the log content from the endpoint, not require users to SSH to the server path.
 - `sdk-error.troubleshootingUrl` is a wiki-canonical anchor path derived from structured `code` (for example `wiki/canon/troubleshooting/sdk#extract-failed`).
+- `DELETE /api/projects/:pid/sdk/:id` is project-scoped. If the SDK id exists but belongs to another project, S2 returns `404 NOT_FOUND` and does not delete it.
 
 ### SDK profile lookup routes
 
@@ -1440,6 +1513,13 @@ Actual runtime behavior today:
 
 S1 should therefore treat `meta.projectId` as routing metadata, not as a guaranteed real project id on non-project-scoped channels.
 
+Subscribe-time snapshot behavior:
+
+- `/ws/upload?uploadId=` sends the current in-memory upload snapshot immediately on subscribe when the upload status is still retained.
+- `/ws/analysis?analysisId=` sends the current `AnalysisTracker` snapshot immediately on subscribe when the analysis tracker still retains it.
+- Other WS channels currently do not provide a backend-owned subscribe-time replay snapshot.
+- These snapshots are convenience recovery aids, not durable histories. The REST recovery endpoints in §4.9 remain authoritative after navigation/reconnect.
+
 ### 4.2 Dynamic-analysis WS — `/ws/dynamic-analysis?sessionId=<sessionId>`
 
 | `type` | Payload |
@@ -1467,6 +1547,7 @@ Role and recovery:
   - failure → `type: "upload_failed", jobKind: "upload", resourceId: uploadId, correlationId: uploadId`
 - **Recovery / re-entry source of truth**: `GET /api/projects/:pid/source/upload-status/:uploadId`
   - this is a last-known-status fallback snapshot (current implementation: in-memory, ~30 minute retention), not an indefinitely durable history surface.
+  - a fresh `/ws/upload?uploadId=` subscriber also receives that same retained snapshot when present.
 
 ### 4.4 Pipeline WS — `/ws/pipeline?projectId=<projectId>`
 
@@ -1653,7 +1734,7 @@ This subsection answers the S1 SDK second follow-up WR after S2 implementation. 
 |---|---|---|
 | J1 shared package reflection | implemented | Source fields live in `services/shared/src/dto.ts` and `services/shared/src/models.ts`; S2 rebuilt `services/shared/dist` during verification. S1 should run shared/frontend typecheck when adopting. |
 | J2 breaking-change policy | implemented policy | Additive fields/message types are preferred. Field removals/renames or semantic changes require canonical docs update plus WR/deprecation coordination before S1 depends on the change. |
-| J3 source-of-truth | implemented policy | Authority order for S1-S2 shared contract remains: `services/shared/src/models.ts`, `services/shared/src/dto.ts`, mounted S2 behavior, then this document. |
+| J3 source-of-truth | implemented policy | Authority order for S1-S2 shared contract remains: `services/shared/src/models.ts`, `services/shared/src/dto.ts`, `services/shared/src/llm-sampling.ts`, mounted S2 behavior, then this document. |
 
 #### K. Small clarifications
 
@@ -1727,7 +1808,8 @@ Role and recovery:
 - **Recovery / re-entry source of truth**:
   - while status is retained: `GET /api/analysis/status/:analysisId`
   - for completed material: `GET /api/analysis/results/:analysisId`
-  - if the live WS stream was missed, clients should recover from these REST surfaces rather than expecting WS replay.
+  - a fresh `/ws/analysis?analysisId=` subscriber receives the current retained tracker snapshot when present.
+  - if the live WS stream was missed or the tracker snapshot is gone, clients should recover from these REST surfaces rather than expecting durable WS replay.
 
 ### 4.7 Dynamic-test WS — `/ws/dynamic-test?testId=<testId>`
 
@@ -1796,3 +1878,5 @@ These points are intentional contract clarifications and should be preserved unl
 7. `pipeline-error.phase` is currently only a coarse catch-path phase hint, not an exact failed-step contract.
 8. Upload / SDK / pipeline completion now have explicit notification categories and correlation keys for cross-screen completion awareness.
 9. Analysis recovery is authoritative via `/api/analysis/status/:analysisId` and `/api/analysis/results/:analysisId`; notification delivery is supplemental rather than a strict mirror of `/ws/analysis`.
+10. S2 direct calls to S7 `/v1/tasks` through `LlmTaskClient` send the full caller-owned generation tuple required by `wiki/canon/api/llm-gateway-api.md`: `enableThinking`, `maxTokens`, `temperature`, `topP`, `topK`, `minP`, `presencePenalty`, and `repetitionPenalty`. Existing caller-provided `maxTokens`, `timeoutMs`, or `outputSchema` are preserved while missing generation controls are backfilled from `DEFAULT_S7_TASK_GENERATION_CONSTRAINTS` in `services/shared/src/llm-sampling.ts` (`true`, `16384`, `0.6`, `0.95`, `20`, `0.0`, `0.0`, `1.0`).
+11. S2 `AgentClient` and `BuildAgentClient` accept optional S3 generation overrides from `S3GenerationOverrides`, but current S2→S3 orchestrator call paths do not emit shared default presets by default. Current fixed S2 hints remain: Deep analysis `{ maxTokens: 4096, timeoutMs: 300000 }`, build-resolve `{ timeoutMs: 600000 }`, and sdk-analyze `{ timeoutMs: 300000 }`.

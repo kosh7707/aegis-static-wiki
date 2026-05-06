@@ -6,16 +6,16 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-04-29"
+last_verified: "2026-05-03"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "topk-alignment", "transitional-deprecation", "regression-gate"]
 related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-04-29**
+> **마지막 업데이트: 2026-05-03**
 
 이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-04-27 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
@@ -428,3 +428,28 @@ Execution note:
 - 2026-04-29 follow-up autopilot re-read `temperature-policy-analysis-20260428-s3-summary.md` and the full `temperature-policy-analysis-20260428.md`; it found P11 timeout centralization and P7 rationale comments needed one more tightening pass, then reverified full suites.
 - Do not autonomously summon Critic in future sessions; use Critic only when the user explicitly requests it.
 <!-- S3-GENERATION-CONTROLS-S7-WR-20260429:END -->
+
+---
+
+<!-- S3-TEMPERATURE-FOLLOWUP-20260503:START -->
+## 16. 2026-05-03 Temperature-policy follow-up closeout
+
+S3 re-read `wiki/context/decisions/temperature-policy-analysis-20260428-s3-followup-20260503.md` and closed the remaining Step 1 follow-up items for Analysis Agent and Build Agent.
+
+Closeout decisions:
+- **P10**: both agent loops keep `tool_choice="required"` for the first acquisition/build tool turn only while tools are available, no successful tool call has happened, and no forced-report/finalizer path is active. This is intentionally broader than the WR shorthand “Phase 2 first turn”: failed/schema-violating tool attempts have not acquired evidence yet, so S3 keeps acquisition required until the first successful tool call. It relaxes to `auto` after success or when tools are removed.
+- **P16**: LLM-facing tool results and source snippets remain wrapped/sanitized by `app/agent_runtime/security/input_boundary.py`; raw evidence/audit content remains unmutated outside the prompt boundary. Literal injected boundary delimiters are neutralized to `[BOUNDARY-MARKER-NEUTRALIZED]` before wrapping to avoid delimiter confusion.
+- **P18**: S3 chose option **(a)**. Analysis Agent and Build Agent public `constraints.topK` now align with S7's `top_k` range by accepting `ge=-1`, preserving the vLLM/S7 unlimited sampling escape hatch. Named presets remain positive (`top_k=20` for thinking, `top_k=1` for strict repair).
+- **P19**: scalar `LlmCaller.call(temperature=...)` is now explicitly transitional. It emits a `DeprecationWarning`, and the removal milestone is: remove the scalar argument after S3 readiness-gate evidence shows all active call sites pass named `GenerationControls` presets.
+- **Regression gate**: durable pytest gate `services/analysis-agent/tests/test_s3_llm_readiness_gate.py` checks P10/P16/P18/P19 static markers across both S3 services and includes `eval/eval_runner.py` P6 generation tuple coverage. Local context gate `.omx/context/s3-llm-readiness-gate-20260503.py` mirrors the same readiness check for session evidence.
+
+Fresh verification:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `565 passed in 5.82s`.
+- `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `304 passed in 0.60s`.
+- `python3 -m compileall -q services/analysis-agent/app services/build-agent/app services/analysis-agent/eval` → PASS.
+- `python3 .omx/context/s3-llm-readiness-gate-20260503.py` → PASS, including `eval/eval_runner.py` P6 generation tuple coverage.
+- Active-source static guards for hidden `temperature=0.3`, thinking-off markers, `/no_think`, old `topK ge=1`, and old `top_k >= 1` validation → no matches.
+
+Operational reminder:
+- The scalar `temperature` compatibility path is deprecated compatibility only. New S3 LLM call sites must pass `generation=controls_from_constraints(<named preset>, constraints)` and must not pass scalar `temperature=`.
+<!-- S3-TEMPERATURE-FOLLOWUP-20260503:END -->

@@ -13,9 +13,9 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-04-29"
+last_verified: "2026-05-03"
 service_tags: ["s3", "analysis-agent", "api-contract", "s2"]
-decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary"]
+decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate"]
 related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"]
 ---
 
@@ -24,7 +24,7 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3  
 > **포트**: 8001  
 > **호출자**: S2  
-> **최종 업데이트**: 2026-04-29
+> **최종 업데이트**: 2026-05-03
 > **계약 방향**: S3 claim-evidence state-machine `agent-v1.1` additive response schema contract.
 
 Analysis Agent의 public contract 문서다. 2026-04-24부터 S3는 `completed`와 clean security pass를 분리한다. `completed`는 **schema-valid honest review result envelope**를 뜻하며, accepted claim / accepted PoC / clean hot-gate pass를 뜻하지 않는다.
@@ -111,7 +111,7 @@ Consumer 규칙:
 | `constraints.enableThinking` | bool | X | S3 generation preset의 thinking flag override. 기본은 thinking-on. |
 | `constraints.temperature` | number | X | optional generation temperature override (`0..2`). |
 | `constraints.topP` | number | X | optional top-p override (`0..1`). |
-| `constraints.topK` | int | X | optional top-k override (`>=1`). Public S3 API는 S7의 `-1` sentinel을 노출하지 않는다. |
+| `constraints.topK` | int | X | optional top-k override (`>=-1`). `-1` preserves the S7/vLLM unlimited top-k sentinel; named S3 presets still use positive defaults. |
 | `constraints.minP` | number | X | optional min-p override (`0..1`). |
 | `constraints.presencePenalty` | number | X | optional presence penalty override (`-2..2`). |
 | `constraints.repetitionPenalty` | number | X | optional repetition penalty override (`0..2`). |
@@ -120,7 +120,7 @@ Consumer 규칙:
 
 The public `constraints.*` generation override surface is camelCase-only. Snake_case keys such as `top_p`, `top_k`, `min_p`, `presence_penalty`, and `repetition_penalty` are rejected at the S3 API boundary. Internally S3 serializes to S7 snake_case when calling `/v1/chat` or `/v1/async-chat-requests`.
 
-If callers omit these optional fields, S3 applies service-owned named presets and still sends the complete S7-required tuple. `constraints.maxTokens` accepts `1..32768`; stricter sub-call caps such as the structured finalizer cap remain internal per-call policy and do not change the public acceptance range.
+If callers omit these optional fields, S3 applies service-owned named presets and still sends the complete S7-required tuple. `constraints.maxTokens` accepts `1..32768`; `constraints.topK` accepts `-1` or any positive integer to align with S7. Stricter sub-call caps such as the structured finalizer cap remain internal per-call policy and do not change the public acceptance range.
 
 ### `deep-analyze`용 `context.trusted`
 

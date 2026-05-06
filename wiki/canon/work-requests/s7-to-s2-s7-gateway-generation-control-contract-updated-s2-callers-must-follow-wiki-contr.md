@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr"
-last_verified: "2026-04-29"
+last_verified: "2026-05-02"
 service_tags: ["s7", "s2", "llm-gateway", "api-contract"]
 decision_tags: ["caller-owned-generation", "temperature-policy", "breaking-contract"]
 related_pages: ["wiki/canon/api/llm-gateway-api.md", "wiki/canon/specs/llm-gateway.md", "wiki/canon/handoff/s7/readme.md", "wiki/canon/handoff/s7/session-omx-1777438836294-vm2fva.md"]
 migration_status: "canonicalized"
 wr_id: "s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s7"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-05-02T16:15:33.623Z","note":"S2 direct S7 caller path updated to send the full caller-owned generation tuple with S2 defaults true/16384/0.6/0.95/20/0.0/0.0/1.0. Canonical S2 contracts updated; targeted tests and backend suite passed."}]
 registered_at: "2026-04-29T08:06:22.937Z"
+completed_at: "2026-05-02T16:15:33.623Z"
 ---
 
 # S7 Gateway generation-control contract updated — S2 callers must follow wiki contract

@@ -2433,3 +2433,61 @@ related_pages:
 - Added S3-local TimeoutDefaults and wired caller/eval/config defaults to the 1800/600/120s policy.
 - Added P7 preset-rationale comments for Generate-PoC and structured finalizer call sites.
 - Verification: analysis-agent 558 passed; build-agent 301 passed; compileall PASS; hidden temperature guard PASS; static coverage guard 274 hits.
+
+## [2026-05-02] mcp | complete_wr | s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-02] mcp | complete_wr | s7-to-s2-s7-gateway-generation-control-contract-updated-s2-callers-must-follow-wiki-contr
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-02] mcp | complete_wr | s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-02] mcp | complete_wr | s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-02] mcp | complete_wr | s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-02] S2 updated implementation and canonical API docs after contract drift audit | S2 API contract drift audit
+- Patched LlmTaskClient to send the full S7 /v1/tasks caller-owned generation tuple with S2 defaults while preserving caller overrides.
+- Patched SDK project-scoped delete to reject cross-project deletion with 404.
+- Updated canonical S2/shared/backend API docs for S7 controls, S3 diagnostic outcome semantics, WS subscribe-time snapshots, and SDK delete scope.
+- Verification passed targeted backend tests, full backend test suite, and shared/backend builds.
+
+## [2026-05-03] S3 closed P10/P16/P18/P19 follow-up items and added readiness regression gate | S3 temperature-policy follow-up closeout
+- Analysis Agent full suite: 562 passed in 6.30s
+- Build Agent full suite: 302 passed in 0.60s
+- compileall over S3 app/eval paths: PASS
+- Local S3 LLM readiness gate: PASS
+- Canonical S3 handoff/specs updated with topK=-1 alignment and scalar-temperature deprecation milestone
+
+## [2026-05-03] S3 addressed P16 boundary delimiter neutralization, P10 policy rationale, and eval_runner gate coverage | S3 follow-up defense-in-depth closure
+- Boundary delimiters in untrusted tool/source content are neutralized before LLM wrapping.
+- P10 comments and S3 handoff document why required tool_choice lasts until first successful tool call.
+- S3 readiness gates now include analysis-agent eval/eval_runner.py P6 tuple coverage.
+- Verification: analysis-agent 565 passed; build-agent 304 passed; compileall PASS; S3 readiness gate PASS.
+
+## [2026-05-03] One certificate-maker E2E spot run failed at Build Agent Stage 2 | S3 certificate-maker spot run
+- Run ID: s3-cert-maker-spot-20260503-015411
+- Preflight passed for S3-Agent, S3-Build, S4-SAST, S5-KB, S7-Gateway.
+- Stage 2 Build Agent returned HTTP 200 completed non-clean envelope: buildResult.success=false, artifactVerification.matched=false, failureCode=BUILD_SCRIPT_SYNTHESIS_FAILED.
+- Build logs: finishReason=tool_calls, toolCallCount=0, responseType=content, empty response classified as output deficient.
+- Stages 3-6 not run.
+
+## [2026-05-03] Three Build-Agent-only certificate-maker probes show stochastic empty tool_calls under tool_choice=required | S3 certificate-maker Build Agent tool-call probe
+- Base run: s3-cert-maker-toolcall-probe-20260503-030111
+- Attempt 01: finishReason=tool_calls, raw message.tool_calls=[], audit tool_call_count=0, cleanPass=false.
+- Attempt 02: finishReason=tool_calls, raw message.tool_calls=[], audit tool_call_count=0, cleanPass=false.
+- Attempt 03: required first turn produced list_files; subsequent tools executed; audit tool_call_count=7; cleanPass=true.
+- Conclusion: tool_choice=required itself can work, but current model/gateway behavior sometimes returns empty tool_calls with finishReason=tool_calls.
+
+## [2026-05-04] recorded non-dynamic API contract audit | wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md
+- Scope excluded dynamic analysis and S3 implementation internals per user instruction.
+- Report records S1/S2 clone payload drift, S2 PoC outcome drift, and S7 tool_choice guard gap.
+- No product code changes were made for this audit.

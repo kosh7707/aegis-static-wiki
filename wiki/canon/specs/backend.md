@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/backend.md"
 original_path: "docs/specs/backend.md"
-last_verified: "2026-04-27"
+last_verified: "2026-05-02"
 service_tags: ["s2"]
 decision_tags: []
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -310,21 +310,24 @@ RuleEngine
 
 ### P0-4. LLM 분석 요청 ✅
 
-Core Service → LLM Gateway(S3) v1 Task API 통신.
+Core Service → S7 LLM Gateway v1 Task API 통신.
 
 ```
-POST http://S3:8000/v1/tasks
+POST http://localhost:8000/v1/tasks
 ```
 
 - `LlmTaskClient`가 v1 TaskRequest/TaskResponse로 S7 Gateway와 직접 통신 (concurrency queue 내장)
+- 2026-05-03 기준 S7 caller-owned generation contract에 맞춰 `constraints`에 `enableThinking`, `maxTokens`, `temperature`, `topP`, `topK`, `minP`, `presencePenalty`, `repetitionPenalty`를 모두 보낸다. S2의 shared generation-control vocabulary/default는 `services/shared/src/llm-sampling.ts`에서 관리한다.
+  - S2 default tuple: `true`, `16384`, `0.6`, `0.95`, `20`, `0.0`, `0.0`, `1.0`
+  - 호출자가 이미 제공한 `maxTokens`, `timeoutMs`, `outputSchema`는 유지한다.
 - 모듈 → taskType 매핑: `static_analysis` → `static-explain`, `dynamic_analysis` → `dynamic-annotate`, `dynamic_testing` → `test-plan-propose`
 - **태스크별 context 분기** (API 계약서 `wiki/canon/api/llm-gateway-api.md` 정합):
   - `static-explain`: `trusted.buildProfile` (optional, languageStandard/targetArch/compiler) + `trusted.finding` (단일 객체, ruleResults 첫 번째) + `trusted.sastFindings` (optional) + `untrusted.sourceSnippet`
   - `dynamic-annotate`: `trusted.ruleMatches` (배열) + `untrusted.rawCanLog`
   - `test-plan-propose`: `trusted.ruleMatches` + `untrusted.testResults`
-- S3 응답을 파싱하여 취약점 목록으로 변환
-- S3 연결 실패 시 1계층 결과만으로 응답 반환 (graceful degradation)
-- S3 URL: 환경변수 `LLM_GATEWAY_URL` (기본값: `http://localhost:8000`)
+- S7 응답을 파싱하여 취약점 목록으로 변환
+- S7 연결 실패 시 1계층 결과만으로 응답 반환 (graceful degradation)
+- S7 URL: 환경변수 `LLM_GATEWAY_URL` (기본값: `http://localhost:8000`)
 
 ### P0-5. 분석 결과 조회 ✅
 
@@ -1016,6 +1019,7 @@ POST /api/auth/registration-requests/:id/reject
 - S2 strips local `buildProfile.sdkId = "custom"` before calling S4 scan endpoints; native/non-SDK S4 scans omit `sdkId`.
 - registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape with populated org fields.
 - S3 Build Agent `build-v1.1` is active. S2 treats `status=completed` as an envelope and requires `result.cleanPass !== false`; completed-but-non-clean results such as `EXPECTED_ARTIFACTS_MISMATCH` become `resolve_failed` pipeline outcomes.
+- S2 shared generation-control typing is split across core vocabulary, S7-required task constraints, and S3-optional overrides. Current S2→S3 call paths do not emit shared default presets by default: Deep analysis sends `{ maxTokens: 4096, timeoutMs: 300000 }`, build-resolve sends `{ timeoutMs: 600000 }`, and sdk-analyze sends `{ timeoutMs: 300000 }` unless a future WR/policy explicitly changes emission behavior.
 - SDK upload/progress UI contract is grounded in the current S2 implementation:
 - SDK second follow-up A1-O2 implementation details are canonicalized in `wiki/canon/api/shared-models.md` §4.5.1.
   - backend emits 9 SDK progress phases and 4 terminal error phases; S1 may group them into a 5-step UI stepper using the mapping documented in `wiki/canon/api/shared-models.md`

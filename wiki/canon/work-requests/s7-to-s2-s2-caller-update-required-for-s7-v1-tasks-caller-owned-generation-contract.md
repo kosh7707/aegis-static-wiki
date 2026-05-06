@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract"
-last_verified: "2026-04-29"
+last_verified: "2026-05-02"
 service_tags: ["s7", "s2", "llm-gateway"]
 decision_tags: ["caller-owned-generation-contract", "breaking-api"]
 related_pages: ["wiki/canon/api/llm-gateway-api.md", "wiki/canon/specs/llm-gateway.md", "wiki/canon/handoff/s7/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s7-to-s2-s2-caller-update-required-for-s7-v1-tasks-caller-owned-generation-contract"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s7"
 to_lanes: ["s2"]
-completed_by: []
+completed_by: [{"lane":"s2","completed_at":"2026-05-02T16:15:33.581Z","note":"S2 LlmTaskClient now backfills the full S7 /v1/tasks generation-control tuple (enableThinking, maxTokens, temperature, topP, topK, minP, presencePenalty, repetitionPenalty) while preserving caller overrides such as maxTokens, timeoutMs, and outputSchema. Canonical S2 API docs/specs updated and tests/build passed."}]
 registered_at: "2026-04-29T03:33:05.036Z"
+completed_at: "2026-05-02T16:15:33.581Z"
 ---
 
 # S2 caller update required for S7 /v1/tasks caller-owned generation contract
