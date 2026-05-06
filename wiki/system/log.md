@@ -2709,3 +2709,9 @@ related_pages:
 - Page: wiki/canon/specs/build-agent-state-machine.md
 - Defines task status vs build result outcome, canonical states/transitions, cleanPass=true conditions, completed_non_clean boundaries, task-level failure boundary, scriptHintPath/generated-script invariant, ToolIntent/tool_choice invariant, and stabilization test oracle.
 - Purpose: anchor upcoming Build Agent multi-dataset stabilization beyond certificate-maker.
+
+## [2026-05-06] Critic reviewed Build Agent state/outcome contract; S3 fixed documentation blockers and received PASS | S3 Build Agent state/outcome contract Critic PASS
+- Initial Critic verdict: REJECT due to nonexistent `failed` status, S4-unavailable semantics mismatch, and stale build-agent.md `tool_choice=required` wording.
+- First fix aligned docs to ToolIntent/runtime dispatch and S4 tool-result semantics; second Critic pass rejected representative use of reserved `unsafe_output`/`empty_result` and budget exhaustion as completed_non_clean.
+- Final fixes narrowed representative runtime statuses to completed/validation_failed/timeout/model_error/budget_exceeded, documented unsafe_output/empty_result as reserved only, and mapped loop exhaustion to budget_exceeded while preserving output-deficient completed_non_clean when assembly succeeds.
+- Final Critic verdict: PASS, no blockers. Pages touched: wiki/canon/specs/build-agent-state-machine.md, wiki/canon/specs/build-agent.md, wiki/canon/api/build-agent-api.md.

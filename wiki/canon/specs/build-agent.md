@@ -109,7 +109,7 @@ POST /v1/tasks (build-resolve)
   -> phase0
   -> bounded repair loop
   -> artifact validation
-  -> completed / validation_failed / timeout / model_error / budget_exceeded / unsafe_output / empty_result
+  -> completed / validation_failed / timeout / model_error / budget_exceeded
 ```
 
 ### Preflight 검증
