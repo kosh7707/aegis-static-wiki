@@ -2733,3 +2733,6 @@ related_pages:
 ## [2026-05-07] mcp | register_wr | s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract
 - Registered request WR for s2
 - Path: wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract.md
+
+## [2026-05-07] update | wiki/canon/specs/build-agent.md
+- Clarified hot11 anti-overfit gate execution: canonical 11 cases remain under cases[], renamed controls may live under controls[], and live proof must run stabilization_runner.py with --include-controls.

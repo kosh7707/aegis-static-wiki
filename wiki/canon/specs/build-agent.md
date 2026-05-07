@@ -232,7 +232,7 @@ Anti-overfit gates are part of the hot11 test system, not optional commentary:
 - Static guard: active Build Agent code must not contain host-specific SDK roots (`/home/kosh/ti-sdk`, `ti-processor-sdk-linux-am335x-evm-08.02.00.24`) or RE100 project-name shortcuts.
 - Generated-script audit: generated `aegis-build.sh` files must not embed forbidden host default SDK roots, installer basenames, or case-name special-casing. Request-scoped descriptor paths are allowed as evidence when supplied by the manifest.
 - Metamorphic guard: at least one SDK case must be runnable from a renamed/randomized fixture parent and/or descriptor root, and must still pass via descriptor resolution. A name-dependent failure is an overfit failure even if the canonical case passes.
-- Negative control: a cloned/renamed SDK case should not rely on the original case id or project directory name for success.
+- Negative control: the staged manifest may keep canonical hot11 under `cases[]` and put renamed controls under `controls[]`; live proof must include `stabilization_runner.py --include-controls` so the renamed control is actually executed/evaluated.
 
 Legacy compatibility remains part of the gate: `/v1/health.version` stays `1.0.0`, active response schema stays `build-v1.1`, and existing legacy alias parsing remains covered by unit tests.
 
