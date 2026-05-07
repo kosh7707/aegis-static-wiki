@@ -2715,3 +2715,17 @@ related_pages:
 - First fix aligned docs to ToolIntent/runtime dispatch and S4 tool-result semantics; second Critic pass rejected representative use of reserved `unsafe_output`/`empty_result` and budget exhaustion as completed_non_clean.
 - Final fixes narrowed representative runtime statuses to completed/validation_failed/timeout/model_error/budget_exceeded, documented unsafe_output/empty_result as reserved only, and mapped loop exhaustion to budget_exceeded while preserving output-deficient completed_non_clean when assembly succeeds.
 - Final Critic verdict: PASS, no blockers. Pages touched: wiki/canon/specs/build-agent-state-machine.md, wiki/canon/specs/build-agent.md, wiki/canon/api/build-agent-api.md.
+
+## [2026-05-06] Staged local gitignored Build Agent multi-dataset inputs under AEGIS uploads for upcoming stabilization runner work | S3 Build Agent stabilization datasets staged
+- Dataset root: /home/kosh/AEGIS/uploads/build-agent-stabilization-datasets
+- Cases: certificate-maker, cjson, libexpat, redis
+- Manifest: /home/kosh/AEGIS/uploads/build-agent-stabilization-datasets/manifest.json
+- Original inputs were copied, not destructively moved; generated build artifacts and .git directories were excluded/cleaned.
+- scriptHintPath reference files: certificate-maker build.sh, cjson .aegis/build-script-hint.sh, libexpat expat/.aegis/build-script-hint.sh, redis .aegis/build-script-hint.sh.
+
+## [2026-05-06] Implemented and Critic-validated Build Agent multi-dataset stabilization runner/test oracle | S3 Build Agent stabilization test system
+- Changed files: services/build-agent/scripts/stabilization_runner.py; services/build-agent/tests/test_stabilization_runner.py
+- Runner defaults to dry-run; live Build Agent POSTs require explicit --live.
+- Dry-run against staged 4-case manifest passed and generated strict build-req.json for certificate-maker/cjson/libexpat/redis.
+- Verification: focused 14 passed; full build-agent suite 353 passed; compileall and git diff --check passed.
+- Critic final verdict: PASS; no blockers.

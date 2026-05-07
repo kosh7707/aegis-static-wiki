@@ -199,6 +199,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-omx-1777019958462-zau7uq|Session history — s3 / omx-1777019958462-zau7uq]] — - Lane: s3 *(verified 2026-04-27; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1777022137115-38345z-ralplan-fail-never-state-machine|Session history — s3 / omx-1777022137115-38345z-ralplan-fail-never-state-machine]] — - Lane: s3 *(verified 2026-04-24; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1778037641464-duha0m|Session history — s3 / omx-1778037641464-duha0m]] — - Lane: s3 *(verified 2026-05-06; s3)*
+- [[wiki/canon/handoff/s3/session-omx-1778046651221-ysrg2x|Session history — S3 / omx-1778046651221-ysrg2x]] — - Lane: S3 *(verified 2026-05-06; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1778049154-s3-scripthintpath|Session history — s3 / omx-1778049154-s3-scripthintpath]] — - Lane: s3 *(verified 2026-05-06; s3)*
 - [[wiki/canon/handoff/s3/session-s3-agent-shared-doc-cleanup-20260427|Session history — s3 / s3-agent-shared-doc-cleanup-20260427]] — - Lane: s3 *(verified 2026-04-27; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-hot3-20260426|Session history — s3 / s3-certificate-maker-hot3-20260426]] — - Lane: s3 *(verified 2026-04-26; s3)*
