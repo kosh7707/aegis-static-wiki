@@ -202,6 +202,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-omx-1778046651221-ysrg2x|Session history — S3 / omx-1778046651221-ysrg2x]] — - Lane: S3 *(verified 2026-05-06; s3)*
 - [[wiki/canon/handoff/s3/session-omx-1778049154-s3-scripthintpath|Session history — s3 / omx-1778049154-s3-scripthintpath]] — - Lane: s3 *(verified 2026-05-06; s3)*
 - [[wiki/canon/handoff/s3/session-s3-agent-shared-doc-cleanup-20260427|Session history — s3 / s3-agent-shared-doc-cleanup-20260427]] — - Lane: s3 *(verified 2026-04-27; s3)*
+- [[wiki/canon/handoff/s3/session-s3-build-sdk-materialization-20260507|Session history — s3 / s3-build-sdk-materialization-20260507]] — - Lane: s3 *(verified 2026-05-07; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-hot3-20260426|Session history — s3 / s3-certificate-maker-hot3-20260426]] — - Lane: s3 *(verified 2026-04-26; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-hot3-operational-20260506|Session history — s3 / session-s3-certificate-maker-hot3-operational-20260506]] — - Lane: s3 *(verified 2026-05-06; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-smoke-20260425|Session history — s3 / s3-certificate-maker-smoke-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
@@ -440,6 +441,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte|S3 Analysis Agent state-machine result outcome contract will become default after current test-gated implementation]] — - Kind: notice *(verified 2026-04-25; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement|S3 Analysis Agent WP-1 claimDiagnostics shape refinement]] — - Kind: notice *(verified 2026-04-27; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice|S3 Build Agent active build-v1.1 contract notice]] — - Kind: notice *(verified 2026-04-27; s3)*
+- [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence|S3 Build Agent SDK descriptor consumer complete and hot11 evidence]] — - Kind: notice *(verified 2026-05-07; s2/s3/build-agent)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract|S3 Build Agent SDK materialization descriptor producer contract]] — - Kind: request *(verified 2026-05-07; s2/s3/build-agent)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive|S3 generate-poc quality repair exhaustion now reports poc_inconclusive]] — - Kind: notice *(verified 2026-05-02; s3/s2/analysis-agent/api-contract/generate-poc)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields|S3 optional generation-control constraints are additive public API fields]] — - Kind: notice *(verified 2026-05-02; s3/analysis-agent/build-agent/frontend)*

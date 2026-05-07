@@ -108,6 +108,7 @@ former shared-runtime package는 더 이상 Build Agent runtime/test dependency�
 POST /v1/tasks (build-resolve)
   -> preflight
   -> phase0
+  -> deterministic request-scoped wrapper attempt when phase0 can produce one
   -> bounded repair loop
   -> artifact validation
   -> completed / validation_failed / timeout / model_error / budget_exceeded
@@ -146,6 +147,9 @@ LLM은 아래만 수행한다.
 - request-scoped build script 작성/수정
 - `try_build`
 - 실패 복구
+
+### deterministic phase0 wrapper
+When Phase 0 has enough deterministic material, Build Agent may create `build-aegis-*/aegis-build.sh` before the LLM loop and try it once. For shell-script hints this wrapper is request-scoped and exports descriptor-derived SDK environment (`AEGIS_SDK_ROOT`, `AEGIS_SDK_SETUP_SCRIPT`, `AEGIS_SDK_SYSROOT`, `SDK_DIR`, `SDKTARGETSYSROOT`) before invoking the referenced uploaded script. The public build command still executes only the generated `build-aegis-*/aegis-build.sh`; uploaded script paths remain disallowed as direct `buildCommand`/`buildScript` evidence. If this deterministic attempt cleanly builds all expected artifacts, Build Agent may return `modelProfile="deterministic-phase0"` without an LLM repair loop. If it fails, the bounded LLM repair loop remains the fallback.
 
 ### artifact validation
 clean pass는 반드시
@@ -258,6 +262,7 @@ Legacy compatibility remains part of the gate: `/v1/health.version` stays `1.0.0
 - full-tuple / `TimeoutDefaults` / schema-validation / input-boundary static coverage guard: **PASS** (274 hits across implementation/tests)
 - 2026-05-03 S3 LLM readiness gate: **PASS** (`services/analysis-agent/tests/test_s3_llm_readiness_gate.py`, local `.omx/context/s3-llm-readiness-gate-20260503.py`), including P16 boundary-marker neutralization
 - thinking-off regression guard over S3-owned services: **PASS** (`enable_thinking=False`, `enable_thinking.*False`, `/no_think` no matches outside excluded caches/venvs)
+- 2026-05-07 SDK materialization/hot11 workstream: build-agent full suite **382 passed in 0.96s**; `python3 -m compileall -q services/build-agent/app services/build-agent/scripts`: **PASS**; `git diff --check`: **PASS**; `stage_hot11_datasets.py --clean`: staged canonical hot11 plus `renamed-sdk-control-web`; `stabilization_runner.py --live --include-controls --run-label hot11-controls-live-final-20260507-210320`: **PASS**, 12/12 `completed_clean` including canonical hot11 and renamed control.
 
 ---
 

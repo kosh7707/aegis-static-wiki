@@ -128,7 +128,7 @@ Clean build success remains result-level: `status="completed"` means a build-dom
 1. `buildTargetPath` 누락 시 invalid contract
 2. undeclared native/sdk fallback 금지
 3. `expectedArtifacts` 미충족이면 clean pass 금지
-4. caller build script hint는 uploaded-project-relative path / text-only / reference-only
+4. caller build script hint는 uploaded-project-relative path / text-only / generated-wrapper-only
 5. compile DB 가능성만으로 성공 처리 금지
 
 ### `build.sdkRootPath` / SDK materialization descriptor contract (2026-05-07)
@@ -185,7 +185,7 @@ Build Agent normalizes legacy aliases only to preserve existing callers. The can
 Safety and extensibility rules:
 - Build Agent must not infer SDK roots from host-specific defaults such as `$HOME/ti-processor-sdk-*`, `/home/kosh/ti-sdk`, or project names.
 - Build Agent must not hardcode TI/RE100 paths to satisfy a live test. TI SDK support is evidence for the generalized descriptor flow, not an allowed special-case shortcut.
-- User-provided build script hints can contain user-local paths. Those paths are untrusted reference material; generated scripts should prefer the trusted SDK descriptor over paths embedded in hints.
+- User-provided build script hints can contain user-local paths. Those paths are untrusted material; generated scripts and deterministic wrappers must prefer the trusted SDK descriptor over paths embedded in hints.
 - If strict SDK mode has only `sdkId` and no usable materialization descriptor/environment/script hint, the request is invalid or completed non-clean with a clear SDK materialization diagnostic; it must not silently fall back to native builds.
 
 ### `build.scriptHintPath` contract (2026-05-06)
@@ -222,8 +222,9 @@ S3 validation:
 - hash and expose bounded reference content to the LLM prompt with path/size/sha256 diagnostics.
 
 Execution rule:
-- Build Agent must never execute the original hinted script directly.
-- The hinted file is reference-only material for creating the request-scoped `build-aegis-*/aegis-build.sh`; only the generated script may be passed to `try_build`.
+- Build Agent must never expose the original hinted script as public `buildCommand` or `buildScript`, and `try_build` must execute only the generated request-scoped `build-aegis-*/aegis-build.sh`.
+- The hinted file is untrusted material for creating the request-scoped wrapper/script. A deterministic generated wrapper may invoke the hinted script only after applying trusted descriptor-derived environment (`AEGIS_SDK_ROOT`, `AEGIS_SDK_SETUP_SCRIPT`, `AEGIS_SDK_SYSROOT`, `SDK_DIR`, `SDKTARGETSYSROOT`) and while keeping the public execution evidence pointed at `build-aegis-*/aegis-build.sh`.
+- If the deterministic wrapper cleanly builds all expected artifacts, Build Agent may return `modelProfile="deterministic-phase0"` in a normal build-v1.1 completed envelope. If it fails, the bounded LLM repair loop may still synthesize/modify the generated script.
 
 ---
 

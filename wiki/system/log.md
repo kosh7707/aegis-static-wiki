@@ -2736,3 +2736,14 @@ related_pages:
 
 ## [2026-05-07] update | wiki/canon/specs/build-agent.md
 - Clarified hot11 anti-overfit gate execution: canonical 11 cases remain under cases[], renamed controls may live under controls[], and live proof must run stabilization_runner.py with --include-controls.
+
+## [2026-05-07] verification | Build Agent SDK materialization hot11 final
+- Documented deterministic phase0 wrapper behavior and final hot11+control evidence.
+- Evidence: build-agent tests 382 passed; compileall PASS; git diff --check PASS; stabilization_runner.py --live --include-controls --run-label hot11-controls-live-final-20260507-210320 PASS 12/12 completed_clean.
+
+## [2026-05-07] update | wiki/canon/api/build-agent-api.md
+- Aligned scriptHintPath execution wording with deterministic generated wrapper behavior: uploaded hint scripts are not public buildCommand/buildScript evidence, but request-scoped wrappers may invoke them after applying trusted SDK descriptor env.
+
+## [2026-05-07] mcp | register_wr | s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence
+- Registered notice WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence.md
