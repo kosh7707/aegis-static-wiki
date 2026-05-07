@@ -10,9 +10,9 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-05-06"
+last_verified: "2026-05-07"
 service_tags: ["s3"]
-decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "system-stability", "contract-notify", "generation-controls", "api-contract", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
+decision_tags: ["build-v1.1-default", "artifact-mismatch-completed", "system-stability", "contract-notify", "generation-controls", "api-contract", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "sdk-materialization", "hot11"]
 related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/specs/build-agent-state-machine.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
 ---
 
@@ -21,7 +21,7 @@ related_pages: ["wiki/canon/specs/build-agent.md", "wiki/canon/specs/build-agent
 > **소유자**: S3
 > **포트**: 8003
 > **호출자**: S2
-> **최종 업데이트**: 2026-05-06
+> **최종 업데이트**: 2026-05-07
 
 Build Agent의 public contract 문서다. 서비스 버전 문자열은 `/v1/health.version = "1.0.0"`으로 유지하지만, 응답 schema surface는 **build-v1.1이 현재 active default**다. 2026-04-27 S3 remediation workstream에서 기존 “proposal” 표기를 종료했고, runtime은 `schemaVersion: "build-v1.1"` 및 additive build-domain fields를 기본 방출한다.
 
@@ -116,7 +116,7 @@ Clean build success remains result-level: `status="completed"` means a build-dom
 | `build.mode` | `context.trusted.build` | O |
 | `expectedArtifacts[]` | `context.trusted` | O |
 | `build.sdkId` | `context.trusted.build` | O when sdk |
-| `build.setupScript` / `build.environment` / `build.scriptHintPath` 중 하나 | `context.trusted.build` | O when strict sdk |
+| `build.sdkRootPath` + `build.setupScript` 또는 `build.environment` 또는 `build.scriptHintPath` 중 하나 | `context.trusted.build` | O when strict sdk |
 
 ### migration alias
 다음은 여전히 읽지만 canonical surface는 아니다.
@@ -130,6 +130,63 @@ Clean build success remains result-level: `status="completed"` means a build-dom
 3. `expectedArtifacts` 미충족이면 clean pass 금지
 4. caller build script hint는 uploaded-project-relative path / text-only / reference-only
 5. compile DB 가능성만으로 성공 처리 금지
+
+### `build.sdkRootPath` / SDK materialization descriptor contract (2026-05-07)
+
+SDK 모드에서 `sdkId`는 registry identity일 뿐이며, Build Agent가 실제 툴체인을 찾을 수 있는 materialized filesystem descriptor를 대신하지 않는다. Canonical SDK-mode producer는 `context.trusted.build` 아래에 다음 additive fields를 제공해야 한다.
+
+```json
+{
+  "context": {
+    "trusted": {
+      "build": {
+        "mode": "sdk",
+        "sdkId": "ti-am335x-08.02.00.24",
+        "sdkRootPath": "/uploads/project-1/sdk/sdk-1/installed",
+        "setupScript": "linux-devkit/environment-setup-armv7at2hf-neon-linux-gnueabi",
+        "sysroot": "linux-devkit/sysroots/armv7at2hf-neon-linux-gnueabi",
+        "toolchainTriplet": "arm-none-linux-gnueabihf",
+        "environment": {
+          "EXTRA_FLAG": "optional-caller-env"
+        },
+        "scriptHintPath": "scripts/cross_build.sh"
+      }
+    }
+  }
+}
+```
+
+Canonical interpretation:
+- Canonical producer fields are direct children of `context.trusted.build`. S3 intentionally does not introduce a nested `sdkMaterialization` object in build-v1.1 because S2 already forwards a shallow `build` object and the compatibility goal is additive request evolution, not a second SDK sub-contract.
+- `build.sdkRootPath` is an absolute, server-visible path to the materialized uploaded SDK root. It must exist and be a directory when supplied under strict SDK mode.
+- `build.setupScript` may be either:
+  - relative to `sdkRootPath` (preferred canonical producer shape), or
+  - an absolute path for transitional compatibility. If `sdkRootPath` is also supplied, an absolute `setupScript` must resolve inside that SDK root.
+- `build.sysroot` follows the same scoping rule as `setupScript`: relative to `sdkRootPath` when relative, or absolute-but-inside-root when absolute and `sdkRootPath` is present.
+- `build.toolchainTriplet` is a non-path compiler prefix hint such as `arm-none-linux-gnueabihf`.
+- `build.environment` remains an optional caller-provided environment map. It does not replace `sdkRootPath`; it can supplement setup scripts and toolchain hints.
+- Build Agent may expose derived env hints such as `AEGIS_SDK_ROOT`, `AEGIS_SDK_SETUP_SCRIPT`, `AEGIS_SDK_SYSROOT`, and `AEGIS_TOOLCHAIN_TRIPLET` to generated scripts, but the generated script must still be request-scoped.
+
+### SDK descriptor precedence and conflict matrix (2026-05-07)
+
+Build Agent normalizes legacy aliases only to preserve existing callers. The canonical request source is always `context.trusted.build`.
+
+| Input shape | Policy |
+|---|---|
+| Canonical `context.trusted.build.*` only | Accept and normalize. |
+| Legacy flat alias only (`sdkId`, `setupScript`, `toolchainTriplet`, `buildEnvironment`) | Accept as migration alias and normalize to canonical internal fields. |
+| Canonical field plus identical legacy alias | Accept; canonical value remains authoritative. |
+| Canonical field plus different legacy alias | Reject as invalid contract with a descriptor conflict diagnostic. |
+| `build.setupScript` or `build.sysroot` relative while `sdkRootPath` exists | Resolve under `sdkRootPath`; reject escapes and missing required file/directory. |
+| `build.setupScript` or `build.sysroot` absolute while `sdkRootPath` exists | Accept only if it resolves inside `sdkRootPath`; reject otherwise. |
+| `build.setupScript` absolute with no `sdkRootPath` | Transitional legacy accept, but it does not satisfy the uploaded-SDK materialization goal by itself. |
+| Caller `build.environment` tries to override derived `AEGIS_SDK_*`, `SDK_DIR`, or `SDKTARGETSYSROOT` values | Descriptor-derived values win; caller env is supplemental. |
+
+Safety and extensibility rules:
+- Build Agent must not infer SDK roots from host-specific defaults such as `$HOME/ti-processor-sdk-*`, `/home/kosh/ti-sdk`, or project names.
+- Build Agent must not hardcode TI/RE100 paths to satisfy a live test. TI SDK support is evidence for the generalized descriptor flow, not an allowed special-case shortcut.
+- User-provided build script hints can contain user-local paths. Those paths are untrusted reference material; generated scripts should prefer the trusted SDK descriptor over paths embedded in hints.
+- If strict SDK mode has only `sdkId` and no usable materialization descriptor/environment/script hint, the request is invalid or completed non-clean with a clear SDK materialization diagnostic; it must not silently fall back to native builds.
 
 ### `build.scriptHintPath` contract (2026-05-06)
 

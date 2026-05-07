@@ -2729,3 +2729,7 @@ related_pages:
 - Dry-run against staged 4-case manifest passed and generated strict build-req.json for certificate-maker/cjson/libexpat/redis.
 - Verification: focused 14 passed; full build-agent suite 353 passed; compileall and git diff --check passed.
 - Critic final verdict: PASS; no blockers.
+
+## [2026-05-07] mcp | register_wr | s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract.md

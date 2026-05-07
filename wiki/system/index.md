@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-07"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -24,7 +24,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/analysis-agent|S3. Analysis Agent 기능 명세]] — 소유자: S3 *(verified 2026-05-03; s3/analysis-agent)*
 - [[wiki/canon/specs/backend|S2. Core Service 기능 명세]] — Express.js + TypeScript 기반 백엔드 서비스 *(verified 2026-05-02; s2)*
 - [[wiki/canon/specs/build-agent-state-machine|Build Agent State and Outcome Contract]] — Owner: S3 *(verified 2026-05-06; s3/build-agent)*
-- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-05-06; s3)*
+- [[wiki/canon/specs/build-agent|S3. Build Agent 기능 명세]] — 소유자: S3 *(verified 2026-05-07; s3)*
 - [[wiki/canon/specs/container-gateway|S8. Container Gateway 기능 명세]] — S8은 프로젝트별 업로드 워크스페이스와 프로젝트당 1개 컨테이너를 관리하는 독립 HTTP 서비스다. *(verified 2026-04-15; s8)*
 - [[wiki/canon/specs/ecu-simulator|ECU Simulator 기능 명세]] — 가상 ECU — CAN 트래픽 생성 + 주입 응답 시뮬레이션 *(verified 2026-04-09; s6)*
 - [[wiki/canon/specs/frontend|S1 Frontend 현재 구현 스펙]] — services/frontend/의 현재 실제 구현 기준 S1 프론트 스펙이다. *(verified 2026-05-06; s1)*
@@ -51,7 +51,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 
 - [[wiki/canon/api/adapter-api|Adapter WebSocket API 명세 (v0.1.0)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-04-06; s6)*
 - [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-05-06; s3/analysis-agent/api-contract/s2)*
-- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-05-06; s3)*
+- [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-05-07; s3)*
 - [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — Base URL: *(verified 2026-04-15; s8)*
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-04-14; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
@@ -440,6 +440,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-state-machine-result-outcome-contract-will-become-default-afte|S3 Analysis Agent state-machine result outcome contract will become default after current test-gated implementation]] — - Kind: notice *(verified 2026-04-25; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-analysis-agent-wp-1-claimdiagnostics-shape-refinement|S3 Analysis Agent WP-1 claimDiagnostics shape refinement]] — - Kind: notice *(verified 2026-04-27; s3/s2/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice|S3 Build Agent active build-v1.1 contract notice]] — - Kind: notice *(verified 2026-04-27; s3)*
+- [[wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-materialization-descriptor-producer-contract|S3 Build Agent SDK materialization descriptor producer contract]] — - Kind: request *(verified 2026-05-07; s2/s3/build-agent)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-generate-poc-quality-repair-exhaustion-now-reports-poc_inconclusive|S3 generate-poc quality repair exhaustion now reports poc_inconclusive]] — - Kind: notice *(verified 2026-05-02; s3/s2/analysis-agent/api-contract/generate-poc)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-optional-generation-control-constraints-are-additive-public-api-fields|S3 optional generation-control constraints are additive public API fields]] — - Kind: notice *(verified 2026-05-02; s3/analysis-agent/build-agent/frontend)*
 - [[wiki/canon/work-requests/s3-to-s2-s3-pass-a-claimdiagnostics-lifecycle-proof-fields-and-generate-poc-accepted-only|S3 Pass-A claimDiagnostics lifecycle proof fields and generate-poc accepted-only lifecycle notice]] — - Kind: notice *(verified 2026-05-02; s3/analysis-agent/api-contract/claim-diagnostics/generate-poc)*
