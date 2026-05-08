@@ -40,7 +40,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages|S3 State Machine Implementation Work Packages]] — Status: draft *(verified 2026-04-27; s3/analysis-agent/build-agent)*
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/invariants|S3 Claim-Evidence State Machine Invariants]] — Status: draft *(verified 2026-04-23; s3/analysis-agent)*
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/poc-lifecycle|S3 Generate-PoC Lifecycle Statechart]] — Status: draft *(verified 2026-04-23; s3/analysis-agent)*
-- [[wiki/canon/specs/s3-claim-evidence-state-machine/quality-gates|S3 Quality Gates as Repair Planners]] — Status: draft *(verified 2026-04-23; s3/analysis-agent)*
+- [[wiki/canon/specs/s3-claim-evidence-state-machine/quality-gates|S3 Quality Gates as Repair Planners]] — Status: draft *(verified 2026-05-09; s3/analysis-agent)*
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/readme|S3 Claim-Evidence State Machine]] — Status: draft canonical design surface *(verified 2026-04-27; s3/analysis-agent/build-agent)*
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/retry-repair-policy|S3 Retry and Repair Policy]] — Status: draft *(verified 2026-04-27; s3/analysis-agent/build-agent)*
 - [[wiki/canon/specs/s3-claim-evidence-state-machine/taskrun-statechart|S3 Claim-Evidence TaskRun Statechart]] — Status: draft *(verified 2026-04-23; s3/analysis-agent)*
@@ -235,6 +235,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-pass-a-ralplan-20260428|Session history — S3 / s3-pass-a-ralplan-20260428]] — - Lane: S3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/handoff/s3/session-s3-pass-a-semantic-remediation-20260428|Session history — s3 / s3-pass-a-semantic-remediation-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/handoff/s3/session-s3-post-fix-wiki-update-20260428|Session history — s3 / s3-post-fix-wiki-update-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
+- [[wiki/canon/handoff/s3/session-s3-qg-hardening-20260509|Session history — s3 / s3-qg-hardening-20260509]] — - Lane: s3 *(verified 2026-05-08; s3)*
 - [[wiki/canon/handoff/s3/session-s3-ralph-strict-output-contract-20260421|Session history — s3 / session-s3-ralph-strict-output-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-stability-qualitygate-separation-20260425|Session history — s3 / s3-stability-qualitygate-separation-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
 - [[wiki/canon/handoff/s3/session-s3-state-machine-outcome-quality-separation-20260423|Session history — s3 / s3-state-machine-outcome-quality-separation-20260423]] — - Lane: s3 *(verified 2026-04-23; s3)*

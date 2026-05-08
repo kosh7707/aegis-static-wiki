@@ -3051,3 +3051,8 @@ related_pages:
 - Updated wiki/canon/handoff/s3/readme.md section 20 with code anchors and verification evidence.
 - Verification: Analysis Agent full suite 597 passed in 6.35s; Build Agent full suite 389 passed in 3.11s; compileall and diff-check PASS; live S7-unreachable preflight smoke blocked with LLM_UNAVAILABLE backend_unreachable before async submit.
 - Completed WRs: s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability and s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.
+
+## [2026-05-09] verified | S3 Quality Gate / Generate-PoC strict hot11 hardening
+- Added qg anomaly oracle and strict hot11 clean-PoC enforcement.
+- Fresh strict live hot11 full pipeline passed 11/11 with 11/11 clean PoCs: reports/hot11-qg-live-all-20260508T183529Z.
+- Session evidence recorded at wiki/canon/handoff/s3/session-s3-qg-hardening-20260509.md.
