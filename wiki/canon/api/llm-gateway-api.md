@@ -308,6 +308,16 @@ Best-effort cancel endpoint.
 - Terminal `completed`/`failed`/`cancelled` records retain result or terminal failure detail for at least **15분** after terminal transition; after unrecoverable retention expiry, result lookup returns explicit `410 expired`.
 - A permanently open but silent backend transport may remain `running + transport-only` until explicit cancel, service shutdown, backend/transport exception, circuit failure before dispatch, parser/response-contract failure after response, backend HTTP failure, or a future non-age ownership-loss detector.
 
+### `/v1/tasks` task-level ownership decision (2026-05-08)
+
+For S2 direct `LlmTaskClient` consumption, `/v1/tasks` remains the finite synchronous TaskResponse-envelope surface for now.
+
+- S7 does **not** currently expose durable `/v1/tasks/{id}/status`, `/v1/tasks/{id}/result`, or `/v1/tasks/{id}/cancel` semantics.
+- `POST /v1/tasks` terminal success/failure is returned in the HTTP response body as `TaskSuccessResponse | TaskFailureResponse`; no terminal task envelope is retained after the request is cleared from the in-flight tracker.
+- `/v1/health?requestId=...` is progress/control visibility only for active in-flight `/v1/tasks`, `/v1/chat`, and `/v1/async-chat-requests`; it is not result recovery and does not preserve completed/failed `/v1/tasks` history.
+- `/v1/async-chat-requests` is the durable ownership surface for OpenAI-compatible chat payloads, not a drop-in replacement for `/v1/tasks` TaskResponse envelopes.
+- If S2 needs reconnect-safe durable TaskResponse ownership, S7 will add a distinct future surface (for example `/v1/async-tasks`) rather than changing current `/v1/tasks` response semantics in place.
+
 ---
 
 ### POST /v1/tasks
@@ -808,6 +818,28 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
     "endpoint": "http://10.126.37.19:8000"
   },
   "llmConcurrency": 4,
+  "ready": true,
+  "llmReady": true,
+  "degraded": false,
+  "degradeReasons": [],
+  "blockedReason": null,
+  "dependencyStatus": {
+    "llmBackend": {
+      "status": "ok",
+      "endpoint": "http://10.126.37.19:8000"
+    },
+    "circuitBreaker": {
+      "state": "closed",
+      "consecutiveFailures": 0,
+      "threshold": 3,
+      "recoverySeconds": 30.0
+    },
+    "rag": {
+      "enabled": true,
+      "kbEndpoint": "http://localhost:8002",
+      "status": "ok"
+    }
+  },
   "activeRequestCount": 1,
   "requestSummary": {
     "requestId": "acr_01abc...",
@@ -831,6 +863,11 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 }
 ```
 
+- `status`는 Gateway 프로세스 liveness다. HTTP 200 + `status="ok"`는 `/v1/health` route가 응답 가능하다는 뜻이며 LLM backend readiness를 의미하지 않는다.
+- `ready`는 S7을 통해 LLM work를 받아 처리할 수 있는지에 대한 machine-readable service readiness다. `llmReady`는 LLM dependency readiness다. 현재 두 값은 같은 기준을 사용한다.
+- `real` 모드에서 `llmBackend.status != "ok"`이면 `ready=false`, `llmReady=false`, `degraded=true`, `degradeReasons`에 `"llm_backend_unreachable"`, `blockedReason="backend_unreachable"`를 반환한다. 이때 top-level `status`는 process liveness로서 계속 `"ok"`일 수 있다.
+- `circuitBreaker.state`가 `"open"`이면 `degradeReasons`에 `"llm_circuit_open"`, `blockedReason="circuit_open"`; `"half_open"`이면 복구 탐침 중으로 `"llm_circuit_half_open"`, `blockedReason="circuit_half_open"`를 반환하며 readiness는 false다. `"closed"`만 full-ready 상태다.
+- `dependencyStatus`는 readiness 판단에 사용한 dependency snapshot이다. `rag.status="disabled"` 또는 RAG 장애는 LLM readiness를 차단하지 않는다.
 - `circuitBreaker` 필드는 항상 포함. `state`는 `"closed"` (정상), `"open"` (장애 차단), `"half_open"` (복구 탐침 중).
 - `real` 모드일 때 `llmBackend`, `llmConcurrency` 필드가 포함되며, vLLM 백엔드 연결 상태와 동시 처리 가능 수를 보고한다.
 - `activeRequestCount`는 현재 `queued` 또는 `running` 상태 request 수다.
@@ -841,7 +878,7 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 - 반대로 현재 `/v1/chat` transport timeout이 실제로 발생하면 그 transport attempt는 terminal failure이며, S7은 해당 active request를 `/health` history로 유지하지 않는다.
 - `rag` 필드는 항상 포함. `status`가 `"ok"`이면 RAG 활성 상태(S5 KB 연결 확인), `"disabled"`이면 비활성 (설정 off 또는 S5 미연결).
 - `rag.topK`, `rag.minScore`, `rag.policy`는 현재 Gateway가 task-pipeline RAG를 어떤 정책으로 적용하는지 노출하는 low-cardinality control signal이다. S7은 RAG 결과를 자동으로 caller evidence catalog에 등록하지 않으며, RAG hit 수는 task audit의 `ragHits`로만 반영된다.
-- S7 Gateway health 자체는 백엔드/RAG 장애와 무관하게 `"ok"`를 반환한다.
+- S7 Gateway health의 `status`는 백엔드/RAG 장애와 무관한 process-liveness이며, LLM 사용 가능 여부는 반드시 `ready`/`llmReady`/`degraded`/`blockedReason`/`dependencyStatus`를 함께 읽어야 한다.
 
 ### GET /v1/usage
 
@@ -1005,9 +1042,9 @@ Interpretation rule: if S7 is reachable and the failure proves the model produce
 
 ### Health, capacity, and traceability
 
-- `/v1/health` exposes `llmMode`, `modelProfiles`, `llmBackend.status`, `llmBackend.endpoint`, `llmConcurrency`, `activeRequestCount`, `circuitBreaker`, `rag`, and compact `requestSummary`.
+- `/v1/health` exposes process liveness (`status`), service/LLM readiness (`ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`), dependency snapshots (`dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`), capacity hints (`llmConcurrency`, `activeRequestCount`), and compact active request `requestSummary`.
 - `/v1/models` is the authoritative model identity/capability surface (`profileId`, `modelName`, `contextLimit`, task allowlist, availability).
-- Current gap: no explicit `costTier`, `queueDepth`, or queue saturation percentage field exists. Consumers should use `modelProfiles`/`/v1/models` for identity and `activeRequestCount` + `llmConcurrency` + `circuitBreaker` + request status for readiness signals.
+- Current gap: no explicit `costTier`, `queueDepth`, or queue saturation percentage field exists. Consumers should use `modelProfiles`/`/v1/models` for identity and `ready`/`llmReady` + `activeRequestCount` + `llmConcurrency` + `circuitBreaker` + request status for readiness signals.
 - `X-Request-Id` is propagated to the LLM Engine on sync `/v1/chat`; async stores it as `traceRequestId` across submit/status/result while using a separate durable async `requestId`.
 
 ## 관련 문서

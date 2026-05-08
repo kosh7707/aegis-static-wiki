@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-04-28"
+last_verified: "2026-05-08"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -364,16 +364,21 @@ Endpoint labels are intentionally low-cardinality (`tasks`, `chat_proxy`, `async
 
 - `RequestTracker`가 현재 active `/v1/tasks`, `/v1/chat`, `/v1/async-chat-requests` request를 compact하게 추적한다.
 - `/v1/health`는 기존 coarse service health에 더해:
+  - process liveness `status`
+  - LLM readiness fields `ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`
+  - dependency snapshots `dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`
   - `activeRequestCount`
   - `requestSummary`
   - optional `requestId` query targeting
   을 additive하게 제공한다.
 - `requestSummary`는 full history dump가 아니라 현재 in-flight request 하나의 control signal이며, active request가 없으면 `state=\"idle\"` summary로 접힌다.
-- `/v1/health.rag`는 RAG 정책 control signal(`topK`, `minScore`, `policy`)을 포함한다. 현재 정책은 `task-pipeline-context-enrichment`이며 RAG hit는 evidence catalog authority가 아니다.
+- `/v1/health.status="ok"`는 Gateway process liveness이며 DGX/vLLM readiness가 아니다. `llmBackend.status="unreachable"` 또는 circuit breaker `open|half_open`이면 `ready=false`, `llmReady=false`, `degraded=true`와 machine-readable `blockedReason`을 노출한다.
+- `/v1/health.rag`는 RAG 정책 control signal(`topK`, `minScore`, `policy`)을 포함한다. 현재 정책은 `task-pipeline-context-enrichment`이며 RAG hit는 evidence catalog authority가 아니다. RAG disabled/degraded alone does not block `llmReady`.
 - 현재 S7에서 true local ack source로 취급하는 것은 queue exit / phase transition / terminal transition이다.
 - non-streaming `llm-inference` 구간은 세부 progress proof가 없으므로 `localAckState=\"transport-only\"`로 노출한다.
 - 현재 `/v1/chat`의 finite transport timeout은 그대로 유지되므로 timeout이 발생한 transport attempt는 terminal failure이고, `/health`는 완료/실패 history를 보존하지 않는다.
 - async ownership surface가 활성인 경우 `requestSummary.endpoint`는 `async-chat`이 될 수 있다. 다만 `/health`는 여전히 summary-only이며 terminal result retrieval authority는 아니다.
+- `/v1/tasks` is finite synchronous TaskResponse-envelope compatibility: there is no durable `/v1/tasks/{id}` status/result/cancel surface, and `/v1/health?requestId=` is active progress visibility only.
 
 ---
 

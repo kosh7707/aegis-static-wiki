@@ -2997,3 +2997,57 @@ related_pages:
 - SastScanTool now preserves S4OwnershipError.status_code as statusCode in failure content.
 - _sast_failure_detail now propagates top-level statusCode through nested detail.failureDetail unwrap.
 - Verification: focused SAST/phase/evidence tests 90 passed; Analysis Agent full suite 595 passed; compileall/diff-check passed.
+
+## [2026-05-08] mcp | register_wr | s3-to-s7-s7-health-must-not-report-llm-ready-when-dgx-backend-is-unreachable
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s7-health-must-not-report-llm-ready-when-dgx-backend-is-unreachable.md
+
+## [2026-05-08] Registered WR | S3 to S7 WR — S7 health readiness when DGX unreachable
+- Registered wiki/canon/work-requests/s3-to-s7-s7-health-must-not-report-llm-ready-when-dgx-backend-is-unreachable.md
+- Trigger: gateway-webserver full-pipeline smoke observed S7 /v1/health status=ok while llmBackend.status=unreachable and async request acr_2df286ba326d4778 failed with backend_timeout.
+- Requested S7 to distinguish process liveness from LLM backend readiness and update canonical health docs/tests.
+
+## [2026-05-08] mcp | register_wr | s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md
+
+## [2026-05-08] mcp | register_wr | s7-to-s2-s7-reply-v1-tasks-remains-finite-taskresponse-compatibility-health-is-progress-o
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s7-to-s2-s7-reply-v1-tasks-remains-finite-taskresponse-compatibility-health-is-progress-o.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s7-s7-health-must-not-report-llm-ready-when-dgx-backend-is-unreachable
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s2-to-s7-s7-task-level-ownership-contract-needed-for-s2-direct-llmtaskclient-health-contr
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] completed | S7 health readiness and task ownership WRs
+- Implemented explicit `/v1/health` readiness/degraded/dependency fields in S7 LLM Gateway.
+- Documented `/v1/tasks` finite synchronous TaskResponse compatibility and `/v1/health?requestId` progress-only semantics.
+- Registered S7 reply WRs to S2/S3 and completed both incoming WRs.
+- Verification: targeted 24 passed, full llm-gateway 306 passed, wiki npm test 8 passed, Critic APPROVE.
+
+## [2026-05-08] mcp | register_wr | s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md
+
+## [2026-05-08] registered | S7 to S3 DGX health readiness consumption notice
+- Registered S7 notice to S3 with required `/v1/health` consumer fields: `ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`, `dependencyStatus.llmBackend.status`.
+- Clarified that `status="ok"` is process liveness only and `llmReady=false`/`blockedReason="backend_unreachable"` means DGX/vLLM dependency unavailable.
+
+## [2026-05-08] mcp | complete_wr | s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] Implementation and WR completion | S3 consumed S7 health readiness WRs
+- Implemented S7 /v1/health readiness preflight in services/analysis-agent/app/agent_runtime/llm/caller.py and services/build-agent/app/agent_runtime/llm/caller.py before async ownership submit.
+- Added regression tests for ready=false/llmReady=false/backend_unreachable and legacy llmBackend.status=unreachable shapes.
+- Updated wiki/canon/handoff/s3/readme.md section 20 with code anchors and verification evidence.
+- Verification: Analysis Agent full suite 597 passed in 6.35s; Build Agent full suite 389 passed in 3.11s; compileall and diff-check PASS; live S7-unreachable preflight smoke blocked with LLM_UNAVAILABLE backend_unreachable before async submit.
+- Completed WRs: s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability and s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.

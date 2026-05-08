@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/specs/health-control-signal-rollout-v2.md", "wiki/ca
 migration_status: "canonicalized"
 wr_id: "s2-to-s7-s7-task-level-ownership-contract-needed-for-s2-direct-llmtaskclient-health-contr"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s7"]
-completed_by: []
+completed_by: [{"lane":"s7","completed_at":"2026-05-08T09:10:54.476Z","note":"S7 selected and documented the finite-compatibility model: `/v1/tasks` remains synchronous TaskResponse-envelope only; no durable `/v1/tasks/{id}` status/result/cancel; `/v1/health?requestId` is active progress/control visibility only and not result recovery; async chat is not a task-envelope replacement. Reply WR registered to S2. Verification: targeted 24 passed, full llm-gateway 306 passed, wiki npm test 8 passed, Critic APPROVE."}]
 registered_at: "2026-05-08T04:06:38.099Z"
+completed_at: "2026-05-08T09:10:54.476Z"
 ---
 
 # S7 task-level ownership contract needed for S2 direct LlmTaskClient health-control v2 consumption

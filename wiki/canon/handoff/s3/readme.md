@@ -8,8 +8,8 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
 last_verified: "2026-05-08"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
@@ -592,3 +592,38 @@ Operational reminder:
 - This is not a gateway-webserver-specific fix. Do not hardcode TI SDK IDs, gateway paths, or popen heuristics into S3 analysis logic; the durable rule is the generic S4 SDK contract plus honest acquisition-failure representation.
 - Gateway-webserver live full-pipeline should be rerun only after focused unit/contract verification and intentional service restart/reload.
 <!-- S3-S4-NONREGISTERED-SDK-20260508:END -->
+
+
+---
+
+<!-- S3-S7-HEALTH-READINESS-20260508:START -->
+## 20. 2026-05-08 S7 health readiness contract consumption
+
+S3 consumed S7's reply/notice WR for the `/v1/health` readiness split. S7 now defines top-level `status` as Gateway process liveness only; LLM work readiness must be read from `ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`, and `dependencyStatus.llmBackend.status`.
+
+S3 implementation decision:
+- Analysis Agent and Build Agent service-local `LlmCaller` perform a short `/v1/health` preflight before submitting to S7 async ownership for tool-less/finalizer calls.
+- `status="ok"` is never treated as DGX/vLLM readiness by itself.
+- If S7 reports `ready=false`, `llmReady=false`, a non-null `blockedReason`, `dependencyStatus.llmBackend.status != "ok"`, or legacy `llmBackend.status != "ok"`, S3 raises a retryable dependency/runtime `LlmUnavailableError` before async submit.
+- `blockedReason="backend_unreachable"` and `llm_backend_unreachable` remain dependency/runtime failures, not model-output deficiencies.
+- Missing `/v1/health` on older local S7 builds remains a compatibility fallback; the async endpoint probe is still attempted in that legacy case.
+
+Code anchors:
+- `services/analysis-agent/app/agent_runtime/llm/caller.py`
+- `services/build-agent/app/agent_runtime/llm/caller.py`
+- `services/analysis-agent/tests/test_llm_caller.py`
+- `services/build-agent/tests/test_llm_caller.py`
+
+Fresh verification:
+- Focused Analysis preflight regression: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q tests/test_llm_caller.py::test_async_ownership_preflight_rejects_unready_llm_backend_before_submit tests/test_llm_caller.py::test_async_ownership_preflight_rejects_legacy_unreachable_backend_shape tests/test_llm_caller.py::test_async_ownership_returns_wrapped_result_for_toolless_calls tests/test_llm_caller.py::test_async_ownership_continues_running_until_completed_without_age_abort` → `4 passed in 0.08s`.
+- Focused Build preflight regression: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q tests/test_llm_caller.py::test_build_llm_caller_async_preflight_rejects_unready_llm_backend tests/test_llm_caller.py::test_build_llm_caller_async_ownership_continues_until_completed` → `2 passed in 0.07s`.
+- Analysis LLM/eval focused suite: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q tests/test_llm_caller.py tests/test_eval_runner.py` → `36 passed in 0.46s`.
+- Build LLM focused suite: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q tests/test_llm_caller.py` → `13 passed in 0.20s`.
+- Analysis Agent full suite: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `597 passed in 6.35s`.
+- Build Agent full suite: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `389 passed in 3.11s`.
+- Live S7-unreachable preflight smoke while VPN/DGX route was unavailable: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python - <<PY ... LlmCaller(...).call(..., prefer_async_ownership=True)` → `PRE_FLIGHT_BLOCKED LLM_UNAVAILABLE True LLM Gateway dependency not ready: backend_unreachable`; no async submit was attempted before the health readiness block.
+
+Operational reminder:
+- A live Gateway `status="ok"` only proves the S7 FastAPI route responds. S3 diagnostics and smoke scripts must report `llmReady=false` / `blockedReason` as LLM-unavailable even when the Gateway process is alive.
+- This is a generic dependency-readiness consumption fix, not a gateway-webserver-specific workaround.
+<!-- S3-S7-HEALTH-READINESS-20260508:END -->

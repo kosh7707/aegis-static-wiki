@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/README.md"
-last_verified: "2026-04-28"
+last_verified: "2026-05-08"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,7 +15,7 @@ related_pages: []
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S7(LLM Gateway + LLM Engine 관리) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-04-28**
+> **마지막 업데이트: 2026-05-08**
 
 ---
 
@@ -287,3 +287,10 @@ phase-2 no-result-loss semantics용 별도 surface.
 - `frequencyPenalty`/`frequency_penalty` remains unsupported because it is not in the Qwen3.6 recommended sampling family documented in the temperature-policy analysis.
 - Downstream callers must update through WR. S7 does not directly edit S2/S3 code.
 - Follow-up S7-owned readiness items from the temperature-policy analysis are now tracked separately from the API break: generation controls are recorded in exchange logs and Prometheus; `/v1/health.rag` exposes RAG `topK`, `minScore`, and policy; model fallback remains explicitly absent (single profile + circuit breaker); S3-owned tool-choice, timeout, prompt-injection, and tool-argument validation issues are WR-only for S7.
+
+## S3/S2 계약 메모 (2026-05-08)
+
+- `/v1/health.status` is process liveness only. Use `ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`, and `dependencyStatus` to distinguish DGX/vLLM readiness. Backend unreachable keeps HTTP 200 + `status="ok"` but reports `ready=false`, `llmReady=false`, `degraded=true`, `blockedReason="backend_unreachable"`.
+- Circuit breaker `open`/`half_open` also makes readiness false. RAG disabled/degraded is exposed in `dependencyStatus.rag` but does not block LLM readiness.
+- `/v1/tasks` remains finite synchronous TaskResponse-envelope compatibility for S2 direct `LlmTaskClient`; it has no durable status/result/cancel surface. `/v1/health?requestId=` is active progress/control visibility only and not task result recovery.
+- `/v1/async-chat-requests` is durable ownership for OpenAI-compatible chat payloads, not a drop-in replacement for `/v1/tasks` envelopes. A future durable TaskResponse surface should be separate (e.g. `/v1/async-tasks`).
