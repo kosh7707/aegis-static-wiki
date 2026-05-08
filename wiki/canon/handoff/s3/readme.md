@@ -544,3 +544,51 @@ Code anchors:
 - `services/build-agent/tests/test_build_resolve_handler.py`
 - `services/build-agent/tests/test_build_route_support.py`
 <!-- S3-BUILD-SCRIPTHINTPATH-20260506:END -->
+
+---
+
+<!-- S3-S4-NONREGISTERED-SDK-20260508:START -->
+## 19. 2026-05-08 S4 non-registered SDK contract consumption / SAST failure honesty
+
+S3 consumed S4's reply WR for the new SDK resolution contract. S4 now treats bare `sdkId` as an S4-local registry lookup only, while caller-resolved uploaded/local SDKs must use `sdkResolutionMode="non-registered"` with `sdkDescriptor.sdkRootPath`. Unknown bare SDK IDs fail before analysis with `SDK_NOT_FOUND`; S3 must not collapse that dependency/contract failure into `sast_no_findings`.
+
+S3 implementation decision:
+- Analysis Agent normalizes S4-facing `buildProfile` / `scanProfile` in `phase_one_exec._s4_build_profile()`.
+- Explicit `sdkResolutionMode="non-registered"` profiles preserve `sdkDescriptor` and drop legacy/bare `sdkId` labels before S4 submission.
+- If trusted build metadata contains a caller-resolved SDK root (`AEGIS_SDK_ROOT`, `SDK_ROOT`, or `SDK_DIR`) alongside a bare SDK label, S3 converts it to S4's non-registered descriptor contract and forwards optional setup/sysroot/triplet/compiler-path hints.
+- Registry-style bare `sdkId` remains bare only when S3 has no caller-resolved SDK root evidence; S4 then owns registry lookup and may correctly return `SDK_NOT_FOUND`.
+- Legacy `sdkId="custom"` remains stripped rather than forwarded as a registry id.
+
+Failure-honesty decision:
+- `Phase1Result` now distinguishes `sast_scan_attempted`, `sast_scan_completed`, and `sast_failure_detail`.
+- Evidence catalog emits `sast_no_findings` only for completed zero-finding scans.
+- S4/SAST contract or dependency failures become operational diagnostics (`sast_scan_failed`, and `sast_contract_failure` for SDK/400-class profile failures) and are excluded from final proof refs.
+- Phase 2 prompt text now distinguishes scan failure from completed zero findings and instructs the model not to interpret SAST failure as absence of vulnerabilities.
+
+Code anchors:
+- `services/analysis-agent/app/core/phase_one_exec.py`
+- `services/analysis-agent/app/core/phase_one_types.py`
+- `services/analysis-agent/app/core/evidence_catalog.py`
+- `services/analysis-agent/app/core/phase_one_prompt.py`
+- `services/analysis-agent/tests/test_phase_one.py`
+- `services/analysis-agent/tests/test_evidence_catalog.py`
+
+Fresh focused verification during implementation:
+- Initial focused implementation pass: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `70 passed in 0.76s`.
+- Initial related pass: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py tests/test_evidence_catalog.py tests/test_deep_analyze_handler.py tests/test_sast_tool.py -q` → `97 passed in 2.21s`.
+- Post-Critic blocker fix: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_sast_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `89 passed in 0.96s`.
+- Critic non-blocking status-code preservation follow-up: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_sast_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `90 passed in 1.06s`.
+- Post-follow-up full Analysis Agent suite: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `595 passed in 6.32s`.
+- S4 SDK contract focused recheck: `cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/python -m pytest tests/test_sdk_resolution_contract.py -q` → `6 passed in 1.72s`.
+- Static/syntax check: `cd /home/kosh/AEGIS && python3 -m compileall -q services/analysis-agent/app && git diff --check -- services/analysis-agent` → PASS.
+
+Critic follow-up:
+- First Critic review rejected the initial implementation because durable `/v1/scan` could return a nested `success=false` result payload that `SastScanTool._build_result()` converted into `ToolResult(success=True)`, reintroducing `sast_no_findings` risk on the individual SAST path.
+- S3 fixed that blocker by making `SastScanTool` preserve unsuccessful scan payloads as tool failures, making `run_sast()` treat `success=false` content as failure even from generic tools, and unwrapping nested `detail.failureDetail` payloads from S4 ownership errors.
+- After the Critic pass, S3 also implemented the non-blocking recommendation to preserve S4 ownership `statusCode` in the SAST tool failure wrapper so non-SDK 400-class profile failures can be classified more precisely later.
+- Regression tests now cover durable failed scan result, durable ownership-error `statusCode` preservation, `run_sast()` success-false payload handling, nested ownership-error detail unwrapping, and evidence-catalog operational/no-negative behavior.
+
+Operational reminder:
+- This is not a gateway-webserver-specific fix. Do not hardcode TI SDK IDs, gateway paths, or popen heuristics into S3 analysis logic; the durable rule is the generic S4 SDK contract plus honest acquisition-failure representation.
+- Gateway-webserver live full-pipeline should be rerun only after focused unit/contract verification and intentional service restart/reload.
+<!-- S3-S4-NONREGISTERED-SDK-20260508:END -->

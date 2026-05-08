@@ -1,109 +1,31 @@
 ---
-title: "S1 Design System Adherence Guide"
+title: "S1 Design System — Mock ↔ Impl Sync + Cycle Log"
 page_type: "canonical-handoff"
 canonical: true
 source_refs:
+  - "wiki/canon/handoff/s1/DESIGN.md"
   - "wiki/canon/design-system/readme.md"
   - "wiki/canon/design-system/DESIGN.md"
   - "wiki/canon/design-system/design-doctrine.md"
   - "wiki/canon/handoff/s1/readme.md"
-  - "wiki/canon/feedback/s1_frontend_working_guide.md"
-  - "services/frontend/src/styles/handoff/**"
-  - "services/frontend/src/shared/auth/AuthConsoleShell.tsx"
-last_verified: "2026-05-06"
+  - "services/frontend/src/common/styles/handoff/**"
+last_verified: "2026-05-08"
 service_tags: ["s1"]
-decision_tags: ["external-ui-handoff", "design-system-source-of-truth", "handoff-css-system", "review-tone-palette", "workflow-state-axis", "claim-diagnostics-viewer"]
-related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/handoff/s1/usecase-visibility-matrix.md", "wiki/canon/feedback/s1_frontend_working_guide.md", "wiki/canon/specs/frontend.md"]
+decision_tags: ["mock-impl-sync-tracking", "cycle-log", "lane-local-design-doctrine"]
+related_pages: ["wiki/canon/handoff/s1/DESIGN.md", "wiki/canon/handoff/s1/readme.md", "wiki/canon/handoff/s1/qa-guide.md", "wiki/canon/handoff/s1/usecase-visibility-matrix.md", "wiki/canon/design-system/readme.md", "wiki/canon/design-system/DESIGN.md", "wiki/canon/design-system/design-doctrine.md"]
 ---
 
-# S1 Design System Adherence Guide
+# S1 Design System — Mock ↔ Impl Sync + Cycle Log
 
-> S1이 구현 시 따라야 하는 AEGIS 디자인 시스템 계약의 lane-local 정리.
-> 권위 자료는 `wiki/canon/design-system/readme.md` 및 그 아래 자산이며, 본 문서는 **S1 시점에서의 적용 규칙**만 명시한다.
-> 마지막 검증/갱신: **2026-04-27**
+> **Doctrine 본문은 [`wiki/canon/handoff/s1/DESIGN.md`](DESIGN.md) 로 단일화 (2026-05-08).**
+>
+> 이전 본 페이지에 있던 권위 체인 / 구현 계약 / 금지 사항 / review-tone palette / severity narrow whitelist / 신규 페이지 절차 / QA 연결 / 빠른 링크 항목은 모두 위 문서로 이전되었다.
+>
+> 본 페이지는 이제 **operational tracking 전용** — §1 Mock ↔ Impl 동기화 현황 + §2 Cycle 별 산출물 요약 만 유지한다. 새 cycle entry / 새 sync row 는 본 페이지에 추가하고, 새 doctrine rule 은 `DESIGN.md` 에서만 갱신한다.
 
-## 1. 왜 이 문서가 존재하나
+---
 
-- AEGIS 시각 방향은 외부 디자이너가 결정한다 (`wiki/canon/handoff/s1/readme.md` §2, `wiki/canon/feedback/s1_frontend_working_guide.md` §4).
-- 디자이너 handoff 자산 전체가 `wiki/canon/design-system/` 에 canonical로 귀속되었다 (2026-04-20).
-- S1은 그 자산을 **ship 자격 형태로 복제**해 `services/frontend/src/styles/handoff/**` 아래에서 런타임 import 한다.
-- 이 문서는 S1 개발자/에이전트가 **코드와 자산 간 계약**을 놓치지 않도록 lane-local 진입점을 제공한다.
-
-## 2. 필독 자산 (진입 순서)
-
-1. `wiki/canon/design-system/readme.md` — 디자인 시스템 canonical pointer + 소유 경로 지도
-2. **`wiki/canon/design-system/design-doctrine.md`** — 프로세스 원칙 (anti-slop · 변형 전략 · writer/reviewer 분리). 새 작업 착수 전 반드시 확인
-3. `wiki/canon/design-system/DESIGN.md` — §1~§11 전부 (Philosophy / File Layout / Color / Typography / Spacing / Radius-Shadow-Motion / Components / Patterns / Accessibility / Extending / Known gaps)
-4. **`wiki/canon/handoff/s1/readme.md` §2.1 / §2.2** — review-tone palette (6 slot, axis 2개) + severity exception narrow whitelist. 2026-04-26 cycle 에서 §2.1 6번째 slot (workflow-active-pending) + §2.2 narrow whitelist 9 selectors 신설/확장
-5. 페이지 구현 중이라면 `wiki/canon/design-system/mocks/{Login,Signup,Dashboard}.html` 중 해당 페이지의 mock을 열어 class/copy/marker를 비교
-6. 토큰·컴포넌트 규칙이 불분명하면 `wiki/canon/design-system/assets/{tokens,base,auth-console}.css` + `assets/components/*.css` + `assets/pages/*.css`
-
-## 3. S1 구현 계약
-
-### 3.1 Source-of-truth 순서 (충돌 시 상위가 이김)
-1. `wiki/canon/design-system/DESIGN.md`
-2. `wiki/canon/design-system/mocks/*.html`
-3. `wiki/canon/design-system/assets/**/*.css` + `shield.svg.md`
-4. `services/frontend/src/styles/handoff/**` (ship 복사본 + handoff-only 확장)
-5. React 구현
-
-(프로세스 규칙은 `design-doctrine.md` 가 별도 권위. 시각 권위와 충돌하지 않음 — 무엇을 만들지는 DESIGN.md, 어떻게 만들지는 doctrine.)
-
-### 3.2 Styling ownership (수정)
-1. **Design system handoff (read-only 복사본)**: `src/styles/handoff/*` — 원본 자산을 1:1 복제한다. 로컬 개정 금지, 원본을 먼저 수정한 뒤 다시 복제한다. **Canonical 11 (button/input/panel/pill/seg/toggle/severity/lang-tag/divider/choreography/nav) 무수정.**
-2. **handoff-only 확장 (S1 자체 신설 OK)**: `handoff/{compat,page-surfaces,app-shell}.css` + `handoff/components/{outcome-chip,form-field,status,list,dialog,toast,kpi,distribution,markdown,inline-stack}.css`. 원본에 없는 AEGIS 전용 vocabulary. 새 파일 추가 시 본 §5 동기화 현황에 등록.
-3. **Auth shared shell**: `src/shared/auth/*` — `auth-console.css` 구조를 유지한 채 React 래퍼만 추가한다.
-4. **Legacy Carbon/shadcn 호환 레이어**: `src/index.css` — 신규 스타일을 추가하지 않는다. 토큰 프록시는 `handoff/compat.css` 를 우선한다.
-5. **Page/Layout TSX 로직**: 디자인 규칙을 위반하지 않는 선에서만 수정한다.
-
-### 3.3 금지 사항 (doctrine §2 + handoff §9 요약)
-
-#### 색·토큰
-- DESIGN.md §3 규칙 밖의 색을 컴포넌트/페이지 CSS에 직접 박는 것
-- **severity color를 non-severity UI 에 사용** (DESIGN.md §3.4) — 단 handoff §2.2 narrow whitelist 만 (gate/cell-gate/sev-chip/severity-bound numerals + `.modal-content__shoulder.is-fail` + Approvals action-icon 6 selectors + 2 eyebrow labels)
-- 새 토큰 / 새 색 도입 — review-tone 도 canonical 토큰 (`--success` / `--warning` / `--danger` / `--primary` / `--foreground-*` / `--surface-*`) 만 조합
-- mock drift 토큰 흡수 (`--pass` / `--fail` / `--warn` / `--pending` / `--neutral` / `--sb-*` / `--source-*-surface/-border` 등) — 어휘 자체 무의식적 사용 금지
-
-#### review-tone palette (handoff §2.1, 2026-04-26 갱신)
-- workflow status (pending/approved/rejected/expired 등) 를 `.sev-chip` (severity component) 에 매핑 — review-tone page-local class 사용
-- `--pending` slot 신설 (mock drift) — workflow-active-pending 어휘 + canonical `--primary` / `--primary-surface` 사용 (§2.1 6번째 slot)
-- workflow-active-pending 화이트리스트 7 selector 외 다른 page 에 도입 — handoff §2.1 갱신 PR 동반 의무
-- decision-impact summary 패널 (`.appr-detail-pane__impact*` / `.approval-decision-dialog .appr-detail__impact*`) 에 severity ramp 사용 — caution-review tone (warning surface) 만
-
-#### typography·layout
-- Paperlogy/Geist Mono 이분 typography를 page 단에서 덮어쓰는 것 (§4)
-- 그라데이션 배경 / rounded-with-left-border 카드 / SVG 일러스트 / data slop — 자세한 목록은 `design-doctrine.md` §2
-- 신규 "view mode" 를 `body.<mode>` 스위치 없이 하드코딩하는 것 (§8.5)
-- 운영 신호 영역(Needs Attention, live indicator, critical counter, hero-verdict, gate-card meta, sparkline 등) 을 좁은 뷰포트에서 숨기는 것 (§8.5 hard rule) — `display: none` 금지, stack 으로
-
-#### 프로세스
-- 한 세션에서 writer/reviewer 겹치기 (doctrine §5) — Reviewer 는 fresh context (S1-QA / `code-reviewer` agent)
-- Reviewer 의 "drift, 유지" 자가 판단으로 mock layout 흡수 누락 통과
-- WR acceptance criteria 좁게 해석해 mock layout 전면 흡수 의도 누락
-- Backend 신규 계약 데이터 정합성을 자가 판단 매핑 (e.g. hardcoded threshold map) 으로 채우는 것 — lane WR 협상 의무 (handoff §9)
-
-### 3.4 신규 페이지/컴포넌트 추가 절차
-
-1. **doctrine §1 컨텍스트 체크리스트** 먼저 돌린다 (색/밀도/타이포/caps-mono/live signal 재사용 여부).
-2. 디자이너 자산에 해당 페이지/컴포넌트가 있는지 확인한다.
-   - 있음 → `wiki/canon/design-system/assets/` 에 새 파일이 이미 있다. `services/frontend/src/styles/handoff/` 로 복제한다.
-   - 없음 → DESIGN.md §10 "Extending" 절차를 따라 기존 토큰·컴포넌트로 조합한다. 새 색/폰트/토큰을 만들지 않는다.
-3. `pages/<Page>/<Page>.tsx` + `pages/<Page>/components/` 구조 유지 (`wiki/canon/feedback/s1_frontend_working_guide.md` §5.3).
-4. 페이지 HTML mock이 있으면 그 class·copy·DOM 순서·data-* 속성을 React 구현에 1:1 반영한다.
-5. `document.title = "AEGIS — {Page Name}"` 설정, AuthEntryRoute/RequireAuth 중 적절한 가드를 씌운다.
-6. `services/frontend/src/styles/handoff/` 와 원본 자산 간 diff를 기록한다. 의도적 adaptation이면 이 문서 §5 동기화 현황에 추가 사유를 남긴다.
-7. 변형을 제안하는 요청이면 doctrine §4 전략대로 3+개 축을 미리 제시한다.
-8. **Backend 신규 계약 활용 시** — frontend 자가 매핑 금지. 미공급 필드는 dim "—" placeholder + cross-fetch entry point 박아두고 lane WR 협상 (handoff §9).
-
-## 4. QA 연결
-
-- S1-QA는 본 handoff 자산과 구현의 drift를 단일 사이클 원칙으로 검증한다 (`wiki/canon/handoff/s1/qa-guide.md` + `wiki/canon/handoff/s1/design-mock-review-workflow.md`).
-- QA 증거는 mock HTML 경로 (`wiki/canon/design-system/mocks/*.html` 또는 cycle-specific mock 경로) + DESIGN.md 절 번호로 인용한다.
-- QA 체크리스트 기준은 `design-doctrine.md` §6 (토큰 준수 / 패턴 준수 / anti-slop 점검 / 반응형·접근성) 을 참조한다.
-- 유스케이스 가시성 매트릭스 (`wiki/canon/handoff/s1/usecase-visibility-matrix.md`) 의 MUST 항목은 DESIGN.md 규칙과 모순되지 않도록 유지한다.
-- **lint grep 자동 검증 (handoff §8.1)** — `oklch(/hex` (excluding color-mix), drift token 어휘 (`--pass/--fail/--warn/--pending/--neutral/--sb-`), `Pretendard/Geist Mono` 직접, `.sb-/.crumb` 흡수 → 모두 production CSS 0건 의무
-
-## 5. Mock ↔ Impl 동기화 현황 (2026-05-06)
+## 1. Mock ↔ Impl 동기화 현황 (2026-05-08)
 
 | 파일 | 상태 |
 |---|---|
@@ -122,10 +44,78 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 | `services/frontend/src/pages/FilesPage/components/BuildTargetCreateDialog/BuildTargetScriptHintTree/BuildTargetScriptHintTree.css` (page-local, handoff layer 아님) | **2026-05-06 cycle 2 도입** — single-pick file picker tree (`.script-hint-tree`, `__row(--folder/--file/--selected/--disabled)`, `__indent`, `__radio(/-spacer)`, `__chevron(-spacer)`, `__folder-icon`, `__file-icon`, `__name(--folder/--file)`, `__count`). 모든 토큰 canonical (`--border`, `--surface-sunken`, `--border-strong`, `--foreground`, `--foreground-muted`, `--font-code`, `--text-xs/-sm`, `--weight-semibold`, `--space-*`, `--radius-sm`, `--primary` for focus outline only). 새 토큰 0, hex 0, oklch 0, severity ramp 0. selection state affordance 는 `--surface-sunken` bg + `--border-strong` 2px left rail + bold (workflow-active-pending whitelist 외 영역이라 primary tint 회피, neutral selection 표현). `BuildTargetTreeSelector` (multi-check) 와 의미 분리된 별도 component — 단일 file pick semantics 명확화 |
 | `services/frontend/src/pages/FilesPage/components/BuildTargetCreateDialog/BuildTargetScriptHintField/BuildTargetScriptHintField.css` (page-local, handoff layer 아님) | **2026-05-06 cycle 2 도입** — section frame container (`__selected`, `__selected-meta/-label/-path/-relative/-warning`, `__clear`, `__placeholder`). selection card 는 `--surface-sunken` bg + `--border-subtle` 1px outer + `--border-strong` 3px left rail + `--font-code` mono path display. root-mismatch warning 는 `--warning` color only (review-tone caution-review tone 정합, severity ramp 미사용 — handoff §2.1 정합). placeholder 는 dashed `--border-subtle` + italic muted text. clear button ghost (`--border` → hover `--border-strong`). 모든 토큰 canonical, 새 토큰 0, hex 0, oklch 0, severity ramp 0. dialog body 의 기존 section vocab (`build-target-create-dialog__section` + `__section-title` + `__help`) 재사용 — IncludedPathsField 와 동일 frame |
 | `services/frontend/src/common/ui/findings/FindingDetailView.css` (page-local, handoff layer 아님) | **2026-05-06 PoC outcome surface 도입** — `.finding-poc-outcome-row` (OutcomeChip 3개 horizontal row) + `.finding-poc-diagnostics` + `__title/__counts/__code/__count` (caution-review tone — `--warning` / `--warning-surface`) + `.finding-poc-claims-list` + `.finding-poc-claim` + `__head/__chip-row/__family/__code/__primary/__meta/__body/__field/__evidence/__trail/__history` (NonAcceptedClaimsList collapsible viewer). 모든 토큰 canonical (`--success` / `--warning` / `--primary` / `--surface-sunken` / `--border-subtle` / `--space-*` / `--text-*` / `--weight-*` / `--font-code` / `--radius-sm` / `--foreground{,-muted}`). 새 토큰 0, hex 0, oklch 0, severity ramp 0 (severity 표시는 `SeverityBadge` primitive 경유 — handoff §2.2 sev-chip whitelist 정합). `common/ui/findings/` 는 multi-page 재사용 디렉토리이므로 다른 page 가 동일 caution-review claim viewer 패턴 도입 시 (a) 본 component 추출 또는 (b) page-scoped class 신설로 협상 — 두 page 가 같은 `.finding-poc-*` selector 에 직접 의존하면 anti-pattern |
+| `services/frontend/src/pages/StaticAnalysisPage/components/SourceUploadView/SourceUploadView.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — `.source-upload-mode-seg` + `__btn` (Quick/Deep 모드 토글 seg control). canonical 토큰만 (`--surface-sunken`, `--border`, `--border-strong`, `--foreground`, `--foreground-muted`, `--primary`, `--primary-surface`, `--text-xs/-sm`, `--weight-semibold`, `--space-*`, `--radius-sm`). 새 토큰 0, hex 0, oklch 0, severity ramp 0. caps-mono seg 패턴 — 화살표키 nav + `aria-checked` 지원 (radiogroup). workflow-active-pending whitelist 외 영역 — primary tint 는 선택된 seg 버튼 활성 표시용 (mode toggle, non-workflow context). |
+| `services/frontend/src/pages/AnalysisHistoryPage/AnalysisHistoryPage.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — `.history-run-actions-cell` + `.history-run-delete-btn` (분석 결과 삭제 trash button). canonical 토큰만 (`--foreground-muted`, `--danger`, `--danger-surface`, `--border`, `--space-*`, `--radius-sm`). 새 토큰 0, hex 0, oklch 0. delete action 은 critical-review 어휘 — `--danger` / `--danger-surface` (review-tone §2.1 critical-review 정합, severity ramp 미사용). |
+| `services/frontend/src/pages/VulnerabilitiesPage/components/FindingsSummaryPanel/FindingsSummaryPanel.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — `.kpi` 재사용 패턴 + severity-bound numerals (finding count by severity). canonical `kpi.css` handoff 컴포넌트 vocab 재사용. severity-bound numerals 는 §2.2 narrow whitelist 정합 — finding severity 의 직접 표시. 새 토큰 0, hex 0, oklch 0. |
+| `services/frontend/src/pages/AdminRegistrationsPage/components/AdminRegistrationsDetailDialog/AdminRegistrationsDetailDialog.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — modal-content frame + 상세 dialog body layout (`.admin-reg-detail-dialog*`). canonical 토큰만 (`--surface`, `--surface-sunken`, `--border`, `--border-subtle`, `--foreground`, `--foreground-muted`, `--text-*`, `--space-*`, `--radius-md`). 새 토큰 0, hex 0, oklch 0, severity ramp 0. `AdminRegistrationsDetailDialog` 신규 컴포넌트 — 상세 row button 클릭 시 등록 상세 정보 표시 modal. |
+| `services/frontend/src/pages/AdminRegistrationsPage/AdminRegistrationsPage.css` (page-local, handoff layer 아님 — 기존 파일에 추가) | **2026-05-08 S2 API 적합도 사이클 확장** — `.admin-reg-row__inline-actions` 추가 (상세보기 버튼 inline 배치). 기존 AdminRegistrationsPage CSS 파일에 신규 selector 추가. canonical 토큰만. 새 토큰 0, hex 0. |
+| `services/frontend/src/pages/FilesPage/components/FilesBuildTargetBar/FilesBuildTargetBar.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — `.files-source-bulk-delete` + `.files-source-bulk-delete__label` (source 일괄 삭제 버튼 + 라벨). critical-review 어휘 — `--danger` / `--danger-surface` (bulk delete = destructive action, review-tone §2.1 정합). ConfirmDialog danger variant 와 연동 — 409 blocker 시 `ApiError.detailMessage` 로 사유 표시. 새 토큰 0, hex 0, oklch 0, severity ramp 0. |
+| `services/frontend/src/pages/ProjectSettingsPage/components/SdkProfilesPanel/SdkProfilesPanel.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — SdkProfilesPanel scoped styles (`.sdk-profiles-panel*`). canonical 토큰만. 새 토큰 0, hex 0, oklch 0, severity ramp 0. `fetchSdkProfiles`/`fetchSdkProfile` 신규 API 연동 — `SdkProfile` 타입은 `unknown` typing (backend canonicalization 이전 defensive). `SdkManagementSection` 에 mount. |
+| `services/frontend/src/pages/ProjectSettingsPage/components/SdkMetricsPanel/SdkMetricsPanel.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — SdkMetricsPanel scoped styles (`.sdk-metrics-panel*`). canonical 토큰만. 새 토큰 0, hex 0, oklch 0, severity ramp 0. `fetchSdkMetrics` 신규 API 연동 — `SdkMetrics` 타입은 `unknown` typing (backend canonicalization 이전 defensive). `SdkManagementSection` 에 mount. |
+| `services/frontend/src/pages/QualityGatePage/components/QualityGateRunSection/QualityGateRunSection.css` (page-local, handoff layer 아님) | **2026-05-08 S2 API 적합도 사이클 도입** — run-scoped gate view (`.quality-gate-run-section*`). `var(--text-2xs)` 사용 (raw `10.5px` → token 정합, Wave 2.7 fix-up 포함). canonical 토큰만. 새 토큰 0, hex 0, oklch 0. `fetchGateRunResults` 신규 API 연동 — `?runId=` URL param 으로 진입. `QualityGatePage` 에 mount. |
 
-신규 drift 발견 시 이 표를 갱신하고 원본 자산과의 관계를 명시한다.
+신규 drift 발견 시 본 표를 갱신하고 원본 자산과의 관계를 명시한다. 각 row 의 token 정합 여부 (severity ramp / review-tone palette 사용처) 는 `DESIGN.md` §3·§4 의 어느 slot 에 매핑되는지 명시.
 
-## 6. Cycle 별 산출물 요약
+---
+
+## 2. Cycle 별 산출물 요약
+
+### 2026-05-08 cycle 2 (디자인 지침 단일화)
+- **Trigger**: 사용자 요청 — 디자인 지침이 `handoff/s1/design-system.md`, `handoff/s1/readme.md` §2/§2.1/§2.2/§3/§9, `handoff/s1/bootstrap.md` §2.5 에 산재. 단일 진입점 필요.
+- **결과물**: `wiki/canon/handoff/s1/DESIGN.md` 신규 (303 lines, 20KB) — 권위 체인 / 구현 계약 / 금지 사항 / review-tone palette / severity narrow whitelist / 신규 페이지 절차 / QA 연결 / lint grep 정책 / lane-local 결정 / 빠른 링크 / 갱신 정책 통합.
+- **시블링 stub 처리**:
+  - `handoff/s1/design-system.md` (이 문서): §1~§4 + §7 → DESIGN.md 링크 redirect. §5 sync table → §1, §6 cycle log → §2 로 renumber. operational tracking 전용으로 축소.
+  - `handoff/s1/readme.md`: §2 visual authority + §2.1 review-tone palette + §2.2 severity narrow whitelist + §3 source-of-truth + §9 design 항목 → DESIGN.md 링크. §1 역할/경계 + §4 활성 파일 + §5 검증 스냅샷 + §6 다음 작업 기준 + §7 문서 우선순위 + §8 backlog/cycle log + §9 process/lane 항목 유지.
+  - `handoff/s1/bootstrap.md` §2.5: lane 계약 reference 를 `design-system.md` → `DESIGN.md` 로 갱신.
+- **upstream 무변경**: `wiki/canon/design-system/{DESIGN.md, design-doctrine.md, readme.md}` 는 디자이너 권위라 S1 수정 금지. 본 cycle 은 lane-local 영역만 손댐.
+- **코드 무변경**: doctrine 단일화는 wiki 문서 작업. frontend code 변경 0. typecheck/vitest/build 영향 없음.
+
+### 2026-05-08 cycle (S2 API 적합도 풀-스윕 — 16 missing + 20 drift + 7 dead 처리)
+- **Trigger**: S2 API 계약 적합도 전수 감사 — MISSING 16 endpoint (REST + WS), DRIFT 20 type/shape 불일치, DEAD 7 (createHeartbeat / registerSdkByPath / fetchModuleReport×3 / fetchGateDetail / fetchGateProfiles). 사용자 요청: 전체 connect + align + 제거.
+- **Wave 1 — REST/WS 데이터 레이어 정합 + dead code 제거 (5 병렬 에이전트)**:
+  - `pipeline.ts`: `PipelineStatusResponse` 확장 (`message?` / `error?` / `isRunning`), `runPipelineTarget` 응답 `{pipelineId, targetId, status}`, `discoverBuildTargets` 반환 `DiscoverBuildTargetsResult` (`{discovered, created, targets, elapsedMs}`), `createBuildTarget` body `buildSystem?` 추가, 신규 `preparePipeline` / `preparePipelineTarget`.
+  - `source.ts`: `UploadStatusSnapshot` 에 `message?` / `error?` / `projectPath?` 추가, 신규 `deleteSource(projectId)`.
+  - `projects.ts`: `fetchProjectOverview` `.data` unwrap 통일, 신규 `updateProject(projectId, {name})`.
+  - `sdk.ts`: `registerSdkByPath` DEAD+DRIFT → **제거**, 신규 `fetchSdkProfiles` / `fetchSdkProfile` / `fetchSdkMetrics` (defensive `unknown` typing, backend canonicalization 이전).
+  - `gate.ts`: `fetchGateProfiles` + `fetchGateDetail` DEAD → **제거**, 신규 `fetchGateRunResults`.
+  - `report.ts`: `fetchModuleReport` DEAD → **제거**.
+  - `analysis.ts`: 신규 `runDeepAnalysis` / `abortAnalysis` / `fetchAnalysisResultsList` / `deleteAnalysisResult` / `fetchFindingsSummary` (defensive `unknown` typing, `FindingsSummary` backend canonicalization 이전).
+  - `auth.ts`: 신규 `fetchRegistrationRequest`.
+  - `approval.ts`: `fetchApprovalCount` 반환 `{pending: number; total?: number}` narrow, 신규 `fetchApprovalDetail`.
+  - `notifications.ts`: `fetchNotificationCount` envelope unwrap (Wave 1.5).
+  - `core.ts`: `HealthCheckResponse` 확장 (`controlPolicyVersion` / `requestIdQueried` / per-service control fields), `healthCheck` / `healthFetch` `?requestId=` 쿼리 파라미터 수용.
+  - `wsEnvelope.ts`: `createHeartbeat` DEAD + contract-conflicting client ping/pong → **제거**.
+  - WS hooks discipline: seq tracker 4곳 (notification / dynamic-test / monitoring / activity-feed), envelope-aware refactor (`useDashboardActivityFeed` heartbeat 30s 누수 제거), `meta.channel` 검증, `onGiveUp` 5곳 (sdk / dynamic-test / notification / activity-feed / monitoring), `useDynamicTest` `maxRetries` 5→8 + terminal `testComplete`.
+- **Wave 1.5 — critic fix-up**:
+  - `useSdkProgress.test.ts` stale mock 제거, `client.test.ts` `runPipelineTarget` assertion `pipelineId` 포함으로 갱신, `useBuildTargets.add()` `buildSystem` 인자 수용, `useBuildTargets.update()` `includedPaths` throws 처리, notifications envelope unwrap, `SdkProfile` / `SdkMetrics` / `FindingsSummary` `unknown` / `Record<string, unknown>` weakened (backend canonicalization 이전), `fetchApprovalCount` `total` optional, `mock-handler.ts` 전체 신규 endpoint 갱신, `NotificationContext` `realtimeOffline` state.
+- **Wave 2 — UI surfaces (7 wave, opus + sonnet executor)**:
+  - **Phase 1 (Wave 2A + 2B)**:
+    - C1: hook-level `preparePipeline` + page-level mount (`SourceUploadView` "빌드 검증" 버튼).
+    - B1: `BuildTarget` edit `includedPaths` UI gating (auto-lock onSubmit).
+    - B2: `discoverBuildTargets` count toast (`${discovered}개 발견 · ${created}개 생성 · ${elapsedMs}ms`).
+    - C2: Quick/Deep 모드 토글 (caps-mono seg + 화살표키 nav).
+    - C3: abort 버튼 + `ConfirmDialog` danger variant.
+    - C4: 결과 delete trash 버튼 + `ConfirmDialog` danger variant.
+    - C5: `FindingsSummaryPanel` (defensive render, `FindingsSummary` unknown typing).
+  - **Phase 2 (Wave 2.5 + 2A + 2B)**:
+    - Wave 2.5 Phase 1 fix-up: dropzone gradient → flat `var(--surface)`, mode-toggle `box-shadow` 제거, radiogroup 화살표키 nav, trash button `keydown` `preventDefault`, controller unit tests, mode-toggle `aria-checked` DOM assertion, C1 page-level UI mount.
+    - Phase 2A SDK/Gates: C7 `SdkProfilesPanel` + C8 `SdkMetricsPanel` — `SdkManagementSection` mount. C6 `QualityGateRunSection` — `QualityGatePage` mount (`?runId=` URL param).
+    - Phase 2B Approvals/Settings: C9 `fetchApprovalDetail` — `detailById` cache 연동. C10 `AdminRegistrationsDetailDialog` 신규 + 상세 row 버튼. C11 projects PUT rename + partial-failure toast tracking. C12 source 일괄 삭제 + `ConfirmDialog` danger + 409 blocker (`ApiError.detailMessage` 경유).
+  - **Wave 2.7 fix-up**: C11 `nameUpdated` tracking + partial-failure toast, `mock-handler` 409 blocker simulation, `QualityGateRunSection.css` raw `10.5px` → `var(--text-2xs)`.
+- **Critic 3회 (all fresh context)**:
+  - Wave 1: REVISE → **ACCEPT-WITH-RESERVATIONS** (1.5 fix-up 후) — 2 CRITICAL + 5 MAJOR 전부 처리.
+  - Wave 2 Phase 1: ACCEPT-WITH-RESERVATIONS → **ACCEPT** (2.5 fix-up 후) — 1 MAJOR pre-existing gradient + 6 MINOR 전부 처리.
+  - Wave 2 Phase 2: ACCEPT-WITH-RESERVATIONS → **ACCEPT** (2.7 fix-up 후) — 2 MAJOR 전부 처리.
+- **§1 sync table 갱신** — 9 신규 page-local CSS row 등록 (SourceUploadView / AnalysisHistoryPage / FindingsSummaryPanel / AdminRegistrationsDetailDialog / AdminRegistrationsPage 확장 / FilesBuildTargetBar / SdkProfilesPanel / SdkMetricsPanel / QualityGateRunSection).
+- **검증**:
+  - typecheck: **PASS**
+  - vitest: **857 PASS / 225 todo / 0 fail / 121 files** (baseline 714 → +143 신규 tests)
+  - vite build: **PASS** (2807 modules, 2.67s, exit 0)
+  - production CSS lint grep: hex 0 / oklch direct 0 / drift token 0 / Pretendard 직접 0 / Geist Mono 직접 0 / raw rgba 0 / decorative gradient 0 / severity ramp leak 0
+- **처리 통계**:
+  - MISSING 16 contract endpoint → 전부 connect (REST + WS)
+  - DRIFT 20 → 전부 type/shape align
+  - DEAD 7 → 전부 제거 (`createHeartbeat`, `registerSdkByPath`, `fetchModuleReport`×3, `fetchGateDetail`, `fetchGateProfiles`)
 
 ### 2026-05-06 cycle 2 (S2 notice — BuildTarget scriptHintPath full-port wire-up)
 - **Trigger**: WR `s2-to-s1-s2-notice-buildtarget-scripthintpath-...` (kind=notice). S2 가 BuildTarget 에 optional `scriptHintPath?: string` 추가, POST/PUT 양쪽 endpoint 수용 (`null` = clear), 8가지 boundary validation → `400 INVALID_INPUT`. 사용자 요청: 풀 포팅 + 신규 UI.
@@ -139,7 +129,7 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
   - 모든 토큰 canonical (`--border`, `--border-subtle`, `--border-strong`, `--surface-sunken`, `--foreground`, `--foreground-muted`, `--font-code`, `--text-xs/-sm`, `--weight-semibold`, `--space-*`, `--radius-sm`, `--primary` for focus only, `--warning` only for caution warning). 새 토큰 0, hex 0, oklch 0, severity ramp 0.
 - **Dialog wire**: `useBuildTargetCreateDialog` 가 `scriptHintPath` state + `initialScriptHintPath` + `initialRelativePath` props 추가, edit-mode reconstruct (`${root}${initialScriptHintPath}`), submit 시 `toApiScriptHintPath()` 로 root-strip. `BuildTargetCreateDialog` 가 `BuildTargetScriptHintField` mount + `buildTargetRoot` 계산. 400 INVALID_INPUT preflight toast (hint-specific text — handoff §9 정합, generic 실패 toast 와 분리).
 - **Path semantics**: state = raw uploaded path. submit 시 BuildTarget root prefix strip → backend root-relative. mismatch 시 raw path 송신 + 사전 alert 경고 → S2 reject → preflight toast.
-- **handoff §5 sync table 갱신** (이 문서) — 2 신규 page-local CSS row 등록 (BuildTargetScriptHintTree.css + BuildTargetScriptHintField.css), canonical 토큰 어휘 + 의미 분리 명시.
+- **§1 sync table 갱신** — 2 신규 page-local CSS row 등록 (BuildTargetScriptHintTree.css + BuildTargetScriptHintField.css), canonical 토큰 어휘 + 의미 분리 명시.
 - **WR closure (MCP)**: `complete_wr s2-to-s1-s2-notice-buildtarget-scripthintpath-...` lane=s1.
 - **critic verdict (oh-my-claudecode:critic, fresh context)**: ACCEPT-WITH-RESERVATIONS → 처리 완료. M1 (`INVALID_INPUT` toast 가이드 hint 외 leak) → `error.detailMessage` 우선 fallback chain. M2 (`buildTargets` 객체 useCallback dep ref 불안정) → `addBuildTarget = buildTargets.add` stable ref 추출. 추가 방어 (`initialScriptHintPath` leading-slash strip, double-slash 방지). MINOR 4건 + Open Q 1건 deferred (pre-existing 또는 a11y enhancement).
 - **검증**: 714 frontend tests PASS / 101 files (cycle 2 baseline 679 → +35 신규 — pipeline +5 / hook +4 / ScriptHintTree +7 / ScriptHintField +11 / dialog scriptHintPath surface +8 incl. critic-driven 2). typecheck PASS. vite build PASS. production CSS lint grep clean.
@@ -168,7 +158,7 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
     - 타입 access: `NonAcceptedClaim` 만 (handoff §9 정합, untyped `Record<string, unknown>` access 0).
   - 신규 page-local CSS — `.finding-poc-claims-list` + `.finding-poc-claim*`. canonical 토큰만, 새 토큰 0.
   - 신규 unit test `NonAcceptedClaimsList.test.tsx` — 9 테스트 (status→tone helper 3 / sortClaims invariants 2 / render head 1 / expand body 1 / empty array smoke 1 / claimId-absent fallback 1).
-- **handoff §5 sync table 갱신** (이 문서) — `FindingDetailView.css` page-local row 신규 등록 + 다른 page 재사용 협상 정책 명시.
+- **§1 sync table 갱신** — `FindingDetailView.css` page-local row 신규 등록 + 다른 page 재사용 협상 정책 명시.
 - **WR 정리 (모두 MCP)**:
   - `complete_wr s2-to-s1-reply-poc-facade-outcome-fields-implemented-for-s1-clean-pass-ui` lane=s1 (2026-05-06T03:57:47.370Z)
   - `complete_wr s2-to-s1-reply-nonacceptedclaim-typed-export-...` lane=s1 (2026-05-06T05:52:51.922Z)
@@ -212,10 +202,10 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
   - severity ramp leak 7곳 (AdminReg KPI count + row tint + reject reason / Textarea+Radio+Input+Checkbox aria-invalid / two-stage-error / failed runs count / OverallStatusTab is-warn / kpi.css is-warn / ProjectSettings danger zone + sdk-stepper-failed + sdk-status-badge-failed + sdk-upload-zone-error + sdk-expanded-failed-rail) — 모두 review-tone palette (`--danger` / `--warning` / `--primary`) 로 마이그레이션
   - hex 잔재 11곳 (OverviewPage trend-summary / AdapterSelector / Analysis(Async)ProgressView / DynamicTestPage / ConnectionStatusBanner / FilesPage build-target-row+section-summary+target-library + ftree+build-tree folder-icon / FileDetailHeader inline) — 모두 canonical 토큰 (`--success` / `--severity-medium` / `--warning` / `--cds-text-placeholder`) 로 정합
   - ReportFindingsSection inline `style={{color}}` mdash → `.report-table-empty-mark` page CSS class 추출
-- **handoff §5 sync table 갱신** (이 문서) — tokens.css / auth-console.css / dashboard.css 의 실제 drift와 사유 명시 (이전 "바이트 동일" 기재 부정확)
+- **§1 sync table 갱신** — tokens.css / auth-console.css / dashboard.css 의 실제 drift와 사유 명시 (이전 "바이트 동일" 기재 부정확)
 - **handoff/s1/readme.md §2.1 6번째 slot 화이트리스트 확장** — `.admin-reg-kpi .status-chip--pending .status-chip__count` + `.admin-reg-row--pending` 2 selector 추가 (workflow-active-pending tone — Admin 대기열 active queue state)
 - **lane-local 결정 채택 (디자이너 WR 발행 보류 — 사용자 지시)**:
-  - **Paperlogy-unified mono 정식 채택** — DESIGN.md §1·§4 권위와 충돌하지만 lane-local 정식 정책으로 운영. tokens.css drift 사유와 함께 §5 sync table 에 명시 추적
+  - **Paperlogy-unified mono 정식 채택** — DESIGN.md §1·§4 권위와 충돌하지만 lane-local 정식 정책으로 운영. tokens.css drift 사유와 함께 §1 sync table 에 명시 추적
   - **DynamicAnalysisPage 콘솔 terminal aesthetic page-scoped 정식 인정** — `--console-fg/-bg/-bg-hi/-green/-amber/-red/-red-soft` 등 page-local CSS custom property 형태 유지. canonical 토큰 흡수 보류 (다른 surface 재사용 0, terminal aesthetic surface 한정 시각 어휘로 제한)
 - **deferred (이 cycle 안)**: m3 ApprovalsPage `gap: 4px/6px` micro-rhythm — icon+text 미세 rhythm pattern으로 raw 유지. m4 hero-verdict__bar `width: 4px` — hairline rail raw 유지 OK
 - **검증**: 691 frontend tests PASS / 108 files (baseline 유지) · typecheck PASS · production CSS lint grep clean (hex 0 outside DynamicAnalysisPage console / severity ramp leak 0 outside §2.2 whitelist) · code-reviewer fresh context APPROVE (대기)
@@ -230,16 +220,3 @@ related_pages: ["wiki/canon/design-system/readme.md", "wiki/canon/design-system/
 
 ### 2026-04-25 cycle (sidebar / ProjectSettings / AnalysisHistory / Report / SDK 신규 / Deep outcome)
 - 자세한 내용은 `wiki/canon/handoff/s1/readme.md` §8.1 참고
-
-## 7. 참고 경로 빠른 링크
-
-- Design system canonical: `wiki/canon/design-system/readme.md`
-- Design system 원전: `wiki/canon/design-system/DESIGN.md`
-- **Design doctrine (프로세스)**: `wiki/canon/design-system/design-doctrine.md`
-- S1 인수인계: `wiki/canon/handoff/s1/readme.md`
-- S1 working guide: `wiki/canon/feedback/s1_frontend_working_guide.md`
-- QA guide: `wiki/canon/handoff/s1/qa-guide.md`
-- Design mock review workflow: `wiki/canon/handoff/s1/design-mock-review-workflow.md`
-- 가시성 매트릭스: `wiki/canon/handoff/s1/usecase-visibility-matrix.md`
-- 구현 handoff CSS: `services/frontend/src/styles/handoff/**`
-- Auth shared shell: `services/frontend/src/shared/auth/AuthConsoleShell.tsx`

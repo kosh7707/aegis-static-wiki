@@ -40,11 +40,11 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 407개 통과 (25 test files, 2026-05-08 전체 pytest 재확인) |
+| 테스트 | 414개 통과 (2026-05-08 SDK/cancel 구현 후 전체 pytest 재확인, `414 passed in 13.83s`) |
 
 ---
 
-## 3. 엔드포인트 (9개)
+## 3. 엔드포인트 (12개)
 
 | 엔드포인트 | 용도 |
 |-----------|------|
@@ -59,6 +59,7 @@ migration_status: "canonicalized"
 | `GET /v1/health` | 6개 도구 상태 + 버전 + backward-compatible health policy surface + request-aware summary |
 | `GET /v1/requests/{requestId}` | durable ownership status 조회 |
 | `GET /v1/requests/{requestId}/result` | retained terminal result/failure 조회 |
+| `DELETE /v1/requests/{requestId}` | durable ownership best-effort cancel. active request는 `state=cancelled`, `REQUEST_CANCELLED` result로 terminal 처리 |
 
 ---
 
@@ -73,7 +74,8 @@ migration_status: "canonicalized"
 ### 주요 입력 파라미터
 
 - analysis path에서는 `buildProfile`을 계속 사용한다. build path는 더 이상 `sdkId`를 받지 않는다
-- `buildProfile.sdkId`는 optional이다. 생략하면 native/non-SDK build로 처리하고, 명시했는데 registry/SDK root 어디에서도 찾을 수 없으면 analysis path는 `SDK_NOT_FOUND` 400을 반환한다
+- analysis path의 SDK contract는 `none`, `non-registered`, S4-local `{sdkId}` 세 가지다. `sdkResolutionMode="none"`은 registry lookup을 금지하고, `sdkResolutionMode="non-registered"`는 caller-resolved `sdkDescriptor.sdkRootPath`를 필수로 한다
+- 알 수 없는 bare `buildProfile.sdkId`는 source-only fallback으로 조용히 진행하지 않고 `SDK_NOT_FOUND` 400으로 실패한다. `custom` sentinel은 no-SDK 의미가 아니며, S4 registry 밖 SDK는 `non-registered` descriptor로 전달해야 한다
 - `options.tools`: 도구 서브셋 선택 (예: `["cppcheck", "flawfinder"]`). 미지정 시 6개 전부
 - `thirdPartyPaths`: vendored 서드파티 경로 목록. scope-early 필터링에 사용
 - `X-Timeout-Ms` 헤더: 타임아웃 우선순위 — 헤더 > body `options.timeoutSeconds` > 기본값 600초
@@ -324,9 +326,19 @@ S5 ingest 후 유용성을 결정하는 보조 지표:
 
 ---
 
-## 11. 내부 SDK 해석 데이터 (analysis path only)
+## 11. SDK 해석 계약과 내부 SDK 데이터 (analysis path only)
 
-외부 파일(`$SAST_SDK_ROOT/sdk-registry.json`)로 SDK 메타데이터를 관리한다.
+analysis path의 `BuildProfile` SDK 해석은 아래 세 모드로 제한된다.
+
+| 모드 | 요청 | 동작 | 실패 |
+|------|------|------|------|
+| none | `sdkResolutionMode="none"` | SDK 없음. registry/compiler/env setup lookup 금지 | `sdkId`/`sdkDescriptor` 동반 시 `SDK_PROFILE_INVALID` |
+| non-registered | `sdkResolutionMode="non-registered"` + `sdkDescriptor.sdkRootPath` | caller-resolved SDK descriptor에서 include/sysroot/compiler/setup 후보를 결정론적으로 산출. registry lookup 금지 | descriptor/root 누락 시 `SDK_PROFILE_INVALID` |
+| S4-local sdkId | `sdkId="..."` | `$SAST_SDK_ROOT/sdk-registry.json` 또는 SDK root 규칙으로 해석 | unknown bare sdkId는 `SDK_NOT_FOUND` |
+
+`non-registered` descriptor는 `sdkRootPath`, `sysroot`, `setupScript`, `toolchainTriplet`, `compilerPath`, `compilerVersion`, `targetArch`, `languageStandard`, `includePaths`, `defines`, `environment`를 additive metadata로 받을 수 있다. 필수 필드는 `sdkRootPath` 하나이며, 나머지는 있을 때만 deterministic enrichment에 사용된다.
+
+외부 파일(`$SAST_SDK_ROOT/sdk-registry.json`)로 S4-local SDK 메타데이터를 관리한다.
 
 ```
 $SAST_SDK_ROOT/               <- .env 예시: SAST_SDK_ROOT=/opt/sdks (환경별로 교체)
@@ -339,6 +351,7 @@ $SAST_SDK_ROOT/               <- .env 예시: SAST_SDK_ROOT=/opt/sdks (환경별
 - 이 데이터는 **analysis path 내부 해석용**으로만 남아 있다.
 - `/v1/sdk-registry` public API는 제거되었다.
 - build path는 더 이상 `sdkId`를 받지 않으므로 이 레지스트리에 의존하지 않는다.
+- S3/S2가 정식 SDK upload/registration 루트를 타지 않는 실험/서비스 단독 테스트에서는 `sdkId` 임의 sentinel 대신 `non-registered` descriptor를 보내야 한다.
 
 ---
 
@@ -457,13 +470,14 @@ pattern-sanitizers:              # <- FP 감소
   - `running`: 실행 중
   - `completed`: 정상 종료
   - `failed`: 비정상 종료
+  - `cancelled`: `DELETE /v1/requests/{requestId}`로 best-effort cancel이 접수되어 terminal 처리된 상태
 - `requestSummary.localAckState`
   - `phase-advancing`: scan progress/file progress/runtime-state 또는 build phase completion처럼 최근의 실제 로컬 진행 전이가 관측된 상태
   - `transport-only`: build / build-and-analyze의 장시간 컴파일 구간처럼 프로세스 생존은 확인되지만 더 강한 로컬 진행 증거는 아직 없는 상태
   - `ack-break`: 내부 build/scan 루프가 예외/정책실패/취소로 비정상 종료된 상태
 - `requestSummary.degraded=true` 는 기존 scan runtime의 degraded semantics를 그대로 반영한다
 - `requestSummary.ackStatus="broken"` + `localAckState="ack-break"` + `blockedReason` 존재는 local ack break equivalent 이다
-- local ack source는 `request-accepted`, `semaphore-acquired`, `build-started`, `tool-progress`, `file-progress`, `runtime-state`, `build-subprocess-alive`, `build-phase-complete`, `terminal-result`, `ack-break`
+- local ack source는 `request-accepted`, `semaphore-acquired`, `build-started`, `tool-progress`, `file-progress`, `runtime-state`, `build-subprocess-alive`, `build-phase-complete`, `terminal-result`, `ack-break`, `request-cancelled`
 - 전역 numeric stall threshold는 health contract에 노출하지 않는다. ack break는 내부 실행 흐름의 명시적 비정상 종료로만 판정한다
 
 ### Health-control v2 durable ownership mode (2026-05-08)
@@ -476,8 +490,9 @@ S4는 `202 Accepted`와 함께 `statusUrl=/v1/requests/{requestId}`, `resultUrl=
 - 서로 다른 S4 endpoint가 같은 `X-Request-Id`를 durable ownership key로 재사용하면 S4는 silent reuse 대신 HTTP 409 `REQUEST_ID_CONFLICT`를 반환한다. S3/S2는 `/v1/build` 후 `/v1/scan`처럼 operation이 바뀌는 경우 고유한 S4 operation requestId를 사용해야 한다.
 - terminal success/failure는 process-local memory에 기본 300초 보존된다. 이는 transport interruption 복구용이며 process restart durability는 계약하지 않는다.
 - `GET /v1/requests/{requestId}`는 queued/running/completed/failed status envelope를 반환한다. unknown은 404, expired terminal result는 410이다.
-- `GET /v1/requests/{requestId}/result`는 queued/running 동안 202, retained terminal success/failure는 200을 반환한다.
-- terminal domain failure도 retrieval transport는 200일 수 있다. caller는 nested `result.success=false`, `failureDetail`, `errorDetail`을 domain outcome으로 해석해야 한다.
+- `GET /v1/requests/{requestId}/result`는 queued/running 동안 202, retained terminal success/failure/cancelled는 200을 반환한다.
+- `DELETE /v1/requests/{requestId}`는 queued/running이면 202와 함께 `state="cancelled"`, `resultReady=true`, nested `result.success=false`, `errorDetail.code="REQUEST_CANCELLED"`를 반환한다. 이미 completed/failed/cancelled이면 200 idempotent terminal envelope를 반환한다. unknown은 404, expired는 410이다.
+- terminal domain failure/cancel도 retrieval transport는 200일 수 있다. caller는 nested `result.success=false`, `failureDetail`, `errorDetail`을 domain outcome으로 해석해야 한다.
 - async ownership build path는 caller `X-Timeout-Ms`를 hard subprocess deadline으로 쓰지 않는다. `buildEvidence.timeoutMode="async-ownership-no-caller-deadline"`, `timeoutEnforced=false`로 노출한다.
 - sync/NDJSON compatibility surface는 유지된다. S3가 finite elapsed abort를 제거하려면 long-running production path에서 `Prefer: respond-async` + status/result polling을 사용해야 한다.
 

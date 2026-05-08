@@ -384,7 +384,7 @@ GET /health
 - S2 `/health`는 v2 request-aware pass-through + normalized polling interpretation surface다.
 - S2 direct S4 build/scan calls now use S4 durable ownership mode (`Prefer: respond-async` + operation-scoped child `X-Request-Id`) and poll `/v1/requests/{requestId}/result` without converting elapsed age into failure.
 - S4 submit transport timeout is recoverable when `/v1/health?requestId=...` proves the owned request is alive or terminal-completed with retained result ownership.
-- Explicit local cancellation is propagated through S2's `AbortSignal` into the S4 wait loop. S4's current public contract has no durable cancel endpoint, so service-side cancel beyond transport abort is documented as a follow-up contract gap.
+- Explicit local cancellation is propagated through S2's `AbortSignal` into the S4 wait loop, and direct S4 durable ownership now receives a best-effort `DELETE /v1/requests/{requestId}` for the derived operation-scoped S4 request id. S4 queued/running cancels return `202`, already-terminal cancels return idempotent `200`, and S2 still reports the local operation as cancelled to its caller.
 - S2→S3 Analysis/Build Agent `/v1/tasks` and S2→S7 `/v1/tasks` remain finite compatibility task surfaces from S2's perspective until those owner contracts expose task status/result/cancel endpoints for S2 to consume.
 
 ---

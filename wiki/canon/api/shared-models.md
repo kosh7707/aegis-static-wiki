@@ -8,7 +8,7 @@ source_refs:
 original_path: "docs/api/shared-models.md"
 last_verified: "2026-05-08"
 service_tags: ["platform"]
-decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2"]
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2", "s1-aggregate-types"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -231,6 +231,9 @@ interface SdkProfile {
 }
 ```
 
+`SdkProfile` is exported from `@aegis/shared` via `services/shared/src/models.ts` and `services/shared/src/index.ts`.
+The current built-in profile response shape does not include `version`, `archCompat`, or additional metadata beyond the fields above.
+
 ```ts
 type SdkRegistryStatus =
   | "uploading"
@@ -324,6 +327,40 @@ interface RegisteredSdk {
   updatedAt: string;
 }
 ```
+
+```ts
+type SdkMetricsPhaseKey = SdkPhase;
+
+interface SdkMetrics {
+  /** Canonical count of project-registered SDK records. */
+  totalRegistered: number;
+  /** Compatibility alias for totalRegistered; retained for existing consumers. */
+  sdkCount: number;
+  readyCount: number;
+  failedCount: number;
+  averagePhaseDurationMs: Partial<Record<SdkMetricsPhaseKey, number>>;
+}
+
+interface SdkMetricsResponse {
+  success: boolean;
+  data: SdkMetrics;
+}
+
+interface SdkProfileListResponse {
+  success: boolean;
+  data: SdkProfile[];
+}
+
+interface SdkProfileResponse {
+  success: boolean;
+  data?: SdkProfile;
+  error?: string;
+}
+```
+
+`averagePhaseDurationMs` only includes phases present in persisted `RegisteredSdk.phaseHistory`.
+`sdkCount === totalRegistered`; S1 should prefer `totalRegistered` for new typed UI and keep `sdkCount`
+only as a compatibility alias.
 
 ### 2.5 Build target / target library
 
@@ -1078,7 +1115,7 @@ Validation enforced today:
 | GET | `/api/projects/:pid/sdk` | - | `200 { success, data: { builtIn: SdkProfile[], registered: RegisteredSdk[] } }` | `200`, `404` |
 | GET | `/api/projects/:pid/sdk/:id` | - | `200 { success, data: RegisteredSdk }` | `200`, `404` |
 | GET | `/api/projects/:pid/sdk/quota` | - | `200 { success, data: { usedBytes, maxBytes, sdkCount } }` | `200`, `404` |
-| GET | `/api/projects/:pid/sdk/metrics` | - | `200 { success, data: { sdkCount, readyCount, failedCount, averagePhaseDurationMs } }` | `200`, `404` |
+| GET | `/api/projects/:pid/sdk/metrics` | - | `200 { success, data: SdkMetrics }` | `200`, `404` |
 | GET | `/api/projects/:pid/sdk/:id/log` | `?tailLines=<n>` or `?offset=<n>&limit=<n>`; `download=true` optional | JSON: `200 { success, data: { sdkId, logPath, content, truncated, totalLines, nextOffset? } }`; download: `text/plain` attachment | `200`, `404` |
 | POST | `/api/projects/:pid/sdk/:id/retry` | `{ fromPhase?: "analyzing" | "verifying" }` | `202 { success, data: RegisteredSdk }` | `202`, `400`, `404` |
 | POST | `/api/projects/:pid/sdk` | see note below | `202 { success, data: RegisteredSdk }` | `202`, `400`, `404` |
@@ -1096,6 +1133,8 @@ Validation enforced today:
 - `POST /api/projects/:pid/sdk/:id/retry` reuses a retained/materialized failed SDK artifact, increments `retryCount`, and currently restarts from `verifying` or optional `analyzing`; unsupported/non-retained failures must still be re-uploaded.
 - `GET /api/projects/:pid/sdk/quota` reports project SDK storage usage against `AEGIS_SDK_STORAGE_QUOTA_BYTES` (default 50 GiB).
 - `GET /api/projects/:pid/sdk/metrics` returns aggregate SDK counts and average phase durations from persisted `phaseHistory`.
+  - Current `SdkMetrics` fields: `totalRegistered`, `sdkCount` compatibility alias, `readyCount`, `failedCount`, `averagePhaseDurationMs`.
+  - `averagePhaseDurationMs` is keyed by `SdkMetricsPhaseKey = SdkPhase` and omits phases with no recorded durations.
 - `GET /api/projects/:pid/sdk/:id/log` returns server-side `logPath` for correlation/debugging plus log `content`; S1 should render the log content from the endpoint, not require users to SSH to the server path.
 - `sdk-error.troubleshootingUrl` is a wiki-canonical anchor path derived from structured `code` (for example `wiki/canon/troubleshooting/sdk#extract-failed`).
 - `DELETE /api/projects/:pid/sdk/:id` is project-scoped. If the SDK id exists but belongs to another project, S2 returns `404 NOT_FOUND` and does not delete it.
@@ -1117,8 +1156,8 @@ S2 → S3 Build Agent SDK materialization descriptor producer semantics (2026-05
 
 | Method | Path | Success | Status codes |
 |---|---|---|---|
-| GET | `/api/sdk-profiles` | `200 { success, data: SdkProfile[] }` | `200` |
-| GET | `/api/sdk-profiles/:id` | `200 { success, data: SdkProfile }` | `200`, `404` |
+| GET | `/api/sdk-profiles` | `200 SdkProfileListResponse` (`{ success: true, data: SdkProfile[] }`) | `200` |
+| GET | `/api/sdk-profiles/:id` | `200 SdkProfileResponse` (`{ success: true, data: SdkProfile }`) | `200`, `404 { success: false, error: "SDK profile not found" }` |
 
 ## 3.7 Pipeline surface
 
@@ -1447,12 +1486,31 @@ Validation notes:
 
 ### Runs / findings / gates / approvals / activity
 
+```ts
+interface FindingsSummary {
+  total: number;
+  bySeverity: Partial<Record<Severity, number>>;
+  byStatus: Partial<Record<FindingStatus, number>>;
+}
+
+interface FindingSummaryResponse {
+  success: boolean;
+  data: FindingsSummary;
+}
+```
+
+`FindingsSummary` is the exact aggregate shape currently emitted by
+`GET /api/projects/:pid/findings/summary`. S2 does not currently emit `byModule`,
+`byRuleId`, `recentDelta`, `acceptedCount`, or `dismissedCount` from this endpoint.
+If S2 adds those aggregate fields later, they must be added to `FindingsSummary`
+and this contract before S1 renders them.
+
 | Method | Path | Request | Success | Status codes |
 |---|---|---|---|---|
 | GET | `/api/projects/:pid/runs` | - | `200 { success, data: Run[] }` | `200` |
 | GET | `/api/runs/:id` | - | `200 { success, data: RunDetail }` | `200`, `404` |
 | GET | `/api/projects/:pid/findings` | query `status,severity,module,sourceType,q,sort,order` optional | `200 { success, data: Finding[] }` | `200`, `400` |
-| GET | `/api/projects/:pid/findings/summary` | - | `200 { success, data: AnalysisSummaryLike }` | `200` |
+| GET | `/api/projects/:pid/findings/summary` | - | `200 { success, data: FindingsSummary }` | `200` |
 | GET | `/api/projects/:pid/findings/groups` | query `groupBy=ruleId|location` | `200 { success, data: Array<{ key, count, topSeverity, findingIds }> }` | `200`, `400` |
 | PATCH | `/api/findings/bulk-status` | `{ findingIds, status, reason, actor? }` | `200 { success, data: { updated, failed } }` | `200`, `400` |
 | GET | `/api/findings/:id/history` | - | `200 { success, data: FindingHistoryEntry[] }` | `200`, `404` |
@@ -1621,7 +1679,7 @@ Normalization note:
 Health-control v2 S2 consumer scope (2026-05-08):
 - S2 direct S4 build/scan calls use S4 durable ownership mode (`Prefer: respond-async` + operation-scoped child `X-Request-Id`), then poll `/v1/requests/{requestId}/result` until an explicit terminal result/failure is retrievable.
 - S2 does not use elapsed request age as an abort reason on that S4 ownership path. A submit transport timeout is recoverable when `/v1/health?requestId=...` proves the owned S4 request is still alive or terminal-completed with retrievable result ownership.
-- Explicit local cancellation is propagated as an `AbortSignal` through S2's S4 wait loop. S4's current public API contract does not expose a durable `DELETE`/cancel endpoint, so service-side cancellation beyond transport abort is a follow-up contract item rather than a current S2 guarantee.
+- Explicit local cancellation is propagated as an `AbortSignal` through S2's S4 wait loop and S2 now best-effort calls S4 `DELETE /v1/requests/{requestId}` for the derived durable S4 ownership id. A successful S4 cancel returns `202` for queued/running requests or `200` for already-terminal idempotent requests; S2 still treats the local operation as cancelled and logs non-retained `404`/`410` cancel responses as best-effort cleanup misses.
 - Direct S2→S7 `/v1/tasks` and S2→S3 `/v1/tasks` remain finite compatibility task surfaces unless those owner lanes publish status/result/cancel ownership endpoints for S2 to consume. S2 still forwards `requestId` to their `/v1/health` summaries for user-facing progress and aggregate control guidance.
 
 ---
@@ -1914,7 +1972,7 @@ This subsection answers the S1 SDK second follow-up WR after S2 implementation. 
 
 | Item | Decision | S2 answer |
 |---|---|---|
-| O1 SDK metrics endpoint | implemented | `GET /api/projects/:pid/sdk/metrics` returns `{ sdkCount, readyCount, failedCount, averagePhaseDurationMs }`. |
+| O1 SDK metrics endpoint | implemented | `GET /api/projects/:pid/sdk/metrics` returns `SdkMetrics`: `{ totalRegistered, sdkCount, readyCount, failedCount, averagePhaseDurationMs }`. `sdkCount` is a compatibility alias for `totalRegistered`; new S1 code should prefer `totalRegistered`. |
 | O2 WS connection health | implemented | Shared WS broadcaster sends ping every 30s, removes/terminates missed pong clients, removes send failures, and preserves `meta.seq` for gap detection. S1 still owns reconnect UI/backoff. |
 
 ### 4.6 Analysis WS — `/ws/analysis?analysisId=<analysisId>`

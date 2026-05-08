@@ -8,7 +8,7 @@ source_refs:
 original_path: "docs/s2-handoff/api-endpoints.md"
 last_verified: "2026-05-08"
 service_tags: ["s2"]
-decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2"]
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2", "s1-aggregate-types"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -91,7 +91,7 @@ Health control-signal 메모 (2026-05-08):
   - polls S4 `/v1/requests/{requestId}/result` until a retained terminal result/failure is returned
   - does not abort on elapsed age while S4 reports queued/running/transport-only/phase-advancing/degraded-without-blocked
   - recovers submit transport timeouts by checking S4 `/v1/health?requestId=...` before deciding timeout vs continued ownership wait
-  - propagates local/user cancellation through `AbortSignal`; S4 does not currently publish a durable cancel endpoint, so service-side cancel is a follow-up contract item
+  - propagates local/user cancellation through `AbortSignal` and best-effort calls S4 `DELETE /v1/requests/{requestId}` for the derived durable ownership id; S4 reports cancelled requests as `state=cancelled`, `localAckState=ack-break`, `blockedReason="request cancelled"`
 - S2 direct S3/S7 task paths:
   - S2 forwards `requestId` to `/v1/health` for progress/control visibility
   - S2 does not claim durable status/result/cancel consumption for S3/S7 `/v1/tasks` until those owner contracts expose such endpoints
@@ -157,18 +157,26 @@ Auth v1 메모 (2026-04-20):
 
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
-| GET | `/api/sdk-profiles` | SDK 프로파일 목록 |
-| GET | `/api/sdk-profiles/:id` | SDK 프로파일 상세 |
+| GET | `/api/sdk-profiles` | SDK 프로파일 목록. `200 SdkProfileListResponse` = `{ success: true, data: SdkProfile[] }` |
+| GET | `/api/sdk-profiles/:id` | SDK 프로파일 상세. `200 SdkProfileResponse` = `{ success: true, data: SdkProfile }`, 미존재 시 `404 { success: false, error: "SDK profile not found" }` |
 | GET | `/api/gate-profiles` | Gate 프로필 목록 |
 | GET | `/api/gate-profiles/:id` | Gate 프로필 상세 |
 | GET | `/api/projects/:pid/sdk` | 프로젝트 SDK 레지스트리 목록 |
 | GET | `/api/projects/:pid/sdk/:id` | 등록 SDK 상세 (re-entry / reconnect recovery source; phase/retry metadata 포함) |
 | GET | `/api/projects/:pid/sdk/quota` | 프로젝트 SDK storage quota/usage 조회 |
-| GET | `/api/projects/:pid/sdk/metrics` | SDK 등록/phase duration aggregate metrics 조회 |
+| GET | `/api/projects/:pid/sdk/metrics` | SDK 등록/phase duration aggregate metrics 조회. `200 SdkMetricsResponse` = `{ success: true, data: { totalRegistered, sdkCount, readyCount, failedCount, averagePhaseDurationMs } }` |
 | GET | `/api/projects/:pid/sdk/:id/log` | SDK install log tail/pagination/download 조회 (`?tailLines=`, `?offset=&limit=`, `?download=true`) |
 | POST | `/api/projects/:pid/sdk/:id/retry` | 실패 SDK 재시도 (`fromPhase?: analyzing|verifying`, retained/materialized artifact 필요) |
 | POST | `/api/projects/:pid/sdk` | SDK 등록 (현재 mounted 경로는 multipart project-scoped upload; 단일 archive / 단일 `.bin` / multi-file folder upload 지원. 폴더 업로드는 클라이언트가 상대경로를 보존해서 보내야 함) |
 | DELETE | `/api/projects/:pid/sdk/:id` | SDK 삭제 |
+
+SDK profile / metrics typed aggregate memo (2026-05-08):
+
+- `SdkProfile` is exported from `@aegis/shared` and currently contains `id`, `name`, `vendor`, `description`, and `defaults: Omit<BuildProfile, "sdkId">`. The current backend profile catalog does not expose version/arch/evidence metadata.
+- `GET /api/sdk-profiles` returns `SdkProfileListResponse`; `GET /api/sdk-profiles/:id` returns `SdkProfileResponse`.
+- `GET /api/projects/:pid/sdk/metrics` returns `SdkMetricsResponse`; `data.totalRegistered` is the canonical total count and `data.sdkCount` is a compatibility alias with the same value.
+- `data.averagePhaseDurationMs` is keyed by `SdkMetricsPhaseKey` (`SdkPhase`) and only includes phases with observed `phaseHistory` duration samples.
+- S1 should import the shared DTOs instead of treating these envelopes as `Record<string, unknown>`.
 
 SDK delete project-scope 메모 (2026-05-02):
 
@@ -252,6 +260,12 @@ Build Agent SDK materialization descriptor memo (2026-05-08):
 
 ### Run / Finding / Gate / Approval / Report
 
+Findings summary typed aggregate memo (2026-05-08):
+
+- `FindingsSummary` is exported from `@aegis/shared` and matches the implemented S2 runtime aggregate: `total`, `bySeverity: Partial<Record<Severity, number>>`, and `byStatus: Partial<Record<FindingStatus, number>>`.
+- `GET /api/projects/:pid/findings/summary` returns `FindingSummaryResponse` with no speculative `byModule`, `byRuleId`, `recentDelta`, `acceptedCount`, or `dismissedCount` fields.
+- S1 should import `FindingsSummary` / `FindingSummaryResponse` from `@aegis/shared` rather than using stringly typed maps.
+
 QualityGate / Approvals mock-absorption contract memo (2026-04-26):
 
 - `GateRuleResult` now includes optional backend-owned metric fields `current`, `threshold`, `unit`, and mirrored `meta`; S1 must not hardcode threshold maps.
@@ -264,7 +278,7 @@ QualityGate / Approvals mock-absorption contract memo (2026-04-26):
 | GET | `/api/projects/:pid/runs` | 프로젝트 Run 목록 |
 | GET | `/api/runs/:id` | Run 상세 |
 | GET | `/api/projects/:pid/findings` | Finding 목록 (`status`, `severity`, `module`, `sourceType`, `q`, `sort`, `order` 필터 지원) |
-| GET | `/api/projects/:pid/findings/summary` | Finding 집계 |
+| GET | `/api/projects/:pid/findings/summary` | Finding 집계. `200 FindingSummaryResponse` = `{ success: true, data: FindingsSummary }`; 현재 필드는 `total`, `bySeverity`, `byStatus` |
 | GET | `/api/projects/:pid/findings/groups` | Finding 그룹 조회 (`?groupBy=ruleId|location`) |
 | PATCH | `/api/findings/bulk-status` | Finding 벌크 상태 변경 |
 | GET | `/api/findings/:id/history` | Finding fingerprint 이력 |

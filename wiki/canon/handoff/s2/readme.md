@@ -175,7 +175,7 @@ canonical v1 lifecycle:
   - direct S4 `scan`/`build` calls use durable ownership (`Prefer: respond-async`, operation-scoped child `X-Request-Id`, `/v1/requests/{requestId}/result` polling).
   - queued/running/transport-only/phase-advancing/degraded-without-blocked are wait states; ack-break/failed/cancelled/expired/blocked/ownership-loss are abort states.
   - completed envelopes are result-bearing terminals, not clean success; S2 still evaluates nested result/readiness/outcome fields.
-  - S2 propagates local cancellation with `AbortSignal`; durable downstream cancel endpoints for S4 and task-level S3/S7 status/result/cancel remain follow-up contract items.
+  - S2 propagates local cancellation with `AbortSignal`; for direct S4 durable ownership it now best-effort calls `DELETE /v1/requests/{requestId}`. Task-level S3/S7 status/result/cancel surfaces remain follow-up contract items.
 
 현재 남은 follow-up risk (non-blocking):
 - rate limit durability 는 shared SQLite 범위까지다. future multi-node deployment 에서는 shared store 로 옮겨야 한다
@@ -281,7 +281,7 @@ S3가 first-rollout `/health` control-signal vocabulary를 freeze 했고,
   - elapsed age alone은 abort로 쓰지 않는다.
 - 남은 gap:
   - S2→S3 Analysis/Build Agent `/v1/tasks`와 S2→S7 `/v1/tasks`는 현재 S2가 소비할 수 있는 status/result/cancel endpoint가 없으므로 finite compatibility surface다.
-  - explicit downstream service-side cancel은 S4/S3/S7 owner API 계약이 있어야 완전 전파된다. 현재 S2 구현은 local `AbortSignal` 전파까지만 보장한다.
+  - explicit downstream service-side cancel은 direct S4 durable ownership 경로에서 `DELETE /v1/requests/{requestId}` best-effort 호출까지 전파된다. S2→S3 Analysis/Build Agent 및 S2→S7 task-level cancel은 아직 S2가 소비할 수 있는 owner API 계약이 없어 local `AbortSignal`/finite compatibility boundary로 남는다.
 
 ### 3-0c. S5 runtime semantics notice 처리 메모 (2026-04-14)
 

@@ -2885,3 +2885,115 @@ related_pages:
 ## [2026-05-08] mcp | complete_wr | s5-to-s3-s5-reply-health-control-v2-kb-codegraph-long-running-ownership-plan-documented-a
 - Lane s3 completed recipient-side handling
 - Status: completed
+
+## [2026-05-08] mcp | register_wr | s3-to-s4-s4-unknown-sdkid-should-not-suppress-sdk-independent-sast-evidence
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s4-unknown-sdkid-should-not-suppress-sdk-independent-sast-evidence.md
+
+## [2026-05-08] Registered S4 work request | S3→S4 WR: unknown sdkId degraded SAST policy
+- WR path: wiki/canon/work-requests/s3-to-s4-s4-unknown-sdkid-should-not-suppress-sdk-independent-sast-evidence.md
+- Reason: gateway-webserver baseline showed S4 SDK_NOT_FOUND can suppress SDK-independent flawfinder evidence, causing S3 no_new_evidence/no_accepted_claims.
+- Requested S4 to let source-only SAST run under unknown sdkId while marking SDK-dependent tools degraded/skipped.
+
+## [2026-05-08] mcp | register_wr | s1-to-s2-canonicalize-sdkprofile-typed-export-from-aegis-shared-so-s1-can-drop-unknown-de
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-canonicalize-sdkprofile-typed-export-from-aegis-shared-so-s1-can-drop-unknown-de.md
+
+## [2026-05-08] mcp | register_wr | s1-to-s2-canonicalize-sdkmetrics-aggregate-response-shape-so-s1-can-drop-record-string-un
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-canonicalize-sdkmetrics-aggregate-response-shape-so-s1-can-drop-record-string-un.md
+
+## [2026-05-08] mcp | register_wr | s1-to-s2-canonicalize-findingssummary-aggregate-response-shape-so-s1-can-drop-record-stri
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-canonicalize-findingssummary-aggregate-response-shape-so-s1-can-drop-record-stri.md
+
+## [2026-05-08] mcp | complete_wr | s1-to-s2-canonicalize-findingssummary-aggregate-response-shape-so-s1-can-drop-record-stri
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s1-to-s2-canonicalize-sdkmetrics-aggregate-response-shape-so-s1-can-drop-record-string-un
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s1-to-s2-canonicalize-sdkprofile-typed-export-from-aegis-shared-so-s1-can-drop-unknown-de
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | register_wr | s2-to-s1-s2-reply-findingssummary-sdkmetrics-and-sdkprofile-shared-contracts-completed-fo
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-s2-reply-findingssummary-sdkmetrics-and-sdkprofile-shared-contracts-completed-fo.md
+
+## [2026-05-08] Completed S1→S2 aggregate/profile typing WRs | S2 aggregate/profile shared contracts
+- S2 implemented and documented FindingsSummary, SdkMetrics, and SdkProfile response DTO contracts for S1 typed UI cleanup.
+- Completed incoming S1 WRs and registered S2→S1 reply: wiki/canon/work-requests/s2-to-s1-s2-reply-findingssummary-sdkmetrics-and-sdkprofile-shared-contracts-completed-fo.md.
+- Validation passed: focused backend tests 204/204, shared/backend builds, backend full suite 528/528, Critic PASS.
+
+## [2026-05-08] mcp | register_wr | s4-to-s3-reply-s4-sdk-resolution-contract-now-supports-non-registered-descriptor-and-fail
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-sdk-resolution-contract-now-supports-non-registered-descriptor-and-fail.md
+
+## [2026-05-08] mcp | register_wr | s4-to-s2-reply-s4-durable-ownership-cancel-endpoint-implemented-for-health-control-v2
+- Registered reply WR for s2
+- Path: wiki/canon/work-requests/s4-to-s2-reply-s4-durable-ownership-cancel-endpoint-implemented-for-health-control-v2.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s4-s4-unknown-sdkid-should-not-suppress-sdk-independent-sast-evidence
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s2-to-s4-s4-durable-ownership-cancel-endpoint-needed-for-s2-health-control-v2-full-cancel
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] implementation-docs-wr-replies | S4 WRs: SDK non-registered contract and durable cancel endpoint
+- S4 implemented sdkResolutionMode none/non-registered/S4-local sdkId contract; unknown bare sdkId now fails with SDK_NOT_FOUND.
+- S4 implemented DELETE /v1/requests/{requestId} cancel endpoint with cancelled terminal result and health summary.
+- Tests: focused 15 passed; related S4 gate 147 passed.
+- Docs updated: wiki/canon/api/sast-runner-api.md, wiki/canon/specs/sast-runner.md, wiki/canon/handoff/s4/readme.md.
+- Reply WRs registered to S2 and S3; incoming WRs completed for lane s4.
+
+## [2026-05-08] verification | S4 full pytest after SDK/cancel WR implementation
+- Full services/sast-runner pytest gate passed: 414 passed in 13.83s.
+- Canonical S4 API/spec/handoff docs updated with full gate evidence.
+
+## [2026-05-08] critic-validation-pass | S4 final Critic PASS for two WR implementation
+- Critic final implementation validation PASS.
+- No blocking doc/code mismatches found.
+- Known non-blocking risk: best-effort cancel marks retained task cancelled and calls task.cancel(); explicit spawned subprocess kill handling is not proven and should only become follow-up if hard process termination is required.
+
+## [2026-05-08] mcp | complete_wr | s2-to-s1-s2-reply-findingssummary-sdkmetrics-and-sdkprofile-shared-contracts-completed-fo
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s4-to-s2-reply-s4-durable-ownership-cancel-endpoint-implemented-for-health-control-v2
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] S2 consumed S4 cancel endpoint reply | S2 S4 durable ownership cancel consumption
+- SastClient now best-effort calls S4 DELETE /v1/requests/{requestId} when local AbortSignal cancels direct durable S4 scan/build ownership waits.
+- Updated canonical S2/shared docs to remove the old S4 cancel endpoint gap.
+- Completed incoming S4→S2 reply WR. Verification: focused client contract 45/45, backend build, backend full suite 528/528.
+
+## [2026-05-08] Resolved Critic blockers for S4 cancel endpoint consumption | S2 S4 cancel consumer Critic fix
+- Critic initially found stale S2 docs claiming S4 had no durable cancel endpoint in backend spec and S2 readme.
+- S2 updated both docs to reflect direct S4 best-effort DELETE /v1/requests/{requestId} cancellation and scoped remaining gaps to S3/S7 task-level ownership.
+- Added build-specific cancel regression alongside scan cancel regression. Verification: client-contract 46/46, backend build, Critic PASS.
+
+## [2026-05-08] Updated S3 handoff with S4 non-registered SDK and SAST failure-honesty implementation notes | S3 S4 non-registered SDK contract consumption
+- Canonical page updated: wiki/canon/handoff/s3/readme.md section 19.
+- Focused evidence so far: analysis-agent phase/evidence/deep-analyze/sast-tool tests 97 passed.
+- Implementation scope remains S3 analysis-agent only; no S4/S2/S1 code edits.
+
+## [2026-05-08] mcp | complete_wr | s4-to-s3-reply-s4-sdk-resolution-contract-now-supports-non-registered-descriptor-and-fail
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] Fixed Critic-rejected durable /v1/scan success=false handling path | S3 Critic blocker fix for S4 SAST failure honesty
+- SastScanTool now returns ToolResult(success=False) when S4 scan payload has success=false.
+- run_sast now treats success=false payloads from generic tools as SAST failure and preserves failureDetail.
+- _sast_failure_detail now unwraps nested detail.failureDetail/detail.errorDetail ownership-error payloads.
+- Verification: analysis-agent full suite 594 passed; S4 SDK contract focused 6 passed; compileall/diff-check passed.
+
+## [2026-05-08] Implemented Critic non-blocking recommendation for SAST tool failure wrapper | S3 S4 ownership statusCode preservation follow-up
+- SastScanTool now preserves S4OwnershipError.status_code as statusCode in failure content.
+- _sast_failure_detail now propagates top-level statusCode through nested detail.failureDetail unwrap.
+- Verification: focused SAST/phase/evidence tests 90 passed; Analysis Agent full suite 595 passed; compileall/diff-check passed.

@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/specs/health-control-signal-rollout-v2.md", "wiki/ca
 migration_status: "canonicalized"
 wr_id: "s2-to-s4-s4-durable-ownership-cancel-endpoint-needed-for-s2-health-control-v2-full-cancel"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s4"]
-completed_by: []
+completed_by: [{"lane":"s4","completed_at":"2026-05-08T07:17:43.687Z","note":"Resolved by implementing DELETE /v1/requests/{requestId} best-effort cancel with cancelled terminal state/result/health summary, tests and reply WR registered."}]
 registered_at: "2026-05-08T04:06:37.936Z"
+completed_at: "2026-05-08T07:17:43.687Z"
 ---
 
 # S4 durable ownership cancel endpoint needed for S2 health-control v2 full cancel propagation
