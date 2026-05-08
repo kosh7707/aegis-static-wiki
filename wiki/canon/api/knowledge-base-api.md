@@ -6,10 +6,12 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/knowledge-base-api.md"
 original_path: "docs/api/knowledge-base-api.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-08"
 service_tags: ["s5"]
-decision_tags: []
-related_pages: []
+decision_tags: ["health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary"]
+related_pages:
+  - "wiki/canon/specs/health-control-signal-rollout-v2.md"
+  - "wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md"
 migration_status: "canonicalized"
 ---
 
@@ -18,7 +20,7 @@ migration_status: "canonicalized"
 > **소유자**: S5 (Knowledge Base)
 > **포트**: 8002
 > **호출자**: S2 (Backend), S3 (Analysis Agent)
-> **최종 업데이트**: 2026-04-14 (staged-commit ingest + timeout/503 semantics sync)
+> **최종 업데이트**: 2026-05-08 (health-control v2 current-state boundary + long-running ownership plan)
 
 ---
 
@@ -59,6 +61,67 @@ http://localhost:8002/v1
 - 2026-04-14부터 모든 `X-Timeout-Ms` 적용 POST 경로는 실제 남은 데드라인을 강제한다. 헤더는 더 이상 형식 검사용이 아니며, stage/activation 중 데드라인을 넘기면 `408 TIMEOUT`을 반환한다.
 - 2026-04-14부터 code graph ingest는 **staged commit**으로 동작한다. Neo4j/Qdrant에 임시 project scope로 staging 후 둘 다 준비되면 활성 project로 승격하며, timeout/activation 실패 시 기존 active graph/vector를 복원하거나 이전 상태가 없으면 partial write를 제거한다.
 - 2026-04-14부터 code GraphRAG bootstrap은 `threat_knowledge` 컬렉션 존재 여부와 분리된다. 위협 search는 `threat_knowledge` + Neo4j를 요구하지만, code GraphRAG는 동일 Qdrant client의 `code_functions` 컬렉션만으로 초기화될 수 있다.
+
+
+### 2026-05-08 Health-control v2 current-state boundary
+
+이 절은 `health-control-signal-rollout-v2` 후속 WR에 대한 **S5 계획/계약 정리**다. 현재 S5 구현은 아직 durable async ownership/status/result/cancel surface를 제공하지 않는다. 따라서 이 절은 “v2 구현 완료”가 아니라, 현재 finite HTTP 계약과 향후 v2 vocabulary를 소비자가 오해하지 않도록 분리하는 compatibility contract다.
+
+현재 공통 경계:
+
+- `GET /v1/health`는 liveness-only다. `requestSummary`, `activeRequestCount`, `localAckState`를 아직 반환하지 않는다.
+- `GET /v1/ready`는 전역 readiness다. 특정 ingest/search/CVE 요청의 ownership 상태가 아니다.
+- `X-Timeout-Ms` 적용 POST는 finite request/response 모델이다. S5가 지정 데드라인을 넘기면 `408 TIMEOUT`을 반환하며, 이는 “지식/취약점/코드 경로가 없다”는 뜻이 아니다.
+- `KB_NOT_READY`는 운영 readiness 실패다. 특히 threat search는 Qdrant와 Neo4j가 모두 필요하며, Neo4j 없는 vector-only degraded success로 폴백하지 않는다.
+- 현재 S5는 `degraded=true`, `localAckState=phase-advancing|transport-only|ack-break`를 wire response로 내보내지 않는다. 아래 vocabulary의 `degraded`/ack fields는 v2 target semantics다.
+- `POST /v1/code-graph/{project_id}/ingest`만 현재 장기 작업에 가까운 staged replace semantics를 갖는다. 이 endpoint도 durable status/result retrieval은 없지만, 응답의 `status`와 `readiness`가 완료 판정의 authoritative contract다.
+
+#### Long-running operation mapping
+
+| Surface | 현재 모델 | 장기 실행 위험 | 현재 not-ready / timeout / partial 의미 | v2 target requestSummary mapping | 결과/복구 seam | S2/S3 소비자 규칙 |
+|---|---|---|---|---|---|---|
+| `POST /v1/search` | finite response-owned threat GraphRAG search | Neo4j graph expansion + vector search가 커질 수 있음 | `503 KB_NOT_READY`는 Qdrant/Neo4j/assembler 미준비. `408 TIMEOUT`은 획득 실패. 성공한 `hits=[]`만 “해당 query에서 반환 hit 없음” | future: `running + phase-advancing` for vector/graph stages, `running + transport-only` when owned but progress proof unavailable, `failed + ack-break` for true local failure | 현재는 retained result 없음. 미래에는 requestId status/result 또는 명시적 response-owned retry model 필요 | `KB_NOT_READY`/`TIMEOUT` 때문에 knowledge가 없으면 `inconclusive`/diagnostic으로 기록한다. 이를 CWE/CAPEC/ATT&CK 부재 증거로 쓰지 않는다. |
+| `POST /v1/search/batch` | finite response-owned batch search | 다중 query, graph expansion, dedup 비용 증가 | 일부 query별 partial success를 현재 별도 wire 상태로 표현하지 않는다. timeout은 batch 획득 실패 | future: batch item progress counters may be compact progress; terminal failure must identify unavailable batch result | 현재는 caller retry. 미래에는 batch requestId + item summary 또는 response-owned retry rule | batch timeout은 전체/일부 knowledge 미획득이다. “전체 query에 관련 지식 없음”으로 승격하지 않는다. |
+| `POST /v1/code-graph/{project_id}/ingest` | staged commit + repeatable replace; response-owned | 대규모 함수 수, Neo4j staging, Qdrant vector ingest/activation | `408 TIMEOUT` 시 staging cleanup + 가능한 rollback. `status=ready`만 GraphRAG ready. `partial`은 Neo4j graph는 있으나 vector/GraphRAG 미완료. `empty`는 활성 함수 graph가 0개 | future: request-aware ingest summary should expose stage (`neo4j-stage`, `vector-stage`, `activate`, `cleanup`), `phase-advancing` on stage transition, `transport-only` while owned but no finer progress, `ack-break` on rollback/activation failure | 현재는 repeatable replace 재호출이 recovery seam. 미래에는 status/result retrieval 또는 resumable/durable ingest ownership 필요 | `partial`/timeout은 code GraphRAG 미획득 또는 불완전 맥락이다. `empty`도 caller가 비어 있지 않은 함수를 기대했다면 S4 extraction/input diagnostic이지 “위험 호출자 없음” 증거가 아니다. |
+| `POST /v1/code-graph/{project_id}/search` | finite response-owned code GraphRAG search | vector + name exact + call chain expansion 비용 증가 | search service 미초기화는 503. timeout은 code context 획득 실패 | future: `phase-advancing` for exact/vector/graph expansion stages; `transport-only` only for owned long search without progress proof | 현재 retained result 없음; caller retry | timeout/503/partial index에서 missing code hit은 accepted claim 반증이 아니다. local source/SAST evidence와 분리해 diagnostic으로 둔다. |
+| `POST /v1/code-graph/{project_id}/dangerous-callers` | finite response-owned graph query | 대형 call graph BFS/위험 API 목록 증가 | timeout은 caller-chain 획득 실패 | future: graph traversal progress counters may be compact progress; true traversal failure `ack-break` | 현재 retained result 없음; caller retry | timeout 결과를 “dangerous caller 없음”으로 해석하지 않는다. 성공 응답의 `results=[]`만 해당 입력 graph/query 기준 no result다. |
+| `GET /v1/code-graph/{project_id}/stats`, `callers`, `callees`, `DELETE`, `GET /v1/code-graph` | finite simple graph operations | 현재는 일반적으로 짧음. 대형 graph에서는 callers/callees가 길어질 수 있음 | 현재 `X-Timeout-Ms` 대상 아님. service 미준비/404는 기존 HTTP error | future: 필요 시 request-aware summary 또는 pagination/status seam | 현재 response-owned | 실패/미준비는 operational diagnostic. 성공한 빈 list만 no result. |
+| `POST /v1/cve/batch-lookup` | finite async lookup against OSV/NVD/EPSS/KEV with cache | 외부 API 지연, 20개 library batch, enrichment 비용 | `408 TIMEOUT`은 CVE enrichment 미획득. NVD client 미초기화는 503. `version_match=null`은 판정 불가 | future: item-level progress/degrade reasons (`external-api-slow`, `cache-only`, `version-unknown`), `transport-only` while owned external wait continues, `ack-break` for terminal client/config failure | 현재 cache + caller retry. 미래에는 requestId result retrieval or documented cache-only degraded result | timeout/503은 “CVE 없음”이 아니다. `version_match=false`만 범위 밖 신호이며, `null`은 안전 판정이 아니다. |
+| `GET /v1/ready` | global readiness | readiness check itself is short | `503 KB_NOT_READY` means global S5 dependency not ready, not a request terminal state | future request-aware health should be separate or `GET /v1/health?requestId=...`; `/ready` remains coarse readiness | not a result channel | S2/S3 may gate calls on readiness, but should not use readiness failure as negative security evidence. |
+
+#### Health-control vocabulary for S5 consumers
+
+| Signal | Current S5 wire status | Meaning | Consumer interpretation |
+|---|---:|---|---|
+| `KB_NOT_READY` | live | Required S5 component is not initialized/connected for the requested surface. Retryable operational failure. | Record dependency diagnostic; do not infer no relevant KB/CVE/code evidence. |
+| `TIMEOUT` | live | Caller-provided finite deadline elapsed before S5 completed the operation or stage. | Treat as acquisition timeout/inconclusive context. Retry or continue with explicit caveat; do not turn missing hits into negative evidence. |
+| `status="ready"` on code ingest | live | Neo4j graph and vector index are complete enough for code GraphRAG. | Caller may proceed to GraphRAG-dependent stage. |
+| `status="partial"` on code ingest | live | Active Neo4j graph exists but vector/GraphRAG readiness is incomplete. | Use only as degraded structural diagnostic if explicitly allowed; not full code GraphRAG readiness. |
+| `status="empty"` on code ingest | live | Accepted ingest resulted in zero active functions. | If caller expected functions, treat as upstream extraction/input diagnostic. It is not by itself proof of no dangerous code path. |
+| `degraded=true` | target only | Work may continue with reduced/partial capability. Degraded alone is not abort. | Continue/poll if no `ack-break`/`blockedReason`; mark output caveated. |
+| `localAckState="phase-advancing"` | target only | S5 observed real local stage progress. | Continue waiting. |
+| `localAckState="transport-only"` | target only | S5 still owns the request but cannot prove stronger progress. | Continue waiting unless blocked/failed/cancelled; do not mark success. |
+| `localAckState="ack-break"` | target only | S5 observed a terminal local break in the operation. | Abort/chain failure as operational diagnostic; do not convert missing knowledge into clean/security-negative result. |
+
+#### Minimum future v2 implementation seam
+
+When S5 implements health-control v2 behavior, it should add either durable ownership or a clearly documented response-owned model for each long-running surface.
+
+Minimum durable option:
+
+- accept/correlate `X-Request-Id` or an S5-owned `requestId`;
+- expose `GET /v1/health?requestId=...` with `activeRequestCount` and compact `requestSummary` fields from the v2 vocabulary;
+- expose terminal status/result retrieval for operations whose original HTTP response may be interrupted; and
+- expose explicit terminal failure/cancel/expiry semantics.
+
+Minimum response-owned option:
+
+- document that the original HTTP response is the only result channel;
+- classify transport loss as terminal or retryable with a deterministic retry rule;
+- ensure `/health` is only a suspicion/control side-channel and not a hidden result channel.
+
+Until one of those options is implemented, S5 callers must treat the finite HTTP response as the only completion channel and must classify timeout/not-ready/degraded knowledge absence as operational diagnostic evidence, not security evidence.
+
 
 ### 에러 응답
 

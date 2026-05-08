@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["platform"]
-decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -1100,6 +1100,19 @@ Validation enforced today:
 - `sdk-error.troubleshootingUrl` is a wiki-canonical anchor path derived from structured `code` (for example `wiki/canon/troubleshooting/sdk#extract-failed`).
 - `DELETE /api/projects/:pid/sdk/:id` is project-scoped. If the SDK id exists but belongs to another project, S2 returns `404 NOT_FOUND` and does not delete it.
 
+S2 → S3 Build Agent SDK materialization descriptor producer semantics (2026-05-08):
+
+- When a BuildTarget uses a registered uploaded SDK (`buildProfile.sdkId` starts with `sdk-`) in SDK mode, S2 derives the Build Agent descriptor from `RegisteredSdk` rather than asking S1 for additional inputs.
+- `build.sdkRootPath` is the project-owned materialized SDK root from `RegisteredSdk.path`. S2 verifies that it exists, is a directory, is non-empty, and remains inside `uploads/{projectId}/sdk/**` after realpath resolution.
+- `RegisteredSdk.verified === true` is **not** required for descriptor production. The gate is materialization/usefulness of the project-owned root, not semantic SDK verification. States such as `extracted`, `installed`, `analyzing`, `verifying`, `ready`, and retained failed materialized states can be attempted when the root is usable; actively mutating ingress states (`uploading`, `uploaded`, `extracting`, `installing`) and `upload_failed` are not descriptor-ready.
+- `build.setupScript` is derived from `RegisteredSdk.profile.environmentSetup` when present, exists, and resolves inside `sdkRootPath`; S2 emits it relative to `sdkRootPath`.
+- `build.sysroot` is derived from `RegisteredSdk.profile.sysroot` under the same inside-root rule and is emitted relative to `sdkRootPath`.
+- `build.toolchainTriplet` is derived from `RegisteredSdk.profile.compilerPrefix` with trailing dashes removed.
+- `build.environment` contains descriptor-derived hints such as `AEGIS_SDK_ROOT`, `SDK_DIR`, `AEGIS_SDK_SETUP_SCRIPT`, `AEGIS_SDK_SYSROOT`, `SDKTARGETSYSROOT`, and `AEGIS_TOOLCHAIN_TRIPLET` when derivable.
+- S2 does not emit legacy flat aliases (`setupScript`, `toolchainTriplet`, `buildEnvironment`) outside `context.trusted.build`, so S2 cannot create canonical/legacy descriptor conflicts.
+- S2 does not infer SDK materialization from host defaults such as `/home/kosh/ti-sdk`; built-in SDK ids continue to carry `sdkId` only unless a future uploaded/materialized SDK association contract is added.
+- `scriptHintPath`, when present, remains BuildTarget-root-relative and is still emitted only as `context.trusted.build.scriptHintPath`; inline script text aliases are not emitted.
+
 ### SDK profile lookup routes
 
 | Method | Path | Success | Status codes |
@@ -1564,7 +1577,7 @@ interface HealthControlSummary {
   activeRequestCount: number | null;
   requestId: string | null;
   endpoint: string | null;
-  state: "idle" | "queued" | "running" | "failed";
+  state: "idle" | "queued" | "running" | "completed" | "failed" | "cancelled" | "expired";
   localAckState: "phase-advancing" | "transport-only" | "ack-break" | null;
   degraded: boolean;
   degradeReasons: string[];
@@ -1585,7 +1598,7 @@ interface HealthResponse {
   service: string;
   status: "ok" | "degraded" | "unhealthy";
   version: string;
-  controlPolicyVersion?: "health-control-signal-rollout-v1";
+  controlPolicyVersion?: "health-control-signal-rollout-v2";
   requestIdQueried?: string;
   detail: { version: string; uptime: number };
   llmGateway?: ServiceHealth;
@@ -1600,7 +1613,16 @@ interface HealthResponse {
 Normalization note:
 - S2 keeps coarse service status (`ok | degraded | unreachable`) separate from request-aware control state.
 - When downstream health includes the frozen `requestSummary` fields, S2 computes `control.pollDecision`.
+- `queued`, `running + phase-advancing`, `running + transport-only`, and `degraded=true` without ack-break/blocked map to `continue_waiting`.
+- `failed`, `cancelled`, `expired`, `localAckState="ack-break"`, or non-null `blockedReason` map to `chain_abort`.
+- `completed` maps to `no_active_request`; it only means an owned request reached terminal completion and must not be interpreted as clean success. Callers must inspect the result-level fields for the specific operation (`cleanPass`, `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `buildOutcome`, S4 build/readiness fields, etc.).
 - Legacy S4 `requestSummary.ackStatus="broken"` is normalized to `localAckState="ack-break"`.
+
+Health-control v2 S2 consumer scope (2026-05-08):
+- S2 direct S4 build/scan calls use S4 durable ownership mode (`Prefer: respond-async` + operation-scoped child `X-Request-Id`), then poll `/v1/requests/{requestId}/result` until an explicit terminal result/failure is retrievable.
+- S2 does not use elapsed request age as an abort reason on that S4 ownership path. A submit transport timeout is recoverable when `/v1/health?requestId=...` proves the owned S4 request is still alive or terminal-completed with retrievable result ownership.
+- Explicit local cancellation is propagated as an `AbortSignal` through S2's S4 wait loop. S4's current public API contract does not expose a durable `DELETE`/cancel endpoint, so service-side cancellation beyond transport abort is a follow-up contract item rather than a current S2 guarantee.
+- Direct S2→S7 `/v1/tasks` and S2→S3 `/v1/tasks` remain finite compatibility task surfaces unless those owner lanes publish status/result/cancel ownership endpoints for S2 to consume. S2 still forwards `requestId` to their `/v1/health` summaries for user-facing progress and aggregate control guidance.
 
 ---
 

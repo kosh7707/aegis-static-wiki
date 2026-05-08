@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -40,7 +40,7 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 399개 통과 (24 test files, 2026-05-06 전체 pytest 재확인) |
+| 테스트 | 407개 통과 (25 test files, 2026-05-08 전체 pytest 재확인) |
 
 ---
 
@@ -57,6 +57,8 @@ migration_status: "canonicalized"
 | `POST /v1/build-and-analyze` | explicit build command/environment로 빌드 후 나머지 분석 수행. **convenience surface** |
 | `POST /v1/discover-targets` | 프로젝트 내 빌드 타겟 자동 탐색 (파일시스템 스캔) |
 | `GET /v1/health` | 6개 도구 상태 + 버전 + backward-compatible health policy surface + request-aware summary |
+| `GET /v1/requests/{requestId}` | durable ownership status 조회 |
+| `GET /v1/requests/{requestId}/result` | retained terminal result/failure 조회 |
 
 ---
 
@@ -463,6 +465,21 @@ pattern-sanitizers:              # <- FP 감소
 - `requestSummary.ackStatus="broken"` + `localAckState="ack-break"` + `blockedReason` 존재는 local ack break equivalent 이다
 - local ack source는 `request-accepted`, `semaphore-acquired`, `build-started`, `tool-progress`, `file-progress`, `runtime-state`, `build-subprocess-alive`, `build-phase-complete`, `terminal-result`, `ack-break`
 - 전역 numeric stall threshold는 health contract에 노출하지 않는다. ack break는 내부 실행 흐름의 명시적 비정상 종료로만 판정한다
+
+### Health-control v2 durable ownership mode (2026-05-08)
+
+장시간 production caller는 `/v1/scan`, `/v1/build`, `/v1/build-and-analyze` 호출에 `Prefer: respond-async`를 보낸다.
+S4는 `202 Accepted`와 함께 `statusUrl=/v1/requests/{requestId}`, `resultUrl=/v1/requests/{requestId}/result`를 반환하고, 원 HTTP response lifecycle과 분리된 retained task로 작업을 계속 수행한다.
+
+- `Prefer: respond-async`가 있으면 `Accept: application/x-ndjson`보다 우선한다.
+- 동일 endpoint에 대한 동일 `X-Request-Id` 재제출은 idempotent하다. 이미 등록된 retained request가 있으면 새 task를 만들지 않고 `reused=true` status envelope를 반환한다.
+- 서로 다른 S4 endpoint가 같은 `X-Request-Id`를 durable ownership key로 재사용하면 S4는 silent reuse 대신 HTTP 409 `REQUEST_ID_CONFLICT`를 반환한다. S3/S2는 `/v1/build` 후 `/v1/scan`처럼 operation이 바뀌는 경우 고유한 S4 operation requestId를 사용해야 한다.
+- terminal success/failure는 process-local memory에 기본 300초 보존된다. 이는 transport interruption 복구용이며 process restart durability는 계약하지 않는다.
+- `GET /v1/requests/{requestId}`는 queued/running/completed/failed status envelope를 반환한다. unknown은 404, expired terminal result는 410이다.
+- `GET /v1/requests/{requestId}/result`는 queued/running 동안 202, retained terminal success/failure는 200을 반환한다.
+- terminal domain failure도 retrieval transport는 200일 수 있다. caller는 nested `result.success=false`, `failureDetail`, `errorDetail`을 domain outcome으로 해석해야 한다.
+- async ownership build path는 caller `X-Timeout-Ms`를 hard subprocess deadline으로 쓰지 않는다. `buildEvidence.timeoutMode="async-ownership-no-caller-deadline"`, `timeoutEnforced=false`로 노출한다.
+- sync/NDJSON compatibility surface는 유지된다. S3가 finite elapsed abort를 제거하려면 long-running production path에서 `Prefer: respond-async` + status/result polling을 사용해야 한다.
 
 ---
 

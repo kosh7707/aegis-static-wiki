@@ -6,7 +6,7 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s3"]
 decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
 related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
@@ -15,9 +15,9 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-06**
+> **마지막 업데이트: 2026-05-08**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-06 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-08 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
@@ -182,13 +182,23 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 - no-result-loss 방향의 phase-2 async ownership surface는 S3 내부 주요 tool-less LLM 경로에서 실제 소비 중이다.
 - 최근 S5/S7/S4 변화는 문서 수준이 아니라 S3 내부 동작에도 반영된 상태다.
 
+### 2026-05-08 health-control v2 소비 상태
+- Analysis/Build service-local `LlmCaller`와 analysis `eval_runner.py`에서 fixed async poll-deadline abort를 제거했다. Queued/running S7 ownership은 elapsed age만으로 취소하지 않는다.
+- Analysis Agent S4 SAST scan은 `/v1/scan` durable ownership/status/result를 우선 사용한다. NDJSON fallback stream inactivity는 `/v1/health?requestId=` 확인 후 alive면 계속 대기한다.
+- Analysis Agent Phase 1 `build-and-analyze`는 S4 durable ownership/status/result를 우선 사용하고, ack-break/blocked/domain-failure evidence를 보존한다.
+- Build Agent `try_build`는 S4 `/v1/build` durable ownership/status/result를 우선 사용한다. Child `X-Request-Id`는 parent id + endpoint + operation + payload fingerprint 기반이라, 같은 retry는 idempotent하고 변경된 build command는 새 ownership을 얻는다.
+- Analysis/Build ToolExecutor는 `wait_while_alive=true` tool에 generic 120s cutoff를 적용하지 않는다.
+- Build Agent `/v1/health`는 additive `activeRequestCount` / `requestSummary`를 노출한다.
+
 ---
 
 ## 7. 최신 검증 상태 (2026-04-14)
 
 ### fresh verification snapshot
-- `services/analysis-agent/.venv/bin/python -m pytest -q` → **321 passed**
-- `services/build-agent/.venv/bin/python -m pytest -q` → **237 passed**
+- `services/analysis-agent/.venv/bin/python -m pytest -q` → **585 passed** (2026-05-08)
+- `services/build-agent/.venv/bin/python -m pytest -q` → **388 passed** (2026-05-08)
+- focused health-control v2 blocker suite (`test_sast_tool.py`, `test_phase_one.py`, `test_health_control_v2_static_guard.py`) → **66 passed**
+- `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval services/build-agent/app && git diff --check -- services/analysis-agent services/build-agent` → **PASS**
 
 ### 최근 focused evidence 하이라이트
 - analysis-agent focused timeout-policy/health/async-ownership reruns green

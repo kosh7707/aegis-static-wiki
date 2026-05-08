@@ -6,17 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/knowledge-base.md"
 original_path: "docs/specs/knowledge-base.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-08"
 service_tags: ["s5"]
-decision_tags: []
-related_pages: []
+decision_tags: ["health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary"]
+related_pages:
+  - "wiki/canon/specs/health-control-signal-rollout-v2.md"
+  - "wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md"
 migration_status: "canonicalized"
 ---
 
 # Knowledge Base 명세서
 
 > **소유자**: S5
-> **최종 업데이트**: 2026-04-14 (staged-commit ingest + dual-GraphRAG bootstrap decoupling sync)
+> **최종 업데이트**: 2026-05-08 (health-control v2 long-running ownership/readiness plan)
 
 ---
 
@@ -310,7 +312,76 @@ cd services/knowledge-base
 
 ---
 
-## 10. 알려진 제약
+
+## 10. Health-control v2 long-running ownership/readiness plan
+
+This section closes the S3→S5 health-control v2 follow-up as a **plan/current-state compatibility note**. It does not claim that request-aware ownership is implemented in S5 yet.
+
+### 10.1 Current-state boundary
+
+Current S5 runtime behavior remains finite HTTP request/response:
+
+- `/v1/health` is liveness-only (`service`, `status`, `version`). It does not yet expose `activeRequestCount` or `requestSummary`.
+- `/v1/ready` is coarse Qdrant+Neo4j readiness. It is not a per-request status endpoint.
+- `X-Timeout-Ms` POST paths enforce the caller deadline and return `408 TIMEOUT` on expiry.
+- `KB_NOT_READY` is operational readiness failure, not a semantic empty result.
+- Code graph ingest is the only current long-operation-like path with staged commit/rollback and machine-readable `status`/`readiness` completion fields.
+- No current S5 endpoint provides durable result retrieval after transport interruption.
+
+### 10.2 Operation classes and target ownership model
+
+| Operation class | Current implementation | Target v2 ownership direction | Recovery model decision |
+|---|---|---|---|
+| Threat search (`/search`, `/search/batch`) | finite response-owned query | Add request-aware health only if query latency grows beyond normal HTTP read windows; expose vector/graph stage progress | likely response-owned with deterministic retry unless future large batch search needs retained result |
+| Code graph ingest | staged commit + repeatable replace | highest-priority durable/request-aware candidate; expose stage progress, cleanup/rollback, and terminal ready/partial/empty result | durable ownership preferred for large projects; repeatable replace remains fallback retry seam |
+| Code graph search/dangerous-callers | finite response-owned graph/vector traversal | add request summary if traversal becomes long-running; expose traversal/vector stage and degraded index state | response-owned retry acceptable until retained result is required |
+| CVE batch lookup | finite async external lookup with cache | expose per-library progress/degrade reasons if external API latency becomes long-running | cache-backed retry acceptable now; future retained result useful for slow external lookups |
+| Project memory CRUD | finite Neo4j CRUD | out of primary v2 scope unless bulk memory operations are introduced | response-owned |
+| `/ready` | global readiness | keep global; do not overload as request ownership | not a result channel |
+
+### 10.3 S5 requestSummary target vocabulary
+
+Future S5 request-aware health should use the shared v2 vocabulary without redefining meanings:
+
+- `state=queued`: accepted but not executing yet;
+- `state=running`: executing or externally waiting;
+- `state=completed`: terminal result available or response completed;
+- `state=failed`: terminal operational failure;
+- `localAckState=phase-advancing`: stage transition or measurable local progress, such as `neo4j-stage`, `vector-stage`, `activate`, `cleanup`, batch item completed, or cache/enrichment stage advanced;
+- `localAckState=transport-only`: S5 still owns the request but only transport/external wait liveness is known;
+- `localAckState=ack-break`: rollback failure, storage activation failure, external client terminal failure, or other confirmed local break;
+- `degraded=true`: partial but usable capability, such as Neo4j-only code ingest (`status=partial`) or cache-only CVE enrichment, when explicitly returned as such;
+- `blockedReason`: non-null only for abort-driving operational failures.
+
+### 10.4 Machine-actionable consumer rule
+
+S5 consumers must separate **knowledge acquisition outcome** from **security evidence outcome**:
+
+- `KB_NOT_READY`, `TIMEOUT`, future `degraded`, future `transport-only`, and `status=partial` are operational/diagnostic signals.
+- They may justify `analysisOutcome=inconclusive`, caveats, retry, or reduced confidence.
+- They must not be used as evidence that no relevant CWE/CVE/CAPEC/ATT&CK/code path exists.
+- Successful empty payloads (`hits=[]`, `results=[]`, `cves=[]`) only mean no result for that completed query/input under the ready surface that answered.
+- CVE `version_match=null` remains unknown, not safe; only `version_match=false` is a range-out signal for that specific CVE/version logic.
+- Code graph `status=empty` is authoritative only for the accepted function input. If the upstream extraction was expected to produce functions, it is an extraction/input diagnostic rather than proof that no dangerous caller exists.
+
+### 10.5 Future implementation acceptance gates
+
+When S5 implements v2 request-aware ownership, acceptance should include:
+
+1. Contract tests proving `GET /v1/health?requestId=...` or equivalent status surface emits only canonical `state`/`localAckState` values.
+2. Tests that callers should continue on `queued`, `running + phase-advancing`, `running + transport-only`, and degraded-without-blocked.
+3. Tests that callers should abort only on `ack-break`, `failed`, `blockedReason`, explicit cancel, or unrecoverable ownership loss.
+4. Code graph ingest tests for long staged operations showing progress stage transitions, timeout/rollback semantics, and terminal `ready`/`partial`/`empty` result interpretation.
+5. CVE/search tests proving timeout/not-ready/degraded absence is surfaced as diagnostic/inconclusive and not as negative security evidence.
+
+### 10.6 Non-goals for this planning closeout
+
+- This closeout does not add new S5 runtime endpoints.
+- This closeout does not make `/v1/health` request-aware yet.
+- This closeout does not remove current finite `X-Timeout-Ms` enforcement.
+- This closeout does not introduce multi-snapshot code graph preservation; provenance remains a projection/filter seam.
+
+## 11. 알려진 제약
 
 | 제약 | 영향 | 비고 |
 |------|------|------|

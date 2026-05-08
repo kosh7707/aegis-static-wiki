@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/backend.md"
 original_path: "docs/specs/backend.md"
-last_verified: "2026-05-02"
+last_verified: "2026-05-08"
 service_tags: ["s2"]
-decision_tags: []
+decision_tags: ["sdk-materialization", "build-agent-contract", "health-control-v2"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -328,6 +328,7 @@ POST http://localhost:8000/v1/tasks
 - S7 응답을 파싱하여 취약점 목록으로 변환
 - S7 연결 실패 시 1계층 결과만으로 응답 반환 (graceful degradation)
 - S7 URL: 환경변수 `LLM_GATEWAY_URL` (기본값: `http://localhost:8000`)
+- Health-control v2 scope note (2026-05-08): S2 direct `LlmTaskClient` still consumes S7 `/v1/tasks`, which is a finite compatibility task surface in the current S7 contract. S2 forwards request IDs to `/v1/health?requestId=...` for progress/control visibility, but it cannot consume S7 async ownership/cancel semantics for `/v1/tasks` until S7 publishes a task-level status/result/cancel contract or S2 is explicitly migrated to a different S7 async surface.
 
 ### P0-5. 분석 결과 조회 ✅
 
@@ -363,7 +364,7 @@ GET /health
 
 핵심 additive 필드:
 - top-level
-  - `controlPolicyVersion: "health-control-signal-rollout-v1"`
+  - `controlPolicyVersion: "health-control-signal-rollout-v2"`
   - `requestIdQueried?: string`
 - child service (`llmGateway`, `analysisAgent`, `sastRunner`, `knowledgeBase`, `buildAgent`)
   - `status: ok | degraded | unreachable`
@@ -374,15 +375,17 @@ GET /health
 - `queued` → `continue_waiting`
 - `running + phase-advancing` → `continue_waiting`
 - `running + transport-only` → `continue_waiting`
-- `blockedReason != null` / `state=failed` / `localAckState=ack-break` → `chain_abort`
+- `degraded=true` without ack-break/blocked → `continue_waiting`
+- `blockedReason != null` / `state=failed` / `state=cancelled` / `state=expired` / `localAckState=ack-break` → `chain_abort`
+- `state=completed` → `no_active_request`; completed envelopes are not clean success and must be interpreted through result-level fields.
 - legacy S4 `requestSummary.ackStatus="broken"` 는 `localAckState="ack-break"` 로 정규화
 
-구현 범위 메모 (2026-04-14):
-- first-rollout에서 **구현 완료된 범위**는 `/health` request-aware pass-through + polling interpretation surface다.
-- analysis/pipeline 오케스트레이터가 timeout-shaped transport failure 뒤에 lower `/health` 를 적극 polling 하며
-  live request를 계속 붙잡는 chained-abort workflow는 아직 후속 작업이다.
-- 즉, 현재 S2는 frozen control vocabulary를 **해석하고 노출**하지만,
-  long-running orchestration continuation/recovery seam은 아직 완전히 닫히지 않았다.
+구현 범위 메모 (2026-05-08):
+- S2 `/health`는 v2 request-aware pass-through + normalized polling interpretation surface다.
+- S2 direct S4 build/scan calls now use S4 durable ownership mode (`Prefer: respond-async` + operation-scoped child `X-Request-Id`) and poll `/v1/requests/{requestId}/result` without converting elapsed age into failure.
+- S4 submit transport timeout is recoverable when `/v1/health?requestId=...` proves the owned request is alive or terminal-completed with retained result ownership.
+- Explicit local cancellation is propagated through S2's `AbortSignal` into the S4 wait loop. S4's current public contract has no durable cancel endpoint, so service-side cancel beyond transport abort is documented as a follow-up contract gap.
+- S2→S3 Analysis/Build Agent `/v1/tasks` and S2→S7 `/v1/tasks` remain finite compatibility task surfaces from S2's perspective until those owner contracts expose task status/result/cancel endpoints for S2 to consume.
 
 ---
 
@@ -1017,8 +1020,10 @@ POST /api/auth/registration-requests/:id/reject
 - S2 preserves S3 `result.policyFlags` and the additive result-level outcome fields `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `recoveryTrace`, `claimDiagnostics`, and `evidenceDiagnostics`. S3 `status: "completed"` means a schema-valid honest review envelope; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Valid-input S3 deficiencies are persisted as completed results with outcome fields, warnings, and `needsHumanReview=true` where appropriate. True task failures may still arrive on non-2xx HTTP statuses (for example 422/413/504/503), and S2 preserves `failureCode` / `failureDetail` instead of reducing them to a generic transport error.
 - Deep outcome UI guidance is canonicalized in `wiki/canon/api/shared-models.md` §2.6.1: enum copy, cleanPass derivation, recoveryTrace display, WS/REST consistency, and unknown-enum fallback policy. `cleanPass` remains WS-only convenience and is derived for REST/historical views.
 - S2 strips local `buildProfile.sdkId = "custom"` before calling S4 scan endpoints; native/non-SDK S4 scans omit `sdkId`.
+- S2 direct S4 build/scan uses health-control v2 durable ownership when S4 supports it: each operation gets a child request id derived from parent request id + endpoint + payload fingerprint, sends `Prefer: respond-async`, waits through queued/running/transport-only/degraded-without-blocked states, and reads nested result-level readiness/success fields from `/v1/requests/{requestId}/result`. S2 treats `404/409/410`, ack-break, failed, cancelled, expired, or blocked summaries as ownership loss/chain abort.
 - registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape with populated org fields.
 - S3 Build Agent `build-v1.1` is active. S2 treats `status=completed` as an envelope and requires `result.cleanPass !== false`; completed-but-non-clean results such as `EXPECTED_ARTIFACTS_MISMATCH` become `resolve_failed` pipeline outcomes.
+- For S3 SDK materialization (2026-05-08), S2 produces registered uploaded-SDK descriptors under `context.trusted.build` when `buildProfile.sdkId` is a project-owned `sdk-*` record with a usable materialized root. The descriptor includes `sdkRootPath`, relative `setupScript`/`sysroot` when profile paths exist inside the root, normalized `toolchainTriplet`, descriptor-derived `environment`, and existing target-relative `scriptHintPath`. `RegisteredSdk.verified` is not required; actively mutating upload/extract/install phases are not descriptor-ready. S2 never fabricates host-default SDK paths or legacy flat descriptor aliases.
 - S2 shared generation-control typing is split across core vocabulary, S7-required task constraints, and S3-optional overrides. Current S2→S3 call paths do not emit shared default presets by default: Deep analysis sends `{ maxTokens: 4096, timeoutMs: 300000 }`, build-resolve sends `{ timeoutMs: 600000 }`, and sdk-analyze sends `{ timeoutMs: 300000 }` unless a future WR/policy explicitly changes emission behavior.
 - SDK upload/progress UI contract is grounded in the current S2 implementation:
 - SDK second follow-up A1-O2 implementation details are canonicalized in `wiki/canon/api/shared-models.md` §4.5.1.

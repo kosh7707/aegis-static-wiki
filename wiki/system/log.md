@@ -2747,3 +2747,141 @@ related_pages:
 ## [2026-05-07] mcp | register_wr | s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence
 - Registered notice WR for s2
 - Path: wiki/canon/work-requests/s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence.md
+
+## [2026-05-08] mcp | register_wr | s3-to-s7-s7-implement-wait-while-alive-async-llm-ownership-per-health-control-v2
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s7-implement-wait-while-alive-async-llm-ownership-per-health-control-v2.md
+
+## [2026-05-08] mcp | register_wr | s3-to-s4-s4-implement-wait-while-alive-build-scan-ownership-per-health-control-v2
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s4-implement-wait-while-alive-build-scan-ownership-per-health-control-v2.md
+
+## [2026-05-08] mcp | register_wr | s3-to-s2-s2-consume-health-control-v2-downstream-wait-and-cancel-semantics
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-s2-consume-health-control-v2-downstream-wait-and-cancel-semantics.md
+
+## [2026-05-08] mcp | register_wr | s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md
+
+## [2026-05-08] mcp | register_wr | s2-to-s3-s2-reply-sdk-materialization-descriptor-producer-implemented
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s2-reply-sdk-materialization-descriptor-producer-implemented.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s2-s3-build-agent-sdk-descriptor-consumer-complete-and-hot11-evidence
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] implemented | s2-sdk-materialization-descriptor-producer
+- S2 now emits SDK-mode Build Agent materialization descriptor fields from project-owned uploaded RegisteredSdk roots without requiring verified=true.
+- Updated shared API contract, S2 endpoint/architecture docs, and backend spec.
+- Registered S2 reply WR to S3: wiki/canon/work-requests/s2-to-s3-s2-reply-sdk-materialization-descriptor-producer-implemented.md.
+- Verification: backend shared/backend build + full backend Vitest suite PASS; wiki tests and diff checks PASS.
+
+## [2026-05-08] mcp | register_wr | s3-to-s3-s3-implement-health-control-v2-consumers-and-cross-lane-live-evidence
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s3-to-s3-s3-implement-health-control-v2-consumers-and-cross-lane-live-evidence.md
+
+## [2026-05-08] mcp | register_wr | s7-to-s3-s7-reply-async-llm-ownership-wait-while-alive-health-control-v2-implemented
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-async-llm-ownership-wait-while-alive-health-control-v2-implemented.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s7-s7-implement-wait-while-alive-async-llm-ownership-per-health-control-v2
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] updated | S4 health-control v2 durable ownership docs
+- Updated SAST Runner API/spec/handoff docs for Prefer: respond-async durable ownership mode.
+- Documented /v1/requests/{requestId} and /v1/requests/{requestId}/result result recovery semantics and X-Timeout-Ms sync vs async behavior.
+- Focused S4 gate passed: 80 tests. Full gate pending final feedback loop.
+
+## [2026-05-08] verified | S4 health-control v2 full verification
+- services/sast-runner compileall passed.
+- services/sast-runner full pytest gate passed: 406 passed in 11.33s.
+- git diff --check passed for S4 code and updated wiki paths.
+
+## [2026-05-08] mcp | complete_wr | s7-to-s3-s7-reply-async-llm-ownership-wait-while-alive-health-control-v2-implemented
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] approved | S4 health-control v2 Critic PASS
+- Implementation Critic initially found cross-endpoint X-Request-Id ownership collision blocker.
+- S4 fixed by returning 409 REQUEST_ID_CONFLICT for same requestId reused across different endpoints and added regression test.
+- Critic re-review PASS; full S4 pytest 407 passed in 11.47s.
+
+## [2026-05-08] mcp | register_wr | s4-to-s3-s4-reply-health-control-v2-durable-ownership-implemented-for-build-scan-build-an
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-reply-health-control-v2-durable-ownership-implemented-for-build-scan-build-an.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s4-s4-implement-wait-while-alive-build-scan-ownership-per-health-control-v2
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s4-to-s3-s4-reply-health-control-v2-durable-ownership-implemented-for-build-scan-build-an
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] implemented-and-critic-verified | S3 health-control v2 consumers
+- Analysis/Build async LLM fixed poll deadlines removed; eval path aligned.
+- S4 durable ownership consumed for analysis scan, analysis build-and-analyze, and build-agent try_build.
+- Build Agent health requestSummary added and ToolExecutor wait-while-alive bypass implemented.
+- Verification: analysis full 585 passed; build full 388 passed; focused blocker suite 66 passed; compileall/diff-check PASS; Critic PASS.
+
+## [2026-05-08] mcp | complete_wr | s3-to-s3-s3-implement-health-control-v2-consumers-and-cross-lane-live-evidence
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s2-to-s3-s2-reply-sdk-materialization-descriptor-producer-implemented
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | register_wr | s2-to-s4-s4-durable-ownership-cancel-endpoint-needed-for-s2-health-control-v2-full-cancel
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s2-to-s4-s4-durable-ownership-cancel-endpoint-needed-for-s2-health-control-v2-full-cancel.md
+
+## [2026-05-08] mcp | register_wr | s2-to-s3-s3-task-ownership-status-result-cancel-surface-needed-for-s2-wait-while-alive-co
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s3-task-ownership-status-result-cancel-surface-needed-for-s2-wait-while-alive-co.md
+
+## [2026-05-08] mcp | register_wr | s2-to-s7-s7-task-level-ownership-contract-needed-for-s2-direct-llmtaskclient-health-contr
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s2-to-s7-s7-task-level-ownership-contract-needed-for-s2-direct-llmtaskclient-health-contr.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s2-s2-consume-health-control-v2-downstream-wait-and-cancel-semantics
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | register_wr | s2-to-s3-s2-reply-health-control-v2-downstream-consumer-implemented-for-direct-s4-ownersh
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-s2-reply-health-control-v2-downstream-consumer-implemented-for-direct-s4-ownersh.md
+
+## [2026-05-08] S2 completed S3 WR for health-control v2 downstream wait/cancel semantics | S2 health-control v2 consumer WR completed
+- Direct S4 scan/build now use durable ownership wait-while-alive result polling from S2.
+- S2 /health and shared DTOs now advertise health-control-signal-rollout-v2 with completed/cancelled/expired vocabulary.
+- S2 docs/API/handoff pages updated; original WR completed; S2->S3 reply WR registered.
+- Follow-up WRs registered for S4 cancel endpoint, S3 task ownership, and S7 task-level ownership.
+- Verification: focused 55 tests passed; full backend 528 tests passed; backend/shared builds passed; Critic PASS.
+
+## [2026-05-08] mcp | complete_wr | s2-to-s3-s2-reply-health-control-v2-downstream-consumer-implemented-for-direct-s4-ownersh
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s2-to-s3-s3-task-ownership-status-result-cancel-surface-needed-for-s2-wait-while-alive-co
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] S5 documented current-state/target-v2 long-running ownership semantics for KB/codegraph/CVE WR | S5 health-control v2 KB/codegraph follow-up docs
+- Updated canonical S5 API/spec/handoff docs with finite HTTP current-state boundary, target requestSummary vocabulary, operation mapping, and S2/S3 consumer rule that operational missing knowledge is not negative security evidence.
+- No S5 runtime behavior changed; this is a plan/current-state compatibility closeout for the S3→S5 health-control v2 follow-up WR.
+
+## [2026-05-08] mcp | register_wr | s5-to-s3-s5-reply-health-control-v2-kb-codegraph-long-running-ownership-plan-documented-a
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-reply-health-control-v2-kb-codegraph-long-running-ownership-plan-documented-a.md
+
+## [2026-05-08] mcp | complete_wr | s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-08] mcp | complete_wr | s5-to-s3-s5-reply-health-control-v2-kb-codegraph-long-running-ownership-plan-documented-a
+- Lane s3 completed recipient-side handling
+- Status: completed

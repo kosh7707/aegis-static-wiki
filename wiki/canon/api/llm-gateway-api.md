@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -297,12 +297,16 @@ Best-effort cancel endpoint.
 
 응답은 현재 ownership status shape를 돌려준다. 이미 terminal이면 그 terminal 상태를 그대로 돌려준다.
 
-### async ownership semantics
+### async ownership semantics — health-control v2 wait-while-alive (2026-05-08)
 
-- `/v1/chat`는 여전히 finite synchronous compatibility surface다
-- stronger no-result-loss semantics는 이 async ownership surface에서만 제공한다
-- `X-Timeout-Seconds`는 `/v1/chat`에는 canonical이지만, async ownership path에서는 **superseded** 된다
-- terminal retention은 현재 최소 **15분**
+- `/v1/chat`는 여전히 finite synchronous compatibility surface다. `X-Timeout-Seconds`는 이 sync path에서만 canonical이며 기본/상한은 1800초다.
+- `/v1/async-chat-requests`는 production long-running LLM ownership surface다. `X-Timeout-Seconds`는 async ownership path에서 **superseded** 되며, S7은 live non-streaming backend read를 elapsed-age-only ceiling으로 terminal abort하지 않는다.
+- async backend connect/write/pool transport establishment/resource failures may still become terminal `failed` with `blockedReason="backend_timeout"`; this is not a fixed inference-age deadline.
+- `queued` and `running` are continue states when `blockedReason=null` and `localAckState` is `phase-advancing` or `transport-only`. `transport-only` means S7 still owns a live backend transport attempt but cannot prove token-level progress. It is not success and not an abort signal.
+- Active `expiresAt` is an ownership lease hint and is refreshed while the request remains `queued`/`running`; callers must not treat active request age or a long elapsed wall-clock duration as an abort reason.
+- Terminal states are explicit: `completed`, `failed`, `cancelled`, `expired`. Polling callers should chain abort on `failed`, `cancelled`, `expired`, `localAckState="ack-break"`, or a non-null `blockedReason`.
+- Terminal `completed`/`failed`/`cancelled` records retain result or terminal failure detail for at least **15분** after terminal transition; after unrecoverable retention expiry, result lookup returns explicit `410 expired`.
+- A permanently open but silent backend transport may remain `running + transport-only` until explicit cancel, service shutdown, backend/transport exception, circuit failure before dispatch, parser/response-contract failure after response, backend HTTP failure, or a future non-age ownership-loss detector.
 
 ---
 
@@ -973,7 +977,7 @@ This section answers S3's system-stability WRs for async lifecycle, timeout, str
 - Status polling uses only: `queued`, `running`, `completed`, `failed`, `cancelled`, `expired`. `accepted` appears only in submit response and is not a long-lived state.
 - `queued`/`running` expose `localAckState` (`phase-advancing` or `transport-only`). `transport-only` means S7 still has a live transport attempt but cannot prove internal model progress.
 - Terminal states are retained for at least 15 minutes through `expiresAt`; after retention, result lookup returns explicit expired semantics (`410` on result).
-- `/v1/chat` remains finite synchronous surface. `X-Timeout-Seconds` is honored there with default/max 1800 seconds. Async ownership supersedes that header; S3 should use its own bounded polling deadline and then cancel or classify according to S3 policy. S3's `llm_async_poll_deadline_ms=1740000` is compatible with S7's 1800s backend timeout envelope.
+- `/v1/chat` remains finite synchronous compatibility surface. `X-Timeout-Seconds` is honored there with default/max 1800 seconds and a sync read timeout is terminal for that HTTP request. `/v1/async-chat-requests` is the long-running ownership surface: async polling should continue on `queued`/`running` with `phase-advancing` or `transport-only`, and S7 no longer uses a fixed async inference read ceiling such as the former 1740/1800s window as an abort reason while the backend attempt remains owned and unblocked.
 
 ### Dependency/runtime failure vs live-runtime output deficiency
 
@@ -982,7 +986,8 @@ This section answers S3's system-stability WRs for async lifecycle, timeout, str
 | Backend unreachable / connect failure | `/v1/chat` HTTP 503 `retryable=true`; async `failed`, `blockedReason=backend_unreachable`; task path `MODEL_UNAVAILABLE` | Dependency/runtime failure, not output deficiency |
 | Circuit breaker open | `/v1/chat` HTTP 503 `retryable=true`; async `failed`, `blockedReason=circuit_open`; task path `LLM_CIRCUIT_OPEN` | Dependency/runtime failure, retryable |
 | Backend overload / retryable backend HTTP | task path `LLM_OVERLOADED`; chat may pass through backend HTTP status | Dependency/runtime failure unless S3 has a valid completed envelope from another attempt |
-| Gateway or backend hard timeout | `/v1/chat` HTTP 504 `retryable=true`; async `failed`, `blockedReason=backend_timeout`; task path `TIMEOUT` | Dependency/runtime deadline failure |
+| Sync `/v1/chat` hard read timeout | `/v1/chat` HTTP 504 `retryable=true`; task path `TIMEOUT` where applicable | Finite compatibility request deadline failure |
+| Async backend transport timeout before/while establishing ownership transport | async `failed`, `blockedReason=backend_timeout`, `localAckState=ack-break` | Dependency/runtime transport failure; not an elapsed inference-age ceiling |
 | Client cancel | async `cancelled`, `blockedReason=cancelled_by_client` | Caller/runtime cancellation, not output deficiency |
 | Async retention expired | result endpoint `410`, state `expired` | Ownership/retention miss; treat as runtime/deadline failure |
 | Unsupported tool choice (`required`/named) | `/v1/chat` and async submit HTTP 422 `INVALID_TOOL_CHOICE`, `retryable=false` | Caller shaping/configuration failure; update caller to `auto`/`none` |

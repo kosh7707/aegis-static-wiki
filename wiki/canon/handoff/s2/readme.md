@@ -4,9 +4,9 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s2-handoff/README.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s2"]
-decision_tags: []
+decision_tags: ["health-control-v2"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 ---
 
@@ -15,7 +15,7 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S2(AEGIS Core/Backend) 개발을 이어받는 다음 세션을 위한 진입점이다.
 > 상세 정보는 같은 디렉토리의 분할 문서를 참조한다.
-> **마지막 업데이트: 2026-05-06**
+> **마지막 업데이트: 2026-05-08**
 > 빠른 cross-service 흐름 복기가 필요하면 [[wiki/context/project/end-to-end-scenarios|AEGIS 대표 시나리오별 통신 흐름]]을 먼저 본다.
 
 ---
@@ -109,12 +109,12 @@ related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 
 ---
 
-## 3. 현재 상태 (2026-05-06)
+## 3. 현재 상태 (2026-05-08)
 
 | 항목 | 값 |
 |------|---|
-| TypeScript 에러 | **0개** (services/backend + services/shared, 2026-05-06 LSP/tsc 기준) |
-| 테스트 | **498개 통과** (backend vitest, 2026-05-06 PoC facade outcome/claim-diagnostics 계약 포함) |
+| TypeScript 에러 | **0개** (services/backend + services/shared, 2026-05-08 build 기준) |
+| 테스트 | **528개 통과** (backend full vitest, 2026-05-08 health-control v2 S4 ownership 포함) |
 | DB 테이블 | **35개** (SQLite, WAL) — 기존 26개 활성 표면 + execution/persistence seam 9개 포함 |
 | API 엔드포인트 | `api-endpoints.md`에 현행 라우터 기준 목록 정리 (`/pipeline/prepare*`, `/analysis/quick`, `/analysis/deep`) |
 | WebSocket 채널 | **7개 mounted** (`dynamic-analysis`, `dynamic-test`, `analysis`, `upload`, `pipeline`, `notification`, `sdk`) |
@@ -170,6 +170,12 @@ canonical v1 lifecycle:
 - `BuildTarget.sdkChoiceState` 는 Quick preflight canonical field 이다 (`sdk-unresolved` 면 Quick disabled)
 - S3 Deep 결과는 `status=completed` 만으로 clean pass 로 보지 않는다. S2는 `analysisOutcome` / `qualityOutcome` / `pocOutcome` / `recoveryTrace` 를 보존하며, clean Deep pass 는 `analysisOutcome=accepted_claims` + `qualityOutcome=accepted` 일 때만 성립한다. valid-input S3 내부 deficiency 는 completed 결과 + warning/review 상태로 표현하고, invalid caller contract / unsafe request / dependency down / timeout 같은 true task failure 만 Deep failure 로 처리한다.
 - S4 native/custom scan 호출 시 S2 는 local `buildProfile.sdkId="custom"` sentinel 을 제거하고 `sdkId` 를 생략한다
+- Health-control v2 S2 consumer slice:
+  - `/health` exposes `controlPolicyVersion="health-control-signal-rollout-v2"` and recognizes `completed|cancelled|expired` in addition to v1 states.
+  - direct S4 `scan`/`build` calls use durable ownership (`Prefer: respond-async`, operation-scoped child `X-Request-Id`, `/v1/requests/{requestId}/result` polling).
+  - queued/running/transport-only/phase-advancing/degraded-without-blocked are wait states; ack-break/failed/cancelled/expired/blocked/ownership-loss are abort states.
+  - completed envelopes are result-bearing terminals, not clean success; S2 still evaluates nested result/readiness/outcome fields.
+  - S2 propagates local cancellation with `AbortSignal`; durable downstream cancel endpoints for S4 and task-level S3/S7 status/result/cancel remain follow-up contract items.
 
 현재 남은 follow-up risk (non-blocking):
 - rate limit durability 는 shared SQLite 범위까지다. future multi-node deployment 에서는 shared store 로 옮겨야 한다
@@ -264,16 +270,18 @@ S3가 first-rollout `/health` control-signal vocabulary를 freeze 했고,
   - `state = failed`
   - `blockedReason != null`
 
-현재 세션 종료 시점 기준 판단:
-- freeze 전 notice 처리(영향분석)는 완료
-- freeze 후 `/health` consumer surface 구현도 완료
+현재 세션 종료 시점 기준 판단 (2026-05-08):
+- v1 `/health` consumer surface는 v2 vocabulary로 확장됐다.
   - child `/v1/health?requestId=...` pass-through
   - normalized `control.pollDecision`
   - legacy S4 `ackStatus=broken` → `ack-break` mapping
+  - `completed|cancelled|expired` state handling
+- S4 direct `SastClient.scan()` / `SastClient.build()` path는 durable ownership result recovery를 사용한다.
+  - initial submit timeout 뒤에도 S4 health가 same request alive/completed를 증명하면 `/v1/requests/{requestId}/result` polling으로 회수한다.
+  - elapsed age alone은 abort로 쓰지 않는다.
 - 남은 gap:
-  - `AnalysisOrchestrator`, `PipelineOrchestrator`가 timeout-shaped transport failure 뒤에 lower `/health` 를 polling 하며
-    continuation / chained-abort 를 수행하는 execution loop는 아직 미구현
-  - 현재는 implementation-lag transport outcomes inventory만 정리된 상태다
+  - S2→S3 Analysis/Build Agent `/v1/tasks`와 S2→S7 `/v1/tasks`는 현재 S2가 소비할 수 있는 status/result/cancel endpoint가 없으므로 finite compatibility surface다.
+  - explicit downstream service-side cancel은 S4/S3/S7 owner API 계약이 있어야 완전 전파된다. 현재 S2 구현은 local `AbortSignal` 전파까지만 보장한다.
 
 ### 3-0c. S5 runtime semantics notice 처리 메모 (2026-04-14)
 

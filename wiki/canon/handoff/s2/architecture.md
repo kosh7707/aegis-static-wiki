@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/architecture.md"
 original_path: "docs/s2-handoff/architecture.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s2"]
-decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2"]
 related_pages: []
 migration_status: "canonicalized"
 ---
@@ -202,6 +202,12 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 | `KbClient` | S5 Knowledge Base | `wiki/canon/api/knowledge-base-api.md` |
 | `AdapterClient` / `AdapterManager` | S6 Adapter | `wiki/canon/api/adapter-api.md` |
 
+Health-control v2 integration note (2026-05-08):
+- `SastClient.scan()` and `SastClient.build()` use S4 durable ownership mode for direct S4 work: `Prefer: respond-async`, a parent-derived operation-scoped child `X-Request-Id`, and result polling via `/v1/requests/{requestId}/result`.
+- The S4 wait loop continues for `queued`, `running + phase-advancing`, `running + transport-only`, and degraded-but-not-blocked summaries. It aborts on ack-break, `failed`, `cancelled`, `expired`, non-null `blockedReason`, ownership loss (`404/409/410`), or explicit local cancellation.
+- A submit transport timeout is not automatically terminal: S2 checks S4 `/v1/health?requestId=...` and resumes result polling if S4 still owns the work.
+- `LlmTaskClient`, `AgentClient`, and `BuildAgentClient` still consume `/v1/tasks` compatibility surfaces. S2 exposes their health summaries but cannot perform durable status/result/cancel consumption until those owner contracts publish endpoints for S2.
+
 ### 코어 기능 묶음
 
 #### 1) 분석 파이프라인 (build-prep → Quick → explicit Deep)
@@ -235,9 +241,16 @@ S2는 아래 클라이언트만 통해 하위 서비스를 호출한다.
 2. 빌드 타겟 탐색/수정
    - `scriptHintPath?` stores a user-selected uploaded build-script hint relative to the effective BuildTarget root.
 3. Build Agent resolve
-   - `pipeline-orchestrator.ts` forwards `context.trusted.build.mode`, optional `sdkId`, and optional `scriptHintPath` to S3 Build Agent.
+   - `pipeline-orchestrator.ts` forwards `context.trusted.build.mode`, optional `sdkId`, optional uploaded-SDK materialization descriptor, and optional `scriptHintPath` to S3 Build Agent.
+   - For registered uploaded SDKs (`sdk-*`), the descriptor is derived internally from `RegisteredSdk`: `sdkRootPath = RegisteredSdk.path`, `setupScript = profile.environmentSetup`, `sysroot = profile.sysroot`, and `toolchainTriplet = profile.compilerPrefix` normalized without a trailing dash.
+   - Descriptor generation does not require `RegisteredSdk.verified=true`; the S2 guard is that the SDK root is materialized, project-owned, inside `uploads/{projectId}/sdk/**`, non-empty, and not currently in an in-progress upload/extract/install phase.
+   - S2 emits descriptor-derived environment hints (`AEGIS_SDK_ROOT`, `SDK_DIR`, `AEGIS_SDK_SETUP_SCRIPT`, `AEGIS_SDK_SYSROOT`, `SDKTARGETSYSROOT`, `AEGIS_TOOLCHAIN_TRIPLET`) when derivable.
+   - Built-in SDK profiles and host defaults are not converted into `sdkRootPath`; no `/home/kosh/ti-sdk`-style fallback is produced.
    - Inline script hint text aliases are not emitted by S2.
 4. S4 build/scan
+   - Direct S4 calls are durable ownership calls where supported; elapsed age alone is not an abort reason.
+   - Completed S4 ownership envelopes are parsed through nested result-level success/readiness/failure fields, not treated as clean success by state alone.
+   - S2 local cancellation stops the wait loop through `AbortSignal`; durable service-side cancel is pending lower-lane API support.
 5. S5 code-graph ingest
 6. 타겟 라이브러리 및 SDK 레지스트리 반영
 7. 프로젝트 삭제 시 `uploads/{projectId}` quarantine-first teardown

@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/README.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-05-06**
+> **마지막 업데이트: 2026-05-08**
 
 ---
 
@@ -26,7 +26,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - `wiki/canon/api/sast-runner-api.md` API 계약서 소유
 - `wiki/canon/specs/sast-runner.md` 명세서 소유
 - `scripts/start-sast-runner.sh` + `services/sast-runner/.env` 소유
-- 9개 엔드포인트 관리: scan (동기+NDJSON 스트리밍), functions, includes, metadata, libraries, build, build-and-analyze, discover-targets, health
+- 11개 엔드포인트 관리: scan (동기+NDJSON 스트리밍+durable ownership), functions, includes, metadata, libraries, build, build-and-analyze, discover-targets, health, request status, request result
 - build path는 execution-only. SDK/toolchain/build-command 해석은 하지 않음
 - `metadata.cweId` 표준화 — 전 도구에서 CWE 식별자를 `cweId` 필드로 제공 (S2 Finding 매핑용)
 
@@ -65,7 +65,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.2** |
-| 테스트 | **399개 통과** (2026-05-06 전체 pytest 재확인) |
+| 테스트 | **407개 통과** (2026-05-08 전체 pytest 재확인) |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -79,13 +79,17 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
 - `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`, `activeRequestCount`, `requestSummary`를 노출하며, additive `localAckState`로 `phase-advancing` / `transport-only` / `ack-break`를 함께 제공
 - `/v1/health?requestId=...` 로 `scan` / `build` / `build-and-analyze` 요청의 queued/running/degraded/ack-break equivalent를 polling-friendly summary로 조회 가능
+- health-control v2 durable ownership mode가 추가됨: `Prefer: respond-async`를 보내면 `/v1/scan`, `/v1/build`, `/v1/build-and-analyze`가 `202` + `statusUrl`/`resultUrl`을 반환하고, `/v1/requests/{requestId}` 및 `/v1/requests/{requestId}/result`로 terminal result/failure를 회수한다
+- `Prefer: respond-async`는 `Accept: application/x-ndjson`보다 우선한다. NDJSON은 compatibility stream이고, transport interruption 후 결과 회수가 필요한 production caller는 durable ownership mode를 사용해야 한다
+- durable ownership에서 `X-Request-Id`는 operation key이기도 하다. 같은 endpoint 재시도는 idempotent reuse지만, 다른 endpoint가 같은 ID를 쓰면 `409 REQUEST_ID_CONFLICT`로 실패한다
+- async ownership build path는 caller `X-Timeout-Ms`를 hard subprocess deadline으로 쓰지 않으며, `buildEvidence.timeoutMode="async-ownership-no-caller-deadline"`, `timeoutEnforced=false`로 노출한다
 - **운영 메모 (2026-04-14):** canonical code/docs는 request-summary contract를 포함하지만, live `localhost:9000` 인스턴스는 재기동 전까지 coarse-only shape 또는 no-listener 상태일 수 있다. live rollout readiness 판단은 실제 프로세스 재기동 여부를 함께 확인해야 한다.
 - `/v1/build-and-analyze`는 convenience / transitional surface로 유지
 - S2 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4.md`
 - S3 요청에 대한 reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-health-request-summary-mapping-for-local-ack-control-rollout.md`
 - S3 follow-up reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-live-s4-v1-health-request-summary-drift-is-runtime-lag-not-code-contract-m.md`
 - S3 wait-while-alive follow-up reply WR 발송 완료: `wiki/canon/work-requests/s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif.md`
-- 현재 오픈 WR 없음 (`list_my_open_wrs(lane="s4", include_to_all=true)` 기준, 2026-04-14 처리 후 재확인)
+- 현재 처리 중인 WR: `wiki/canon/work-requests/s3-to-s4-s4-implement-wait-while-alive-build-scan-ownership-per-health-control-v2.md` (2026-05-08 durable ownership implementation)
 
 ### 6개 SAST 도구
 
@@ -133,7 +137,7 @@ services/sast-runner/
 │       └── library_hasher.py
 ├── rules/automotive/        — 커스텀 Semgrep 룰 39개 (9 YAML)
 ├── benchmark/               — Juliet 벤치마크 러너 + 코드그래프 품질 평가
-├── tests/                   — 399개 테스트 (24개 파일, 2026-05-06 전체 pytest 통과)
+├── tests/                   — 407개 테스트 (25개 파일, 2026-05-08 전체 pytest 통과)
 └── requirements.txt
 ```
 

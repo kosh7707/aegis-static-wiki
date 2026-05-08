@@ -13,7 +13,7 @@ source_refs:
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-generation-controls-wr-20260429.md"
   - "/home/kosh/AEGIS/.omx/plans/test-spec-s3-generation-controls-wr-20260429.md"
   - "mcp://aegis-static-wiki.write_page"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s3", "analysis-agent", "api-contract", "s2"]
 decision_tags: ["structured-output", "api-contract", "deep-analyze", "http-status", "state-machine", "result-outcomes", "agent-v1.1", "clean-pass", "wp-0a", "claim-diagnostics", "accepted-only-claims", "contract-notice", "wp-1", "generation-controls", "tool-schema-validation", "input-boundary", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
 related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/readme.md", "wiki/canon/specs/s3-claim-evidence-state-machine/api-contract-decisions.md", "wiki/canon/specs/s3-claim-evidence-state-machine/claim-lifecycle.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
@@ -24,7 +24,7 @@ related_pages: ["wiki/canon/specs/analysis-agent.md", "wiki/canon/handoff/s3/rea
 > **소유자**: S3  
 > **포트**: 8001  
 > **호출자**: S2  
-> **최종 업데이트**: 2026-05-06
+> **최종 업데이트**: 2026-05-08
 > **계약 방향**: S3 claim-evidence state-machine `agent-v1.1` additive response schema contract.
 
 Analysis Agent의 public contract 문서다. 2026-04-24부터 S3는 `completed`와 clean security pass를 분리한다. `completed`는 **schema-valid honest review result envelope**를 뜻하며, accepted claim / accepted PoC / clean hot-gate pass를 뜻하지 않는다.
@@ -96,6 +96,17 @@ Consumer 규칙:
 - `X-AEGIS-Task-Ok: true`는 S3가 result envelope를 정상 반환했다는 뜻이며, accepted claim/PoC를 뜻하지 않는다.
 - `failureCode`는 true task failure 응답에만 있어야 한다. Valid input + health-alive internal deficiency는 `failureCode` 대신 result outcome / `recoveryTrace` / `audit.agentAudit`에 기록한다.
 
+### S2-facing task ownership boundary (health-control v2 decision, 2026-05-08)
+
+Analysis Agent currently exposes `/v1/tasks` as a synchronous compatibility endpoint to S2. It does **not** currently expose S2-consumable task ownership endpoints such as `GET /v1/tasks/{requestId}`, `GET /v1/tasks/{requestId}/result`, or `DELETE /v1/tasks/{requestId}`.
+
+Current S2 contract:
+- `X-Request-Id` correlates logs, health summaries, and downstream S4/S7 calls, but does not by itself create a durable S2-recoverable task result handle.
+- `GET /v1/health?requestId=...` is progress/control visibility only. It may show `queued`, `running`, `transport-only`, `phase-advancing`, or `ack-break`, but it is not a result retrieval surface.
+- If the original `/v1/tasks` HTTP transport is lost before a response body is received, S2 must classify the Analysis Agent task result as no-result/transport-terminal for that call and may decide whether to submit a new request using its own idempotency policy.
+- S3 internal downstream waits still follow health-control v2 wait-while-alive semantics; this boundary only describes S2→S3 public result ownership.
+- Introducing durable S2→S3 task status/result/cancel endpoints is a future additive API change and requires a separate implementation WR/test gate.
+
 ---
 
 ## 핵심 요청 필드
@@ -135,6 +146,20 @@ Analysis Agent does **not** use vLLM/OpenAI `tool_choice="required"` for mandato
 This supersedes the older P10 shorthand that used `tool_choice="required"`. The reason is the 2026-05-03 Qwen/vLLM incompatibility where `enable_thinking=true` plus `tool_choice="required"` can produce `finish_reason="tool_calls"` with empty `tool_calls`. S3 therefore preserves the safety goal — no report before required acquisition — through ToolIntent runtime dispatch rather than guided tool-choice.
 
 Callers must not infer clean success from this dispatch policy. The public contract remains result-level: `status="completed"` is an honest envelope, while clean deep/PoC success must be read from `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `cleanPass`, and diagnostics.
+
+### Health-control v2 downstream ownership consumers (2026-05-08)
+
+Analysis Agent consumes S4/S7 long-running work through alive-aware ownership/status/result semantics.
+
+| Surface | Runtime policy |
+|---|---|
+| S7 LLM async ownership | Submit → status poll → result fetch. Queued/running status is not cancelled solely because an elapsed poll age was reached; short HTTP connect/status/result timeouts still protect individual transport calls. |
+| `eval/eval_runner.py` async LLM path | Mirrors the runtime no-age-deadline policy so evaluation does not preserve a stale regression path. |
+| S4 SAST scan | Production path uses `Prefer: respond-async` against S4 `/v1/scan`, polls status, then fetches result. NDJSON streaming remains compatibility fallback only. |
+| SAST NDJSON fallback | Stream inactivity is a suspicion, not an immediate abort. S3 checks S4 `/v1/health?requestId=...`; alive/non-blocked summaries continue waiting, while ack-break/blocked/unavailable summaries stop the fallback wait. |
+| Phase 1 `build-and-analyze` | Uses S4 durable ownership/status/result before legacy blocking fallback, preserving S4 domain failure evidence rather than collapsing it into transport timeout. |
+
+This policy preserves `completed != clean success`: alive-aware waits keep S3 responsible for eventual envelope assembly, while downstream build/scan failure remains result-level evidence or dependency failure according to the existing outcome semantics.
 
 ### `deep-analyze`용 `context.trusted`
 
@@ -281,7 +306,7 @@ Important fields:
 - `activeResponseSchemas.deep-analyze`: additive response schema label such as `agent-v1.1` when exposed
 - `rag.status`, `llmBackend` when applicable
 
-Elapsed wall-clock time alone is not a local abort trigger. Long external waits may surface `transport-only` while S3 still owns eventual result assembly.
+Elapsed wall-clock time alone is not a local abort trigger. Long external waits may surface `transport-only` while S3 still owns eventual result assembly. `llmAsyncPollDeadlineMs` is no longer part of the health/config surface.
 
 ---
 
@@ -293,7 +318,7 @@ This contract supersedes the 2026-04-21 terminal-output-failure wording for vali
 
 ## 2026-04-25 `agent-v1.1` deadline note
 
-`constraints.timeoutMs` remains advisory by default. It shapes downstream/tool budgets and timeout hints but is not reinterpreted as a hard caller abort. Enforced S3 assembly/async-poll deadlines are S3-owned service configuration. If callers need a hard public deadline, S3 must introduce an explicit opt-in field/header such as `constraints.hardDeadlineMs` or `X-AEGIS-Hard-Deadline-Ms` through a separate contract notice.
+`constraints.timeoutMs` remains advisory by default. It shapes downstream/tool budgets and timeout hints but is not reinterpreted as a hard caller abort. Health-control v2 removed fixed elapsed async-poll deadlines from S3 LLM ownership waits; an alive queued/running dependency is not cancelled only because wall-clock age increased. If callers need a hard public deadline, S3 must introduce an explicit opt-in field/header such as `constraints.hardDeadlineMs` or `X-AEGIS-Hard-Deadline-Ms` through a separate contract notice.
 
 <!-- S3-WP0A-20260427:START -->
 ## 2026-04-27 WP-0a/WP-1 public claim lifecycle contract gate

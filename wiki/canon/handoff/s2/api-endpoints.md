@@ -6,9 +6,9 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-05-06"
+last_verified: "2026-05-08"
 service_tags: ["s2"]
-decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract"]
+decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
 migration_status: "canonicalized"
 ---
@@ -67,11 +67,11 @@ migration_status: "canonicalized"
   - blocker가 있으면 `409 CONFLICT` + `errorDetail.blockers`
   - success path는 `uploads/{projectId}` quarantine 후 project-scoped DB row delete를 수행하고, DB 실패 시 quarantined root를 restore한다.
 
-Health control-signal 메모 (2026-04-14):
+Health control-signal 메모 (2026-05-08):
 
 - `GET /health?requestId=<rid>`
   - S2는 child `/v1/health?requestId=<rid>` 를 호출한다.
-  - 응답 top-level에는 `controlPolicyVersion: "health-control-signal-rollout-v1"` 와 `requestIdQueried` 가 additive하게 포함된다.
+  - 응답 top-level에는 `controlPolicyVersion: "health-control-signal-rollout-v2"` 와 `requestIdQueried` 가 additive하게 포함된다.
   - 각 child service entry(`llmGateway`, `analysisAgent`, `sastRunner`, `knowledgeBase`, `buildAgent`)는
     - coarse `status: ok | degraded | unreachable`
     - raw child payload `detail`
@@ -82,8 +82,19 @@ Health control-signal 메모 (2026-04-14):
   - `queued` → `continue_waiting`
   - `running + phase-advancing` → `continue_waiting`
   - `running + transport-only` → `continue_waiting`
-  - `blockedReason != null`, `state=failed`, `localAckState=ack-break` → `chain_abort`
+  - `degraded=true` without ack-break/blocked → `continue_waiting`
+  - `blockedReason != null`, `state=failed|cancelled|expired`, `localAckState=ack-break` → `chain_abort`
+  - `state=completed` → `no_active_request`; completed task/result envelopes are not clean success and must be evaluated through operation-level outcome fields
   - legacy S4 `ackStatus=broken` → `localAckState=ack-break`
+- S2 direct S4 build/scan path:
+  - sends `Prefer: respond-async` and an operation-scoped child `X-Request-Id`
+  - polls S4 `/v1/requests/{requestId}/result` until a retained terminal result/failure is returned
+  - does not abort on elapsed age while S4 reports queued/running/transport-only/phase-advancing/degraded-without-blocked
+  - recovers submit transport timeouts by checking S4 `/v1/health?requestId=...` before deciding timeout vs continued ownership wait
+  - propagates local/user cancellation through `AbortSignal`; S4 does not currently publish a durable cancel endpoint, so service-side cancel is a follow-up contract item
+- S2 direct S3/S7 task paths:
+  - S2 forwards `requestId` to `/v1/health` for progress/control visibility
+  - S2 does not claim durable status/result/cancel consumption for S3/S7 `/v1/tasks` until those owner contracts expose such endpoints
 
 ### 프로젝트 설정 / 활동 / 알림 / 인증
 
@@ -197,6 +208,14 @@ Build script hint path 메모 (2026-05-06):
 - S2 validates path safety, regular-file status, 20,000-byte max, and UTF-8 text before persisting.
 - During pipeline prepare/run, S2 forwards it to S3 Build Agent as `context.trusted.build.scriptHintPath` under `context.trusted.build`; no inline script text aliases are sent.
 - `scriptHintPath: null` on PUT clears the hint.
+
+Build Agent SDK materialization descriptor memo (2026-05-08):
+
+- For registered uploaded SDK ids (`buildProfile.sdkId` starts with `sdk-`), S2 automatically derives `context.trusted.build.sdkRootPath`, `setupScript`, `sysroot`, `toolchainTriplet`, and descriptor-derived `environment` from `RegisteredSdk.path/profile`.
+- `RegisteredSdk.verified` is not a hard gate. S2 gates descriptor production on a usable project-owned materialized root under `uploads/{projectId}/sdk/**`, not on semantic SDK verification.
+- S2 emits `setupScript`/`sysroot` relative to `sdkRootPath` when profile paths exist and resolve inside the SDK root.
+- S2 does not generate host-default SDK paths such as `/home/kosh/ti-sdk` and does not emit legacy flat descriptor aliases.
+- No S1-facing request payload changes are required for this contract: S1 still uploads/selects SDKs and optionally stores `scriptHintPath`; S2 derives the Build Agent descriptor internally.
 | POST | `/api/projects/:pid/pipeline/prepare` | 빌드 준비만 실행 (`202 { preparationId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/prepare/:targetId` | 단일 타겟 빌드 준비만 실행 (`202 { preparationId, targetId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |
