@@ -15,7 +15,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-08**
+> **마지막 업데이트: 2026-05-11**
 
 이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-08 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
@@ -627,3 +627,75 @@ Operational reminder:
 - A live Gateway `status="ok"` only proves the S7 FastAPI route responds. S3 diagnostics and smoke scripts must report `llmReady=false` / `blockedReason` as LLM-unavailable even when the Gateway process is alive.
 - This is a generic dependency-readiness consumption fix, not a gateway-webserver-specific workaround.
 <!-- S3-S7-HEALTH-READINESS-20260508:END -->
+
+---
+
+<!-- S3-QG-HARDENING-20260509:START -->
+## 21. 2026-05-09 Analysis Quality Gate / Generate-PoC strict hot11 closeout
+
+S3 completed the Analysis Agent Quality Gate hardening run requested for
+paper-quality hot11 evidence. The key change is that **task completion is no
+longer accepted as proof of result quality**. Generate-PoC is now part of the
+strict Quality Gate rather than an optional operational side channel.
+
+Strict clean PoC rule:
+
+```text
+clean PoC = completed
+          + result.pocOutcome == poc_accepted
+          + result.qualityOutcome == accepted
+          + result.cleanPass == true
+```
+
+Implementation highlights:
+- `services/analysis-agent/eval/golden/hot11_full_pipeline_oracle.json` now
+  requires clean PoC for matched findings.
+- `services/analysis-agent/eval/golden/qg_anomaly_oracle.json` and
+  `services/analysis-agent/eval/quality_gate_oracle.py` capture the
+  "completed but not clean" anomaly golden set.
+- `services/analysis-agent/app/quality/poc_quality_gate.py` requires PoC claims
+  to be source/evidence bound and to include bounded repro steps, expected
+  observation, and a non-destructive safety boundary.
+- `services/analysis-agent/app/routers/generate_poc_handler.py` can assemble a
+  deterministic source-grounded diagnostic PoC fallback when the LLM output path
+  is deficient but accepted input claim refs and local source context are
+  sufficient.
+- Deterministic fallback source notes are rendered as inert prose so raw source
+  banners, markdown fences, shell punctuation, or long token strings do not
+  trip PoC safety detectors.
+- CWE-798/259/321/532 and hardcoded/default credential findings are classified
+  as source-backed `credential_exposure`, not dependency advisories requiring
+  `library_origin`.
+- `services/analysis-agent/scripts/hot11_full_pipeline_runner.py` now reports
+  `Clean PoCs` and `pocQualityFailures`; matched findings without clean PoC fail
+  the oracle.
+
+Fresh verification:
+- Analysis Agent full suite:
+  `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q`
+  → `615 passed in 6.70s`.
+- Static/syntax:
+  `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval`
+  and `git diff --check -- services/analysis-agent` → PASS.
+- Anomaly oracle:
+  `evaluate_quality_gate_oracle(load_quality_gate_oracle())`
+  → `passed=True`, `caseCount=5`.
+- Old 2026-05-08 hot11 report strict re-evaluation:
+  11/11 cases fail because their Generate-PoC envelopes were completed but
+  non-clean.
+- Fresh strict live hot11 full pipeline:
+  `reports/hot11-qg-live-all-20260508T183529Z`
+  → `overallStatus=passed`, `cases=11`, `Clean PoCs=11/11`.
+
+Commits:
+- AEGIS: `c8a147a Require clean PoC evidence for paper-grade hot11`.
+- Wiki: `ac3a83e Record S3 strict PoC quality gate evidence`.
+
+Operational reminder:
+- Do not relax hotN/hot11 to count `completed` alone as pass.
+- For paper-quality claims, consumers must inspect `pocOutcome`,
+  `qualityOutcome`, and `cleanPass` together.
+- This was a generic Quality Gate hardening pass, not a gateway-webserver or
+  hot11 overfit. Future dataset additions should extend the oracle rather than
+  special-case project names.
+<!-- S3-QG-HARDENING-20260509:END -->
