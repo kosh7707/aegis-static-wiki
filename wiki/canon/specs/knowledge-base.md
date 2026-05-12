@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/knowledge-base.md"
 original_path: "docs/specs/knowledge-base.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s5"]
 decision_tags: ["health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary"]
 related_pages:
@@ -18,7 +18,7 @@ migration_status: "canonicalized"
 # Knowledge Base 명세서
 
 > **소유자**: S5
-> **최종 업데이트**: 2026-05-08 (health-control v2 long-running ownership/readiness plan)
+> **최종 업데이트**: 2026-05-11 (Knowledge Coverage/Acquisition Readiness Contract v1; Golden Set v1; Knowledge Corpus v1; SQLite LedgerRepository foundation; Corpus Source Manifests v1; Transform Decision / Signal Model v1; Ledger-derived Projections v1; CVE Candidate/Discovery Split v1; Typed GraphRAG Retrieval Trace v1; RetrievalPolicy v1; Lexical Signal Enhancer v1; Retrieval Quality Lab v1; CAPEC/ATT&CK fixture coverage delta)
 
 ---
 
@@ -35,6 +35,148 @@ AEGIS 플랫폼의 **위협 지식 그래프 + 코드 구조 그래프 + 실시�
 - **Provenance seam**: code graph / project memory는 optional `buildSnapshotId`, `buildUnitId`, `sourceBuildAttemptId`를 수용하지만, 현재 code graph는 여전히 **프로젝트당 활성 그래프 1개** 모델
 - **Quick-stage ingest contract**: `POST /v1/code-graph/{project_id}/ingest`는 repeatable replace surface이며, 응답의 `status`(`ready`/`partial`/`empty`)와 `readiness.graphRag`가 caller의 다음 단계 진행 가능 여부를 판정하는 authoritative contract
 - **Staged commit ingest**: code graph ingest는 staging project scope에 Neo4j/Qdrant를 먼저 적재하고, 두 저장소가 모두 준비된 뒤에만 active project graph/vector를 승격한다. timeout/activation 실패 시 이전 active state를 복원하거나 빈 상태로 롤백한다
+
+
+
+### 1.1 Knowledge Coverage / Acquisition Readiness Contract v1
+
+2026-05-11 G001 기준 S5는 `GET /v1/contracts/acquisition`와 `app/contracts/acquisition.py`를 통해 다음 계약을 코드-문서 공통 source로 고정한다.
+
+- `Knowledge Coverage Contract v1`: S5가 제공하는 coverage surface와 명시적 `not_provided` final-claim surface를 구분한다.
+- `Acquisition Readiness Contract v1`: target-scoped readiness, provider/projection state, fallback, retry guidance, no-hit guard를 기계 판독 가능하게 제공한다.
+- Runtime S5 acquisition vocabulary는 offline Golden Set quality metrics 및 S3 final claim quality와 분리된다.
+- Existing target-context `AcquisitionEnvelopeV1` 응답은 additive metadata(`coverageContractVersion`, `readinessContractVersion`, `runtimeSemantics`, `readiness`, `providerState`, `projectionState`)를 포함한다.
+- Unsafe `completed_no_hit`는 validator에 의해 `incomplete_acquisition` + `do_not_use_as_negative_evidence`로 downgraded된다.
+
+이 절은 ledger/Golden Set/GraphRAG 알고리즘 구현 완료를 뜻하지 않는다. 해당 구현은 S5 one-track modernization의 후속 goals에서 수행한다.
+
+
+### 1.2 Golden Set v1 / Gate Harness Skeleton
+
+2026-05-11 G002 기준 S5는 `app/evaluation/golden_set.py`와 `fixtures/golden-set-v1/manifest.json`로 offline-only Golden Set v1 skeleton을 제공한다.
+
+- Golden Set family: `cve-package`, `etl-transform`, `threat-graphrag-retrieval`, `code-graph`, `s3-evidence-slot`.
+- Gate model은 `systemStability`, `evidenceReadiness`, `qualityGate`를 분리한다.
+- Runtime `runtimeObservation`에는 TP/FP/FN/Recall/Precision/NDCG/MRR 같은 offline quality metric을 넣지 않는다.
+- Quality Gate는 fixture의 `expectedCandidateIds` / `retrievedCandidateIds`를 통해 `Precision@k`, `Recall@k`, `NDCG@k`, `MRR`, hit-rate, false-positive/false-negative, method/queryIntent/corpus/profile breakdown만 계산한다.
+- Evidence Readiness Gate는 `contextual_only`, `diagnostic_only`, `scoped_no_hit_record_only`, `s3_may_derive_local_support_if_refs_validate` 소비 정책을 S3가 구분할 수 있게 한다.
+- G002는 harness/fixture skeleton이며, 실제 ledger ingest, source expansion, projection rebuild, typed GraphRAG reranker 구현 완료를 뜻하지 않는다.
+
+
+### 1.3 Knowledge Corpus v1 Taxonomy/Profile Assets
+
+2026-05-11 G003 기준 S5는 `app/corpus/knowledge_corpus.py`와 `fixtures/knowledge-corpus-v1/manifest.json`로 Knowledge Corpus v1 asset skeleton을 고정한다.
+
+- Core taxonomy는 C/C++ native/system vulnerability primitive이며 `memory_safety`, `command_execution`, `input_validation`, `path_file_access`, `crypto_tls`, `authn_authz`, `network_protocol`, `parser_serialization`, `concurrency`, `resource_lifecycle`, `credential_secret_exposure`, `information_exposure_logging`, `third_party_component`, `build_supply_chain`, `firmware_boot_update`, `os_kernel_driver`, `rtos_embedded`, `privilege_boundary`를 포함한다.
+- `automotive-specialization`은 primary/default specialization profile이며 core vulnerability taxonomy가 아니다.
+- `embedded-system-specialization`, `ics-ot-specialization`도 additive/context-only profile로 고정된다.
+- Relation method enum은 `exact_id_match`, `curated_mapping`, `direct_source_relation`, `provider_range_eval`, `graph_expansion`, `keyword_match`, `embedding_similarity`, `constrained_embedding_rerank`, `global_embedding_search`, `profile_signal`을 구분한다.
+- Weak signal method(`keyword_match`, `embedding_similarity`, `constrained_embedding_rerank`, `global_embedding_search`)는 no-hit/negative evidence 또는 vulnerability truth를 만들 수 없다.
+- `profile_signal`은 specialization/profile context 전용이며 no-hit, negative evidence, vulnerability truth를 만들 수 없다.
+- Legacy `threat_category`, `attack_surfaces`, `automotive_relevance`는 compatibility field이며 ledger/projection source-of-truth가 아니다.
+
+이 절은 corpus asset freeze이며 ledger schema, source ingestion, transform-decision persistence, projection rebuild, typed retrieval runtime 구현 완료를 뜻하지 않는다.
+
+
+### 1.4 SQLite LedgerRepository Foundation
+
+2026-05-11 G004 기준 S5는 `app/ledger/repository.py`와 `app/ledger/migrations/0001_init.sql`로 SQLite-backed S5 ledger foundation을 제공한다.
+
+- Alpha URL: `AEGIS_KB_LEDGER_URL=sqlite:///data/s5-ledger.sqlite`.
+- SQLite ledger는 G004 이후 생성되는 target-context/acquisition/provider/projection write의 authoritative S5 source of truth다.
+- `data/target-contexts.json`은 compatibility mirror 및 migration import/export surface일 뿐, ledger failure 시 authoritative fallback이 아니다.
+- Ledger write/init failure는 target-context durable success로 조용히 승격되지 않는다.
+- Schema v1은 `ledger_meta`, target-context/version, acquisition run/item, provider observation, projection state/job, normalized knowledge/relation/transform scaffolding table을 포함한다.
+- JSON mirror write failure는 authoritative ledger success를 무효화하지 않으며 explicit compatibility diagnostic으로만 노출된다.
+
+이 절은 ledger foundation이며 source ETL ingestion, transform-decision population, Neo4j/Qdrant projection rebuild, CVE split runtime, typed GraphRAG runtime 구현 완료를 뜻하지 않는다.
+
+
+### 1.5 Corpus Source Manifests / First Ledger Ingestion
+
+2026-05-11 G005 기준 S5는 `app/ingestion/corpus_ingestion.py`와 `fixtures/corpus-ingestion-v1/source-manifest.json`로 fixture-backed first ledger ingestion slice를 제공한다.
+
+- Source manifest schema는 source/raw artifact 단위로 `sourceId`, `sourceKind`, `family`, `sourceVersion`, `sourceUrl`, `coverageStatus`, `completedCoverage`, `providerState`, `rawArtifacts[]`, `rawArtifactId`, `fixturePath`, `contentHash`, `retrievedAt`, `artifactKind`, `transformVersion`를 고정한다.
+- Completed fixture-backed families: `knowledge-corpus-v1`, `golden-set-v1`, `CWE`, `CAPEC`, `ATTACK_ICS`, `ATTACK_ENTERPRISE`, `semgrep`, `cppcheck`, `clang-tidy`, `gcc-fanalyzer`, `scan-build`, `flawfinder`, `package-identity`, `OSV`, `NVD_CVE`, `GHSA`, `CISA_KEV`, `FIRST_EPSS`.
+- `CAPEC`, `ATTACK_ICS`, `ATTACK_ENTERPRISE`는 2026-05-11 modernization에서 manifest-only가 아니라 sample fixture completed coverage로 승격되었다. 이는 CAPEC-88, ATT&CK ICS T0807, ATT&CK Enterprise T1059 샘플 coverage이며 production-scale full ingestion 완료를 뜻하지 않는다.
+- OSV/NVD/GHSA fixtures create advisory and affected-range truth rows with provenance/freshness/diagnostics.
+- CISA KEV and FIRST EPSS fixtures create provider observations and contextual enrichment relations only; they do not create standalone vulnerability advisory or affected-range truth.
+- Ingestion is deterministic and idempotent; no live network calls and no Neo4j/Qdrant projection writes occur in G005.
+
+이 절은 fixture ingestion이며 broad production ingestion, Neo4j/Qdrant projection rebuild, CVE runtime split 전체 완료를 뜻하지 않는다.
+
+### 1.6 Transform Decision / Taxonomy Signal Model v1
+
+2026-05-11 G006 기준 S5는 `app/signals/taxonomy_signals.py`, `fixtures/transform-signals-v1/manifest.json`, and ledger `transform_decision` rows로 keyword/semantic/graph/profile signal을 auditable decision으로 고정한다.
+
+- `transform_decision`은 input/output id, method, confidence, source refs, matched terms/evidence spans, taxonomy/profile context, consumer policy, diagnostics를 저장한다.
+- Corpus ingestion now records transform decisions for normalized records and relation/enrichment rows; source/raw/normalized/advisory rows remain ledger truth, while decisions explain how they were produced.
+- `keyword_match`, `embedding_similarity`, `constrained_embedding_rerank`, `global_embedding_search` hits are candidate/context/ranking signals only.
+- Keyword/embedding misses may report `no_candidate_returned` as a runtime observation, but cannot become `completed_no_hit`, clean pass, vulnerability truth, or negative evidence.
+- `graph_expansion` rows are explicitly marked as graph-derived and are distinguishable from `direct_source_relation`, `curated_mapping`, and `provider_range_eval`.
+- `profile_signal` is formalized as context-only specialization/profile enrichment; automotive profile boosts do not create vulnerability truth.
+- The signal fixture forbids offline quality vocabulary inside runtime observations; TP/FP/FN/Recall/Precision/NDCG/MRR remain Golden Set-only language.
+
+이 절은 transform-decision/signal persistence이며 Neo4j/Qdrant projection rebuild, runtime CVE split, typed GraphRAG planner/reranker 구현 완료를 뜻하지 않는다.
+
+
+### 1.7 Ledger-derived Neo4j/Qdrant Projections v1
+
+2026-05-11 G007 기준 S5는 `app/projections/ledger_projection.py` and `scripts/neo4j-seed.py`로 projection source-of-truth 방향을 ledger-first로 전환한다.
+
+- `build_projection_bundle()` builds Neo4j threat records and Qdrant vector payloads from SQLite ledger rows (`weakness`, `vulnerability_advisory`, `tool_rule`, `package_identity`, `relation_record`, `transform_decision`).
+- Projection payloads include `ledgerId`, `projectionVersion=ledger-projection-v1`, `sourceHash`, `corpusPartition`, and provenance/method metadata where available.
+- `LedgerProjectionRebuilder` records `projection_job` and `projection_state` rows for `neo4j-threat` and `qdrant-threat`. Missing adapters become explicit `debt`; adapter exceptions become `failed`; successful writes become `ready`.
+- `scripts/neo4j-seed.py` default path is now `--ledger-url sqlite:///data/s5-ledger.sqlite`; it no longer scrolls Qdrant metadata as Neo4j truth.
+- Projection-dependent no-hit semantics remain protected by `apply_no_hit_safety`: debt/failed/stale/partial/timeout/error projection state downgrades `completed_no_hit` to `incomplete_acquisition` + `do_not_use_as_negative_evidence`.
+- Neo4j and Qdrant remain projections. Synced projection state is operational readiness, not S3 claim support or quality proof.
+
+이 절은 ledger-derived projection seam and debt reporting이며 runtime CVE split, typed GraphRAG planner/reranker/top-k tuning 구현 완료를 뜻하지 않는다.
+
+### 1.8 CVE Candidate Evaluation / Discovery Split v1
+
+2026-05-11 G008 기준 S5는 target-scoped CVE runtime acquisition을 candidate evaluation과 discovery로 분리한다.
+
+- `POST /v1/target-contexts/{targetKnowledgeId}/acquire/cve-candidate-evaluation` returns `surface="cveCandidateEvaluation"` and evaluates one explicit candidate CVE against one library/version/scope.
+- `POST /v1/target-contexts/{targetKnowledgeId}/acquire/cve-discovery` returns `surface="cveDiscovery"` and discovers public vulnerability candidates for the library/version/scope.
+- `POST /v1/target-contexts/{targetKnowledgeId}/acquire/cve` remains compatibility discovery/batch surface and keeps `surface="cve"`.
+- Candidate `version_match=false` may become `completed_no_hit` only for the specific candidate CVE when exact id match, provider range evaluation, and precise provider method completeness are all satisfied. It is not library safety, not target clean, and not proof that no other CVEs exist.
+- Candidate-not-returned, keyword-only miss, unknown `version_match`, stale cache, timeout, error, and conflicting version evidence are diagnostic/incomplete and use `do_not_use_as_negative_evidence`.
+- Candidate range-out and discovery hit can coexist: the candidate endpoint exposes other CVEs as contextual discovery companion data, while discovery returns those CVEs as `completed_hit`.
+- The SQLite ledger stores linked `acquisition_run`, `acquisition_item`, and `provider_observation` rows for candidate/discovery/compatibility calls. Observation provider names are `target_context_cve_candidate`, `target_context_cve_discovery`, and `target_context_cve_compat`.
+- `app/cve/acquisition_split.py` owns the conservative method-completeness helper. Runtime CVE envelopes/tests exclude offline quality vocabulary entirely; `runtimeSemantics` exposes only `offlineQualityVocabularyPolicy=forbidden_not_enumerated_in_runtime_envelopes` plus a source-reference pointer to the canonical contract snapshot, not the offline metric terms themselves.
+
+이 절은 runtime CVE split and readiness semantics이며 typed GraphRAG planner/reranker/top-k tuning 구현 완료를 뜻하지 않는다.
+
+### 1.9 Typed GraphRAG Retrieval Trace / Planner v1
+
+2026-05-11 G009 기준 S5 GraphRAG retrieval은 typed query intent, corpus partition, method provenance, and retrievalTrace를 additive runtime metadata로 제공한다.
+
+- Threat retrieval defaults to `queryIntent=weakness_context` unless caller supplies a more specific intent. Code retrieval defaults to `code_context`.
+- Canonical corpus partitions are `weakness_taxonomy`, `attack_pattern`, `mitigation_knowledge`, `tool_rule`, `package_identity`, `public_vulnerability`, `specialization_profile`, `code_graph`, and `contract_policy`; legacy aliases are normalized and recorded in trace.
+- Qdrant filtering prefers projected `corpusPartition` payloads and records fallback to legacy source filters when necessary.
+- Runtime method labels are canonical relation methods from the acquisition/corpus contract. Code-only match types remain on hits for compatibility but map to canonical methods in `relationMethods`.
+- `global_embedding_search` is explicit, low-trust, and not eligible as negative evidence or no-hit basis.
+- Target-context `threat-search` and `code-search` copy retrievalTrace into acquisition envelope results/scope so S3 can interpret no-hit readiness safely.
+- Golden Set metrics remain offline-only and are reported under `qualityGate`; runtime traces do not emit TP/FP/FN/Recall/Precision/NDCG/MRR as truth language.
+
+이 절은 typed retrieval trace/planner/reranker seam이며 live provider expansion or S3 final claim quality 구현 완료를 뜻하지 않는다.
+
+
+
+### 1.10 RetrievalPolicy / Lexical Signal / Quality Lab v1
+
+2026-05-11 modernization 기준 S5는 `app/graphrag/retrieval_policy.py`, `app/graphrag/lexical_signals.py`, `app/graphrag/model_registry.py`, `app/evaluation/retrieval_quality_lab.py`를 통해 typed GraphRAG runtime을 실제 적용한다.
+
+- `top_k`는 최종 반환 건수이며, `candidate_pool_k`는 exact/vector/graph/lexical/rerank 내부 후보 풀이다.
+- Threat/code GraphRAG 모두 `candidatePoolSize`, `candidatePoolPolicy`, `topKPolicy`, `rerankerPolicy`, `modelPolicy`, `lexicalSignals`, per-hit `scoreBreakdown`을 trace/hit metadata로 노출한다.
+- Lexical Signal Enhancer v1은 C/C++ identifier, namespace, path, macro, dangerous API, package/CVE alias, embedded/ICS terms를 정규화한다. `keyword_match`는 candidate/ranking signal일 뿐 no-hit/negative evidence가 아니다.
+- Runtime default embedding은 기존 `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`를 유지한다. Qwen3, BGE-M3, BGE reranker, Jina v4, Codestral Embed, Voyage, Cohere, OpenAI embedding candidates는 model registry에 dated research candidate로 기록한다.
+- Runtime reranker는 deterministic method-aware policy이며 model-backed reranker가 아니다. Model-backed reranking/re-index는 별도 migration goal이 필요하다.
+- Retrieval Quality Lab v1은 `fixtures/retrieval-quality-lab-v1/manifest.json`과 `.omx/reports/s5-retrieval-quality-lab-20260511.json`로 offline-only Precision/Recall/NDCG/MRR breakdown을 제공한다. Runtime response는 offline metric vocabulary를 truth로 노출하지 않는다.
+
+이 절은 deterministic local retrieval modernization 적용이며 hosted/model-backed dependency migration이나 production-scale full CAPEC/ATT&CK ingestion 완료를 뜻하지 않는다.
+
 
 ---
 
@@ -90,7 +232,7 @@ Neo4j (:Function)-[:CALLS]->(:Function)  +  Qdrant code_functions (벡터 임베
 
 ```
 app/
-├── main.py                       # FastAPI 앱, lifespan (Qdrant→Neo4j→Assembler 조립)
+├── main.py                       # FastAPI 앱, lifespan (Qdrant/Neo4j/Assembler 조립)
 ├── errors.py                     # observability.md 에러 포맷 헬퍼
 ├── config.py                     # Settings (env_prefix: AEGIS_KB_)
 ├── context.py                    # X-Request-Id ContextVar
@@ -173,7 +315,7 @@ CREATE INDEX FOR (n:Memory) ON (n.content_hash);
 | 위협 관계 | 9,298 |
 | CVE | ETL에서 제거됨 — `POST /v1/cve/batch-lookup`으로 실시간 조회 |
 
-> **참고**: Neo4j 위협 노드(2,196)와 Qdrant 레코드(2,011)의 차이는 Neo4j 시드 시 교차 참조 대상이 추가 노드로 생성되기 때문이다. Qdrant의 2,011건이 ETL 원본(`kb-meta.json`) 기준.
+> **참고**: G007 이전 역사적 Neo4j 위협 노드와 Qdrant 레코드 수 차이는 projection 방식 차이에서 비롯되었다. G007 이후 신규 Neo4j/Qdrant projection truth는 SQLite ledger의 source hash/projection version으로 추적한다.
 
 ---
 
@@ -197,8 +339,8 @@ source .venv/bin/activate
 # 1. Qdrant 적재 (ETL)
 python scripts/threat-db/build.py --qdrant-path data/qdrant
 
-# 2. Neo4j 시드 (Qdrant → Neo4j)
-python scripts/neo4j-seed.py --qdrant-path data/qdrant --clear
+# 2. Neo4j 시드 (Ledger → Neo4j)
+python scripts/neo4j-seed.py --ledger-url sqlite:///data/s5-ledger.sqlite --clear
 ```
 
 ### 자동차 관련성 분류
@@ -254,6 +396,8 @@ ETL에서 11개 공격 표면으로 분류 (`scripts/threat-db/taxonomy.py`):
 | `AEGIS_KB_KEV_TTL` | 3600 | CISA KEV 카탈로그 캐시 TTL (초) |
 | `AEGIS_KB_RRF_K` | 60 | RRF 상수 (0=비활성) |
 | `AEGIS_KB_MEMORY_LIMIT_PER_PROJECT` | 1000 | 프로젝트당 메모리 한도 |
+| `AEGIS_KB_LEDGER_URL` | `sqlite:///data/s5-ledger.sqlite` | S5 authoritative SQLite ledger URL (G004+) |
+| `AEGIS_KB_TARGET_CONTEXT_STORE_FILE` | `data/target-contexts.json` | Non-authoritative target-context compatibility mirror / migration surface |
 
 ---
 
@@ -271,7 +415,7 @@ ETL에서 11개 공격 표면으로 분류 (`scripts/threat-db/taxonomy.py`):
 
 ```bash
 cd services/knowledge-base
-.venv/bin/python -m pytest tests/ -q  # 161 passed (2026-04-04 확인)
+.venv/bin/python -m pytest tests/ -q  # 344 passed (2026-05-11 G007 debt guard fix 확인)
 ```
 
 모든 테스트는 Neo4j 드라이버를 mock하여 실행 — Neo4j/Qdrant 미설치 환경에서도 통과.
@@ -289,6 +433,13 @@ cd services/knowledge-base
 | `test_qdrant_modes.py` | 5 | Qdrant file/server 듀얼 모드 초기화 |
 | `test_benchmark_metrics.py` | 15 | 벤치마크 메트릭 (P@k, R@k, NDCG, MRR, hit rate) |
 | `test_benchmark_artifacts.py` | 7 | validation set shape/coverage + sweep summary + compare/oracle summary |
+| `test_golden_set_v1.py` | 10 | Golden Set v1 schema, S3 retrieval/CVE fixtures, gate separation, offline-only runtime guards |
+| `test_knowledge_corpus_v1.py` | 10 | Knowledge Corpus v1 taxonomy/profile assets, weak-signal policy guards, provenance schema |
+| `test_ledger_repository.py` | 7 | SQLite ledger schema/init, target-context idempotency, acquisition/provider/projection job/state/transform decision records |
+| `test_target_context_ledger_integration.py` | 4 | Ledger-first target-context authority, JSON mirror failure, ledger failure no-silent-fallback |
+| `test_corpus_ingestion_v1.py` | 11 | Corpus source manifest schema/hash validation, first ledger ingestion, KEV/EPSS enrichment-only semantics, transform-decision persistence |
+| `test_transform_signal_model_v1.py` | 10 | Transform signal manifest, weak-signal no-hit guards, profile-signal context-only semantics, graph/direct provenance distinction |
+| `test_ledger_projection_v1.py` | 7 | Ledger-derived Neo4j/Qdrant projection records, projection jobs/states/debt, Qdrant-to-Neo4j bridge removal guard |
 
 ### 벤치마크 비교 명령
 

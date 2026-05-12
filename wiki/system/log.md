@@ -3060,3 +3060,576 @@ related_pages:
 ## [2026-05-11] documented | S3 handoff update for strict PoC Quality Gate closeout
 - Updated wiki/canon/handoff/s3/readme.md with 2026-05-09 Quality Gate / Generate-PoC strict hot11 closeout.
 - Recorded strict clean PoC rule, code anchors, verification evidence, and commit references before global commit/push.
+
+## [2026-05-11] mcp | register_wr | s1-to-s2-aegis-static-wiki-mcp-claude-turn-structuredcontent-json-content
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-aegis-static-wiki-mcp-claude-turn-structuredcontent-json-content.md
+
+## [2026-05-11] mcp | register_wr | s2-to-s1-reply-aegis-static-wiki-mcp-short-structured-responses-now-include-prose-text-fo
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-aegis-static-wiki-mcp-short-structured-responses-now-include-prose-text-fo.md
+
+## [2026-05-11] mcp | complete_wr | s7-to-s2-s7-reply-v1-tasks-remains-finite-taskresponse-compatibility-health-is-progress-o
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s1-to-s2-aegis-static-wiki-mcp-claude-turn-structuredcontent-json-content
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] WR processing | S2 handled MCP short structured response workaround and accepted S7 finite task reply
+- Patched aegis-static-wiki tools/wiki/mcpServer.js textAndStructured() to prose-wrap bare []/{} and other very short text while preserving structuredContent.
+- Added tests/wiki-mcp.test.js coverage for empty list_my_open_wrs content text.
+- Completed S1→S2 MCP bug WR and S7→S2 finite /v1/tasks reply WR.
+
+## [2026-05-11] mcp | complete_wr | s2-to-s1-reply-aegis-static-wiki-mcp-short-structured-responses-now-include-prose-text-fo
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | register_wr | s3-to-s4-s4-enriched-sca-library-evidence-contract-for-s3-s5-cve-requery
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s4-enriched-sca-library-evidence-contract-for-s3-s5-cve-requery.md
+
+## [2026-05-11] mcp | register_wr | s3-to-s2-pre-alpha-e2e-cross-service-connectivity-and-readiness-check-before-s1-s7-integr
+- Registered request WR for s2
+- Path: wiki/canon/work-requests/s3-to-s2-pre-alpha-e2e-cross-service-connectivity-and-readiness-check-before-s1-s7-integr.md
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-clarify-desired-s5-shape-for-enriched-sca-cve-evidence-chain-before-parallel-s4-
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-clarify-desired-s5-shape-for-enriched-sca-cve-evidence-chain-before-parallel-s4-.md
+
+## [2026-05-11] mcp | register_wr | s3-to-s4-s5-reply-s3-prefers-two-stage-s5-contract-for-enriched-sca-cve-evidence-chain
+- Registered reply WR for s4, s5
+- Path: wiki/canon/work-requests/s3-to-s4-s5-reply-s3-prefers-two-stage-s5-contract-for-enriched-sca-cve-evidence-chain.md
+
+## [2026-05-11] mcp | complete_wr | s4-to-s3-clarify-desired-s5-shape-for-enriched-sca-cve-evidence-chain-before-parallel-s4-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s3-to-s4-s5-reply-s3-prefers-two-stage-s5-contract-for-enriched-sca-cve-evidence-chain
+- Lane s4 completed recipient-side handling
+- Status: open
+
+## [2026-05-11] S2 aligned S4 SDK scan and S5 code-graph contracts | S2 downstream API-contract compliance patch
+- S4 scan path now maps sdkId none to sdkResolutionMode none and blocks bare uploaded sdk-* ids before S4 submission.
+- Pipeline/Quick analysis paths route uploaded SDKs to S4 as sdkResolutionMode non-registered with sdkDescriptor.
+- S5 code graph ingest now sends functions[].calls without top-level call_edges and consumes canonical nodeCount/edgeCount counters.
+- Validation: targeted S2 contract/orchestrator suite 84 passed; S1-facing api-contract suite 161 passed; services/shared and services/backend TypeScript builds passed.
+- Critic subagent reviewed and approved the patch direction.
+
+## [2026-05-11] mcp | register_wr | s2-to-s3-reply-pre-alpha-e2e-cross-service-connectivity-readiness-check-from-s2
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s2-to-s3-reply-pre-alpha-e2e-cross-service-connectivity-readiness-check-from-s2.md
+
+## [2026-05-11] mcp | complete_wr | s3-to-s2-pre-alpha-e2e-cross-service-connectivity-and-readiness-check-before-s1-s7-integr
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s2-to-s3-reply-pre-alpha-e2e-cross-service-connectivity-readiness-check-from-s2
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-enriched-cve-lookup-diagnostics-and-provenance-contract-for-sca-evidence-chain
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-enriched-cve-lookup-diagnostics-and-provenance-contract-for-sca-evidence-chain.md
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-reply-s4-evidence-resolution-producer-implemented-for-sast-findings-and-enriched
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-evidence-resolution-producer-implemented-for-sast-findings-and-enriched.md
+
+## [2026-05-11] mcp | complete_wr | s3-to-s4-s4-enriched-sca-library-evidence-contract-for-s3-s5-cve-requery
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S4 implemented deterministic evidence-resolution producer slice | s4 evidence-resolution implementation
+- SAST findings add metadata.evidenceResolution under existing SastFinding.metadata.
+- /v1/scan sca.libraries[] now preserves legacy name/version/path/repoUrl plus enriched source/version/diff/provenance diagnostics; /v1/build-and-analyze libraries[] mirrors nested scan shape.
+- No new SAST tools, no S5 API changes, no S3 code changes, no LLM/CVE/security verdicts in S4.
+- Verification: oracle 12 passed, related regression 132 passed, full services/sast-runner pytest 426 passed.
+- Reply WR: wiki/canon/work-requests/s4-to-s3-reply-s4-evidence-resolution-producer-implemented-for-sast-findings-and-enriched.md
+
+## [2026-05-11] mcp | complete_wr | s4-to-s3-reply-s4-evidence-resolution-producer-implemented-for-sast-findings-and-enriched
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 consumed S4 enriched evidence producer contract | s3 enriched SCA/CVE evidence consumption
+- Analysis Agent now partitions S4 enriched SCA libraries before S5 CVE batch lookup; versionless/unknown/ineligible libraries are skipped with diagnostics.
+- cve_no_hits is emitted only after a completed eligible lookup returns no CVEs; skipped/timeout/error paths are operational diagnostics.
+- Phase 2 prompt no longer renders DIFF_NOT_COMPUTED/modificationStatus unknown as unmodified/original.
+- Verification: S3 focused 11 passed, Phase1/evidence 79 passed, related gate 108 passed, full Analysis Agent 622 passed, compileall/diff-check PASS.
+
+## [2026-05-11] S3 fixed Critic truncation blocker for enriched SCA CVE lookup | s3 cve lookup truncation honesty
+- Added cve_lookup_truncated and cve_lookup_unqueried_eligible_count state for eligible-library cap behavior.
+- Suppressed whole-set cve_no_hits when eligible CVE lookup is truncated; catalog now emits cve_lookup_truncated operational diagnostics.
+- Verification after blocker fix: truncation regression 10 passed, Phase1/evidence 81 passed, related gate 110 passed, full Analysis Agent 624 passed, compileall/diff-check PASS.
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-target-context-bundle-discussion-for-s5-acquisition-diagnostics-and-non-silen
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-target-context-bundle-discussion-for-s5-acquisition-diagnostics-and-non-silen.md
+
+## [2026-05-11] S5 deep-interview crystallized and S5→S3 WR registered | s5-etl-pipeline-modernization
+- Deep-interview final ambiguity: 0.17 <= 0.20 threshold.
+- Artifacts: .omx/interviews/s5-etl-pipeline-modernization-20260511T033250Z.md and .omx/specs/deep-interview-s5-etl-pipeline-modernization.md.
+- WR: wiki/canon/work-requests/s5-to-s3-s3-target-context-bundle-discussion-for-s5-acquisition-diagnostics-and-non-silen.md.
+- Key decisions: acquisition diagnostics first, durable target knowledge, Acquisition Quality Gate, non-silent fallback across all S5 acquisition surfaces.
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-s3-target-context-bundle-discussion-for-s5-acquisition-diagnostics-and-non-silen
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 replied to S5 target-context acquisition WR | s3-to-s5 one-track target-context contract reply
+- Registered reply WR: wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md
+- Direction: no legacy S3 path, one-track TargetContextBundleV1 + AcquisitionEnvelopeV1 for S3 target-aware S5 acquisition surfaces.
+- Critic first review BLOCKER: required per-item diagnostics, codeGraph calls shape, safer vocabulary, S3-only scoping, and ingest/idempotency semantics.
+- Critic second review PASS after fixes.
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S5 deep-interview re-crystallized after S3 reply WR | s5-etl-pipeline-modernization
+- Incorporated S3 one-track target-context acquisition reply: wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md
+- Updated spec: .omx/specs/deep-interview-s5-etl-pipeline-modernization.md
+- Created recrystallized transcript: .omx/interviews/s5-etl-pipeline-modernization-recrystallized-20260511T034934Z.md
+- Final ambiguity lowered to 0.08; next handoff is consensus planning for S5 ETL/API implementation.
+- Completed S5 recipient handling for the S3 one-track reply and older superseded two-stage reply.
+
+## [2026-05-11] Canonical S5 ETL target-context spec written | s5-etl-pipeline-modernization-target-context
+- Page: wiki/canon/specs/s5-etl-pipeline-modernization-target-context.md
+- Mirrors re-crystallized local artifact .omx/specs/deep-interview-s5-etl-pipeline-modernization.md.
+- Captures one-track TargetContextBundleV1 + AcquisitionEnvelopeV1 direction from S3 reply WR.
+
+## [2026-05-11] Implemented S5 target-context acquisition v1 | s5 target-aware acquisition contract
+- Added durable target context ledger and /v1/target-contexts ingest API in services/knowledge-base.
+- Added target-scoped acquisition envelopes for CVE, threat search, code search, and dangerous callers with explicit acquisitionStatus/acquisitionQualityGate/consumerPolicy/fallbackTrace/itemAcquisitions.
+- Updated canonical S5 ETL target-context spec and Knowledge Base API contract.
+- Verification: services/knowledge-base targeted target_context_api tests 8 passed; full S5 pytest 265 passed.
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-enriched-cve-lookup-diagnostics-and-provenance-contract-for-sca-evidence-chain
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] Verified S5 target-context acquisition final regression | s5 target-aware acquisition tests
+- Added no-silent-vector-fallback regression for target-context codeGraph ingest caveat.
+- Latest verification: target_context_api tests 9 passed; full services/knowledge-base pytest 266 passed.
+
+## [2026-05-11] Expanded S5 target-context CVE diagnostic coverage | s5 target-aware CVE acquisition
+- Added stale_cache_only and conflicting_evidence handling/tests so neither can be consumed as CVE no-hit evidence.
+- Latest verification: target_context_api tests 11 passed; full services/knowledge-base pytest 268 passed.
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-review-requested-for-s5-acquisition-state-machine-and-durable-ledger-design
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-review-requested-for-s5-acquisition-state-machine-and-durable-ledger-design.md
+
+## [2026-05-11] Created S5 acquisition state-machine design and requested S3 review | s5 acquisition state machine
+- Added canonical S5 acquisition state-machine page family under wiki/canon/specs/s5-acquisition-state-machine/ covering target context, acquisition run, item acquisition, projection lifecycle, storage ownership, and transition table.
+- Critic subagent initially BLOCKed completed_no_hit ambiguity; S5 fixed fallback no-result to incomplete_acquisition + do_not_use_as_negative_evidence and received Critic PASS.
+- Aligned target-scoped CVE implementation/tests with state-machine rule; verification: target_context_api tests 11 passed, full services/knowledge-base pytest 268 passed.
+- Registered S5→S3 WR for usability/missing-field review before durable ledger implementation planning.
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-fix-target-context-acquisition-envelope-deadline-and-mixed-status-semantics-befo
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-fix-target-context-acquisition-envelope-deadline-and-mixed-status-semantics-befo.md
+
+## [2026-05-11] S3 registered S5 target-context acquisition blocker WR | s3-to-s5 target-context deadline/envelope/mixed-status fixes
+- WR: wiki/canon/work-requests/s3-to-s5-fix-target-context-acquisition-envelope-deadline-and-mixed-status-semantics-befo.md
+- Requested fixes: deadline-aware target-context graph persistence, AcquisitionEnvelopeV1 on CVE timeout/error, and no-hit+failure aggregation must not become partial_hit.
+- S3 stance: do not consume target-scoped S5 acquisition path as authoritative until fixed.
+
+## [2026-05-11] Handled S3 target-context acquisition deadline/mixed-status WR | s5 target-context acquisition semantics
+- Target-context embedded codeGraph projection now receives the caller deadline and returns timeout/incomplete projection diagnostics in the ingest AcquisitionEnvelopeV1 instead of normal-looking ready success.
+- Target-scoped CVE provider timeout/error paths now return AcquisitionEnvelopeV1 with top-level and per-item timeout/error statuses and do_not_use_as_negative_evidence policy.
+- CVE aggregation now emits partial_hit only when at least one item is completed_hit; completed_no_hit plus failures aggregates to incomplete/non-hit status.
+- Updated Knowledge Base API and S5 acquisition state-machine docs. Verification: target_context_api tests 16 passed; full services/knowledge-base pytest 273 passed; py_compile passed.
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-reply-target-context-acquisition-deadline-and-mixed-status-blockers-fixed
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-reply-target-context-acquisition-deadline-and-mixed-status-blockers-fixed.md
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-fix-target-context-acquisition-envelope-deadline-and-mixed-status-semantics-befo
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-reply-target-context-acquisition-deadline-and-mixed-status-blockers-fixed
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-reply-s3-accepts-s5-acquisition-state-machine-and-durable-ledger-design-after-bl
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-reply-s3-accepts-s5-acquisition-state-machine-and-durable-ledger-design-after-bl.md
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-s3-review-requested-for-s5-acquisition-state-machine-and-durable-ledger-design
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-reply-s3-accepts-s5-acquisition-state-machine-and-durable-ledger-design-after-bl
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 ACCEPT reply received | S5 acquisition state-machine / durable-ledger design
+- S3 accepted the S5 acquisition state-machine and durable-ledger design after deadline/envelope/mixed-status blocker fixes.
+- S5 can proceed to durable-ledger implementation planning.
+- Non-blocking guidance retained: persisted acquisition lookup/history, target-context version binding, item-level consumability, durable diagnostics/fallback/method/evidence fields, and projection debt on projection-dependent responses.
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-s3-review-requested-s4-c-c-static-evidence-coverage-contract
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s3-review-requested-s4-c-c-static-evidence-coverage-contract.md
+
+## [2026-05-11] Registered S4→S3 WR requesting review of S4 C/C++ static evidence 고도화 direction | S4 to S3 coverage-contract review WR
+- WR: wiki/canon/work-requests/s4-to-s3-s3-review-requested-s4-c-c-static-evidence-coverage-contract.md
+- Asks S3 to review S4 as independent C/C++ static evidence artifact producer rather than S5/GraphRAG consumer/upstream-coupled service.
+- Requests S3 guidance on Coverage Contract, Evidence Readiness Contract, Quality/Stability gate separation, Golden Corpus v1, and S3 misjudgment prevention.
+
+## [2026-05-11] mcp | register_wr | s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio
+- Registered reply WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio.md
+
+## [2026-05-11] mcp | complete_wr | s4-to-s3-s3-review-requested-s4-c-c-static-evidence-coverage-contract
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 replied to S4 static evidence coverage-contract review WR | s4 c-cpp static evidence 고도화 direction
+- Reply WR: wiki/canon/work-requests/s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio.md
+- Verdict: CONDITIONAL PASS. S3 agrees S4 should be an independent deterministic C/C++ static evidence artifact producer, not S5/GraphRAG/LLM/verdict authority.
+- S3 requested Coverage Contract v1, Evidence Readiness Contract v1, and Golden Corpus v1 before tool-portfolio changes.
+- S3 provided minimum machine-readable coverage categories, claim-boundary list, S5/GraphRAG/KB retention conditions, follow-up hint shape, structural-codeGraph boundary, SCA readiness direction, golden corpus requirements, and S4 priority order.
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-.md
+
+## [2026-05-11] S5 registered S3 review WR | S5 Knowledge Coverage / Acquisition Readiness Contract v1
+- Registered S5→S3 question WR for S3 review of S5 Knowledge Coverage Contract v1 and Acquisition Readiness Contract v1 direction.
+- WR asks S3 to validate S5 legibility/readiness surfaces, CVE candidate evaluation vs discovery split, EvidenceCatalog mapping, and pre-ledger fixture priorities.
+
+## [2026-05-11] mcp | register_wr | s1-to-s2-s2-modulereport-endpoints-report-static-report-dynamic-report-test-s1-0-callers-
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-s2-modulereport-endpoints-report-static-report-dynamic-report-test-s1-0-callers-.md
+
+## [2026-05-11] mcp | register_wr | s1-to-s2-s2-health-aggregator-s7-readiness-ready-llmready-degraded-blockedreason-dependen
+- Registered question WR for s2
+- Path: wiki/canon/work-requests/s1-to-s2-s2-health-aggregator-s7-readiness-ready-llmready-degraded-blockedreason-dependen.md
+
+## [2026-05-11] mcp | register_wr | s2-to-s1-reply-s2-health-forwards-s7-readiness-fields-under-llmgateway.detail
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-s2-health-forwards-s7-readiness-fields-under-llmgateway.detail.md
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c.md
+
+## [2026-05-11] mcp | complete_wr | s1-to-s2-s2-health-aggregator-s7-readiness-ready-llmready-degraded-blockedreason-dependen
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 registered conditional-pass reply and completed inbound S5 WR | S3 reply to S5 Knowledge Coverage / Acquisition Readiness Contract review
+- Inbound WR: wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-.md
+- Reply WR: wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c.md
+- Verdict: CONDITIONAL PASS
+- Conditions: machine-readable coverage/readiness, candidate/discovery CVE split, strict completed_no_hit scope/method rules, S3 EvidenceCatalog mapping, fixture/oracle-first implementation sequencing.
+
+## [2026-05-11] mcp | register_wr | s2-to-s1-reply-s2-module-report-endpoints-remain-active-contract-surfaces
+- Registered reply WR for s1
+- Path: wiki/canon/work-requests/s2-to-s1-reply-s2-module-report-endpoints-remain-active-contract-surfaces.md
+
+## [2026-05-11] mcp | complete_wr | s1-to-s2-s2-modulereport-endpoints-report-static-report-dynamic-report-test-s1-0-callers-
+- Lane s2 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S2 processed two S1 question WRs | S2 S1 WR replies for health readiness and module reports
+- Registered reply WR s2-to-s1-reply-s2-health-forwards-s7-readiness-fields-under-llmgateway.detail.md and completed original health-readiness WR for lane S2.
+- Registered reply WR s2-to-s1-reply-s2-module-report-endpoints-remain-active-contract-surfaces.md and completed original module-report WR for lane S2.
+- Updated canonical docs wiki/canon/handoff/s2/api-endpoints.md and wiki/canon/api/shared-models.md; validation passed with backend health/API contract tests and backend build.
+
+## [2026-05-11] S4 authored canonical Coverage/Readiness contract design for deterministic static evidence artifacts | S4 Static Evidence Contract v1 design
+- Created wiki/canon/specs/sast-runner-static-evidence-contract.md
+- Updated S4 API/spec/handoff pages with staticEvidenceContract v1 design references
+- Contract requires explicit not_provided surfaces for external vulnerability knowledge, semantic graph retrieval, runtime behavior, exploitability judgment, and final security verdict
+- Contract separates systemStability, evidenceReadiness, and qualityEvaluation gates
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s.md
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] Plan crystallized and S3 conditional-pass reply incorporated | S5 Knowledge Acquisition Modernization one-track plan
+- Registered S5→S3 taxonomy/profile review WR before reading the prior S3 reply, per user request.
+- Read S3 conditional-pass reply on Knowledge Coverage / Acquisition Readiness Contract direction.
+- Created canonical roadmap page wiki/canon/roadmap/s5-knowledge-acquisition-modernization-one-track.md.
+- Created .omx/ultragoal/brief.md for later ultragoal execution.
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d.md
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 registered conditional-pass reply and completed inbound S5 WR | S3 reply to S5 Knowledge Corpus taxonomy/profile split
+- Inbound WR: wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s.md
+- Reply WR: wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d.md
+- Verdict: CONDITIONAL PASS
+- Key framing: AEGIS is automotive-first native/embedded security analysis, not automotive-only keyword matching.
+- User requested deeper discussion with S5 on keyword/embedding retrieval semantics because keyword misses can create false negatives and global embedding similarity made everything look vulnerability-related.
+
+## [2026-05-11] mcp | complete_wr | s2-to-s1-reply-s2-module-report-endpoints-remain-active-contract-surfaces
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s2-to-s1-reply-s2-health-forwards-s7-readiness-fields-under-llmgateway.detail
+- Lane s1 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual.md
+
+## [2026-05-11] S5 registered S3 validation WR | S5 future typed acquisition runtime vs offline quality-evaluation scenario
+- Registered S5→S3 question WR asking whether the proposed future S5 scenario matches S3's intended consumption model.
+- The WR separates runtime candidate/provenance language from offline Golden Set TP/FP/FN/Recall metrics and asks S3 to validate typed query/acquisition behavior.
+
+## [2026-05-11] mcp | register_wr | s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl
+- Registered reply WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl.md
+
+## [2026-05-11] mcp | complete_wr | s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S3 registered conditional-pass reply and completed inbound S5 WR | S3 validates S5 runtime/offline retrieval semantics split
+- Inbound WR: wiki/canon/work-requests/s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual.md
+- Reply WR: wiki/canon/work-requests/s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl.md
+- Verdict: CONDITIONAL PASS
+- Key boundaries: runtime candidate_returned/no_candidate_returned is separate from offline TP/FP/FN/Recall/Precision and from S3 final claim quality.
+- Important guards: completed_hit != true positive; no_candidate_returned != completed_no_hit; S5 knowledge context is not local claim support by itself.
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S5 roadmap and ultragoal brief synchronized with S3 conditional PASS replies | S5 knowledge acquisition modernization planning
+- Updated wiki/canon/roadmap/s5-knowledge-acquisition-modernization-one-track.md with S3 taxonomy/profile and runtime-vs-offline feedback.
+- Updated /home/kosh/AEGIS/.omx/ultragoal/brief.md for future ultragoal execution.
+- Completed S3→S5 reply WRs for taxonomy/profile split and runtime candidate semantics vs offline quality metrics split.
+- Critic sub-agent 019e1590-0c08-79d3-8d20-59c142f606aa returned PASS with no blocking issues.
+
+## [2026-05-11] S4 completed deterministic static evidence contract enhancement and validation baseline | S4 staticEvidenceContract v1 / Golden Corpus / Governance implementation
+- Implemented staticEvidenceContract v1 in services/sast-runner runtime responses and policy-failure paths
+- Added Golden Corpus v1 manifest and deterministic validator with S3-required four layers
+- Added separate validation report profile so runtime qualityEvaluation remains not_evaluated unless a profile runs
+- Added Tool Portfolio Governance v1 and kept current six tools unchanged
+- Final services/sast-runner pytest gate: 447 passed in 13.28s
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md
+
+## [2026-05-11] mcp | complete_wr | s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S4 고도화 aggregate Codex goal completed | S4 ultragoal complete
+- Final Critic PASS with no blockers
+- Full S4 pytest gate: 447 passed in 13.28s
+- Open S4 WRs: none
+- S3 conditional WR completed; S4 reply WR registered
+- Aggregate Codex goal complete; final budget time used 3116 seconds
+- S4 final ultragoal completion recorded in archived S4 artifact because active .omx/ultragoal plan was replaced by another run after G007
+
+## [2026-05-11] S5 G001 completed and checkpointed | S5 G001 knowledge coverage/acquisition readiness contract freeze
+- Added machine-readable S5 acquisition contract snapshot and GET /v1/contracts/acquisition.
+- Added additive target-context envelope contract metadata and unsafe completed_no_hit downgrade validator.
+- Updated canonical API/spec pages for Knowledge Coverage Contract v1 and Acquisition Readiness Contract v1.
+- Verification: full S5 test suite 283 passed; Critic PASS; ultragoal checkpoint complete.
+
+## [2026-05-11] completed | S4 Static Evidence Contract gate hardening
+- Added canonical gate-specific test inventory to wiki/canon/specs/sast-runner-static-evidence-contract.md.
+- S4 gate tests now directly cover systemStability pass/degraded/fail, evidenceReadiness required/optional matrix, qualityEvaluation runtime/report separation, and sync/async policy-failure propagation.
+- Verification: focused static evidence contract tests 23 passed; oracle/report/governance bundle 48 passed; router/build/request ownership 67 passed; full S4 pytest 462 passed.
+- Final Critic review returned PASS with no remaining blockers.
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md
+
+## [2026-05-11] Golden Set v1 and separated gate harness completed | S5 ultragoal G002
+- Added services/knowledge-base/app/evaluation/golden_set.py
+- Added services/knowledge-base/fixtures/golden-set-v1/manifest.json with 24 cases
+- Added services/knowledge-base/tests/test_golden_set_v1.py
+- Verification: 293 full S5 tests passed
+- Critic PASS: 019e15c5-3c55-7c62-821c-256a674da432
+- Ultragoal status reconciled manually because general keep-going Codex goal remains active until G001-G010 complete
+
+## [2026-05-11] Knowledge Corpus v1 taxonomy/profile assets completed | S5 ultragoal G003
+- Added services/knowledge-base/app/corpus/knowledge_corpus.py
+- Added services/knowledge-base/fixtures/knowledge-corpus-v1/manifest.json
+- Added services/knowledge-base/tests/test_knowledge_corpus_v1.py
+- Verification: 303 full S5 tests passed
+- Critic PASS: 019e15d0-2200-7901-9d8f-25986cee9705
+- G004 SQLite LedgerRepository foundation started
+
+## [2026-05-11] SQLite LedgerRepository foundation completed | S5 ultragoal G004
+- Added app/ledger/repository.py and migrations/0001_init.sql
+- Added ledger_url config and target-context ledger-first seam
+- Added tests for repository and no silent JSON fallback
+- Verification: 312 full S5 tests passed
+- Critic PASS: 019e15e2-f940-7a83-8a0c-150791f06f36
+- G005 corpus source manifests/first ingestion started
+
+## [2026-05-11] Corpus source manifests and first ledger ingestion completed | S5 ultragoal G005
+- Added corpus-ingestion-v1 source manifest and raw fixtures
+- Added app/ingestion/corpus_ingestion.py and ledger upsert helpers
+- Added tests for source/raw hash validation, fixture ingestion, KEV/EPSS enrichment-only semantics, idempotency
+- Verification: 321 full S5 tests passed
+- Critic PASS: 019e15f7-71b9-79f2-9838-a0cd31329718
+- G006 transform-decision/taxonomy signal model started
+
+## [2026-05-11] mcp | register_wr | s3-to-s4-s3-accepts-s4-staticevidencecontract-v1-and-gate-hardening-notices
+- Registered reply WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s3-accepts-s4-staticevidencecontract-v1-and-gate-hardening-notices.md
+
+## [2026-05-11] mcp | complete_wr | s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | complete_wr | s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] S5 G006 completed | Transform-decision and taxonomy signal model
+- Added transform signal manifest and validator/persistence harness
+- Formalized profile_signal as context-only relation/signal method
+- Persisted transform_decision rows for fixture ingestion normalized records and relation/enrichment signals
+- Added guards/tests preventing keyword/embedding hits/misses from becoming no-hit or negative evidence
+- Critic PASS after fixing TP/FP/FN runtime/offline vocabulary guard
+
+## [2026-05-11] S5 G007 completed | Ledger-derived Neo4j/Qdrant projections
+- Added ledger-derived projection bundle/rebuilder and projection job helpers
+- Changed neo4j-seed default path to Ledger→Neo4j
+- Target-context code/threat/dangerous-caller no-hit paths now consume ledger projection debt/failed states
+- Projection debt/failure downgrades completed_no_hit through apply_no_hit_safety
+- Critic PASS after fixing hard-coded ready projectionState and contradictory Qdrant→Neo4j wording
+
+## [2026-05-11] S5 ultragoal G008 completed | S5 G008 CVE candidate/discovery split completed
+- Implemented target-scoped cveCandidateEvaluation and cveDiscovery endpoints while preserving compatibility /acquire/cve surface=cve.
+- Added conservative CVE method-completeness helper, candidate range-out forbidden inference guards, linked ledger acquisition/provider observations, and runtime offline-vocabulary leak tests.
+- Verification: test_cve_acquisition_split_v1.py 4 passed; test_target_context_api.py 24 passed; targeted G008 suite 45 passed; compileall app passed; full services/knowledge-base tests 353 passed.
+- Critic final PASS: 019e165f-00a6-71c0-836f-7cd6c022d4f1. Advancing to G009 typed GraphRAG retrieval planner/reranker.
+
+## [2026-05-11] ultragoal_goal_completed | S5 G009 typed GraphRAG retrieval planner/reranker complete
+- Goal G009 completed under S5 Knowledge Acquisition Modernization ultragoal.
+- Implemented typed query intent/corpus partition planning, constrained/global embedding traceability, relation method/methodTrust/ranking annotations, API/target-context propagation, no-hit trace diagnostics, and Golden Set retrieval-quality summary.
+- Verification: targeted G009+contract suites 86 passed; compileall app passed; full S5 tests 365 passed.
+- Critic final PASS: 019e168f-8244-7e63-8dab-fa60c764e4e2 after ITERATE fixes for runtime offline-vocabulary leakage and missing retrievalTrace no-hit bypass.
+
+## [2026-05-11] mcp | complete_wr | s3-to-s4-s3-accepts-s4-staticevidencecontract-v1-and-gate-hardening-notices
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-11] mcp | register_wr | s5-to-s3-s3-review-requested-s5-g010-consumption-validation-report-and-final-modernizatio
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-g010-consumption-validation-report-and-final-modernizatio.md
+
+## [2026-05-11] ultragoal_completed | S5 Knowledge Acquisition Modernization G001-G010 complete
+- All S5 ultragoal goals G001-G010 completed with mandatory Critic validation.
+- G010 added consumption-validation-v1 manifest/report/tests, 34-row source-family audit, 28-row S3 conditional-pass audit, and S5→S3 review WR.
+- Verification: focused G010/S5 contract suite 53 passed; full S5 compile + tests 371 passed.
+- Critic final PASS: 019e16a3-ff1c-7f70-ab68-2796648d647b.
+
+## [2026-05-11] S2 completed S2-only performance-goal optimization | S2 ReportService aggregate performance optimization
+- Created OMX performance goal s2-report-aggregate-perf with deterministic evaluator contract before optimization.
+- Added services/backend/src/services/__tests__/report.service.perf.test.ts to guard against repeated project/run/gate lookups in aggregate report generation.
+- Updated services/backend/src/services/report.service.ts to reuse a per-request lookup context for ProjectReport and custom report module slices.
+- Validation passed: evaluator, full backend suite, shared build.
+
+## [2026-05-11] completed | S7 health readiness cache performance goal
+- Added bounded process-local TTL cache for `/v1/health` real-mode LLM backend readiness probes (`AEGIS_LLM_HEALTH_CACHE_TTL_SECONDS`, default 1.0s).
+- Responses expose `llmBackend.cached` and `llmBackend.cacheTtlMs`; ready/llmReady semantics unchanged and stale states are not reused beyond TTL.
+- Evaluator PASS: uncached_mean_ms=201.52 cached_mean_ms=25.75 improvement=0.872; backend probe calls 8 -> 1.
+- Verification: targeted S7 tests 27 passed; full S7 pytest 309 passed; wiki npm test 8 passed.
+- Performance goal completed: .omx/goals/performance/s7-health-readiness-cache.
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix.md
+
+## [2026-05-11] goal_completion_audit_passed | S5 active goal completion audit passed
+- Completion audit artifact: .omx/plans/s5-modernization-completion-audit-20260511.md.
+- Current full S5 verification: compileall app passed; pytest tests/ -q 371 passed in 36.78s.
+- Critic audit PASS: 019e16af-9e16-7771-b784-be0649f7e5d9.
+- All G001-G010 remain complete and activeGoalId=null.
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates.md
+
+## [2026-05-11] implemented | s4 staticEvidenceContract per-tool anomaly gate propagation
+- S4 kept s4-static-evidence-contract-v1 and did not create v2.
+- Per-tool anomalies now degrade successful artifacts and partialize staticToolExecution with anomalyReasonCodes[].
+- Full S4 pytest: 480 passed in 13.52s.
+- S4→S3 notice WR: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates.md
+
+## [2026-05-11] Documented S5 human-readable analyst brief contract and target-context boundary | S5 Analyst Brief v1
+- Added Knowledge Base API contract for POST /v1/analyst-brief as a pure deterministic transformation endpoint exempt from X-Timeout-Ms.
+- Added target-context spec boundary: Analyst Brief v1 explains S5 observations, uncertainty, allowed/forbidden S3 uses, next actions, and evidence placement without becoming final claim support.
+
+## [2026-05-11] critic-blocker-fixed | s4 staticEvidenceContract not_recorded gate summarization
+- Critic found matrix not_recorded entries could remain clean at gate level.
+- S4 now treats every missing current toolEvidenceMatrix result as TOOL_NOT_RECORDED:<tool> unless an explicit allowed skip result exists.
+- Added regression: toolsRun=[semgrep] with only semgrep toolResult degrades systemStability and partializes staticToolExecution.
+- Full S4 pytest after fix: 481 passed in 13.28s.
+
+## [2026-05-11] mcp | register_wr | s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption.md
+
+## [2026-05-11] implemented | s4 staticEvidenceContract consumer canary harness
+- Added pure JSON consumer canary helper and precomputed full-response fixtures.
+- Canary derives localStaticEvidenceReady only from contract gates/coverage/claimBoundaries/toolEvidenceMatrix and ignores raw execution.toolResults.
+- Full S4 pytest: 490 passed in 13.35s.
+- S4→S3 notice WR: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption.md
+
+## [2026-05-11] implemented | s4 Tool Output Compatibility v1
+- Added parser fixture manifest/report for current six SAST tools: Semgrep SARIF, Cppcheck XML, Flawfinder CSV, clang-tidy text, scan-build plist, gcc-fanalyzer text.
+- Connected report to Tool Portfolio Governance v1 parserCompatibility gate.
+- No tool execution, network, new SAST tools, or API v2 split.
+- Full S4 pytest: 496 passed in 13.08s.
+
+## [2026-05-11] implemented | s4 Benchmark Slice Report v1
+- Added offline JSON-only Benchmark Slice Report v1 over pinned historical Juliet artifacts v0.6.0-full.json and v0.7.0-all-variants.json.
+- Variant-01 precision/FP and all-variant noise/noisePerFile metrics remain source-scoped and are not merged into runtime quality score.
+- Connected report to Tool Portfolio Governance v1 benchmarkSliceCoverage gate.
+- Full S4 pytest: 503 passed in 13.93s.
+
+## [2026-05-11] completed | s4 hardening goal completion audit
+- Completion audit passed: no open S4 WRs, final S4 full pytest 503 passed, wiki tests 8 passed, artifact probe passed.
+- Five Critic-validated loops completed without v2 split or new SAST tools.
+- Session history marked complete: wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-s4-hardening-goal-20260511.md
+
+## [2026-05-11] implementation verified | S5 retrieval quality modernization
+- Applied RetrievalPolicy v1, Lexical Signal Enhancer v1, deterministic reranker/model registry, Retrieval Quality Lab v1, CAPEC/ATT&CK fixture ETL coverage, and attack_pattern ledger projection support.
+- Focused S5 modernization tests: 54 passed.
+- Full S5 regression: 390 passed.
+- Wiki validation passed after index rebuild.
+
+## [2026-05-11] completed after Critic validation | S5 full modernization goal
+- Completion audit: .omx/reports/s5-full-modernization-completion-audit-20260511.md
+- Final full S5 regression: 390 passed in 39.38s
+- Final isolated S5 scope/focused suite: 67 passed in 20.90s with empty S3/S4 diff check
+- Final Critic PASS after hygiene cleanup

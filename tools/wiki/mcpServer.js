@@ -33,7 +33,16 @@ const server = new McpServer({
 });
 
 function textAndStructured(structuredContent, text) {
-  return { content: [{ type: 'text', text }], structuredContent };
+  const safeText = typeof text === 'string' ? text : String(text);
+  const trimmed = safeText.trim();
+  const needsClaudeTurnWorkaround =
+    trimmed === '[]' ||
+    trimmed === '{}' ||
+    (trimmed.length > 0 && trimmed.length < 8);
+  const contentText = needsClaudeTurnWorkaround
+    ? `Result (raw JSON follows):\n${safeText}`
+    : safeText;
+  return { content: [{ type: 'text', text: contentText }], structuredContent };
 }
 
 /* ------------------------------------------------------------------ */

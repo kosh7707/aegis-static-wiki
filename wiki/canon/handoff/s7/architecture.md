@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/architecture.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -373,6 +373,7 @@ Endpoint labels are intentionally low-cardinality (`tasks`, `chat_proxy`, `async
   을 additive하게 제공한다.
 - `requestSummary`는 full history dump가 아니라 현재 in-flight request 하나의 control signal이며, active request가 없으면 `state=\"idle\"` summary로 접힌다.
 - `/v1/health.status="ok"`는 Gateway process liveness이며 DGX/vLLM readiness가 아니다. `llmBackend.status="unreachable"` 또는 circuit breaker `open|half_open`이면 `ready=false`, `llmReady=false`, `degraded=true`와 machine-readable `blockedReason`을 노출한다.
+- `/v1/health` backend probe는 process-local short TTL cache를 사용한다(`AEGIS_LLM_HEALTH_CACHE_TTL_SECONDS`, 기본 1.0s). 반복 poll은 `llmBackend.cached=true`로 표시될 수 있으며 TTL 만료 후에는 DGX/OpenVPN proxy `/health`를 다시 확인한다.
 - `/v1/health.rag`는 RAG 정책 control signal(`topK`, `minScore`, `policy`)을 포함한다. 현재 정책은 `task-pipeline-context-enrichment`이며 RAG hit는 evidence catalog authority가 아니다. RAG disabled/degraded alone does not block `llmReady`.
 - 현재 S7에서 true local ack source로 취급하는 것은 queue exit / phase transition / terminal transition이다.
 - non-streaming `llm-inference` 구간은 세부 progress proof가 없으므로 `localAckState=\"transport-only\"`로 노출한다.

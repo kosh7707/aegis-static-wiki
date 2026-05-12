@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -815,7 +815,9 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
   },
   "llmBackend": {
     "status": "ok",
-    "endpoint": "http://10.126.37.19:8000"
+    "endpoint": "http://127.0.0.1:18000",
+    "cached": false,
+    "cacheTtlMs": 1000
   },
   "llmConcurrency": 4,
   "ready": true,
@@ -826,7 +828,9 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
   "dependencyStatus": {
     "llmBackend": {
       "status": "ok",
-      "endpoint": "http://10.126.37.19:8000"
+      "endpoint": "http://127.0.0.1:18000",
+      "cached": false,
+      "cacheTtlMs": 1000
     },
     "circuitBreaker": {
       "state": "closed",
@@ -868,6 +872,7 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 - `real` 모드에서 `llmBackend.status != "ok"`이면 `ready=false`, `llmReady=false`, `degraded=true`, `degradeReasons`에 `"llm_backend_unreachable"`, `blockedReason="backend_unreachable"`를 반환한다. 이때 top-level `status`는 process liveness로서 계속 `"ok"`일 수 있다.
 - `circuitBreaker.state`가 `"open"`이면 `degradeReasons`에 `"llm_circuit_open"`, `blockedReason="circuit_open"`; `"half_open"`이면 복구 탐침 중으로 `"llm_circuit_half_open"`, `blockedReason="circuit_half_open"`를 반환하며 readiness는 false다. `"closed"`만 full-ready 상태다.
 - `dependencyStatus`는 readiness 판단에 사용한 dependency snapshot이다. `rag.status="disabled"` 또는 RAG 장애는 LLM readiness를 차단하지 않는다.
+- `llmBackend.cached`와 `llmBackend.cacheTtlMs`는 S7 process-local backend health probe freshness metadata다. 기본 `AEGIS_LLM_HEALTH_CACHE_TTL_SECONDS=1.0` 동안 반복 `/v1/health` poll은 DGX/OpenVPN proxy를 매번 때리지 않고 bounded-freshness snapshot을 재사용할 수 있다. TTL이 지난 뒤에는 다시 backend `/health`를 확인하므로 unreachable/복구 상태는 TTL을 넘어 숨겨지지 않는다.
 - `circuitBreaker` 필드는 항상 포함. `state`는 `"closed"` (정상), `"open"` (장애 차단), `"half_open"` (복구 탐침 중).
 - `real` 모드일 때 `llmBackend`, `llmConcurrency` 필드가 포함되며, vLLM 백엔드 연결 상태와 동시 처리 가능 수를 보고한다.
 - `activeRequestCount`는 현재 `queued` 또는 `running` 상태 request 수다.
@@ -1042,7 +1047,7 @@ Interpretation rule: if S7 is reachable and the failure proves the model produce
 
 ### Health, capacity, and traceability
 
-- `/v1/health` exposes process liveness (`status`), service/LLM readiness (`ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`), dependency snapshots (`dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`), capacity hints (`llmConcurrency`, `activeRequestCount`), and compact active request `requestSummary`.
+- `/v1/health` exposes process liveness (`status`), service/LLM readiness (`ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`), bounded-freshness backend probe metadata (`llmBackend.cached`, `llmBackend.cacheTtlMs`), dependency snapshots (`dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`), capacity hints (`llmConcurrency`, `activeRequestCount`), and compact active request `requestSummary`.
 - `/v1/models` is the authoritative model identity/capability surface (`profileId`, `modelName`, `contextLimit`, task allowlist, availability).
 - Current gap: no explicit `costTier`, `queueDepth`, or queue saturation percentage field exists. Consumers should use `modelProfiles`/`/v1/models` for identity and `ready`/`llmReady` + `activeRequestCount` + `llmConcurrency` + `circuitBreaker` + request status for readiness signals.
 - `X-Request-Id` is propagated to the LLM Engine on sync `/v1/chat`; async stores it as `traceRequestId` across submit/status/result while using a separate durable async `requestId`.

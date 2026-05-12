@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s2-handoff/api-endpoints.md"
 original_path: "docs/s2-handoff/api-endpoints.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s2"]
 decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2", "s1-aggregate-types"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -95,6 +95,7 @@ Health control-signal 메모 (2026-05-08):
 - S2 direct S3/S7 task paths:
   - S2 forwards `requestId` to `/v1/health` for progress/control visibility
   - S2 does not claim durable status/result/cancel consumption for S3/S7 `/v1/tasks` until those owner contracts expose such endpoints
+- S7 readiness-ramp forwarding (2026-05-11): S2 `/health` preserves the S7 raw health object under `llmGateway.detail`. S1 should read S7 fields at `llmGateway.detail.ready`, `llmGateway.detail.llmReady`, `llmGateway.detail.degraded`, `llmGateway.detail.degradeReasons`, `llmGateway.detail.blockedReason`, and `llmGateway.detail.dependencyStatus`. S2 does not currently duplicate those fields onto top-level `HealthResponse` or `llmGateway` itself; `llmGateway.status` is only S2's coarse `ok|degraded|unreachable` aggregate classification. S1 should not bypass S2 to call S7 directly for this UI.
 
 ### 프로젝트 설정 / 활동 / 알림 / 인증
 
@@ -146,6 +147,7 @@ Auth v1 메모 (2026-04-20):
 - registration approve/reject/lookup returns the full `RegistrationRequest` shape with populated `organizationCode` / `organizationName`.
 - BuildTarget Quick preflight uses canonical `BuildTarget.sdkChoiceState`; `sdk-unresolved` means Quick must be disabled until SDK choice is explicit.
 - For S4 native/custom scans, S2 strips local `buildProfile.sdkId: "custom"` before calling S4; native scans omit `sdkId`.
+- For S4 explicit no-SDK scans, S2 maps local `buildProfile.sdkId: "none"` to `sdkResolutionMode: "none"` and omits `sdkId`. For uploaded SDK-backed scans (`sdk-*`), S2 does not send the local registry id to S4; it derives `sdkResolutionMode: "non-registered"` plus `sdkDescriptor` internally and rejects any bare `sdk-*` scan profile before submission.
 - S3 `/v1/tasks` `status=completed` means the Analysis Agent returned a valid review envelope, not necessarily a clean Deep pass. S2 preserves additive `claimDiagnostics` / `evidenceDiagnostics`; `claims[]` remains accepted-final-only.
 - S3 `/v1/tasks` `status=completed` means the Analysis Agent returned a valid review envelope, not necessarily a clean Deep pass. S2 persists `analysisOutcome` / `qualityOutcome` / `pocOutcome` / `recoveryTrace`; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Non-clean but valid-input outcomes remain completed results with review/warning signals, while true task failures may return non-2xx and preserve `failureCode` / `failureDetail`.
 - rate limits:
@@ -224,6 +226,19 @@ Build Agent SDK materialization descriptor memo (2026-05-08):
 - S2 emits `setupScript`/`sysroot` relative to `sdkRootPath` when profile paths exist and resolve inside the SDK root.
 - S2 does not generate host-default SDK paths such as `/home/kosh/ti-sdk` and does not emit legacy flat descriptor aliases.
 - No S1-facing request payload changes are required for this contract: S1 still uploads/selects SDKs and optionally stores `scriptHintPath`; S2 derives the Build Agent descriptor internally.
+
+S4 scan SDK descriptor memo (2026-05-11):
+
+- The S3 Build Agent descriptor above is also the source for S4 scan SDK normalization. During pipeline/explicit Quick scans, S2 converts registered uploaded SDKs (`sdk-*`) into S4-local `sdkResolutionMode: "non-registered"` with `sdkDescriptor.sdkRootPath`, optional `setupScript`/`sysroot`/`toolchainTriplet`, descriptor-derived `environment`, and target compiler metadata where available.
+- S2 strips the local `sdkId` before the S4 scan request. S4 must not receive S2 registry ids as known SDK ids.
+- `buildProfile.sdkId: "none"` is converted to `sdkResolutionMode: "none"` with no `sdkId`.
+- This is an internal S2→S4 contract adaptation; S1 request/REST shapes for SDK selection do not change.
+
+S5 code-graph ingest memo (2026-05-11):
+
+- S2 sends S5 `POST /v1/code-graph/{projectId}/ingest` with canonical `{ functions: [...] }` only. Each function includes `calls[]`; S2 may derive calls from S4 legacy `callEdges` as compatibility input, but does not emit top-level `call_edges`.
+- S2 reads canonical S5 response counters `nodeCount` and `edgeCount` for pipeline/analysis state. Legacy `nodes_created` / `edges_created` / stats `function_count` / `call_edge_count` are fallback-only compatibility fields.
+- Graph readiness is accepted only when S5 returns `status: "ready"` and `readiness.graphRag === true` on canonical readiness responses.
 | POST | `/api/projects/:pid/pipeline/prepare` | 빌드 준비만 실행 (`202 { preparationId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/prepare/:targetId` | 단일 타겟 빌드 준비만 실행 (`202 { preparationId, targetId, status: "running" }`) |
 | POST | `/api/projects/:pid/pipeline/run` | 전체 파이프라인 실행 (`202 { pipelineId, status: "running" }`); 이후 WS/notifications correlation key는 `pipelineId` |
@@ -297,6 +312,8 @@ QualityGate / Approvals mock-absorption contract memo (2026-04-26):
 | GET | `/api/projects/:pid/report/dynamic` | 동적 분석 보고서 |
 | GET | `/api/projects/:pid/report/test` | 동적 테스트 보고서 |
 | POST | `/api/projects/:pid/report/custom` | 커스터마이징 보고서 |
+
+Module report endpoint intent (2026-05-11): `/report/static`, `/report/dynamic`, and `/report/test` remain active S2 contract endpoints, not intentional dead surfaces. They return the same `ModuleReport` shape embedded at `ProjectReport.modules.{static|dynamic|test}`. Query filters `severity`, `status`, `runId`, `from`, and `to` are parsed through the same filter helper as aggregate `/report`. One behavioral difference is intentional: aggregate `/report` omits modules with zero findings, while direct module endpoints can return an empty `ModuleReport` for an existing project/module.
 
 ### WebSocket 채널
 

@@ -78,6 +78,9 @@ test('MCP server exposes typed read/write wiki operations', async () => {
 
     const emptyOpen = await client.callTool({ name: 'list_my_open_wrs', arguments: { lane: 's3' } });
     assert.deepEqual(emptyOpen.structuredContent.wrs, []);
+    assert.equal(emptyOpen.content[0].type, 'text');
+    assert.match(emptyOpen.content[0].text, /Result \(raw JSON follows\):\n\[\]/);
+    assert.notEqual(emptyOpen.content[0].text, '[]');
 
     const readResult = await client.callTool({ name: 'read_page', arguments: { path: 'wiki/canon/charter/aegis.md' } });
     assert.equal(readResult.structuredContent.title, 'AEGIS');

@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/README.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-05-08**
+> **마지막 업데이트: 2026-05-11**
 
 ---
 
@@ -29,6 +29,12 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - 12개 엔드포인트 관리: scan (동기+NDJSON 스트리밍+durable ownership), functions, includes, metadata, libraries, build, build-and-analyze, discover-targets, health, request status, request result, request cancel
 - build path는 execution-only. SDK/toolchain/build-command 해석은 하지 않음
 - `metadata.cweId` 표준화 — 전 도구에서 CWE 식별자를 `cweId` 필드로 제공 (S2 Finding 매핑용)
+- `metadata.evidenceResolution` + enriched `scan.sca.libraries[]` — SAST/SCA evidence 해상도를 높이는 deterministic projection (보안 판정/CVE 조회 아님)
+- `staticEvidenceContract` v1 구현 — `wiki/canon/specs/sast-runner-static-evidence-contract.md`가 canonical Coverage/Readiness/Claim-boundary/toolEvidenceMatrix contract이며, `/v1/scan` 및 `/v1/build-and-analyze`에 additive로 부착된다. Per-tool anomaly는 `systemStability=degraded`와 `coverage.staticToolExecution=partial/anomalyReasonCodes[]`로 전파된다.
+- Golden Corpus v1 / Tool Portfolio Governance v1 — `services/sast-runner/tests/fixtures/golden_corpus_v1/manifest.json`, `benchmark/static_evidence_report.py`, `benchmark/tool_portfolio_governance.py`, `wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md`가 validation/report/governance baseline이다. 현재 decision은 `keep-current-six-tools`다. Golden Corpus v1은 structural graph, SCA diff partial, degraded execution, policy failure, CWE-120, CWE-190, CWE-416 canary를 포함한다.
+- Static Evidence consumer canaries — `benchmark/static_evidence_consumer_canary.py`와 `tests/fixtures/static_evidence_contract/consumer_canaries/*.json`은 S3-facing JSON contract 소비 semantics를 S4 내부 app import 없이 검증한다.
+- Tool Output Compatibility v1 — `benchmark/tool_output_compat.py`와 `tests/fixtures/tool_output_compat_v1/manifest.json`은 현재 6개 도구 raw output parser 호환성을 외부 도구 실행 없이 잠근다. Governance `parserCompatibility` gate가 이 report를 소비한다.
+- Benchmark Slice Report v1 — `benchmark/benchmark_slice_report.py`는 pinned historical Juliet baseline JSON만 읽어 variant-01 precision/FP와 all-variant noise evidence를 source-scoped로 제공한다. Governance `benchmarkSliceCoverage` gate가 이 evidence를 소비한다.
 
 ### 너는 하지 않는다
 
@@ -65,7 +71,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.2** |
-| 테스트 | **414개 통과** (2026-05-08 SDK/cancel 구현 후 전체 pytest 재확인); focused/related gate **15 passed / 147 passed** |
+| 테스트 | **503개 통과** (2026-05-11 staticEvidenceContract / Golden Corpus / governance / S3-consumable toolEvidenceMatrix / per-tool anomaly gate propagation / consumer canary / Tool Output Compatibility v1 / Benchmark Slice Report v1 hardening 후 전체 pytest 재확인); final full gate **503 passed in 13.93s** |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -75,8 +81,12 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - build preparation의 canonical ready 조건은 `readiness.compileCommandsReady=true` + `buildEvidence.userEntries>0` + `buildEvidence.exitCode==0`
 - analysis path SDK contract는 `none`, `non-registered`, S4-local `{sdkId}` 세 가지다. `sdkResolutionMode="none"`은 registry lookup 금지, `sdkResolutionMode="non-registered"`는 caller-resolved `sdkDescriptor.sdkRootPath` 필수다. legacy `sdkId="custom"` sentinel은 더 이상 허용하지 않는다. 알 수 없는 bare sdkId는 `SDK_NOT_FOUND` 400으로 실패하고 source-only fallback으로 계속 돌지 않는다
 - `/v1/scan` NDJSON heartbeat와 final execution은 degraded-aware metadata를 포함
+- `/v1/scan` findings는 `metadata.evidenceResolution` 아래에 deterministic CWE/location/dataflow/origin diagnostics를 포함한다. verdict-like fields(`vulnerable`, `safe`, `affected`, `clean`, `riskScore`, `securityVerdict`)는 금지다
+- `/v1/scan` projectPath SCA projection은 enriched `sca.libraries[]` shape를 제공한다: legacy `name/version/path/repoUrl` + `source/commit/branch/tag/nearestTag/versionStatus/versionEvidence/diagnostics/diffAvailable/modificationStatus/provenance.libraryPath` 등. `/v1/build-and-analyze` top-level `libraries[]`는 nested `scan.sca.libraries[]`와 같은 shape다
 - explicit Quick는 `/v1/build` ready 이후 `compileCommands` 를 포함한 `/v1/scan` one-shot 호출로 취급하며, Deep 자동 연쇄를 전제하지 않음
 - `/v1/scan` / `/v1/build-and-analyze`에는 **허용된 skip만 성공 가능한 omission policy gate** 가 있음
+- 성공 응답이어도 current tool `partial`/`failed`/degraded/blocking skip/missing/unknown metadata가 있으면 `staticEvidenceContract.gates.systemStability.status="degraded"`, `coverage.staticToolExecution.status="partial"`로 소비자에게 명시함
+- S3-facing consumer canary는 raw `execution.toolResults` 대신 contract block만 읽어 `localStaticEvidenceReady`를 판정하며, absent/malformed contract는 outer `success=true`와 무관하게 not-ready로 본다
 - `/v1/health`는 기존 top-level `semgrep` 필드를 유지한 채 `tools`, `policyStatus`, `policyReasons`, `unavailableTools`, `allowedSkipReasons`, `defaultRulesets`, `activeRequestCount`, `requestSummary`를 노출하며, additive `localAckState`로 `phase-advancing` / `transport-only` / `ack-break`를 함께 제공
 - `/v1/health?requestId=...` 로 `scan` / `build` / `build-and-analyze` 요청의 queued/running/degraded/ack-break equivalent를 polling-friendly summary로 조회 가능
 - health-control v2 durable ownership mode가 추가됨: `Prefer: respond-async`를 보내면 `/v1/scan`, `/v1/build`, `/v1/build-and-analyze`가 `202` + `statusUrl`/`resultUrl`을 반환하고, `/v1/requests/{requestId}` 및 `/v1/requests/{requestId}/result`로 terminal result/failure/cancelled를 회수한다
@@ -118,6 +128,8 @@ services/sast-runner/
 │   │   └── response.py      — `BuildResponse`, `ScanResponse`, `ExecutionReport` 등 `/v1` 계약 스키마
 │   └── scanner/
 │       ├── orchestrator.py   — 6도구 병렬 + scope-early + 경계면 필터링
+│       ├── evidence.py       — deterministic evidence-resolution projection
+│       ├── static_evidence_contract.py — Coverage/Readiness/Claim-boundary contract builder
 │       ├── semgrep_runner.py — taint + sanitizer, include_extensions 필터
 │       ├── cppcheck_runner.py
 │       ├── clangtidy_runner.py — CWE 매핑 24개
@@ -138,7 +150,7 @@ services/sast-runner/
 │       └── library_hasher.py
 ├── rules/automotive/        — 커스텀 Semgrep 룰 39개 (9 YAML)
 ├── benchmark/               — Juliet 벤치마크 러너 + 코드그래프 품질 평가
-├── tests/                   — 414개 테스트 (2026-05-08 전체 pytest 통과) + SDK/cancel contract tests
+├── tests/                   — 503개 테스트 (2026-05-11 전체 pytest 통과) + evidence_oracles + SDK/cancel contract tests
 └── requirements.txt
 ```
 

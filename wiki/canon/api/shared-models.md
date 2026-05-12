@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/shared-models.md"
 original_path: "docs/api/shared-models.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["platform"]
 decision_tags: ["build-script-hint", "scriptHintPath", "build-agent-contract", "sdk-materialization", "health-control-v2", "s1-aggregate-types"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -1152,6 +1152,12 @@ S2 → S3 Build Agent SDK materialization descriptor producer semantics (2026-05
 - S2 does not infer SDK materialization from host defaults such as `/home/kosh/ti-sdk`; built-in SDK ids continue to carry `sdkId` only unless a future uploaded/materialized SDK association contract is added.
 - `scriptHintPath`, when present, remains BuildTarget-root-relative and is still emitted only as `context.trusted.build.scriptHintPath`; inline script text aliases are not emitted.
 
+S2 → S4 SAST scan SDK adaptation (2026-05-11):
+
+- S1-facing `BuildTarget.buildProfile.sdkId` remains the local SDK selection field. When it is an uploaded SDK id (`sdk-*`), S2 converts it before S4 scan submission to `sdkResolutionMode: "non-registered"` with a S4-local `sdkDescriptor`; the local `sdkId` is stripped and must not be interpreted by S4 as a known SDK id.
+- Explicit no-SDK selection (`sdkId: "none"`) is converted to `sdkResolutionMode: "none"` with no `sdkId`. Local custom/native sentinel values are stripped before S4 scan calls.
+- This adaptation is internal to S2 and does not add or require new S1 request fields.
+
 ### SDK profile lookup routes
 
 | Method | Path | Success | Status codes |
@@ -1681,6 +1687,7 @@ Health-control v2 S2 consumer scope (2026-05-08):
 - S2 does not use elapsed request age as an abort reason on that S4 ownership path. A submit transport timeout is recoverable when `/v1/health?requestId=...` proves the owned S4 request is still alive or terminal-completed with retrievable result ownership.
 - Explicit local cancellation is propagated as an `AbortSignal` through S2's S4 wait loop and S2 now best-effort calls S4 `DELETE /v1/requests/{requestId}` for the derived durable S4 ownership id. A successful S4 cancel returns `202` for queued/running requests or `200` for already-terminal idempotent requests; S2 still treats the local operation as cancelled and logs non-retained `404`/`410` cancel responses as best-effort cleanup misses.
 - Direct S2→S7 `/v1/tasks` and S2→S3 `/v1/tasks` remain finite compatibility task surfaces unless those owner lanes publish status/result/cancel ownership endpoints for S2 to consume. S2 still forwards `requestId` to their `/v1/health` summaries for user-facing progress and aggregate control guidance.
+- S2 S5 code-graph ingestion uses canonical `functions[].calls` payloads and reads canonical `nodeCount` / `edgeCount` counters. Legacy S4/S5 field names are compatibility input/output fallbacks only, not the S1-facing or downstream-canonical contract.
 
 ---
 
@@ -2062,6 +2069,25 @@ Role and recovery:
   - use the per-flow REST recovery endpoint when the foreground WS stream itself is needed.
 
 ---
+
+### 4.10 Health readiness detail forwarding
+
+S2 `/health` returns child service health entries as `{ status, detail?, control? }`. For S7 LLM Gateway readiness-ramp fields introduced by S7, the canonical S1 read path is the raw detail object:
+
+```ts
+health.llmGateway?.detail?.ready
+health.llmGateway?.detail?.llmReady
+health.llmGateway?.detail?.degraded
+health.llmGateway?.detail?.degradeReasons
+health.llmGateway?.detail?.blockedReason
+health.llmGateway?.detail?.dependencyStatus
+```
+
+S2 does not currently duplicate these onto top-level `HealthResponse` or the `llmGateway` wrapper. `llmGateway.status` remains S2's coarse aggregate status (`ok | degraded | unreachable`), not the LLM-ready boolean. S1 should prefer S2 `/health` over direct S7 fetches to avoid CORS/auth/topology coupling.
+
+### 4.11 Report module endpoints
+
+`GET /api/projects/:pid/report/static`, `/dynamic`, and `/test` are active contract endpoints. Each returns `ModuleReportResponse` with the same `ModuleReport` shape used inside `ProjectReport.modules.{static|dynamic|test}`. The module endpoints accept the same query filters as aggregate `/report`: `severity`, `status`, `runId`, `from`, and `to`. Aggregate `/report` omits empty modules, while direct module endpoints may return an empty `ModuleReport` for an existing project/module.
 
 ## 5. Canonical drift notes resolved by this document
 

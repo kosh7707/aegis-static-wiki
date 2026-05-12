@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/backend.md"
 original_path: "docs/specs/backend.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s2"]
 decision_tags: ["sdk-materialization", "build-agent-contract", "health-control-v2"]
 related_pages: ["wiki/context/project/end-to-end-scenarios.md"]
@@ -1020,6 +1020,8 @@ POST /api/auth/registration-requests/:id/reject
 - S2 preserves S3 `result.policyFlags` and the additive result-level outcome fields `analysisOutcome`, `qualityOutcome`, `pocOutcome`, `recoveryTrace`, `claimDiagnostics`, and `evidenceDiagnostics`. S3 `status: "completed"` means a schema-valid honest review envelope; clean Deep pass requires `analysisOutcome=accepted_claims` and `qualityOutcome=accepted`. Valid-input S3 deficiencies are persisted as completed results with outcome fields, warnings, and `needsHumanReview=true` where appropriate. True task failures may still arrive on non-2xx HTTP statuses (for example 422/413/504/503), and S2 preserves `failureCode` / `failureDetail` instead of reducing them to a generic transport error.
 - Deep outcome UI guidance is canonicalized in `wiki/canon/api/shared-models.md` §2.6.1: enum copy, cleanPass derivation, recoveryTrace display, WS/REST consistency, and unknown-enum fallback policy. `cleanPass` remains WS-only convenience and is derived for REST/historical views.
 - S2 strips local `buildProfile.sdkId = "custom"` before calling S4 scan endpoints; native/non-SDK S4 scans omit `sdkId`.
+- S2 S4 scan-profile normalization (2026-05-11): local explicit no-SDK `buildProfile.sdkId = "none"` is converted to S4 `sdkResolutionMode: "none"` with no `sdkId`; local uploaded SDK ids (`sdk-*`) are never sent to S4 as bare `sdkId`. For uploaded SDK scans, S2 derives a S4-local `sdkResolutionMode: "non-registered"` + `sdkDescriptor` from the same project-owned materialized SDK descriptor used for S3 Build Agent. `SastClient` rejects any remaining bare `sdk-*` scan profile before network submission.
+- S2 S5 code-graph contract (2026-05-11): S2 sends canonical `functions[]` where each function carries `calls[]`; outbound legacy top-level `call_edges` is not emitted. S2 consumes canonical S5 ingest/stat counters `nodeCount` / `edgeCount` and only falls back to legacy `nodes_created` / `edges_created` / `function_count` / `call_edge_count` for compatibility with older fixtures. `status="ready"` plus `readiness.graphRag=true` remains the authoritative GraphRAG-ready signal.
 - S2 direct S4 build/scan uses health-control v2 durable ownership when S4 supports it: each operation gets a child request id derived from parent request id + endpoint + payload fingerprint, sends `Prefer: respond-async`, waits through queued/running/transport-only/degraded-without-blocked states, and reads nested result-level readiness/success fields from `/v1/requests/{requestId}/result`. S2 treats `404/409/410`, ack-break, failed, cancelled, expired, or blocked summaries as ownership loss/chain abort.
 - registration approve/reject/lookup responses return the full shared `RegistrationRequest` shape with populated org fields.
 - S3 Build Agent `build-v1.1` is active. S2 treats `status=completed` as an envelope and requires `result.cleanPass !== false`; completed-but-non-clean results such as `EXPECTED_ARTIFACTS_MISMATCH` become `resolve_failed` pipeline outcomes.

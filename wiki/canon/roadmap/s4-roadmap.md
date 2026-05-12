@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/roadmap.md"
 original_path: "docs/s4-handoff/roadmap.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-11"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -16,23 +16,56 @@ migration_status: "canonicalized"
 # S4 SAST Runner — 로드맵
 
 > 다음 작업 + 후순위 계획. README.md에서 분리.
-> **마지막 업데이트: 2026-04-14**
+> **마지막 업데이트: 2026-05-11**
 
 ---
 
 ## 즉시 다음
 
-현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-04-14 처리 후 재확인)
+현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-05-11 처리 후 재확인)
 
 후속 후보:
+- Additional S3 EvidenceCatalog sample payloads only if S3 requests more consumer-specific cases beyond the current consumer canaries.
 - downstream(S2/S3) build-path adaptation feedback 수신 시 contract drift 보정
 - analysis path inversion 필요 여부는 별도 논의
 - `discover-targets` identity-hint를 upstream durable `buildUnitId` 매핑으로 연결할지 재검토
-- heavy analyzer vendor policy 자체 완화 여부(현재는 signaling/evidence만 강화됨)
 
 ---
 
 ## 최근 완료
+
+- ~~Benchmark Slice Report v1 + governance benchmarkSliceCoverage gate~~ — **완료** (2026-05-11)
+  - pinned historical artifacts `v0.6.0-full.json` and `v0.7.0-all-variants.json` only
+  - variant-01 recall/precision/FP and all-variant recall/noise/noisePerFile kept source-scoped
+  - report is offline quality evidence only, not runtime qualityEvaluation or tool-change decision
+  - Full S4 pytest: `503 passed in 13.93s`
+
+- ~~Tool Output Compatibility v1 + governance parserCompatibility gate~~ — **완료** (2026-05-11)
+  - Semgrep SARIF, Cppcheck XML, Flawfinder CSV, clang-tidy text, scan-build plist, gcc-fanalyzer text parser fixtures 추가
+  - `benchmark/tool_output_compat.py` report를 Tool Portfolio Governance v1 `parserCompatibility` gate에 연결
+  - 외부 도구 실행, 네트워크, 새 SAST 도구, API v2 분리 없음
+  - Full S4 pytest: `496 passed in 13.08s`
+
+- ~~staticEvidenceContract consumer canary harness~~ — **완료** (2026-05-11)
+  - precomputed full-response JSON fixtures로 top-level 및 nested `scan.staticEvidenceContract` consumption을 고정
+  - clean/degraded failed-tool/missing metadata/policy failure/allowed skip/absent/malformed/poisoned raw execution cases 추가
+  - helper는 S4 app import 없이 `gates`, `coverage`, `claimBoundaries`, `toolEvidenceMatrix`만 소비
+  - Full S4 pytest: `490 passed in 13.35s`
+
+- ~~per-tool anomaly gate propagation hardening~~ — **완료** (2026-05-11)
+  - 성공 응답 안의 tool `failed`/`partial`/degraded/blocking-skip/missing/unknown metadata를 `systemStability=degraded`로 전파
+  - `coverage.staticToolExecution=partial`, `TOOL_EXECUTION_PARTIAL`, `anomalyReasonCodes[]`로 S3-consumable readiness semantics 제공
+  - 단일 tool failure는 policy failure가 없는 한 artifact `fail`이 아니라 successful-but-degraded artifact로 고정
+  - `/v1/scan` 및 `/v1/build-and-analyze` endpoint propagation tests 추가
+  - Full S4 pytest: `481 passed in 13.28s`
+
+- ~~S3-consumable staticEvidenceContract hardening~~ — **완료** (2026-05-11)
+  - 기존 `s4-static-evidence-contract-v1` schemaVersion을 유지한 채 additive `toolEvidenceMatrix`를 추가
+  - matrix는 current six tools stable order, role/uniqueContribution/overlap/limitations, execution status, findingsCount, skip/degrade metadata, consumerPolicy를 제공
+  - Golden Corpus v1 evidence bundles를 structural graph, SCA diff partial, degraded execution, policy failure로 확장
+  - vulnerability-family canaries를 CWE-120 / CWE-190 / CWE-416으로 확장
+  - non-registered SDK gcc-fanalyzer rescue 회귀 테스트 추가
+  - Full S4 pytest: `471 passed in 13.33s`
 
 - ~~S3 wait-while-alive follow-up WR: build/build-and-analyze health coverage + localAckState mapping~~ — **완료** (2026-04-14)
   - `/v1/health` request-summary coverage를 `/v1/scan` + `/v1/build` + `/v1/build-and-analyze`로 확장

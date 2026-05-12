@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/README.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,7 +15,7 @@ related_pages: []
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S7(LLM Gateway + LLM Engine 관리) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-05-08**
+> **마지막 업데이트: 2026-05-11**
 
 ---
 
@@ -294,3 +294,11 @@ phase-2 no-result-loss semantics용 별도 surface.
 - Circuit breaker `open`/`half_open` also makes readiness false. RAG disabled/degraded is exposed in `dependencyStatus.rag` but does not block LLM readiness.
 - `/v1/tasks` remains finite synchronous TaskResponse-envelope compatibility for S2 direct `LlmTaskClient`; it has no durable status/result/cancel surface. `/v1/health?requestId=` is active progress/control visibility only and not task result recovery.
 - `/v1/async-chat-requests` is durable ownership for OpenAI-compatible chat payloads, not a drop-in replacement for `/v1/tasks` envelopes. A future durable TaskResponse surface should be separate (e.g. `/v1/async-tasks`).
+
+## S7 health readiness performance note (2026-05-11)
+
+- `/v1/health` real-mode backend readiness probe now uses a short process-local TTL cache (`AEGIS_LLM_HEALTH_CACHE_TTL_SECONDS`, default 1.0s).
+- Purpose: S2/S3/S1 readiness polling should not force every poll through the DGX OpenVPN proxy.
+- `llmBackend.cached` and `llmBackend.cacheTtlMs` expose whether the backend snapshot came from the freshness window.
+- `ready`/`llmReady` semantics are unchanged; stale OK or unreachable states are not reused beyond the TTL.
+- Evaluator: `cd services/llm-gateway && .venv/bin/python scripts/perf_health_readiness.py --backend-delay-ms 200 --requests 8 --min-improvement-ratio 0.50`.

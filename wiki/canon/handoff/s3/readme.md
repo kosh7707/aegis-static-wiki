@@ -6,10 +6,10 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
@@ -699,3 +699,67 @@ Operational reminder:
   hot11 overfit. Future dataset additions should extend the oracle rather than
   special-case project names.
 <!-- S3-QG-HARDENING-20260509:END -->
+
+---
+
+<!-- S3-S4-ENRICHED-EVIDENCE-CONSUMPTION-20260511:START -->
+## 22. 2026-05-11 S4 enriched evidence consumption / SCA CVE lookup honesty
+
+S3 consumed S4's evidence-resolution producer reply for enriched SAST findings and SCA libraries. S4 now emits SAST finding `metadata.evidenceResolution` and enriched SCA fields such as `versionStatus`, `versionConfidence`, `cveLookupEligible`, `diagnostics`, `diffAvailable`, `modificationStatus`, `diffSummary`, and provenance hints.
+
+S3 implementation decision:
+- Analysis Agent preserves enriched SAST/SCA dictionaries from precomputed `quickContext.sastFindings` / `quickContext.scaLibraries`, S4 `/v1/build-and-analyze` top-level `libraries[]`, and the individual SCA path without normalizing away S4 evidence fields.
+- S5 `/v1/cve/batch-lookup` input is now partitioned before submission. A library is eligible only when it has `name` and `version`, `cveLookupEligible` is not `false`, and `versionStatus` is absent/legacy or `known`.
+- Versionless, unknown, ambiguous, explicitly ineligible, or nameless libraries are skipped before S5 submission and recorded as `cve_lookup_skipped_libraries` diagnostics. S3 no longer sends name-only SCA libraries to S5.
+- Eligible-library truncation records `cve_lookup_truncated` and `cve_lookup_unqueried_eligible_count`; truncated lookups are operational diagnostics and do not produce whole-set `cve_no_hits`.
+- `cve_no_hits` negative evidence is emitted only when an eligible CVE lookup was actually attempted for the full eligible set, completed successfully, and returned no CVEs. Timeout, transport/error, all-ineligible, skipped-library, or truncated cases are operational diagnostics, not negative vulnerability evidence.
+- Phase 2 prompt rendering now treats `DIFF_NOT_COMPUTED`, `diffAvailable=false`, and `modificationStatus="unknown"` as unknown/uncomputed diff evidence rather than "원본 그대로". `VERSION_UNKNOWN` / skipped CVE lookup is rendered as caveat/context, not as absence of CVEs.
+
+Code anchors:
+- `services/analysis-agent/app/core/phase_one_types.py`
+- `services/analysis-agent/app/core/phase_one_kb.py`
+- `services/analysis-agent/app/core/evidence_catalog.py`
+- `services/analysis-agent/app/core/phase_one_prompt.py`
+- `services/analysis-agent/tests/test_phase_one.py`
+- `services/analysis-agent/tests/test_evidence_catalog.py`
+
+Fresh verification:
+- Focused RED→GREEN implementation gate: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py::TestRunCveLookup tests/test_phase_one.py::TestBuildPhase2Prompt::test_sca_prompt_preserves_unknown_version_and_diff_uncertainty tests/test_evidence_catalog.py::test_cve_no_hits_requires_completed_eligible_lookup tests/test_evidence_catalog.py::test_cve_all_ineligible_is_operational_skip_not_no_hits tests/test_evidence_catalog.py::test_cve_lookup_error_is_operational_not_no_hits -q` → `11 passed in 0.20s` (initial gate before truncation-blocker fix).
+- Focused Phase 1/evidence catalog gate: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `81 passed in 0.80s` (after truncation regression addition).
+- Post-Critic truncation regression: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py::TestRunCveLookup tests/test_evidence_catalog.py::test_cve_truncated_lookup_is_operational_not_no_hits tests/test_evidence_catalog.py::test_cve_no_hits_requires_completed_eligible_lookup -q` → `10 passed in 0.29s`.
+- Related Analysis Agent gate after truncation fix: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py tests/test_evidence_catalog.py tests/test_deep_analyze_handler.py tests/test_sast_tool.py -q` → `110 passed in 2.07s`.
+- Analysis Agent full suite after truncation fix: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `624 passed in 6.47s`.
+- Static/syntax: `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval && git diff --check -- services/analysis-agent` → PASS.
+
+Operational reminder:
+- S4 enriched SCA fields are evidence quality/status hints, not vulnerability verdicts.
+- Do not treat skipped/truncated CVE lookup or uncomputed diff as proof that a dependency is safe/unmodified.
+- Keep library CVEs as caveats or recommended next steps unless local project source evidence independently supports a claim.
+<!-- S3-S4-ENRICHED-EVIDENCE-CONSUMPTION-20260511:END -->
+
+
+---
+
+<!-- S3-S4-STATIC-EVIDENCE-CONTRACT-CONSUMPTION-20260511:START -->
+## 23. 2026-05-11 S4 `staticEvidenceContract` / readiness gate consumption
+
+S3 reviewed and accepted S4's implemented `staticEvidenceContract` v1, Golden Corpus v1, Tool Portfolio Governance v1, and follow-up gate-hardening notices. These are S4-owned producer/validation surfaces; S3 consumes them as deterministic local static-evidence contracts, not as final vulnerability judgments.
+
+S3 consumer interpretation:
+- `staticEvidenceContract.gates.systemStability` answers whether the S4 local artifact is operationally trustworthy enough to read; `fail` or policy-failure reason codes are acquisition/readiness diagnostics, not absence-of-vulnerability evidence.
+- `staticEvidenceContract.gates.evidenceReadiness` answers which local deterministic S4 surfaces are `ready`, `partial`, or `not_ready`; `partial` and `not_ready` preserve follow-up obligations and caveats.
+- Runtime `staticEvidenceContract.gates.qualityEvaluation.status="not_evaluated"` is expected and must not be treated as a quality failure. `pass`/`partial`/`fail` quality statuses belong to S4 validation/report profiles only.
+- `findings=[]` means S4 emitted an empty local finding surface; it must not become proof that no vulnerability exists.
+- Explicit `not_provided` surfaces for external vulnerability knowledge, semantic GraphRAG/retrieval, runtime behavior, exploitability judgment, and final security verdict preserve S5/S3 ownership of those decisions.
+- Structural `codeGraph` evidence remains structural callgraph evidence only; S3 must not read it as semantic retrieval or graph-RAG completeness.
+
+Current S3 action:
+- No immediate S3 code change is required for the S4 gate-hardening notice because the current S3 evidence model already treats S4 failures/skips/unknowns as operational diagnostics and keeps S5 CVE/context acquisition separate from S4 local evidence.
+- Future S3 ingestion work may map `staticEvidenceContract.coverage`, `gates`, and `claimBoundaries` into first-class EvidenceCatalog diagnostics once live S4 payloads are broadly available, but this must preserve the no-negative-evidence semantics above.
+
+Canonical source pages:
+- `wiki/canon/specs/sast-runner-static-evidence-contract.md`
+- `wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md`
+- `wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md`
+- `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md`
+<!-- S3-S4-STATIC-EVIDENCE-CONTRACT-CONSUMPTION-20260511:END -->

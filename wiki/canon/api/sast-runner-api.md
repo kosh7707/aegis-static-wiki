@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/sast-runner-api.md"
 original_path: "docs/api/sast-runner-api.md"
-last_verified: "2026-05-08"
+last_verified: "2026-05-11"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -27,7 +27,52 @@ migration_status: "canonicalized"
 - 2026-05-06: `services/sast-runner` 전체 pytest 게이트 재확인 — `399 passed in 11.08s`.
 - 2026-05-08: health-control v2 durable ownership slice — full `services/sast-runner` pytest gate 재확인: `407 passed in 11.47s`.
 - 2026-05-08: SDK resolution contract + cancel endpoint gates — focused `tests/test_sdk_resolution_contract.py tests/test_request_ownership.py` 15 passed; related S4 gate 147 passed; full `services/sast-runner` pytest gate `414 passed in 13.83s`.
-- API 계약 범위는 `/v1/build` explicit readiness, `/v1/scan` `compileCommands`/`thirdPartyPaths`, SDK `none`/`non-registered`/S4-local `sdkId` resolution, `/v1/libraries`, `/v1/discover-targets`, `/v1/health` request-aware summary, durable ownership status/result/cancel을 포함한다.
+- 2026-05-11: evidence-resolution 고도화 — oracle fixture gate `tests/test_evidence_oracles.py` 12 passed; related S4 regression 132 passed; full `services/sast-runner` pytest gate `426 passed in 12.45s`.
+- 2026-05-11: staticEvidenceContract v1 고도화 — static contract/golden corpus/report/governance gates 추가; focused oracle gates `8/5/4/4 passed`; full `services/sast-runner` pytest gate `447 passed in 13.28s`.
+- 2026-05-11: S3-consumable staticEvidenceContract hardening — `toolEvidenceMatrix` 추가, Golden Corpus v1 evidence bundles/canaries 확장, non-registered SDK analyzer rescue 회귀 테스트 추가; full `services/sast-runner` pytest gate `471 passed in 13.33s`.
+- 2026-05-11: per-tool anomaly gate propagation hardening — 성공 응답 내 tool `failed`/`partial`/degraded/blocking-skip/missing/unknown metadata가 `systemStability=degraded`, `staticToolExecution=partial`, `anomalyReasonCodes[]`로 전파됨을 고정; full `services/sast-runner` pytest gate `481 passed in 13.28s`.
+- 2026-05-11: staticEvidenceContract consumer canaries — precomputed response JSON만 소비하는 harness를 추가해 top-level/nested contract, degraded/failed/missing/allowed-skip/policy-failure/absent/malformed/poisoned-raw-execution cases 고정; full `services/sast-runner` pytest gate `490 passed in 13.35s`.
+- 2026-05-11: Tool Output Compatibility v1 — current six-tool parser output fixtures/manifest/report를 추가하고 governance `parserCompatibility` gate에 연결; full `services/sast-runner` pytest gate `496 passed in 13.08s`.
+- 2026-05-11: Benchmark Slice Report v1 — pinned historical Juliet artifacts `v0.6.0-full.json`/`v0.7.0-all-variants.json`을 source-scoped quality evidence로 정리하고 governance `benchmarkSliceCoverage` gate에 연결; full `services/sast-runner` pytest gate `503 passed in 13.93s`.
+- API 계약 범위는 `/v1/build` explicit readiness, `/v1/scan` `compileCommands`/`thirdPartyPaths`, SDK `none`/`non-registered`/S4-local `sdkId` resolution, `/v1/scan` evidence-resolution metadata, enriched `scan.sca.libraries[]`, `/v1/libraries`, `/v1/discover-targets`, `/v1/health` request-aware summary, durable ownership status/result/cancel을 포함한다.
+
+---
+
+## Static Evidence Contract v1 (design gate, 2026-05-11)
+
+`/v1/scan` and `/v1/build-and-analyze` exposes an additive `staticEvidenceContract` block per `wiki/canon/specs/sast-runner-static-evidence-contract.md`. The block is a machine-readable coverage/readiness contract for S4's deterministic C/C++ static evidence artifact.
+
+Required top-level keys: `schemaVersion`, `analysisProfile`, `artifactKind`, `producer`, `provenance`, `gates.systemStability`, `gates.evidenceReadiness`, `gates.qualityEvaluation`, `coverage`, `claimBoundaries`, `toolEvidenceMatrix`, and `followUpHints`. Optional additive `missingEvidence`, if present, follows the same neutral readiness rules as `followUpHints`.
+
+Boundary rules:
+- `coverage.externalVulnerabilityKnowledge`, `coverage.semanticGraphRetrieval`, `coverage.runtimeBehavior`, `coverage.exploitabilityJudgment`, and `coverage.finalSecurityVerdict` must be explicit `not_provided` surfaces.
+- `coverage.structuralCodeGraph`, when provided, is only `graphKind="structural-callgraph"`; `semanticRetrieval` and `graphRag` remain `not_provided`.
+- `missingEvidence` / `followUpHints` are neutral readiness metadata only: no service calls, no hard orchestration commands, no S5 API request shaping, no LLM prompt, and no verdict/risk-score fields.
+- Runtime responses default `gates.qualityEvaluation.status` to `not_evaluated`; only the separate validation harness/report path populates quality results.
+- `toolEvidenceMatrix` emits one record per current S4 tool in stable order (`semgrep`, `cppcheck`, `flawfinder`, `clang-tidy`, `scan-build`, `gcc-fanalyzer`) under the existing `s4-static-evidence-contract-v1` schema. It is an S3-consumable local tool-state matrix, not a portfolio v2.
+
+`toolEvidenceMatrix` consumer policies:
+
+| Condition | Consumer policy |
+|---|---|
+| tool status `ok` | `local_tool_execution_state_only_not_vulnerability_verdict` |
+| tool status `partial` or degraded | `local_tool_partial_use_with_degradation_metadata` |
+| tool status `failed` | `local_tool_failed_do_not_use_as_negative_evidence` |
+| allowed skip (`operator-requested-subset`, `profile-not-applicable`) | `not_requested_or_not_applicable` |
+| blocking skip (`runtime-tool-missing`, `environment-drift`, `tool-check-failed`, or other non-allowed reason) | `blocks_successful_artifact` |
+| missing execution metadata | `metadata_absent_do_not_infer` |
+
+Gate propagation:
+- A successful `/v1/scan` or `/v1/build-and-analyze` response with a current per-tool anomaly is still transport/domain successful, but `staticEvidenceContract.gates.systemStability.status` is `degraded`.
+- Current per-tool anomalies are `partial`, `failed`, degraded `ok`, blocking skip, missing/not-recorded current result, and unknown status. Allowed skips do not degrade.
+- The same anomaly is reflected in `coverage.staticToolExecution.status="partial"`, `reasonCodes=["TOOL_EXECUTION_PARTIAL"]`, and deterministic `anomalyReasonCodes[]` such as `TOOL_FAILED:scan-build`.
+- Policy-failure responses remain `systemStability=fail` and `evidenceReadiness=not_ready`.
+
+Consumer canary harness:
+- `benchmark/static_evidence_consumer_canary.py` consumes precomputed response-shaped JSON fixtures only.
+- It derives S3-facing local contract readiness only from `staticEvidenceContract.gates`, `coverage`, `claimBoundaries`, and `toolEvidenceMatrix`; raw `execution.toolResults` is ignored.
+- Its `localStaticEvidenceReady` boolean is intentionally narrow: `contractPresent && systemStability == "pass" && evidenceReadiness == "ready"`. It is not a security score or vulnerability decision.
+
 
 ---
 
@@ -522,7 +567,36 @@ S4가 허용하는 SDK resolution contract는 정확히 아래 세 가지다.
   },
   "sca": {
     "libraries": [
-      { "name": "rapidjson", "version": "1.1.0", "path": "libraries/rapidjson", "repoUrl": "https://..." }
+      {
+        "name": "rapidjson",
+        "version": "1.1.0",
+        "path": "libraries/rapidjson",
+        "repoUrl": "https://github.com/Tencent/rapidjson.git",
+        "source": "CMakeLists.txt:project()",
+        "commit": null,
+        "branch": null,
+        "tag": null,
+        "nearestTag": null,
+        "identificationConfidence": "high",
+        "versionStatus": "known",
+        "versionConfidence": "high",
+        "cveLookupEligible": true,
+        "versionEvidence": {
+          "status": "observed",
+          "source": "CMakeLists.txt:project()",
+          "value": "1.1.0"
+        },
+        "diagnostics": ["DIFF_NOT_COMPUTED"],
+        "diffAvailable": false,
+        "modificationStatus": "unknown",
+        "diffSummary": null,
+        "provenance": {
+          "buildSnapshotId": "bsnap-123",
+          "buildUnitId": "bunit-456",
+          "snapshotSchemaVersion": "build-snapshot-v1",
+          "libraryPath": "libraries/rapidjson"
+        }
+      }
     ]
   }
 }
@@ -564,6 +638,48 @@ S4가 허용하는 SDK resolution contract는 정확히 아래 세 가지다.
 | checkName | string? | scan-build 체크 이름 | scan-build |
 | category | string? | 카테고리 | scan-build |
 | flawfinderLevel | int? | 위험 레벨 (1-5) | Flawfinder |
+| evidenceResolution | object? | S4가 deterministic evidence semantics를 추가하는 namespaced metadata. 기존 tool metadata와 충돌하지 않도록 `metadata.evidenceResolution` 아래에만 추가된다. | 전 도구 (v0.11.2 evidence-resolution slice) |
+
+#### evidenceResolution metadata (2026-05-11)
+
+`metadata.evidenceResolution`은 S4가 관측한 finding evidence의 해상도를 높이기 위한 additive/null-safe 필드다. S4는 여기서 보안 판정 또는 CVE 결론을 만들지 않는다.
+
+```json
+{
+  "schemaVersion": "s4-evidence-v1",
+  "kind": "sast-finding",
+  "toolId": "semgrep",
+  "ruleId": "c.security.strcpy",
+  "cwe": { "status": "known", "id": "CWE-120", "source": "metadata.cweId" },
+  "location": { "status": "present", "file": "src/vulnerable.c", "line": 4, "column": 5, "endLine": null, "endColumn": null },
+  "dataFlow": { "present": true, "stepCount": 1 },
+  "origin": { "status": "user-code", "source": "default" },
+  "diagnostics": []
+}
+```
+
+- CWE가 없으면 `cwe.status="unknown"`, `cwe.id=null`, diagnostic `CWE_UNKNOWN`을 사용한다.
+- dataflow가 없으면 `dataFlow.present=false`, `stepCount=0`, diagnostic `DATAFLOW_NOT_PROVIDED`를 사용한다.
+- cross-boundary finding은 기존 top-level `origin="cross-boundary"`를 유지하고 `evidenceResolution.origin.status="cross-boundary"`로 반복 표기한다.
+- 금지 필드: `vulnerable`, `safe`, `affected`, `clean`, `riskScore`, `securityVerdict`. Unknown/incomplete는 안전하다는 뜻이 아니다.
+
+#### enriched `scan.sca.libraries[]` (2026-05-11)
+
+`projectPath` 기반 `/v1/scan`은 library item을 더 이상 `name/version/path/repoUrl`로만 축약하지 않고, 아래 additive evidence fields를 함께 제공한다. `/v1/build-and-analyze`의 top-level `libraries[]`는 nested `scan.sca.libraries[]`와 같은 shape를 그대로 미러링한다. `/v1/libraries`는 계속 full-detail upstream diff endpoint다.
+
+| 필드 | 의미 |
+|---|---|
+| `name`, `version`, `path`, `repoUrl` | 기존 consumer compatibility fields. `version`/`repoUrl`는 모르면 `null`. |
+| `source` | 식별 방법: `git`, `CMakeLists.txt:project()`, `configure.ac:AC_INIT()`, `package.json`, `directory_name` 등. |
+| `commit`, `branch`, `tag`, `nearestTag` | `.git` 기반 vendored library에서 관측 가능한 git evidence. 없으면 `null`. |
+| `identificationConfidence` | `high` / `medium` / `low`. directory-name only는 `low`. |
+| `versionStatus` | 현재 first pass는 deterministic observed version이면 `known`, 없으면 `unknown`. |
+| `versionConfidence` | `high` / `medium` / `none`. version이 없으면 `none`. |
+| `cveLookupEligible` | S3가 S5 CVE lookup 후보로 보낼 수 있는지에 대한 deterministic hint. `name`과 `version`이 있을 때만 true. CVE 결과가 아니다. |
+| `versionEvidence` | `{status, source, value}`. 버전을 관측했으면 `status="observed"`, 없으면 `status="missing"`. |
+| `diagnostics` | 예: `VERSION_UNKNOWN`, `REPO_URL_UNKNOWN`, `DIFF_NOT_COMPUTED`, `DIFF_UNAVAILABLE`. |
+| `diffAvailable`, `modificationStatus`, `diffSummary` | `/v1/scan`은 full diff를 강제하지 않는다. 미계산이면 `false`, `unknown`, `null` 및 `DIFF_NOT_COMPUTED`. |
+| `provenance` | caller provenance echo에 `libraryPath`를 더한 per-library projection. caller provenance가 없으면 `null`. |
 
 #### execution 필드
 
