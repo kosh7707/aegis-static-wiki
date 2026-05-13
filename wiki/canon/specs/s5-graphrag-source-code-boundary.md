@@ -217,6 +217,24 @@ Schema v3 adds the following ledger-owned tables:
 
 The ingest path is idempotent and generates deterministic stable IDs when producers omit IDs.
 
+### Machine-readable producer contract
+
+2026-05-13 follow-up: S5 now exposes the Source Code KG producer contract at:
+
+```http
+GET /v1/contracts/source-code-kg
+```
+
+The response is generated from `app.contracts.source_kg.source_code_kg_contract_snapshot()` and includes:
+
+- endpoint identity for `POST /v1/source-code-kg/ingest`;
+- producer requirements for repository snapshots, build contexts, analysis artifact sets, graph nodes/edges, evidence snippets, rich IR artifacts, and source artifacts;
+- request/result JSON Schema derived from the Pydantic Source KG models;
+- guardrails that S5 owns durable storage, S3/S4 are producers, projection is not source-of-truth, and routine answers expose snippets/hashes rather than whole repositories.
+
+This closes the interview decision that S5 should define what S3/S4 must emit instead of under-specifying the source/build graph contract.
+
+
 ### API surface
 
 `POST /v1/source-code-kg/ingest` accepts `s5-source-code-kg-ingest-request-v1` and returns `s5-source-code-kg-ingest-result-v1`.

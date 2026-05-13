@@ -68,6 +68,33 @@ GET /v1/contracts/acquisition
 
 이 endpoint는 S5 코드의 `contract_snapshot()`과 동일한 JSON을 반환하며, S3/S4 소비자는 이 snapshot으로 coverage/readiness vocabulary를 확인할 수 있다.
 
+### 2026-05-13 Source Code KG Producer Contract v1
+
+S5는 Source Code KG producer contract도 기계 판독 가능한 형태로 노출한다. 이 contract는 S3/S4가 S5에 넘겨야 할 repository snapshot, build context, graph facts, evidence snippets, rich IR, source artifact fields를 S5-owned contract로 고정한다.
+
+```http
+GET /v1/contracts/source-code-kg
+```
+
+응답은 S5 코드의 `source_code_kg_contract_snapshot()`과 동일한 JSON이다. 주요 필드:
+
+| 필드 | 의미 |
+|---|---|
+| `sourceCodeKgContractVersion` | `source-code-kg-ingest-v1` |
+| `endpoint.path` | `/v1/source-code-kg/ingest` |
+| `producerRequirements` | S3/S4 producer가 제공해야 하는 field family: `repositorySnapshot`, `buildContext`, `analysisArtifactSet`, `graphNodes`, `graphEdges`, `evidenceSnippets`, `richIrArtifacts`, `sourceArtifacts` |
+| `consumerBoundary.owner` | `s5`; S3/S4는 producer, S5 SQL ledger가 storage truth |
+| `consumerBoundary.productionWritesDefault` | `{"neo4j": false, "qdrant": false}` |
+| `requestJsonSchema` / `resultJsonSchema` | Pydantic model에서 생성한 request/result JSON Schema |
+
+Guardrails:
+
+- `repositorySnapshot.commitHash`는 필수다. Source KG facts는 repository snapshot version에 묶인다.
+- full/source artifacts는 replay/dataset construction용으로 retain/reference 가능하지만, routine answer는 snippet/hash/line range/artifact id 중심으로 노출한다.
+- Source Code KG ingest는 기본적으로 ledger-only이며 production Neo4j/Qdrant projection은 별도 workflow가 필요하다.
+- fuzzy source/code retrieval은 source-analysis fact를 발명하거나 affectedness proof가 될 수 없다.
+
+
 #### 계약 버전
 
 | 필드 | 값 |
@@ -1076,6 +1103,7 @@ POST /v1/source-code-kg/ingest
 - 이 endpoint는 **ledger-only**다: 응답은 항상 `ledgerOnly=true`, `productionWrites={"neo4j": false, "qdrant": false}`를 선언해야 한다.
 - 이 endpoint는 production Neo4j/Qdrant projection을 수행하지 않는다. Projection은 별도 quality-gated 단계다.
 - S5가 producer contract를 소유한다. S3/S4는 이후 repository/build/source facts producer가 될 수 있으나, 이 contract 자체는 S5-owned API다.
+- 같은 contract는 `GET /v1/contracts/source-code-kg`에서도 machine-readable snapshot으로 확인할 수 있다.
 - S5는 이 endpoint의 결과를 Evidence-Grounded Judge가 Source KG facts by stable ID로 resolve할 수 있도록 저장한다.
 
 ### Request schema

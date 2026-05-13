@@ -7,7 +7,7 @@ source_refs:
   - "wiki/canon/specs/sast-runner-static-evidence-contract.md"
   - "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md"
   - ".omx/goals/autoresearch/s4-tool-portfolio-literature/research.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-13"
 service_tags: ["s4"]
 decision_tags: ["tool-portfolio-experiment-v1", "sast-runner", "deterministic-experiment", "golden-corpus", "validation-test-split"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
@@ -262,6 +262,51 @@ Every externally obtained corpus source must have acquisition provenance before 
 
 Validation must reject externally sourced cases without acquisition provenance.
 
+### 6.2 Corpus Readiness Gate v1
+
+The experiment report now includes a standalone local preflight gate with schema
+`s4-tool-portfolio-corpus-readiness-gate-v1`.
+
+Purpose:
+
+- decide whether required external corpora are actually present and pinned before S4 calls a validation/test report decision-grade;
+- keep corpus readiness separate from SAST tool liveness, parser compatibility, and quality thresholds;
+- derive legacy `decisionSupport.externalCorpusStatus` from the readiness gate as a compatibility projection instead of handcoding it in harness fixtures.
+
+Required input:
+
+- `required_corpora`: explicit acquisition IDs that must be present for a decision-grade run, e.g. `["juliet-c-cpp-1.3"]`;
+- acquisition manifests validated by `s4-tool-portfolio-acquisition-v1`;
+- a corpus manifest validated by `s4-tool-portfolio-experiment-corpus-v1`;
+- optional explicit `base_path` for resolving relative acquisition `localPath` values.
+
+Deterministic filesystem rules:
+
+- absolute `localPath` values are resolved directly;
+- relative `localPath` values require explicit `base_path`; they must not silently resolve against the process current working directory;
+- each externally sourced case must have a safe relative `sourcePath`; absolute paths and `..` escapes are blocked;
+- case files must exist under the resolved acquisition root and match the pinned `sha256:` checksum;
+- required corpora must include both `validation` and `test` cases before `decisionGradeReady=true`.
+
+Required reason codes include:
+
+| Condition | Reason code |
+|---|---|
+| Required Juliet acquisition not declared | `LOCAL_JULIET_CORPUS_NOT_PRESENT` |
+| Acquisition `localPath` absent or missing on disk | `LOCAL_CORPUS_PATH_NOT_FOUND` |
+| Relative `localPath` without explicit base | `LOCAL_CORPUS_BASE_PATH_REQUIRED` |
+| Required corpus has no declared cases | `CORPUS_REQUIRED_CASES_NOT_DECLARED` |
+| Required validation/test split missing | `CORPUS_REQUIRED_SPLITS_MISSING` |
+| Case `sourcePath` is absolute or escapes root | `CORPUS_CASE_SOURCE_PATH_UNSAFE` |
+| Referenced case file is missing | `CORPUS_CASE_SOURCE_MISSING` |
+| Referenced case checksum differs | `CORPUS_CASE_CHECKSUM_MISMATCH` |
+
+Current S4 harness behavior:
+
+- The synthetic S4 harness fixture passes `required_corpora=["juliet-c-cpp-1.3"]`.
+- Because the local Juliet corpus is not pinned in the repo environment, the generated report has `corpusReadinessGate.status="blocked"` and `decisionGradeReady=false`.
+- This is intentional: S4-owned fixtures may validate gate mechanics, but they cannot become decision-grade external Juliet/SARD evidence.
+
 ---
 
 ## 7. Tool-set configurations
@@ -418,6 +463,17 @@ Minimum shape:
     "schemaVersion": "s4-tool-portfolio-experiment-corpus-v1",
     "path": "...",
     "checksum": "sha256:..."
+  },
+  "corpusReadinessGate": {
+    "schemaVersion": "s4-tool-portfolio-corpus-readiness-gate-v1",
+    "status": "available | blocked | not_run",
+    "decisionGradeReady": false,
+    "requiredCorpora": ["juliet-c-cpp-1.3"],
+    "reasonCodes": [],
+    "acquisitionStatuses": {},
+    "caseStatuses": [],
+    "externalCorpusStatus": {},
+    "consumerPolicy": "local_filesystem_readiness_only_not_quality_or_security_verdict"
   },
   "matchingPolicy": {
     "schemaVersion": "s4-oracle-matching-policy-v1",
@@ -633,17 +689,18 @@ It supplies the missing experiment protocol required by that governance page. Th
 Until step 4 has real validation and held-out test evidence, the correct governance decision remains **keep current six tools and improve measurement**.
 ---
 
-## 15. Implementation status (2026-05-12)
+## 15. Implementation status (2026-05-13)
 
-Status: **framework implemented; decision-grade external Juliet validation/test blocked until a pinned local corpus is available**.
+Status: **framework implemented; decision-grade external Juliet validation/test deterministically blocked by Corpus Readiness Gate v1 until a pinned local corpus is available**.
 
 Implemented in `services/sast-runner`:
 
 - `benchmark/tool_portfolio_acquisition_manifest.py` — acquisition provenance validation and stable manifest checksums.
 - `benchmark/tool_portfolio_experiment_manifest.py` — corpus manifest validation, tracked CWE set, split/lineage leakage checks, current-six tool-set config validation, forbidden verdict-key guard.
+- `benchmark/tool_portfolio_corpus_readiness.py` — local filesystem corpus readiness gate for required external corpora, safe path resolution, checksum verification, validation/test split readiness, and compatibility `externalCorpusStatus` projection.
 - `benchmark/tool_portfolio_oracle_matcher.py` — target-level deterministic oracle matching with exact/strong/weak/wrong/off-target/negative/missed classes.
 - `benchmark/tool_portfolio_decision_cycle.py` — decision-cycle freeze checksums and static no-network/no-LLM/no-S5 coupling guard for new modules.
-- `benchmark/tool_portfolio_experiment_report.py` — `s4-tool-portfolio-experiment-report-v1` builder with validation/test/canary metric buckets, local threshold-based `qualityGate.localQualityAssessment`, unique contribution, leave-one-out deltas, historical benchmark prerequisite evidence, and WR-gated future candidate policy.
+- `benchmark/tool_portfolio_experiment_report.py` — `s4-tool-portfolio-experiment-report-v1` builder with validation/test/canary metric buckets, embedded `corpusReadinessGate`, derived compatibility `externalCorpusStatus`, local threshold-based `qualityGate.localQualityAssessment`, unique contribution, leave-one-out deltas, historical benchmark prerequisite evidence, and WR-gated future candidate policy.
 - `benchmark/tool_portfolio_harness_fixture.py` — file-based S4-owned synthetic/precomputed harness fixture runner.
 - `benchmark/cwe_matcher.py` now extracts `metadata.cweId` and `metadata.evidenceResolution.cwe.id` in addition to legacy `metadata.cwe[]`.
 
@@ -658,7 +715,7 @@ Generated report artifact:
 
 - `benchmark/results/tool_portfolio/s4-harness-fixture-report-v1.json`
 
-The harness fixture deliberately labels itself as `s4-harness-fixture`; it is not Juliet evidence and cannot justify a production tool add/remove/upgrade decision. The report marks decision-grade Juliet validation/test as `blocked` with `LOCAL_JULIET_CORPUS_NOT_PRESENT`. Current historical baseline JSONs remain prerequisite/governance continuity evidence only, not replacement held-out test evidence for the new oracle matcher.
+The harness fixture deliberately labels itself as `s4-harness-fixture`; it is not Juliet evidence and cannot justify a production tool add/remove/upgrade decision. The report now marks decision-grade Juliet validation/test as `blocked` through `corpusReadinessGate.status="blocked"` with `LOCAL_JULIET_CORPUS_NOT_PRESENT`, and projects that state into `decisionSupport.externalCorpusStatus` for compatibility. Current historical baseline JSONs remain prerequisite/governance continuity evidence only, not replacement held-out test evidence for the new oracle matcher.
 
 Quality Gate local assessment semantics added on 2026-05-12:
 
@@ -676,6 +733,10 @@ Verification evidence:
 - Local Quality Gate threshold/oracle focused report tests: `7 passed in 0.08s`.
 - Tool-portfolio experiment/system-gate focused suite after local Quality Gate hardening: `64 passed in 0.12s`.
 - Full S4 pytest gate after local Quality Gate hardening: `642 passed in 25.47s`.
+- Corpus Readiness Gate v1 focused tests: `6 passed`.
+- Tool-portfolio experiment/system-gate focused suite after corpus readiness integration: `70 passed in 0.12s`.
+- Full S4 pytest gate after corpus readiness integration: `648 passed in 24.66s`.
+- Critic final implementation review: PASS; no blocker remained before this wiki update.
 
 
 Critic implementation review initially rejected split metric contamination, function-region-only TP promotion, missing negative allowed-warning policy, and missing negative allowed-warning policy enforcement, and exclusion of allowed negative-region findings from FP/noise aggregation. These were fixed with regression tests before the final full S4 pytest gate.

@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/roadmap.md"
 original_path: "docs/s4-handoff/roadmap.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-13"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -16,7 +16,7 @@ migration_status: "canonicalized"
 # S4 SAST Runner — 로드맵
 
 > 다음 작업 + 후순위 계획. README.md에서 분리.
-> **마지막 업데이트: 2026-05-12**
+> **마지막 업데이트: 2026-05-13**
 
 ---
 
@@ -25,7 +25,7 @@ migration_status: "canonicalized"
 현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-05-11 처리 후 재확인)
 
 후속 후보:
-- Tool Portfolio Experiment v1 decision-grade run: pinned local Juliet/SARD corpus acquisition manifest를 확보한 뒤 validation/test decision cycle 실행. 현재 framework, local oracle, system-stability gate, current-six liveness 확인은 완료됐고, 외부 Juliet/SARD corpus는 `LOCAL_JULIET_CORPUS_NOT_PRESENT`로 blocked/not_run.
+- Tool Portfolio Experiment v1 decision-grade run: pinned local Juliet/SARD corpus acquisition manifest와 실제 local corpus path/checksum을 확보한 뒤 validation/test decision cycle 실행. 현재 framework, local oracle, system-stability gate, current-six liveness, corpus readiness preflight 확인은 완료됐고, 외부 Juliet corpus는 `corpusReadinessGate.status="blocked"` / `LOCAL_JULIET_CORPUS_NOT_PRESENT`로 결정론적으로 차단된다.
 - Quality Gate next step: local harness에서는 `validation`/`test`가 threshold fail이고 `canary`만 pass이므로, 다음 품질 개선은 도구 추가/업그레이드가 아니라 decision-grade corpus 확보 후 `full-current-six` primary config의 precision/FPR 실패 원인을 재현·분해하는 것이다.
 - Additional S3 EvidenceCatalog sample payloads only if S3 requests more consumer-specific cases beyond the current consumer canaries.
 - downstream(S2/S3) build-path adaptation feedback 수신 시 contract drift 보정
@@ -35,6 +35,14 @@ migration_status: "canonicalized"
 ---
 
 ## 최근 완료
+
+- ~~Corpus Readiness Gate v1~~ — **완료** (2026-05-13)
+  - `benchmark/tool_portfolio_corpus_readiness.py` 추가: required external corpora, acquisition `localPath`, safe `sourcePath`, per-case file existence/checksum, validation/test split presence를 로컬 파일시스템 기준으로 검증
+  - `benchmark/tool_portfolio_experiment_report.py`가 `corpusReadinessGate`를 top-level로 포함하고, legacy `decisionSupport.externalCorpusStatus`는 readiness gate에서 파생
+  - S4 harness fixture는 더 이상 Juliet block 상태를 hardcode하지 않고 `required_corpora=["juliet-c-cpp-1.3"]` readiness gate로 `not_decision_grade`를 산출
+  - 현재 fixture report: `corpusReadinessGate.status="blocked"`, `decisionGradeReady=false`, reason `LOCAL_JULIET_CORPUS_NOT_PRESENT`
+  - Critic final review PASS
+  - Tool-portfolio focused suite: `70 passed in 0.12s`; Full S4 pytest: `648 passed in 24.66s`
 
 - ~~S4 API 계약서 / 담당문서 docs-sync~~ — **완료** (2026-05-12)
   - `wiki/canon/api/sast-runner-api.md`, `wiki/canon/handoff/s4/readme.md`, `wiki/canon/specs/sast-runner.md`에 current-six liveness snapshot과 local Quality Gate 상태를 반영

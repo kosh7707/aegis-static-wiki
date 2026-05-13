@@ -3869,3 +3869,31 @@ related_pages:
 - Critic implementation gate: FAIL on alias carve-out and missing involvedLedgerRefs -> fixed -> PASS.
 - Validation: relation-conflict focused 8 passed; focused integration bundle 53 passed; full S5 suite 469 passed; clean S5-only validation full suite 469 passed.
 - No commit/push performed.
+
+## [2026-05-13] Implemented machine-readable Source Code KG producer contract endpoint | S5 Source Code KG producer contract v1
+- Added `GET /v1/contracts/source-code-kg` in S5 Knowledge Base to expose producer requirements, JSON Schemas, and S5/S3/S4 ownership guardrails.
+- Updated canonical KB API and Source Code KG boundary docs to reference the machine-readable contract.
+- This follows the interview decision that S5 owns the Source Code KG API contract while S3/S4 produce source/build graph facts.
+
+## [2026-05-13] S3 aligned Analysis Agent consumers to current S4 staticEvidenceContract API contract and obtained final Critic PASS | s3-s4-api-alignment
+- WR: wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md
+- Handoff: wiki/canon/handoff/s3/readme.md#25
+- Session evidence: wiki/canon/handoff/s3/session-s3-s4-api-alignment-20260513.md
+- Verification: focused S3 suite 114 passed; full Analysis Agent suite 639 passed; compile/diff and wiki validation passed.
+
+## [2026-05-13] mcp | complete_wr | s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-13] S3 refreshed S4 API-alignment verification after adding offline qualityGate boundary regression | s3-s4-api-alignment
+- Added services/analysis-agent/tests/test_s4_static_evidence.py to prove S4 offline qualityGate split metric status=pass is not runtime staticEvidenceContract readiness.
+- Verification: focused related S3 suite 115 passed in 1.43s; full Analysis Agent suite 640 passed in 7.00s; compile/diff and wiki validation/diff passed.
+- WR completion note refreshed: wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md
+
+## [2026-05-13] mcp | register_wr | s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro
+- Registered request WR for s3, s4
+- Path: wiki/canon/work-requests/s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro.md
+
+## [2026-05-13] Registered S5 producer-contract review request | S5 to S3/S4 Source Code KG producer contract review WR
+- Registered `wiki/canon/work-requests/s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro.md`.
+- The WR asks S3/S4 to review whether current artifacts can map into S5's Source Code KG producer contract v1.

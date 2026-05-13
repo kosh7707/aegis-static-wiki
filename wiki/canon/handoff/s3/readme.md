@@ -824,6 +824,7 @@ Implemented S3 behavior:
 - Precomputed `quickContext` / trusted SAST findings obey the same contract-readiness rule; precomputed findings without a current `staticEvidenceContract` are not clean complete evidence.
 - Partial SAST tools also suppress no-findings negative evidence even when older response shapes do not carry the current contract.
 - Phase 2 prompt text now explicitly tells the LLM that not-ready/degraded S4 static evidence cannot support vulnerability absence, CWE absence, exploitability absence, S5/GraphRAG substitution, or final security verdicts.
+- Offline S4 `qualityGate` split metric `status="pass"` is not treated as runtime static-evidence readiness; S3 only uses `staticEvidenceContract` gates/matrices for that decision.
 
 Code anchors:
 - `services/analysis-agent/app/core/s4_static_evidence.py`
@@ -835,16 +836,19 @@ Code anchors:
 - `services/analysis-agent/app/tools/implementations/sast_tool.py`
 
 Regression anchors:
+- `services/analysis-agent/tests/test_s4_static_evidence.py`
 - `services/analysis-agent/tests/test_sast_tool.py`
 - `services/analysis-agent/tests/test_phase_one.py`
 - `services/analysis-agent/tests/test_evidence_catalog.py`
 
 Fresh verification:
-- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_sast_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `114 passed in 1.47s`.
-- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `639 passed in 7.47s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_s4_static_evidence.py tests/test_sast_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `115 passed in 1.43s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `640 passed in 7.00s`.
 - `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval && git diff --check -- services/analysis-agent` → PASS.
+- `cd /home/kosh/aegis-static-wiki && python3 tools/validate_wiki.py && git diff --check -- wiki/canon/handoff/s3/readme.md wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md` → PASS.
 
 Critic status:
 - First Critic pass rejected the initial implementation because missing/empty/malformed `staticEvidenceContract` could fail open into `sast_no_findings`.
 - S3 fixed that blocker by recording missing/malformed contracts as not-ready across `/v1/scan`, `/v1/build-and-analyze`, and precomputed quickContext/trusted paths, then adding regressions for the fail-closed behavior.
+- Final Critic pass (2026-05-13, Pascal) returned PASS with no blocking findings after reviewing the WR, S3 handoff, S4 contract alignment, fail-closed readiness handling, prompt warnings, and focused S3 tests (`114 passed in 1.33s`).
 <!-- S3-S4-API-ALIGNMENT-20260512:END -->

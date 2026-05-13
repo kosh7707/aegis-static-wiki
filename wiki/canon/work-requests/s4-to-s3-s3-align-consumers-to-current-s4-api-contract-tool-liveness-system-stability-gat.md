@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat"
-last_verified: "2026-05-12"
+last_verified: "2026-05-13"
 service_tags: ["s4", "s3", "sast-runner", "analysis-agent"]
 decision_tags: ["api-contract", "static-evidence-contract-v1", "system-stability-gate", "quality-gate", "tool-liveness"]
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md"]
 migration_status: "canonicalized"
 wr_id: "s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s4"
 to_lanes: ["s3"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-05-13T02:15:11.163Z","note":"S3 implemented consumer-code alignment for the current S4 API contract. Analysis Agent now fail-closes missing/empty/malformed/degraded staticEvidenceContract payloads, requires systemStability/evidenceReadiness/claimSupportReadiness plus claimBoundaryMatrix/toolEvidenceMatrix before clean local static evidence readiness, suppresses SAST no-findings negative evidence when static evidence is not ready or tools are partial, emits operational diagnostics, warns Phase 2 not to treat S4 local evidence as absence/exploitability/S5/GraphRAG/final-verdict proof, and has a regression proving offline S4 qualityGate split metric status=pass is not runtime staticEvidenceContract readiness. Handoff/session evidence recorded under wiki/canon/handoff/s3/readme.md#25 and session-s3-s4-api-alignment-20260513.md. Final Critic PASS after initial blocker fix. Fresh verification: focused S3 related suite 115 passed in 1.43s; full Analysis Agent suite 640 passed in 7.00s; compile/diff PASS; wiki validation/diff PASS."}]
 registered_at: "2026-05-12T06:27:51.928Z"
+completed_at: "2026-05-13T02:15:11.163Z"
 ---
 
 # S3 align consumers to current S4 API contract: tool liveness, system-stability gate, and local Quality Gate separation
