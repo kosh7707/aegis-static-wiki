@@ -59,9 +59,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/s5-threat-kb-megagoal-discussion-context|S5 Threat KB Megagoal Discussion Context]] — Last updated: 2026-05-12 *(verified 2026-05-12; S5/knowledge-base/threat-kb/graphrag/golden-set)*
 - [[wiki/canon/specs/sast-runner-static-evidence-contract|S4 Static Evidence Contract v1]] — Status: implemented in S4 runtime responses and validation harness *(verified 2026-05-12; s4)*
 - [[wiki/canon/specs/sast-runner-system-quality-gate-separation-v1|S4 SAST Runner System Stability and Quality Gate Separation v1]] — Status: implemented *(verified 2026-05-12; s4)*
-- [[wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1|S4 Tool Portfolio Experiment Spec v1]] — Status: draft canonical experiment spec *(verified 2026-05-12; s4)*
+- [[wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1|S4 Tool Portfolio Experiment Spec v1]] — Status: draft canonical experiment spec *(verified 2026-05-13; s4)*
 - [[wiki/canon/specs/sast-runner-tool-portfolio-governance-v1|S4 Tool Portfolio Governance v1]] — Status: governance baseline, no tool-set change *(verified 2026-05-11; s4)*
-- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.2)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-05-12; s4)*
+- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.2)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-05-13; s4)*
 - [[wiki/canon/specs/technical-overview|기술 명세 - 전체 개요]] — 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다. *(verified 2026-04-13; platform)*
 
 ## API contracts
@@ -272,7 +272,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-toolintent-runtime-dispatch-20260504|Session history — s3 / session-s3-toolintent-runtime-dispatch-20260504]] — - Lane: s3 *(verified 2026-05-04; s3)*
 - [[wiki/canon/handoff/s3/session-s3-wr-inbox-20260421|Session history — s3 / s3-wr-inbox-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-13; s4)*
-- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-019daee7-5108-7432-9683-790245a318cb|Session history — s4 / 019daee7-5108-7432-9683-790245a318cb]] — - Lane: s4 *(verified 2026-04-21; s4)*
 - [[wiki/canon/handoff/s4/session-1|S4 세션 1 — 전체 빌드업 (~ 2026-03-27)]] — 초기 구축부터 v0.7.0까지의 전체 작업 로그. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-2|S4 세션 2 — 외부 피드백 잔여 5건 + 문서 전면 갱신 (2026-03-28)]] — - [x] 외부 피드백 잔여 5건 전체 반영: *(verified 2026-04-06; s4)*
@@ -400,7 +400,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/roadmap/s1-roadmap|S1 Frontend — Roadmap]] — 마지막 업데이트: 2026-04-02 *(verified 2026-04-06; s1)*
 - [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-20; s2)*
 - [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — S3 lane의 다음 작업과 최근 완료 사항. *(verified 2026-04-27; s3)*
-- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-05-12; s4)*
+- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-05-13; s4)*
 - [[wiki/canon/roadmap/s5-knowledge-acquisition-modernization-one-track|S5 Knowledge Acquisition Modernization — One-track Plan]] — Status: $ultragoal execution complete — G001-G010 complete *(verified 2026-05-11; s5/s3/s4/knowledge-base/etl/graphrag/acquisition-ledger/knowledge-corpus/cve/code-graph)*
 - [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-07; s5)*
 - [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-09; s6)*

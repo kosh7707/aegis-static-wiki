@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-13"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -40,9 +40,9 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 642개 통과 (2026-05-12 local Quality Gate threshold/oracle hardening 및 docs-sync 재검증 후 전체 pytest 재확인, latest `642 passed in 25.57s`) |
+| 테스트 | 648개 통과 (2026-05-13 Corpus Readiness Gate v1 및 docs-sync 재검증 후 전체 pytest 재확인, latest `648 passed in 24.66s`) |
 | 도구 생존성 | current six 모두 available (2026-05-12 local probe), `policyStatus="ok"`, `unavailableTools=[]` |
-| 품질 Gate | local harness fixture 기준 `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; validation/test fail, canary pass |
+| 품질 Gate | local harness fixture 기준 `corpusReadinessGate.status="blocked"`, `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; validation/test fail, canary pass |
 
 ---
 
@@ -123,7 +123,28 @@ S4 now keeps parser compatibility fixtures for all six current tools under `test
 
 `benchmark/tool_output_compat.py` parses these fixtures without executing external tools and emits `s4-tool-output-compat-report-v1`. Tool Portfolio Governance v1 consumes that report through the `parserCompatibility` gate before any add/remove/upgrade claim.
 
-### Local Quality Gate status (2026-05-12)
+### Corpus Readiness Gate v1 (2026-05-13)
+
+Tool Portfolio Experiment reports now embed `corpusReadinessGate` with schema `s4-tool-portfolio-corpus-readiness-gate-v1`.
+
+This gate is offline and deterministic:
+
+- it takes explicit `required_corpora` such as `juliet-c-cpp-1.3`;
+- validates acquisition manifest presence and local `localPath`;
+- rejects unsafe external case paths, missing case files, checksum mismatches, and missing validation/test splits;
+- sets `decisionGradeReady=true` only when required external corpora are available and checked;
+- derives compatibility `decisionSupport.externalCorpusStatus` from readiness rather than relying on hardcoded fixture status.
+
+Current generated harness report:
+
+- `corpusReadinessGate.status="blocked"`;
+- `corpusReadinessGate.decisionGradeReady=false`;
+- `corpusReadinessGate.reasonCodes=["LOCAL_JULIET_CORPUS_NOT_PRESENT"]`;
+- `decisionSupport.externalCorpusStatus.juliet.status="blocked"`.
+
+This is not a runtime `/v1/scan` API change. It is the offline experiment/report preflight that prevents S4-owned synthetic fixtures from being mistaken for decision-grade Juliet/SARD evidence.
+
+### Local Quality Gate status (2026-05-13)
 
 The current S4-owned harness fixture report (`benchmark/results/tool_portfolio/s4-harness-fixture-report-v1.json`) intentionally separates split scoring success from threshold quality:
 
@@ -134,10 +155,10 @@ The current S4-owned harness fixture report (`benchmark/results/tool_portfolio/s
 | canary | pass | pass | no local threshold failure |
 
 Top-level report state:
-- `qualityGate.status="not_decision_grade"` because no pinned local Juliet/SARD decision-grade corpus is present (`LOCAL_JULIET_CORPUS_NOT_PRESENT`).
+- `corpusReadinessGate.status="blocked"` and `qualityGate.status="not_decision_grade"` because no pinned local Juliet/SARD decision-grade corpus is present (`LOCAL_JULIET_CORPUS_NOT_PRESENT`).
 - `qualityGate.localQualityAssessment.status="fail"` because validation/test synthetic local oracle thresholds intentionally fail.
 - `negativeTargetFpr=null` means a split has no negative targets and must not trigger `maximumNegativeTargetFpr`.
-- Tool liveness/system stability remains separate: all six tools can be alive while the local quality assessment fails.
+- Tool liveness/system stability, corpus readiness, and local quality assessment remain separate: all six tools can be alive while local corpus readiness is blocked or quality thresholds fail.
 
 ### 도구 최소 버전
 

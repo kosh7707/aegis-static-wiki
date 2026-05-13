@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s4-handoff/README.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-13"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -14,7 +14,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S4(SAST Runner) 개발을 이어받는 다음 세션을 위한 진입점이다.
-> **마지막 업데이트: 2026-05-12**
+> **마지막 업데이트: 2026-05-13**
 
 ---
 
@@ -32,6 +32,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 - `metadata.evidenceResolution` + enriched `scan.sca.libraries[]` — SAST/SCA evidence 해상도를 높이는 deterministic projection (보안 판정/CVE 조회 아님)
 - `staticEvidenceContract` v1 구현 — `wiki/canon/specs/sast-runner-static-evidence-contract.md`가 canonical Coverage/Readiness/Claim-boundary/toolEvidenceMatrix contract이며, `/v1/scan` 및 `/v1/build-and-analyze`에 additive로 부착된다. Per-tool anomaly는 `systemStability=degraded`와 `coverage.staticToolExecution=partial/anomalyReasonCodes[]`로 전파된다.
 - Golden Corpus v1 / Tool Portfolio Governance v1 — `services/sast-runner/tests/fixtures/golden_corpus_v1/manifest.json`, `benchmark/static_evidence_report.py`, `benchmark/tool_portfolio_governance.py`, `wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md`가 validation/report/governance baseline이다. 현재 decision은 `keep-current-six-tools`다. Golden Corpus v1은 structural graph, SCA diff partial, degraded execution, policy failure, CWE-120, CWE-190, CWE-416 canary를 포함한다.
+- Corpus Readiness Gate v1 — `benchmark/tool_portfolio_corpus_readiness.py`가 required external corpora의 local path/file/checksum/split readiness를 검증한다. 현재 S4 harness fixture는 `juliet-c-cpp-1.3`을 required corpus로 요구하며, local Juliet corpus 부재 때문에 `corpusReadinessGate.status="blocked"` / `LOCAL_JULIET_CORPUS_NOT_PRESENT` / `decisionGradeReady=false` 상태가 정상이다.
 - Static Evidence consumer canaries — `benchmark/static_evidence_consumer_canary.py`와 `tests/fixtures/static_evidence_contract/consumer_canaries/*.json`은 S3-facing JSON contract 소비 semantics를 S4 내부 app import 없이 검증한다.
 - Claim Support Readiness — `app/scanner/claim_support_gate.py`와 `tests/fixtures/claim_support_gate_v1/manifest.json`은 Quality Gate가 concrete SAST tool identity가 아니라 normalized evidence + claim boundaries만으로 bounded claim support를 판정하도록 잠근다. Runtime `qualityEvaluation`은 여전히 `not_evaluated`다.
 - Tool Output Compatibility v1 — `benchmark/tool_output_compat.py`와 `tests/fixtures/tool_output_compat_v1/manifest.json`은 현재 6개 도구 raw output parser 호환성을 외부 도구 실행 없이 잠근다. Governance `parserCompatibility` gate가 이 report를 소비한다.
@@ -72,9 +73,9 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 | 스택 | Python 3.12 + FastAPI + Uvicorn |
 | 포트 | 9000 |
 | 버전 | **v0.11.2** |
-| 테스트 | **642개 통과** (2026-05-12 staticEvidenceContract / Golden Corpus / governance / S3-consumable toolEvidenceMatrix / per-tool anomaly propagation / consumer canary / Tool Output Compatibility v1 / Benchmark Slice Report v1 / claimSupportReadiness / required-tool system-stability / local Quality Gate threshold-oracle hardening 후 전체 pytest 재확인); latest full gate **642 passed in 25.57s** |
+| 테스트 | **648개 통과** (2026-05-13 staticEvidenceContract / Golden Corpus / governance / S3-consumable toolEvidenceMatrix / per-tool anomaly propagation / consumer canary / Tool Output Compatibility v1 / Benchmark Slice Report v1 / claimSupportReadiness / required-tool system-stability / local Quality Gate threshold-oracle hardening / Corpus Readiness Gate v1 후 전체 pytest 재확인); latest full gate **648 passed in 24.66s** |
 | 도구 생존성 | **current six all alive** (2026-05-12 `ScanOrchestrator.check_tools(force=True)`): `policyStatus="ok"`, `unavailableTools=[]` |
-| 품질 Gate | **not decision-grade / local fail**: S4 harness fixture report는 `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; `validation`/`test` fail, `canary` pass |
+| 품질 Gate | **not decision-grade / local fail**: S4 harness fixture report는 `corpusReadinessGate.status="blocked"`, `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; `validation`/`test` fail, `canary` pass |
 | 벤치마크 | Juliet 12 CWE, Overall Recall **83.7%** |
 | 통합테스트 | **통과** (e2e-1774920375, S4 에러 0건) |
 
@@ -119,7 +120,8 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 현재 상태 해석:
 - `policyStatus="ok"` / all alive는 **시스템 안정성** 신호다.
 - local harness의 `qualityGate.localQualityAssessment.status="fail"`은 **품질 threshold** 신호다.
-- 두 Gate는 독립이다. 도구가 모두 살아 있어도 validation/test 품질 threshold가 실패할 수 있다.
+- `corpusReadinessGate.status="blocked"`는 **decision-grade corpus readiness** 신호다.
+- 세 Gate는 독립이다. 도구가 모두 살아 있어도 local corpus가 없거나 validation/test 품질 threshold가 실패할 수 있다.
 
 ### 코드 구조
 
@@ -158,7 +160,7 @@ services/sast-runner/
 │       └── library_hasher.py
 ├── rules/automotive/        — 커스텀 Semgrep 룰 39개 (9 YAML)
 ├── benchmark/               — Juliet 벤치마크 러너 + 코드그래프 품질 평가
-├── tests/                   — 503개 테스트 (2026-05-11 전체 pytest 통과) + evidence_oracles + SDK/cancel contract tests
+├── tests/                   — 648개 테스트 (2026-05-13 전체 pytest 통과) + evidence_oracles + SDK/cancel contract tests + tool portfolio/corpus readiness gates
 └── requirements.txt
 ```
 
