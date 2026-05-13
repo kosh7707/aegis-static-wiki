@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption"
-last_verified: "2026-05-11"
+last_verified: "2026-05-12"
 service_tags: ["s4", "s3"]
 decision_tags: ["static-evidence-contract-v1", "consumer-canary", "json-fixtures"]
 related_pages: ["wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/handoff/s4/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s4"
 to_lanes: ["s3"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-05-12T06:20:36.351Z","note":"Superseded by consolidated S4 contract notice wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md; S3 recorded current consumer expectations in handoff section 24."}]
 registered_at: "2026-05-11T11:25:49.053Z"
+completed_at: "2026-05-12T06:20:36.351Z"
 ---
 
 # S4 staticEvidenceContract consumer canaries added for S3-facing JSON consumption

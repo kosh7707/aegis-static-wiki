@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s4-handoff/roadmap.md"
 original_path: "docs/s4-handoff/roadmap.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-12"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -16,7 +16,7 @@ migration_status: "canonicalized"
 # S4 SAST Runner — 로드맵
 
 > 다음 작업 + 후순위 계획. README.md에서 분리.
-> **마지막 업데이트: 2026-05-11**
+> **마지막 업데이트: 2026-05-12**
 
 ---
 
@@ -25,6 +25,8 @@ migration_status: "canonicalized"
 현재 미처리 WR 없음. (`list_my_open_wrs(lane="s4", include_to_all=true)` 2026-05-11 처리 후 재확인)
 
 후속 후보:
+- Tool Portfolio Experiment v1 decision-grade run: pinned local Juliet/SARD corpus acquisition manifest를 확보한 뒤 validation/test decision cycle 실행. 현재 framework, local oracle, system-stability gate, current-six liveness 확인은 완료됐고, 외부 Juliet/SARD corpus는 `LOCAL_JULIET_CORPUS_NOT_PRESENT`로 blocked/not_run.
+- Quality Gate next step: local harness에서는 `validation`/`test`가 threshold fail이고 `canary`만 pass이므로, 다음 품질 개선은 도구 추가/업그레이드가 아니라 decision-grade corpus 확보 후 `full-current-six` primary config의 precision/FPR 실패 원인을 재현·분해하는 것이다.
 - Additional S3 EvidenceCatalog sample payloads only if S3 requests more consumer-specific cases beyond the current consumer canaries.
 - downstream(S2/S3) build-path adaptation feedback 수신 시 contract drift 보정
 - analysis path inversion 필요 여부는 별도 논의
@@ -33,6 +35,26 @@ migration_status: "canonicalized"
 ---
 
 ## 최근 완료
+
+- ~~S4 API 계약서 / 담당문서 docs-sync~~ — **완료** (2026-05-12)
+  - `wiki/canon/api/sast-runner-api.md`, `wiki/canon/handoff/s4/readme.md`, `wiki/canon/specs/sast-runner.md`에 current-six liveness snapshot과 local Quality Gate 상태를 반영
+  - 2026-05-12 fresh probe: Semgrep `1.156.0`, Cppcheck `2.13.0`, Flawfinder `2.0.19`, clang-tidy `18.1.3`, scan-build available, gcc-fanalyzer/GCC `13.3.0`; `policyStatus="ok"`, `unavailableTools=[]`
+  - 최신 full S4 pytest 재확인: `642 passed in 25.57s`
+  - 현재 품질 상태는 `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; validation/test fail, canary pass
+
+- ~~Tool Portfolio Experiment Spec v1 framework~~ — **완료** (2026-05-12)
+  - acquisition/corpus manifest validators, oracle matcher, decision-cycle freeze, experiment report builder, and S4 harness fixture added under `services/sast-runner/benchmark` + tests
+  - S4-owned harness fixture exercises validation/test/canary split, full-current-six, six single-tool, six leave-one-out configs, matching classes, unique contribution, and leave-one-out deltas
+  - generated report: `benchmark/results/tool_portfolio/s4-harness-fixture-report-v1.json`
+  - decision-grade Juliet validation/test remains blocked/not_run until a pinned local Juliet corpus is available; historical baselines are prerequisite evidence only
+  - Critic-blocker fixes added: split-scoped metrics, no function-region-only TP when fallback disabled, explicit negative allowed-warning policy validation/enforcement and allowed-warning FP/noise exclusion
+  - Full S4 pytest after Critic-blocker fixes: `548 passed in 13.09s`
+
+- ~~Tool-agnostic Claim Support Readiness + claimBoundaryMatrix~~ — **완료** (2026-05-12)
+  - `gates.claimSupportReadiness` 추가: runtime claim-support classifier이며 quality score/security verdict가 아님
+  - `claimBoundaryMatrix[]` 추가: `absence-of-vulnerability`, `cwe-absence`, build-context/runtime/external/semantic/final-verdict claims를 machine-readable unsupported boundary로 고정
+  - Gate implementation은 `app/scanner/claim_support_gate.py`에 격리되어 concrete SAST tool id, S5/GraphRAG/LLM/network coupling 없이 normalized evidence surfaces만 소비
+  - Full S4 pytest: `516 passed in 12.94s`
 
 - ~~Benchmark Slice Report v1 + governance benchmarkSliceCoverage gate~~ — **완료** (2026-05-11)
   - pinned historical artifacts `v0.6.0-full.json` and `v0.7.0-all-variants.json` only

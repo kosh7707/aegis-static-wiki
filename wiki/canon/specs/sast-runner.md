@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/sast-runner.md"
 original_path: "docs/specs/sast-runner.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-12"
 service_tags: ["s4"]
 decision_tags: []
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -40,7 +40,9 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 503개 통과 (2026-05-11 Benchmark Slice Report v1 / benchmarkSliceCoverage governance gate 후 전체 pytest 재확인, `503 passed in 13.93s`) |
+| 테스트 | 642개 통과 (2026-05-12 local Quality Gate threshold/oracle hardening 및 docs-sync 재검증 후 전체 pytest 재확인, latest `642 passed in 25.57s`) |
+| 도구 생존성 | current six 모두 available (2026-05-12 local probe), `policyStatus="ok"`, `unavailableTools=[]` |
+| 품질 Gate | local harness fixture 기준 `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; validation/test fail, canary pass |
 
 ---
 
@@ -93,6 +95,22 @@ migration_status: "canonicalized"
 | scan-build | Clang Static Analyzer (CWE 매핑 15개) | O | **enriched** | `-plist` 필수. 파일별 개별 실행. `Semaphore(8)` |
 | gcc -fanalyzer | GCC 경로 민감 분석 (CWE 매핑 16개 + 출력 직접 파싱) | O | **original** | `-c` 필수. 파일별 개별 실행. `Semaphore(8)`. GCC 10+ 필요 |
 
+### Current tool-liveness snapshot (2026-05-12)
+
+`ScanOrchestrator.check_tools(force=True)` 로 재확인한 current six 상태:
+
+| 도구 | available | observed version / probe |
+|------|:---:|------|
+| Semgrep | O | `1.156.0` |
+| Cppcheck | O | `2.13.0` |
+| Flawfinder | O | `2.0.19` |
+| clang-tidy | O | `18.1.3` |
+| scan-build | O | `scan-build` help probe OK |
+| gcc-fanalyzer | O | GCC `13.3.0` |
+
+Health policy result: `policyStatus="ok"`, `policyReasons=[]`, `unavailableTools=[]`.
+This is a **system-stability/liveness** snapshot only; it is not a quality or vulnerability verdict.
+
 ### Benchmark Slice Report v1
 
 S4 keeps offline historical Juliet benchmark-slice evidence in `benchmark/benchmark_slice_report.py`. The report reads exactly two pinned artifacts: `benchmark/data/baselines/v0.6.0-full.json` for variant-01 recall/precision/FP/F1 evidence and `benchmark/data/baselines/v0.7.0-all-variants.json` for all-variant recall/noise/noisePerFile evidence. Metrics remain source-scoped and are not merged into one quality score.
@@ -104,6 +122,22 @@ Tool Portfolio Governance v1 consumes this as `benchmarkSliceCoverage`; it is ev
 S4 now keeps parser compatibility fixtures for all six current tools under `tests/fixtures/tool_output_compat_v1/`. The manifest `schemaVersion="s4-tool-output-compat-v1"` locks representative raw output shapes for Semgrep SARIF, Cppcheck XML, Flawfinder CSV, clang-tidy text, scan-build plist, and gcc-fanalyzer text.
 
 `benchmark/tool_output_compat.py` parses these fixtures without executing external tools and emits `s4-tool-output-compat-report-v1`. Tool Portfolio Governance v1 consumes that report through the `parserCompatibility` gate before any add/remove/upgrade claim.
+
+### Local Quality Gate status (2026-05-12)
+
+The current S4-owned harness fixture report (`benchmark/results/tool_portfolio/s4-harness-fixture-report-v1.json`) intentionally separates split scoring success from threshold quality:
+
+| split | metric bucket status | local threshold status | reason |
+|---|---:|---:|---|
+| validation | pass | fail | `FINDING_PRECISION_BELOW_THRESHOLD` |
+| test | pass | fail | `FINDING_PRECISION_BELOW_THRESHOLD`, `NEGATIVE_TARGET_FPR_ABOVE_THRESHOLD` |
+| canary | pass | pass | no local threshold failure |
+
+Top-level report state:
+- `qualityGate.status="not_decision_grade"` because no pinned local Juliet/SARD decision-grade corpus is present (`LOCAL_JULIET_CORPUS_NOT_PRESENT`).
+- `qualityGate.localQualityAssessment.status="fail"` because validation/test synthetic local oracle thresholds intentionally fail.
+- `negativeTargetFpr=null` means a split has no negative targets and must not trigger `maximumNegativeTargetFpr`.
+- Tool liveness/system stability remains separate: all six tools can be alive while the local quality assessment fails.
 
 ### 도구 최소 버전
 
@@ -273,7 +307,9 @@ S4는 `wiki/canon/specs/sast-runner-static-evidence-contract.md`의 `staticEvide
 - S4는 local static evidence artifact producer다. 외부 취약점 지식, semantic graph retrieval, runtime behavior, exploitability judgment, final security verdict는 `not_provided`로 명시한다.
 - 코드그래프는 structural-only다. 제공 시 `graphKind="structural-callgraph"`, `semanticRetrieval="not_provided"`, `graphRag="not_provided"`를 포함한다.
 - `gates.systemStability`, `gates.evidenceReadiness`, `gates.qualityEvaluation`을 분리해 운영 안정성, evidence readiness, validation/golden-corpus 품질평가를 혼동하지 않는다.
+- `gates.claimSupportReadiness`는 runtime-local claim-support classifier다. `qualityEvaluation`과 달리 validation score가 아니며, concrete tool identity 대신 normalized evidence surface와 claim boundary 기준만 사용한다.
 - 성공 응답 안의 per-tool anomaly(`partial`, `failed`, degraded `ok`, blocking skip, missing/not-recorded, unknown)는 `systemStability=degraded`와 `coverage.staticToolExecution=partial`로 전파한다. 단일 tool failure는 정책 실패가 붙지 않는 한 artifact `fail`이 아니라 successful-but-degraded artifact다.
+- `claimBoundaryMatrix[]`는 `local-static-artifact`, `reported-finding-positive-evidence`, `absence-of-vulnerability`, `cwe-absence`, `build-configuration-dependent-negative-claim`, runtime/external/semantic/final-verdict claim rows를 제공한다. empty findings는 계속 absence evidence가 아니다.
 - `toolEvidenceMatrix`는 현재 6개 도구 각각의 role, unique contribution, overlap, limitation, execution status, skip/degrade metadata, consumerPolicy를 stable order로 제공한다. 이는 기존 v1 schema 안의 additive field이며, S3가 raw `execution.toolResults`만으로 도구 의미를 추론하지 않도록 하기 위한 runtime-local matrix다.
 - `followUpHints`와 `missingEvidence`는 neutral readiness metadata만 허용한다. 서비스 호출, hard orchestration command, S5 API request shaping, verdict field는 금지다.
 - `cveLookupEligible`은 backward-compatible SCA identity hint로 유지하되, 외부 취약점 지식 제공으로 해석하지 않는다.

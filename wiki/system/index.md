@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-12"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -53,10 +53,15 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/s5-acquisition-state-machine/target-context-lifecycle|S5 Target Context Lifecycle]] — Scope: one S3-supplied TargetContextBundleV1 under S5 ownership. *(verified 2026-05-11; s5/s3/knowledge-base/target-context/state-machine)*
 - [[wiki/canon/specs/s5-acquisition-state-machine/transition-table|S5 Acquisition State Machine Transition Table]] — Implementation-facing transition rows for the S5 acquisition state-machine family. *(verified 2026-05-11; s5/s3/knowledge-base/state-machine/transition-table)*
 - [[wiki/canon/specs/s5-etl-pipeline-modernization-target-context|S5 ETL Pipeline Modernization — Target Context Acquisition Contract]] — Re-crystallized requirements artifact for S5 planning after S3 reply WR on 2026-05-11. *(verified 2026-05-11; s5/s3/knowledge-base/analysis-agent/etl/acquisition-diagnostics/target-context)*
+- [[wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db|S5 Evidence-Grounded Threat Knowledge DB Foundation]] — Implemented in services/knowledge-base on 2026-05-12 as the first foundation pass after external review. Coverage-profile hardening for the CWE-78-only fixture objection is comp... *(verified 2026-05-12; s5/knowledge-base/threat-knowledge/etl/quality-gate/projection)*
+- [[wiki/canon/specs/s5-graphrag-source-code-boundary|S5 GraphRAG and Source Code Graph Boundary]] — Last updated: 2026-05-12 *(verified 2026-05-12; S5/knowledge-base/graphrag/source-code-graph/threat-kb)*
 - [[wiki/canon/specs/s5-retrieval-quality-modernization|S5 Retrieval Quality Modernization]] — 2026-05-11 S5 modernization applies a deterministic retrieval-quality upgrade to services/knowledge-base/. *(verified 2026-05-11; s5)*
-- [[wiki/canon/specs/sast-runner-static-evidence-contract|S4 Static Evidence Contract v1]] — Status: implemented in S4 runtime responses and validation harness *(verified 2026-05-11; s4)*
+- [[wiki/canon/specs/s5-threat-kb-megagoal-discussion-context|S5 Threat KB Megagoal Discussion Context]] — Last updated: 2026-05-12 *(verified 2026-05-12; S5/knowledge-base/threat-kb/graphrag/golden-set)*
+- [[wiki/canon/specs/sast-runner-static-evidence-contract|S4 Static Evidence Contract v1]] — Status: implemented in S4 runtime responses and validation harness *(verified 2026-05-12; s4)*
+- [[wiki/canon/specs/sast-runner-system-quality-gate-separation-v1|S4 SAST Runner System Stability and Quality Gate Separation v1]] — Status: implemented *(verified 2026-05-12; s4)*
+- [[wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1|S4 Tool Portfolio Experiment Spec v1]] — Status: draft canonical experiment spec *(verified 2026-05-12; s4)*
 - [[wiki/canon/specs/sast-runner-tool-portfolio-governance-v1|S4 Tool Portfolio Governance v1]] — Status: governance baseline, no tool-set change *(verified 2026-05-11; s4)*
-- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.2)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-05-11; s4)*
+- [[wiki/canon/specs/sast-runner|S4. SAST Runner 기능 명세 (v0.11.2)]] — SAST Runner는 C/C++ 프로젝트의 보안 분석에 필요한 결정론적 전처리를 담당하는 서비스다. *(verified 2026-05-12; s4)*
 - [[wiki/canon/specs/technical-overview|기술 명세 - 전체 개요]] — 이 문서는 AEGIS 시스템 전체 구조, 서비스 구성, 통신 방식, 데이터 흐름을 정의한다. *(verified 2026-04-13; platform)*
 
 ## API contracts
@@ -65,10 +70,10 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-05-08; s3/analysis-agent/api-contract/s2)*
 - [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-05-08; s3)*
 - [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — Base URL: *(verified 2026-04-15; s8)*
-- [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-05-11; s5)*
+- [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-05-12; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
 - [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-05-11; s7)*
-- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-05-11; s4)*
+- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-05-12; s4)*
 - [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-05-11; platform)*
 
 ## Handoff
@@ -180,7 +185,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-s2-project-owner-buildv11-20260427|Session history — s2 / s2-project-owner-buildv11-20260427]] — - Lane: s2 *(verified 2026-04-27; s2)*
 - [[wiki/canon/handoff/s2/session-s2-s3-outcome-contract-20260425|Session history — s2 / s2-s3-outcome-contract-20260425]] — - Lane: s2 *(verified 2026-04-25; s2)*
 - [[wiki/canon/handoff/s2/session-s2-sdk-progress-contract-wr-20260425|Session history — S2 / s2-sdk-progress-contract-wr-20260425]] — - Lane: S2 *(verified 2026-04-25; s2)*
-- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-05-11; s3)*
+- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-05-12; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine]] — - Lane: s3 *(verified 2026-04-24; s3)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef]] — - Lane: s3 *(verified 2026-04-24; s3)*
@@ -254,6 +259,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-post-fix-wiki-update-20260428|Session history — s3 / s3-post-fix-wiki-update-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/handoff/s3/session-s3-qg-hardening-20260509|Session history — s3 / s3-qg-hardening-20260509]] — - Lane: s3 *(verified 2026-05-08; s3)*
 - [[wiki/canon/handoff/s3/session-s3-ralph-strict-output-contract-20260421|Session history — s3 / session-s3-ralph-strict-output-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-s4-consolidated-contract-20260512|Session history — s3 / s3-s4-consolidated-contract-20260512]] — - Lane: s3 *(verified 2026-05-12; s3)*
 - [[wiki/canon/handoff/s3/session-s3-stability-qualitygate-separation-20260425|Session history — s3 / s3-stability-qualitygate-separation-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
 - [[wiki/canon/handoff/s3/session-s3-state-machine-outcome-quality-separation-20260423|Session history — s3 / s3-state-machine-outcome-quality-separation-20260423]] — - Lane: s3 *(verified 2026-04-23; s3)*
 - [[wiki/canon/handoff/s3/session-s3-strict-structured-finalizer-contract-20260421|Session history — s3 / s3-strict-structured-finalizer-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
@@ -265,7 +271,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-toolintent-runtime-dispatch-20260504|Session history — s3 / session-s3-toolintent-runtime-dispatch-20260504]] — - Lane: s3 *(verified 2026-05-04; s3)*
 - [[wiki/canon/handoff/s3/session-s3-wr-inbox-20260421|Session history — s3 / s3-wr-inbox-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-13; s4)*
-- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-11; s4)*
+- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-019daee7-5108-7432-9683-790245a318cb|Session history — s4 / 019daee7-5108-7432-9683-790245a318cb]] — - Lane: s4 *(verified 2026-04-21; s4)*
 - [[wiki/canon/handoff/s4/session-1|S4 세션 1 — 전체 빌드업 (~ 2026-03-27)]] — 초기 구축부터 v0.7.0까지의 전체 작업 로그. *(verified 2026-04-06; s4)*
 - [[wiki/canon/handoff/s4/session-2|S4 세션 2 — 외부 피드백 잔여 5건 + 문서 전면 갱신 (2026-03-28)]] — - [x] 외부 피드백 잔여 5건 전체 반영: *(verified 2026-04-06; s4)*
@@ -290,11 +296,17 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-omx-1778209282796-xa51e7|Session history — s4 / omx-1778209282796-xa51e7]] — - Lane: s4 *(verified 2026-05-08; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-deep-interview-s4-godoha|Session history — s4 / omx-1778459818640-2qvuzs-deep-interview-s4-godoha]] — - Lane: s4 *(verified 2026-05-11; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-gate-hardening-20260511|Session history — s4 / omx-1778459818640-2qvuzs-gate-hardening-20260511]] — - Lane: s4 *(verified 2026-05-11; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-s4-claim-support-readiness-20260512|Session history — s4 / omx-1778459818640-2qvuzs-s4-claim-support-readiness-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-s4-evidence-resolution-20260511|Session history — s4 / omx-1778459818640-2qvuzs-s4-evidence-resolution-20260511]] — - Lane: s4 *(verified 2026-05-11; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-s4-hardening-goal-20260511|Session history — s4 / omx-1778459818640-2qvuzs-s4-hardening-goal-20260511]] — - Lane: s4 *(verified 2026-05-11; s4)*
-- [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs|Session history — s4 / omx-1778459818640-2qvuzs]] — - Lane: s4 *(verified 2026-05-11; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs|Session history — s4 / omx-1778459818640-2qvuzs]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512|Session history — s4 / s4-api-doc-sync-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-s4-health-control-v2-durable-ownership-20260508|Session history — S4 / s4-health-control-v2-durable-ownership-20260508]] — - Lane: S4 *(verified 2026-05-08; s4)*
+- [[wiki/canon/handoff/s4/session-s4-local-quality-gate-oracle-20260512|Session history — s4 / s4-local-quality-gate-oracle-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-required-tool-system-stability-gate-20260512|Session history — s4 / s4-required-tool-system-stability-gate-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-s4-system-stability-preflight-20260425|Session history — s4 / s4-system-stability-preflight-20260425]] — - Lane: s4 *(verified 2026-04-25; s4)*
+- [[wiki/canon/handoff/s4/session-s4-to-s3-api-contract-alignment-request-20260512|Session history — s4 / s4-to-s3-api-contract-alignment-request-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-to-s3-consolidated-wr-cleanup-20260512|Session history — s4 / s4-to-s3-consolidated-wr-cleanup-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — README.md에서 분리된 기술 상세 문서. *(verified 2026-04-14; s5)*
 - [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-08; s5)*
 - [[wiki/canon/handoff/s5/session-019da96c-0be2-77b2-86a7-c74413e9fd8a|Session history — s5 / 019da96c-0be2-77b2-86a7-c74413e9fd8a]] — - Lane: s5 *(verified 2026-04-21; s5)*
@@ -312,6 +324,16 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s5/session-19|S5 Session 19 — 2026-04-04]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-2|S5 Session 2 — 2026-03-19]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-20|S5 Session 20 — 2026-04-04]] — | 항목 | 상태 | *(verified 2026-04-06; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-answerability-native-golden-set-loop2|Session history — s5 / 2026-05-12-s5-answerability-native-golden-set-loop2]] — - Lane: s5 *(verified 2026-05-12; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-evidence-grounded-threat-kb-foundation|Session history — s5 / 2026-05-12-s5-evidence-grounded-threat-kb-foundation]] — - Lane: s5 *(verified 2026-05-12; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-identity-resolution-loop6|Session history — s5 / 2026-05-12-s5-identity-resolution-loop6]] — - Lane: s5 *(verified 2026-05-12; s5/knowledge-base/identity-resolution)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-relation-conflict-model-loop9|S5 Loop 9 — Typed Relation Graph and Conflict Model]] — Implementation complete locally. Plan gate completed with Critic PASS after one FAIL/amendment cycle. Implementation Critic validation initially failed on alias exception/eviden... *(verified 2026-05-12; s5/knowledge-base/etl/relation-graph/conflict-model)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-scoring-policy-loop3|Session history — s5 / 2026-05-12-s5-scoring-policy-loop3]] — - Lane: s5 *(verified 2026-05-12; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-serving-ledger-loop5|Session history — s5 / 2026-05-12-s5-serving-ledger-loop5]] — - Lane: s5 *(verified 2026-05-12; s5/knowledge-base/serving-ledger)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-serving-requery-loop4|Session history — s5 / 2026-05-12-s5-serving-requery-loop4]] — - Lane: s5 *(verified 2026-05-12; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-source-code-kg-judge-loop1|Session history — s5 / 2026-05-12-s5-source-code-kg-judge-loop1]] — - Lane: s5 *(verified 2026-05-12; s5)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-source-coverage-matrix-loop8|S5 Loop 8 — Source Coverage Matrix and Cached Artifact Adapter]] — Implementation complete locally after one implementation Critic FAIL and fix. Plan gate completed with Critic PASS after one FAIL/amendment cycle. Final implementation Critic re... *(verified 2026-05-12; s5/knowledge-base/etl/source-coverage/cached-artifact-adapter)*
+- [[wiki/canon/handoff/s5/session-2026-05-12-s5-threat-retrieval-evidence-loop7|Session history — s5 / 2026-05-12-s5-threat-retrieval-evidence-loop7]] — - Lane: s5 *(verified 2026-05-12; s5/knowledge-base/threat-retrieval)*
 - [[wiki/canon/handoff/s5/session-3|S5 Session 3 — 2026-03-20]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-4|S5 Session 4 — 2026-03-20]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
 - [[wiki/canon/handoff/s5/session-5|S5 Session 5 — 2026-03-21]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -376,7 +398,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/roadmap/s1-roadmap|S1 Frontend — Roadmap]] — 마지막 업데이트: 2026-04-02 *(verified 2026-04-06; s1)*
 - [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-20; s2)*
 - [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — S3 lane의 다음 작업과 최근 완료 사항. *(verified 2026-04-27; s3)*
-- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-05-11; s4)*
+- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — 다음 작업 + 후순위 계획. README.md에서 분리. *(verified 2026-05-12; s4)*
 - [[wiki/canon/roadmap/s5-knowledge-acquisition-modernization-one-track|S5 Knowledge Acquisition Modernization — One-track Plan]] — Status: $ultragoal execution complete — G001-G010 complete *(verified 2026-05-11; s5/s3/s4/knowledge-base/etl/graphrag/acquisition-ledger/knowledge-corpus/cve/code-graph)*
 - [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — |  | 작업 | 우선순위 | *(verified 2026-04-07; s5)*
 - [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-09; s6)*
@@ -563,12 +585,15 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s4-to-s3-reply-s4-notice-specific-acknowledgement-for-s3-system-stability-contract|Reply: S4 notice-specific acknowledgement for S3 system-stability contract]] — - Kind: reply *(verified 2026-04-27; s4/s3/sast-runner/analysis-agent/system-stability)*
 - [[wiki/canon/work-requests/s4-to-s3-reply-s4-now-covers-build-build-and-analyze-in-health-request-summary-and-clarif|reply: S4 now covers build/build-and-analyze in /health request-summary and clarifies wait-while-alive mapping]] — - Kind: reply *(verified 2026-04-14; s4/s3/health/timeout-policy/ack-liveness/build/scan)*
 - [[wiki/canon/work-requests/s4-to-s3-reply-s4-sdk-resolution-contract-now-supports-non-registered-descriptor-and-fail|Reply: S4 SDK resolution contract now supports non-registered descriptor and fail-fast unknown sdkId]] — - Kind: reply *(verified 2026-05-08; s4)*
+- [[wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat|S3 align consumers to current S4 API contract: tool liveness, system-stability gate, and local Quality Gate separation]] — - Kind: request *(verified 2026-05-12; s4/s3/sast-runner/analysis-agent)*
 - [[wiki/canon/work-requests/s4-to-s3-s3-review-requested-s4-c-c-static-evidence-coverage-contract|S3 review requested: S4 C/C++ static evidence 고도화 방향과 coverage contract 필요성 검토]] — - Kind: question *(verified 2026-05-11; s4/s3/sast-runner/analysis-agent/static-analysis/evidence-contract/coverage-contract)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu|S4 consolidated contract notice: tool liveness, system-stability gate, and local Quality Gate status supersede older staticEvidenceContract notices]] — - Kind: notice *(verified 2026-05-12; s4/s3/sast-runner/analysis-agent)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-reply-health-control-v2-durable-ownership-implemented-for-build-scan-build-an|S4 reply: health-control v2 durable ownership implemented for build scan build-and-analyze]] — - Kind: reply *(verified 2026-05-08; s4/s3/sast-runner/health-control-v2/durable-ownership/build/scan)*
-- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption|S4 staticEvidenceContract consumer canaries added for S3-facing JSON consumption]] — - Kind: notice *(verified 2026-05-11; s4/s3)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun|S4 staticEvidenceContract adds tool-agnostic claimSupportReadiness and claimBoundaryMatrix]] — - Kind: notice *(verified 2026-05-12; s4/s3/sast-runner/analysis-agent)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption|S4 staticEvidenceContract consumer canaries added for S3-facing JSON consumption]] — - Kind: notice *(verified 2026-05-12; s4/s3)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update|S4 staticEvidenceContract gate hardening completed — S3 consumer update]] — - Kind: notice *(verified 2026-05-11; s4/s3/sast-runner/analysis-agent)*
-- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix|S4 staticEvidenceContract v1 now includes S3-consumable toolEvidenceMatrix]] — - Kind: notice *(verified 2026-05-11; s4/s3/sast-runner/analysis-agent)*
-- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates|S4 staticEvidenceContract v1 now propagates per-tool anomalies into gates]] — - Kind: notice *(verified 2026-05-11; s4/s3)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix|S4 staticEvidenceContract v1 now includes S3-consumable toolEvidenceMatrix]] — - Kind: notice *(verified 2026-05-12; s4/s3/sast-runner/analysis-agent)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates|S4 staticEvidenceContract v1 now propagates per-tool anomalies into gates]] — - Kind: notice *(verified 2026-05-12; s4/s3)*
 - [[wiki/canon/work-requests/s5-to-s2-aegis-static-wiki-read_page-wiki-prefix|aegis-static-wiki read_page: wiki/ prefix 누락 시 힌트 메시지 개선]] — - Kind: request *(verified 2026-04-07; aegis-static-wiki/mcp)*
 - [[wiki/canon/work-requests/s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared|Quick-stage code-graph / GraphRAG capability contract prepared]] — - Kind: reply *(verified 2026-04-13; s5/s2)*
 - [[wiki/canon/work-requests/s5-to-s2-s3-s5-runtime-semantics-aligned-on-2026-04-14-real-timeout-enforcement-kb_not_ready|S5 runtime semantics aligned on 2026-04-14: real timeout enforcement, KB_NOT_READY 503s, staged code-graph ingest]] — - Kind: notice *(verified 2026-04-14; s5/api-contract/knowledge-base/code-graph/timeout)*
@@ -657,7 +682,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-11; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-12; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*

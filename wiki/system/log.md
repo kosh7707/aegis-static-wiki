@@ -3633,3 +3633,239 @@ related_pages:
 - Final full S5 regression: 390 passed in 39.38s
 - Final isolated S5 scope/focused suite: 67 passed in 20.90s with empty S3/S4 diff check
 - Final Critic PASS after hygiene cleanup
+
+## [2026-05-12] mcp | register_wr | s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun.md
+
+## [2026-05-12] S4 added tool-agnostic claimSupportReadiness gate and claimBoundaryMatrix to staticEvidenceContract v1 | s4 staticEvidenceContract claim-support readiness
+- No v2 split; runtime qualityEvaluation remains not_evaluated.
+- Full S4 pytest: 516 passed in 12.94s.
+- S3 notice WR registered: wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun.md
+
+## [2026-05-12] Implemented S5 ledger/affectedness/quality/projection foundation | S5 Evidence-Grounded Threat Knowledge DB foundation
+- Added canonical spec wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db.md.
+- Implemented ledger schema v2 and tests in services/knowledge-base.
+- Verification: focused 33 passed; full S5 tests 398 passed.
+
+## [2026-05-12] spec | S4 Tool Portfolio Experiment Spec v1
+- Added canonical S4 LLM-free local experiment protocol for tool-portfolio validation/test/golden-set work.
+- Critic subagent reviewed the draft through two reject cycles and final pass before canonical write.
+- Spec is current-six-tools only for Milestone 1 and keeps future add/remove/upgrade actions WR-gated.
+
+## [2026-05-12] session | s4 / omx-1778459818640-2qvuzs experiment spec evidence
+- Recorded S4 session history for Tool Portfolio Experiment Spec v1 creation and critic verification evidence.
+- Attached test evidence for final critic pass and MCP/index/log verification.
+
+## [2026-05-12] Prevented CWE-78 fixture slice from masquerading as full CWE coverage | S5 CWE coverage-profile hardening
+- Added coverageProfile/expectedCoverage manifest semantics and persisted them through source artifact, quality report, and projection manifest.
+- Quality Gate now hard-fails unresolved CWE references under cached/production/full coverage profiles while allowing logged soft caveats for fixture_slice.
+- Verification: focused 29 passed; full S5 401 passed.
+
+## [2026-05-12] Resolved cached_catalog_snapshot expectedCoverage gap | S5 CWE coverage-profile final Critic PASS
+- Critic final gate #2 failed because cached_catalog_snapshot did not enforce expectedCoverage.
+- S5 fixed validation so cached_catalog_snapshot, production_snapshot, and full_cwe_expected all enforce CWE expectedCoverage.
+- Added regression tests; verification focused 31 passed and full S5 403 passed; Critic final gate #3 PASS.
+
+## [2026-05-12] implementation | S4 Tool Portfolio Experiment v1 framework
+- Implemented S4 local deterministic experiment harness framework under services/sast-runner/benchmark with acquisition/corpus manifests, oracle matcher, decision-cycle freeze, report builder, and harness fixture.
+- Generated s4-harness-fixture report; decision-grade Juliet validation/test remains blocked/not_run until pinned local corpus is available.
+- Verification: new harness 27 passed, focused governance/static-evidence gate 116 passed, full S4 pytest 543 passed in 13.59s.
+
+## [2026-05-12] verification | S4 Tool Portfolio Experiment v1 framework final critic pass
+- Final Critic review returned PASS after blocker fixes.
+- Final verification: matcher/manifest/report subset 23 passed in 0.07s; focused harness/governance/static-evidence gate 121 passed in 0.27s; full S4 pytest 548 passed in 13.09s.
+- Generated report keeps decision-grade Juliet validation/test blocked/not_run with LOCAL_JULIET_CORPUS_NOT_PRESENT.
+
+## [2026-05-12] documented_discussion_context | S5 Threat KB megagoal discussion context
+- Created canonical context page: wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md
+- Mirrored local ralplan-ready report: .omx/reports/s5_threat_kb_megagoal_discussion_context.md
+- Captured resolved decisions and open discussion points including GraphRAG placement, golden set >=10, negative set, scoring policy, serving/re-query contract.
+
+## [2026-05-12] S4 fail-closed required-tool preflight and blocked quality gate reporting added | S4 system-stability vs quality-gate separation implemented
+- Semgrep canonical executable path fixed to service .venv path with PATH fallback only when absent.
+- Default scans now fail closed before analyzer execution when any current-six required tool is unavailable.
+- Failed preflight responses preserve execution.toolResults and staticEvidenceContract across sync scan, NDJSON, and build-and-analyze.
+- Tool-portfolio reports now expose systemStabilityGate and qualityGate; failed system gate blocks quality metrics and emits invalid-precondition.
+
+## [2026-05-12] documented_architecture_boundary_candidate | S5 GraphRAG/source-code boundary
+- Added canonical page: wiki/canon/specs/s5-graphrag-source-code-boundary.md
+- Captured decision candidate: Threat KB keeps GraphRAG; Source Code becomes Knowledge Graph / Code Graph Context; new Evidence-Grounded Answering/Judge layer composes both.
+- Clarified this is not a three-layer GraphRAG design.
+
+## [2026-05-12] updated_discussion_evidence | S5 megagoal context evidence
+- Updated wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md section 8.1 to resolve GraphRAG placement as decision candidate.
+- Updated goal epic 12 to: Threat KB GraphRAG + Source Code KG + Evidence-Grounded Judge.
+- Mirrored the updated evidence into .omx/reports/s5_threat_kb_megagoal_discussion_context.md.
+
+## [2026-05-12] updated_discussion_evidence | S5 Source Code KG ownership
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md to mark Source Code KG as S5-owned durable knowledge layer.
+- Updated wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and local mirror to reflect epic 12 as Threat KB GraphRAG + S5-owned Source Code KG + Evidence-Grounded Judge.
+- Captured guardrail: S3/S4 produce high-fidelity source/build analysis facts; S5 owns storage/versioning/enrichment/serving for the Source Code KG.
+
+## [2026-05-12] updated_discussion_evidence | S5 Source Code KG rich IR scope
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md to make rich analysis IR first-class in the S5-owned Source Code KG.
+- Updated wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and local mirror with rich IR scope.
+- Rich artifacts include AST fragments, CFG, PDG, taint traces, symbol tables, macro expansion data, compile commands, include paths, build flags, graph facts, and evidence snippets.
+
+## [2026-05-12] updated_discussion_evidence | S5 Source Code KG versioning
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md with repository snapshot as primary Source Code KG version identity.
+- Updated wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and local mirror with versioning decision candidate.
+- Commit/tree/submodule hashes belong in analysis metadata/provenance; build target/toolchain/analyzer/rich IR hashes are derivation metadata.
+
+## [2026-05-12] updated_discussion_evidence | S5 source artifact retention
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md to allow full repository/source snapshot artifact retention or references.
+- Updated wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and local mirror with source artifact retention decision candidate.
+- Routine answer packets should expose snippets/hashes/artifact IDs, while retained source artifacts support replay, validation, dataset construction, audit, and later graph/IR regeneration.
+
+## [2026-05-12] updated_discussion_evidence | S5 source retention and API authority
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md: full source artifact retention is default in current project context because sensitive-code input is not expected.
+- Updated boundary page: S5 owns producer API contract and should require S3/S4 to emit needed source/build graph facts, rich IR, source artifacts, and repository snapshot metadata.
+- Mirrored source retention/API authority decisions into wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and .omx/reports/s5_threat_kb_megagoal_discussion_context.md.
+
+## [2026-05-12] Updated S4 canon docs for required-tool preflight/post-execution system stability separation | S4 required-tool system-stability Quality Gate hardening
+- Default /v1/scan requires current six tools unless options.tools explicitly supplies a subset.
+- Preflight unavailable required tool returns REQUIRED_TOOL_UNAVAILABLE before analyzer execution.
+- Post-execution required tool missing/failed/partial/skipped/degraded/non-normal returns REQUIRED_TOOL_EXECUTION_INCOMPLETE before SCA/codeGraph enrichment.
+- Invalid options.tools values return SCAN_TOOL_INVALID as caller error.
+- Verification: focused all-six gate 83 passed; related runner/API suite 208 passed in 12.75s; full services/sast-runner pytest 639 passed in 24.21s.
+
+## [2026-05-12] updated_discussion_evidence | S5 Judge verdict/status taxonomy
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md with Judge output taxonomy separating verdict and status.
+- Mirrored the taxonomy decision into wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and .omx/reports/s5_threat_kb_megagoal_discussion_context.md.
+- Verdict candidates: affected, not_affected, unknown, conflicting. Status candidates: complete, requires_requery, insufficient_input, degraded_quality, stale_cache, policy_blocked.
+
+## [2026-05-12] updated_discussion_evidence | S5 grounded unknown semantics
+- Updated wiki/canon/specs/s5-graphrag-source-code-boundary.md with grounded unknown semantics.
+- Mirrored grounded unknown decision into wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md and .omx/reports/s5_threat_kb_megagoal_discussion_context.md.
+- Grounded unknown can pass when explicit evidence gaps/reasons/required inputs/follow-up affordances are present; library version/diff/vendored-patch unknowns should let S3 route follow-up to S4.
+
+## [2026-05-12] Fixed report-side required-tool unknown/non-normal status pass-through | S4 report-side system stability Critic blocker closure
+- Critic found benchmark/tool_portfolio_system_gate.py allowed raw status=unknown or arbitrary non-normal required tool status to pass.
+- Added RED test covering raw unknown and weird-status required tool results; pre-fix result was 2 failed.
+- Changed report-side execution completeness to fail whenever required tool status != ok or degraded=true.
+- Verification: focused system gate 30 passed; related suite 210 passed in 13.04s; full services/sast-runner pytest 641 passed in 25.79s.
+
+## [2026-05-12] Updated sast-runner spec overview to current required-tool system-stability validation evidence | S4 canon stale test status cleanup
+- Critic found wiki/canon/specs/sast-runner.md still listed 516 passed while API/handoff pages listed 641 passed.
+- Updated service overview test row to 641 passed in 25.79s after required-tool system-stability hardening and report-side unknown/non-normal status fix.
+
+## [2026-05-12] Critic accepted S4 required-tool system-stability hardening | S4 required-tool system-stability gate final Critic PASS
+- Final Critic PASS after report-side unknown/non-normal status fix and canon consistency cleanup.
+- Critic re-ran focused gate: 30 passed; related suite: 210 passed; full S4 pytest: 641 passed.
+- Accepted runtime paths: current-six default required, explicit subset required, preflight fail-closed, post-exec non-normal fail before SCA/codeGraph, invalid tools 400, Semgrep invalid output ToolOutputInvalidError.
+
+## [2026-05-12] Added localQualityAssessment to tool-portfolio experiment report and regenerated harness report artifact | S4 local Quality Gate threshold/oracle hardening
+- Quality Gate now distinguishes metric-bucket scoring success from threshold quality status.
+- Added quality_gate_oracle.json golden oracle fixture for validation/test/canary local assessment.
+- Current harness report remains not_decision_grade because Juliet is not locally pinned, but localQualityAssessment.status=fail with validation/test failing and canary passing.
+- Regenerated benchmark/results/tool_portfolio/s4-harness-fixture-report-v1.json with systemStabilityGate, qualityGate, and localQualityAssessment.
+- Verification: report tests 7 passed; focused tool-portfolio experiment/system-gate suite 64 passed in 0.12s; full services/sast-runner pytest 642 passed in 25.47s.
+
+## [2026-05-12] Implemented S5 Source Code KG ledger v1 and Judge v1 loop with focused tests passing; Critic implementation validation pending. | s5-source-code-kg-judge-loop1
+- Plan artifact: .omx/plans/s5-source-kg-judge-loop-plan-20260512.md
+- Docs updated: wiki/canon/api/knowledge-base-api.md and wiki/canon/specs/s5-graphrag-source-code-boundary.md
+- Focused tests: 15 passed; regression subset: 119 passed
+
+## [2026-05-12] Updated S4 API contract, handoff, spec, and roadmap with fresh current-six tool liveness, system-stability/quality-gate separation, and latest full pytest evidence. | S4 API contract and owner-doc sync
+- Updated wiki/canon/api/sast-runner-api.md with fresh health-probe evidence, /v1/health example versions, and consumer interpretation note separating liveness from qualityGate.localQualityAssessment.
+- Updated wiki/canon/handoff/s4/readme.md and wiki/canon/specs/sast-runner.md with 642 passed in 25.57s, all-six available, policyStatus ok, unavailableTools empty, and local Quality Gate fail/not_decision_grade status.
+- Updated wiki/canon/roadmap/s4-roadmap.md next-step framing: decision-grade Juliet/SARD corpus acquisition/run is the blocker; local oracle/system-stability/liveness docs are synced.
+- Validated with python3 tools/validate_wiki.py: PASS.
+
+## [2026-05-12] mcp | register_wr | s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md
+
+## [2026-05-12] mcp | complete_wr | s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-12] mcp | complete_wr | s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-12] mcp | complete_wr | s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-12] mcp | complete_wr | s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-12] Registered one consolidated S4-to-S3 contract notice for current tool liveness, system-stability gate, and local Quality Gate status; completed four older incremental S4 staticEvidenceContract notices as superseded/deprecated. | S4-to-S3 consolidated WR and deprecated notice cleanup
+- New WR: wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md
+- Deprecated/completed older notices: consumer-canaries, toolEvidenceMatrix, per-tool-anomalies, claimSupportReadiness/claimBoundaryMatrix.
+- S3 open WR list should now contain the consolidated S4 notice instead of the four old incremental notices.
+
+## [2026-05-12] mcp | complete_wr | s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-12] Implemented C/C++ native answerability golden/negative suite; Critic validation pending. | s5-answerability-native-golden-set-loop2
+- Added answerability-native family and required 10 native cases.
+- Focused tests: 14 passed; full S5: 415 passed.
+
+## [2026-05-12] S3 updated handoff/tests and completed consolidated plus superseded S4 WRs | S3 consumed S4 consolidated contract notice
+- Updated wiki/canon/handoff/s3/readme.md section 24 for S4 tool-liveness, system-stability gate, and local Quality Gate interpretation.
+- Added Analysis Agent regressions for REQUIRED_TOOL_EXECUTION_INCOMPLETE as operational SAST acquisition failure, not negative evidence.
+- Recorded session evidence at wiki/canon/handoff/s3/session-s3-s4-consolidated-contract-20260512.md.
+- S3 open WR list is empty after completing consolidated and four superseded notices.
+
+## [2026-05-12] mcp | register_wr | s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md
+
+## [2026-05-12] Converted the prior consolidated S4-to-S3 notice into a formal request requiring S3 to align consumers to the current S4 API contract; completed the notice as superseded. | S4-to-S3 API contract alignment request formalized
+- Active request: wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md
+- Superseded notice completed: wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md
+- Request asks S3 to align system-stability handling, staticEvidenceContract readiness consumption, claim boundary handling, and offline Quality Gate interpretation.
+
+## [2026-05-12] Implemented configurable scoring policy v1; Critic validation pending. | s5-scoring-policy-loop3
+- Focused tests: 17 passed; full S5: 423 passed.
+- Docs updated: knowledge-base API and S5 megagoal context.
+
+## [2026-05-12] S5 Loop 4 serving/re-query contract completed after Critic re-validation | wiki/canon/handoff/s5/session-2026-05-12-s5-serving-requery-loop4.md
+- Focused S5 serving/Judge/scoring tests: 17 passed.
+- Full services/knowledge-base tests: 430 passed.
+- Clean S5-only validation worktree passed focused/full tests, diff-check, and non-S5 status check.
+- Critic implementation review PASS after fixes for unknown control keys, identifier normalization, and missing-input fallbackTrace visibility.
+
+## [2026-05-12] S5 Loop 5 durable serving ledger completed after Critic validation | wiki/canon/handoff/s5/session-2026-05-12-s5-serving-ledger-loop5.md
+- Added SQLite schema v4 serving_query_run with canonical/decision/trace/score packet fields.
+- Judge answers now include servingLedger and record normal plus grounded-unknown paths.
+- Focused S5 serving-ledger suite: 29 passed; full services/knowledge-base suite: 435 passed.
+- Clean S5-only validation worktree passed focused/full tests, diff-check, and non-S5 status check.
+- Critic implementation review PASS.
+
+## [2026-05-12] S5 Loop 6 identity-resolution guardrails completed after Critic re-validation | wiki/canon/handoff/s5/session-2026-05-12-s5-identity-resolution-loop6.md
+- Added deterministic identity resolver and explicit s5-identity-resolution-v1 evidence.
+- Affectedness now uses hardAffectednessPackageIds only; CPE/product/source-only inputs produce grounded unknown instead of affectedness proof.
+- Canonical query and serving ledger preserve cpe, repoUrl, and sourceComponentId identity inputs.
+- Focused Loop 6 suite: 33 passed; full services/knowledge-base suite: 444 passed.
+- Clean S5-only validation worktree passed import-order, focused/full tests, diff-check, and non-S5 status check.
+- Critic implementation review PASS after import-cycle fix.
+
+## [2026-05-12] S5 Loop 7 Threat KB retrieval evidence completed after Critic re-validation | wiki/canon/handoff/s5/session-2026-05-12-s5-threat-retrieval-evidence-loop7.md
+- Added ledger-backed s5-threat-retrieval-evidence-v1 under Judge evidence.threatRetrieval.
+- Retrieval evidence remains contextual_support_not_affectedness_proof with negativeEvidenceAllowed=false.
+- Excluded advisories move to suppressedCandidateEvidence and do not resurrect risk signals as usable evidence.
+- Version-present identity-missing unknowns include empty diagnostic threatRetrieval and reasoningPath.
+- Weakness/attack semantics are derived from advisory CWE IDs and relation records.
+- Focused Loop 7 bundle: 33 passed; full services/knowledge-base suite: 451 passed.
+- Clean S5-only validation worktree passed focused/full tests, diff-check, and non-S5 status check.
+- Critic implementation review PASS after fixes.
+
+## [2026-05-12] completed | S5 Loop 8 source coverage matrix and cached artifact adapter
+- Implemented `source-coverage-matrix-v1` and local cached-artifact adapter for S5 ETL source-family coverage gates.
+- Critic plan gate: FAIL -> amended -> PASS.
+- Critic implementation gate: FAIL on non-native NPM source-role bypass -> allowlist/regression fix -> PASS.
+- Validation: source coverage focused 10 passed; focused integration bundle 51 passed; full S5 suite 461 passed; clean S5-only validation worktree full suite 461 passed.
+- No commit/push performed.
+
+## [2026-05-12] completed | S5 Loop 9 typed relation graph and conflict model
+- Implemented typed conflict detection for affectedness status/range, opposite relation predicates, and exact alias conflicts.
+- Critic plan gate: FAIL -> amended -> PASS.
+- Critic implementation gate: FAIL on alias carve-out and missing involvedLedgerRefs -> fixed -> PASS.
+- Validation: relation-conflict focused 8 passed; focused integration bundle 53 passed; full S5 suite 469 passed; clean S5-only validation full suite 469 passed.
+- No commit/push performed.

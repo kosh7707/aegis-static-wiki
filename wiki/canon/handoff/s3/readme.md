@@ -6,16 +6,16 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-12"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-11**
+> **마지막 업데이트: 2026-05-12**
 
 이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-08 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
@@ -763,3 +763,88 @@ Canonical source pages:
 - `wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md`
 - `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md`
 <!-- S3-S4-STATIC-EVIDENCE-CONTRACT-CONSUMPTION-20260511:END -->
+
+
+---
+
+<!-- S3-S4-CONSOLIDATED-CONTRACT-20260512:START -->
+## 24. 2026-05-12 S4 consolidated contract notice consumption
+
+S3 consumed S4's consolidated WR `wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md`. This notice supersedes the older incremental S4→S3 staticEvidenceContract notices and is now the S3-facing summary for S4 tool liveness, runtime system-stability failures, and local Quality Gate/report semantics.
+
+Current S4 state recorded by the WR and linked canonical docs:
+- Fresh `ScanOrchestrator.check_tools(force=True)` on 2026-05-12 reports all six current SAST tools available: Semgrep `1.156.0`, Cppcheck `2.13.0`, Flawfinder `2.0.19`, clang-tidy `18.1.3`, scan-build probe OK, gcc-fanalyzer/GCC `13.3.0`; `policyStatus=ok`, `policyReasons=[]`, `unavailableTools=[]`.
+- Default `/v1/scan` now treats all current six tools as required. Explicit `options.tools` narrows the required set to that caller-specified subset.
+- Required-tool preflight failure is HTTP `503` with `errorDetail.code="REQUIRED_TOOL_UNAVAILABLE"`. Required-tool missing/failed/partial/skipped/degraded/non-normal post-execution failure is HTTP `503` with `errorDetail.code="REQUIRED_TOOL_EXECUTION_INCOMPLETE"`. Unknown `options.tools[]` is caller input error HTTP `400` with `errorDetail.code="SCAN_TOOL_INVALID"`.
+- These codes are **system-stability / acquisition diagnostics**, not SAST quality results and not absence-of-vulnerability evidence.
+- S4's local tool-portfolio harness currently reports `qualityGate.status=not_decision_grade`, `qualityGate.decision=insufficient-evidence-for-tool-change`, `qualityGate.localQualityAssessment.status=fail`, failing `validation`/`test` splits, and passing `canary`. The split metric `status` values mean scoring ran; threshold pass/fail lives under `qualityGate.localQualityAssessment`.
+
+S3 consumer interpretation:
+- S3 continues to treat S4 required-tool failures, policy failures, skips, and unknowns as operational SAST acquisition failures, never as `sast_no_findings`.
+- Runtime `staticEvidenceContract.gates.systemStability`, `gates.evidenceReadiness`, `gates.claimSupportReadiness`, `claimBoundaryMatrix[]`, and `toolEvidenceMatrix` are local deterministic evidence-readiness/claim-boundary surfaces only.
+- S4 local Quality Gate reports are offline experiment evidence and do not alter runtime `/v1/scan` vulnerability semantics.
+- S4 still does not provide external vulnerability knowledge, semantic GraphRAG retrieval, runtime behavior, exploitability judgment, or final security verdict; S3/S5 remain responsible for those surfaces.
+
+S3 test hardening added for this WR:
+- `services/analysis-agent/tests/test_phase_one.py::test_run_sast_records_required_tool_system_stability_failure_without_no_findings` locks HTTP-503 required-tool/system-stability failure handling as `sast_scan_completed=false` with no negative SAST evidence.
+- `services/analysis-agent/tests/test_evidence_catalog.py::test_sast_required_tool_failure_is_operational_system_stability_not_negative_evidence` locks evidence-catalog interpretation as operational `sast_scan_failed` only, not `sast_contract_failure` and not final proof/negative evidence.
+
+Fresh S3 verification:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py::test_run_sast_records_required_tool_system_stability_failure_without_no_findings tests/test_evidence_catalog.py::test_sast_required_tool_failure_is_operational_system_stability_not_negative_evidence -q` → `2 passed in 0.14s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_phase_one.py tests/test_evidence_catalog.py tests/test_sast_tool.py -q` → `101 passed in 1.23s`.
+
+Superseded WR handling:
+- The following older incremental S4→S3 notices should be completed by S3 as superseded by this consolidated notice:
+  - `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-consumer-canaries-added-for-s3-facing-json-consumption.md`
+  - `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-includes-s3-consumable-toolevidencematrix.md`
+  - `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-v1-now-propagates-per-tool-anomalies-into-gates.md`
+  - `wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-adds-tool-agnostic-claimsupportreadiness-and-claimboun.md`
+
+Canonical source pages:
+- `wiki/canon/api/sast-runner-api.md`
+- `wiki/canon/specs/sast-runner-static-evidence-contract.md`
+- `wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md`
+- `wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md`
+- `wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md`
+<!-- S3-S4-CONSOLIDATED-CONTRACT-20260512:END -->
+
+
+---
+
+<!-- S3-S4-API-ALIGNMENT-20260512:START -->
+## 25. 2026-05-12 S4 current API contract alignment / fail-closed static evidence readiness
+
+S3 consumed the action-request WR `wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md`. Unlike the earlier notice-only handling, this pass changed S3 consumer code because the current S4 API contract now requires consumers to read runtime `staticEvidenceContract` gates before treating local static evidence as clean/ready.
+
+Implemented S3 behavior:
+- S3 now summarizes S4 `staticEvidenceContract` as clean-ready only when all of the following hold: `gates.systemStability.status="pass"`, `gates.evidenceReadiness.status="ready"`, `gates.claimSupportReadiness.status="pass"`, `claimBoundaryMatrix[]` is present, and `toolEvidenceMatrix[]` is present.
+- Missing, empty, or malformed `staticEvidenceContract` is fail-closed as `sast_static_evidence_ready=false` with `STATIC_EVIDENCE_CONTRACT_MISSING`; it must not become clean `sast_no_findings` evidence.
+- S4 transport/domain success with degraded/partial/not-ready static evidence can still provide positive local observations, but S3 records an operational `sast_static_evidence_not_ready` diagnostic and suppresses SAST negative evidence from empty findings.
+- S4 required-tool/system-stability failures remain operational SAST acquisition failures, not SAST quality verdicts, not absence-of-vulnerability evidence, and not final proof refs.
+- Precomputed `quickContext` / trusted SAST findings obey the same contract-readiness rule; precomputed findings without a current `staticEvidenceContract` are not clean complete evidence.
+- Partial SAST tools also suppress no-findings negative evidence even when older response shapes do not carry the current contract.
+- Phase 2 prompt text now explicitly tells the LLM that not-ready/degraded S4 static evidence cannot support vulnerability absence, CWE absence, exploitability absence, S5/GraphRAG substitution, or final security verdicts.
+
+Code anchors:
+- `services/analysis-agent/app/core/s4_static_evidence.py`
+- `services/analysis-agent/app/core/phase_one_types.py`
+- `services/analysis-agent/app/core/phase_one_exec.py`
+- `services/analysis-agent/app/core/phase_one_flow.py`
+- `services/analysis-agent/app/core/evidence_catalog.py`
+- `services/analysis-agent/app/core/phase_one_prompt.py`
+- `services/analysis-agent/app/tools/implementations/sast_tool.py`
+
+Regression anchors:
+- `services/analysis-agent/tests/test_sast_tool.py`
+- `services/analysis-agent/tests/test_phase_one.py`
+- `services/analysis-agent/tests/test_evidence_catalog.py`
+
+Fresh verification:
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_sast_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py -q` → `114 passed in 1.47s`.
+- `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `639 passed in 7.47s`.
+- `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval && git diff --check -- services/analysis-agent` → PASS.
+
+Critic status:
+- First Critic pass rejected the initial implementation because missing/empty/malformed `staticEvidenceContract` could fail open into `sast_no_findings`.
+- S3 fixed that blocker by recording missing/malformed contracts as not-ready across `/v1/scan`, `/v1/build-and-analyze`, and precomputed quickContext/trusted paths, then adding regressions for the fail-closed behavior.
+<!-- S3-S4-API-ALIGNMENT-20260512:END -->
