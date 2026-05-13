@@ -73,7 +73,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — 소유자: S5 (Knowledge Base) *(verified 2026-05-12; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
 - [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-05-11; s7)*
-- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-05-12; s4)*
+- [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — AEGIS — Automotive Embedded Governance & Inspection System *(verified 2026-05-13; s4)*
 - [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-05-11; platform)*
 
 ## Handoff
@@ -302,6 +302,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs-s4-hardening-goal-20260511|Session history — s4 / omx-1778459818640-2qvuzs-s4-hardening-goal-20260511]] — - Lane: s4 *(verified 2026-05-11; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs|Session history — s4 / omx-1778459818640-2qvuzs]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512|Session history — s4 / s4-api-doc-sync-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-corpus-readiness-gate-20260513|Session history — s4 / s4-corpus-readiness-gate-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-s4-health-control-v2-durable-ownership-20260508|Session history — S4 / s4-health-control-v2-durable-ownership-20260508]] — - Lane: S4 *(verified 2026-05-08; s4)*
 - [[wiki/canon/handoff/s4/session-s4-local-quality-gate-oracle-20260512|Session history — s4 / s4-local-quality-gate-oracle-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-s4-required-tool-system-stability-gate-20260512|Session history — s4 / s4-required-tool-system-stability-gate-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*

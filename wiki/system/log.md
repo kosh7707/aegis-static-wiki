@@ -3897,3 +3897,8 @@ related_pages:
 ## [2026-05-13] Registered S5 producer-contract review request | S5 to S3/S4 Source Code KG producer contract review WR
 - Registered `wiki/canon/work-requests/s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro.md`.
 - The WR asks S3/S4 to review whether current artifacts can map into S5's Source Code KG producer contract v1.
+
+## [2026-05-13] S4 added deterministic Corpus Readiness Gate v1 for tool-portfolio experiment reports | s4-corpus-readiness-gate-v1
+- Added standalone offline readiness gate semantics to S4 canonical docs: required corpora, acquisition localPath, safe sourcePath, case existence/checksum, validation/test split readiness.
+- Updated S4 API/spec/handoff/roadmap wiki pages to distinguish system stability, decision-grade corpus readiness, and local quality thresholds.
+- Critic final review PASS; focused tool-portfolio suite 70 passed in 0.12s; full S4 pytest 648 passed in 24.66s; wiki validation PASS.
