@@ -15,7 +15,7 @@ related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/tracea
 
 # S4 Paper Static Evidence API Contract
 
-> Status: draft for S3 consumer review; Critic `PASS_WITH_CHANGES` incorporated.
+> Status: implementation-aligned S4 paper producer contract; S3 accepted core consumer semantics.
 > Owner: S4 / SAST Runner.
 > Endpoint: `POST /v1/paper/static-evidence`.
 > Last verified: 2026-05-19.
@@ -272,8 +272,11 @@ claimBoundaries
 |---|---|---|---|
 | `produced` | arrays or singletons | One or more rows or singleton object emitted. | Positive local producer evidence only. |
 | `empty` | arrays | Attempted and zero rows produced. | Not negative evidence. |
+| `partial` | arrays or singletons | Attempted and produced bounded/incomplete evidence because some tool or surface work was degraded. | Producer diagnostic only. |
+| `failed` | arrays or singletons | Attempted and failed under this producer contract. | Producer diagnostic only. |
 | `not_available` | arrays or singletons | Could not produce in this target/context. | Producer diagnostic only. |
-| `error` | arrays or singletons | Attempted and failed. | Producer diagnostic only. |
+| `skipped` | arrays or singletons | Deliberately not attempted under an explicit producer reason. | Producer diagnostic only. |
+| `error` | arrays or singletons | Compatibility alias for attempted producer failure. New paper bundles should prefer `failed`. | Producer diagnostic only. |
 
 ### 6.3 Surface status object shape
 
@@ -287,7 +290,9 @@ claimBoundaries
 }
 ```
 
-Required keys: `status`, `count`, `consumerPolicy`, `reasonCodes`. `diagnosticRefs` is optional.
+Required keys: `status`, `count`, `consumerPolicy`, `reasonCodes`, `diagnosticRefs`.
+
+Implementation-aligned rule: `diagnosticRefs` is required on every `surfaceStatus` entry. Use `diagnosticRefs: []` to explicitly state that no producer diagnostic is associated with the surface. `partial`, `failed`, `not_available`, `skipped`, and `error` require non-empty `diagnosticRefs` that resolve against top-level `diagnostics[]`.
 
 S3 must fail closed if a required `surfaceStatus` key is missing or uses an unknown status.
 
@@ -390,6 +395,7 @@ location.startLine
 location.endLine
 functionId|null
 evidenceRefs[]
+diagnosticRefs[]
 trace
 ```
 
@@ -410,6 +416,7 @@ findingId|null
 sourceFileId|null
 text
 consumerPolicy
+diagnosticRefs[]
 trace
 ```
 
@@ -424,6 +431,7 @@ sourceFileId
 path
 language
 compileContextRef
+diagnosticRefs[]
 trace
 ```
 
@@ -440,6 +448,7 @@ name
 qualifiedName
 location.startLine
 location.endLine
+diagnosticRefs[]
 trace
 ```
 
@@ -455,6 +464,7 @@ fromSourceFileId
 includeText
 toSourceFileId|null
 resolved
+diagnosticRefs[]
 trace
 ```
 
@@ -474,6 +484,7 @@ sourcePath
 repoUrl|null
 diffSummary|null
 consumerPolicy
+diagnosticRefs[]
 trace
 ```
 
@@ -493,6 +504,7 @@ elapsedMs|null
 degraded
 degradeReasons[]
 consumerPolicy
+diagnosticRefs[]
 trace
 ```
 
@@ -508,6 +520,18 @@ gcc-fanalyzer
 ```
 
 Tool execution state is not a vulnerability verdict.
+
+Paper endpoint `toolRuns[].status` vocabulary:
+
+```text
+success
+failed
+timeout
+not_available
+skipped
+```
+
+`failed`, `timeout`, `not_available`, and `skipped` require non-empty `diagnosticRefs`.
 
 ## 11. Singleton/top-level surfaces
 
@@ -867,7 +891,10 @@ Convention:
 
 ```text
 cases/{caseId}/s4-static-evidence.raw.json
+cases/{caseId}/s4-static-evidence.validation.json
 ```
+
+`s4-static-evidence.raw.json` is the bundle. `s4-static-evidence.validation.json` is S4's first-pass validation report over that exact raw bundle.
 
 File-backed artifacts must satisfy the same contract:
 
@@ -877,6 +904,7 @@ File-backed artifacts must satisfy the same contract:
 - `surfaceStatus` covers every top-level surface;
 - row-local traces on all major rows and `targetMetadata`;
 - `diagnostics[]` present and sanitized;
+- `diagnosticRefs` required arrays on diagnostic-capable rows and surface status entries;
 - no TP/FP/UNKNOWN/verdict/safe/risk fields;
 - no checksum/hash/digest/fingerprint/artifact-hash/replay-hash semantics;
 - B2/B4-visible row text/order preserved.
@@ -890,6 +918,28 @@ bundleRef = s4-bundle:{caseId}:{buildTargetId}
 ```
 
 These are traceability refs only.
+
+Validation report minimum:
+
+```json
+{
+  "schemaVersion": "s4-static-evidence-validation-v1",
+  "bundleRef": "s4-bundle:case-001:target-001:request-001",
+  "overallStatus": "pass",
+  "contractValidation": {
+    "status": "pass",
+    "errors": [],
+    "warnings": []
+  },
+  "producerSanityValidation": {
+    "status": "pass",
+    "errors": [],
+    "warnings": []
+  }
+}
+```
+
+`contractValidation` covers consumer-safety/schema/trace/forbidden semantics. `producerSanityValidation` covers S4 operational honesty such as current-six tool-run presence, explicit tool statuses, and diagnostic reasons for degraded/non-success work.
 
 ## 15. S3 normalization and evidence-ledger ingestion
 
@@ -925,21 +975,24 @@ S4 should provide executable tests or validators before implementation is mainli
 | Check | Required assertion |
 |---|---|
 | Request schema | Required fields accepted; forbidden fields rejected/fail closed. |
+| Compile context admission | `compile_commands.json` is parsed explicitly; source files are selected from the compile DB, not an arbitrary project walk; source-root escapes fail closed. |
 | Ref consistency | `compileContext.ref` and `provenance.compileContextRef` mismatch produces diagnostic/failure. |
 | Produced bundle shape | Full `s4-paper-static-evidence-bundle-v1` required field set present. |
 | Failed bundle shape | `success=false`, `bundleStatus=failed`, diagnostics, and safe partial surfaces validate. |
-| Surface status coverage | Every array and singleton/top-level surface has `surfaceStatus`. |
+| Surface status coverage | Every array and singleton/top-level surface has `surfaceStatus` with required `diagnosticRefs`. |
 | Empty semantics | `findings=[]` and array `empty` can still produce `success=true`, `bundleStatus=produced`. |
 | Stage diagnostic semantics | `bounded_partial` alone never makes the bundle failed. |
-| Required tool invariant | unavailable/incomplete required current-six tool causes failed/non-consumable bundle or explicit producer diagnostic. |
+| Required tool invariant | Every produced paper bundle has all current-six `toolRuns[]`; unavailable/incomplete tools require explicit producer diagnostics. |
 | Row trace | Every major row and `targetMetadata` has required trace refs. |
+| Diagnostic refs | Diagnostic-capable rows and surface status entries always include `diagnosticRefs`; non-empty refs resolve against top-level `diagnostics[]`. |
 | Claim-boundary mirrors | Top-level `claimBoundaryMatrix`/`claimBoundaries` match the static contract projection. |
 | Claim boundary | Unsupported negative/final verdict claims stay unsupported even with empty findings. |
 | Diagnostics | Sanitized category/reason-code diagnostics only. |
 | Forbidden verdict fields | No TP/FP/UNKNOWN/final verdict/safe/risk-score fields are emitted as S4 claims. |
 | Forbidden integrity fields | No checksum/hash/digest/fingerprint/artifact-hash/replay-hash fields are emitted as identity, integrity, or reproducibility claims. |
 | Duplicate IDs | Malformed or duplicate IDs fail closed. |
-| File-backed equivalence | File artifact validates against same schema as live response. |
+| Validation report split | S4 emits `contractValidation` and `producerSanityValidation` separately. |
+| File-backed equivalence | Raw file artifact validates against same schema as live response and has a matching validation report. |
 | B2/B4 stability | Fixture proves same row text/order feeds both packet conditions. |
 
 Existing `staticEvidenceContract` and consumer canary tests remain relevant but are not sufficient alone. The paper endpoint also needs envelope, top-level surface, trace, file-backed, and B2/B4 order checks.
@@ -962,10 +1015,14 @@ The older surfaces remain production/compatibility APIs. The paper endpoint is t
 
 S4 may finalize these without changing paper semantics:
 
-- exact internal ID generation method;
 - additional row fields beyond the S3 minimum;
-- exact path-resolution convention for `compileContext.path` in deployment;
 - exact validator CLI name/location;
 - exact internal mapping from existing S4 surfaces to paper rows.
+
+Already fixed for the current implementation:
+
+- row IDs are bundle-local stable IDs, not cross-bundle/hash/checksum identities;
+- `compileContext.path` is resolved absolute or relative to `sourceRoot`;
+- compile DB source entries are normalized under `sourceRoot`; source-root escapes fail closed.
 
 Any change to producer-boundary semantics, required surfaces, row traceability, B2/B4 same-evidence control, or checksum/hash exclusion requires S3 review.
