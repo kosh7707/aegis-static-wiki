@@ -9,7 +9,7 @@ original_path: "docs/specs/sast-runner.md"
 last_verified: "2026-05-13"
 service_tags: ["s4"]
 decision_tags: []
-related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
+related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md", "wiki/canon/work-requests/s4-to-s3-s3-consume-s4-tool-portfolio-corpus-readiness-and-quality-gate-contract.md"]
 migration_status: "canonicalized"
 ---
 
@@ -40,7 +40,7 @@ migration_status: "canonicalized"
 | 포트 | 9000 |
 | 버전 | v0.11.2 |
 | API 계약 | `wiki/canon/api/sast-runner-api.md` |
-| 테스트 | 648개 통과 (2026-05-13 Corpus Readiness Gate v1 및 docs-sync 재검증 후 전체 pytest 재확인, latest `648 passed in 24.66s`) |
+| 테스트 | 796개 통과 (2026-05-13 decision-cycle threshold JSON-serializability hardening 및 docs-sync 재검증 후 전체 pytest 재확인, latest `796 passed in 24.89s`) |
 | 도구 생존성 | current six 모두 available (2026-05-12 local probe), `policyStatus="ok"`, `unavailableTools=[]` |
 | 품질 Gate | local harness fixture 기준 `corpusReadinessGate.status="blocked"`, `qualityGate.status="not_decision_grade"`, `qualityGate.localQualityAssessment.status="fail"`; validation/test fail, canary pass |
 
@@ -111,6 +111,23 @@ migration_status: "canonicalized"
 Health policy result: `policyStatus="ok"`, `policyReasons=[]`, `unavailableTools=[]`.
 This is a **system-stability/liveness** snapshot only; it is not a quality or vulnerability verdict.
 
+### Report-side System Stability Gate hardening (2026-05-13)
+
+Offline tool-portfolio reports use `s4-tool-portfolio-system-stability-gate-v1` before oracle quality scoring. Report-side required tool handling is fail-closed:
+
+- empty required tool sets fail with `SYSTEM_REQUIRED_TOOLS_NOT_DECLARED`;
+- blank/duplicate required tool IDs are normalized away;
+- known tool IDs are reported in canonical current-six order;
+- unknown required tool IDs fail preflight with detailed `REQUIRED_TOOL_UNKNOWN`;
+- unknown required tools do not fall through into execution-completeness as `TOOL_RESULT_NOT_RECORDED`.
+- `systemStabilityGate.status="not_run"` preserves local metric evidence but cannot produce final `qualityGate.status="pass"`; it remains `not_decision_grade` with `SYSTEM_STABILITY_GATE_NOT_RUN` until an explicit passing system-stability gate is provided.
+- `qualityGateAllowed=true` is reserved for `systemStabilityGate.status="pass"`; default/precomputed `not_run` gates emit `qualityGateAllowed=false`.
+- caller-provided non-mapping system-stability payloads fail closed with `SYSTEM_STABILITY_GATE_INPUT_INVALID` and sanitized diagnostics.
+- caller-provided `status="pass"` gates must prove current-six `requiredTools` completeness and valid `phases.preflight` / `phases.executionCompleteness` pass evidence (`status="pass"`, empty `failures`) before oracle scoring.
+- `status="fail"` and `status="not_run"` gates can preserve minimal evidence; strict nested pass-phase proof is pass-only and inconsistent non-pass gates with malformed phases normalize to `SYSTEM_STABILITY_GATE_INCONSISTENT` rather than crashing.
+
+This does not change runtime `/v1/scan` request validation; runtime unknown `options.tools` remains a caller error handled by the scan API.
+
 ### Benchmark Slice Report v1
 
 S4 keeps offline historical Juliet benchmark-slice evidence in `benchmark/benchmark_slice_report.py`. The report reads exactly two pinned artifacts: `benchmark/data/baselines/v0.6.0-full.json` for variant-01 recall/precision/FP/F1 evidence and `benchmark/data/baselines/v0.7.0-all-variants.json` for all-variant recall/noise/noisePerFile evidence. Metrics remain source-scoped and are not merged into one quality score.
@@ -129,11 +146,16 @@ Tool Portfolio Experiment reports now embed `corpusReadinessGate` with schema `s
 
 This gate is offline and deterministic:
 
-- it takes explicit `required_corpora` such as `juliet-c-cpp-1.3`;
+- it takes explicit `required_corpora` such as `juliet-c-cpp-1.3`, `sard-c-v2-vulnerable`, and `sard-c-v2-secure`;
+- empty required-corpora input is fail-closed with `CORPUS_REQUIRED_CORPORA_NOT_DECLARED`;
 - validates acquisition manifest presence and local `localPath`;
 - rejects unsafe external case paths, missing case files, checksum mismatches, and missing validation/test splits;
 - sets `decisionGradeReady=true` only when required external corpora are available and checked;
 - derives compatibility `decisionSupport.externalCorpusStatus` from readiness rather than relying on hardcoded fixture status.
+- treats `corpusReadinessGate` as authoritative: a `not_run` or `blocked` readiness gate remains `not_decision_grade` even when legacy `external_corpus_status` says an external corpus is available.
+- caller-provided readiness payloads are fail-closed: non-mapping/empty/invalid payloads emit `CORPUS_READINESS_GATE_INPUT_INVALID`; forged `available` gates must prove required corpora through acquisition statuses, case statuses, checked counts, validation/test split counts, and required-corpus-bound external projections.
+- blocked/not_run readiness gates preserve minimal evidence but always project `requiredCorpusReadiness` from top-level status/reason codes, so embedded or legacy `externalCorpusStatus` cannot hide corpus blockers.
+- legacy/caller-supplied `external_corpus_status` remains visible in `decisionSupport.externalCorpusStatus` as compatibility context, but `qualityGate` and `requiredFollowUps` use only the readiness-derived projection.
 
 Current generated harness report:
 
@@ -143,6 +165,28 @@ Current generated harness report:
 - `decisionSupport.externalCorpusStatus.juliet.status="blocked"`.
 
 This is not a runtime `/v1/scan` API change. It is the offline experiment/report preflight that prevents S4-owned synthetic fixtures from being mistaken for decision-grade Juliet/SARD evidence.
+
+The same gate is independently executable for CI/manual preflight:
+
+```bash
+python -m benchmark.tool_portfolio_corpus_readiness \
+  --corpus-manifest <corpus.json> \
+  --acquisition-manifest <acquisition.json> \
+  --required-corpus juliet-c-cpp-1.3 \
+  --base-path <repo-or-corpus-base>
+```
+
+Exit code `0` means available, `2` means deterministic blocked/not-run readiness JSON was emitted, and `1` means invalid input JSON/path/schema.
+
+Actual acquisition is now a separate benchmark-only CLI:
+
+```bash
+PYTHONPATH=. python -m benchmark.tool_portfolio_corpus_acquisition
+```
+
+It downloads and verifies NIST Juliet C/C++ 1.3 plus SARD C analyzer v2 vulnerable/secure archives, extracts them under ignored `.omx/corpora/s4-tool-portfolio/`, emits acquisition/corpus/readiness manifests, and leaves experiment scoring offline. The 2026-05-13 local cache has readiness `available`, `decisionGradeReady=true`, and `checkedCaseCount=80` for the focused Juliet/SARD validation/test corpus.
+
+Existing extraction caches are not silently re-pinned: S4 reuses them only when the prior acquisition manifest still matches the verified archive checksum, recomputed extraction-tree checksum, and local path. Single SARD candidates are kept in one split so readiness blocks with `CORPUS_REQUIRED_SPLITS_MISSING` instead of manufacturing held-out evidence, and corpus manifests reject source-artifact leakage across validation/test even if lineage IDs differ.
 
 ### Local Quality Gate status (2026-05-13)
 
@@ -154,11 +198,29 @@ The current S4-owned harness fixture report (`benchmark/results/tool_portfolio/s
 | test | pass | fail | `FINDING_PRECISION_BELOW_THRESHOLD`, `NEGATIVE_TARGET_FPR_ABOVE_THRESHOLD` |
 | canary | pass | pass | no local threshold failure |
 
-Top-level report state:
-- `corpusReadinessGate.status="blocked"` and `qualityGate.status="not_decision_grade"` because no pinned local Juliet/SARD decision-grade corpus is present (`LOCAL_JULIET_CORPUS_NOT_PRESENT`).
+Top-level synthetic harness report state:
+- `corpusReadinessGate.status="blocked"` and `qualityGate.status="not_decision_grade"` because the committed synthetic harness fixture is not a pinned local Juliet/SARD decision-grade corpus (`LOCAL_JULIET_CORPUS_NOT_PRESENT`).
+- Caller-provided corpus readiness gate contradictions are normalized to blocked/not-decision-grade with `CORPUS_READINESS_GATE_INCONSISTENT`.
 - `qualityGate.localQualityAssessment.status="fail"` because validation/test synthetic local oracle thresholds intentionally fail.
 - `negativeTargetFpr=null` means a split has no negative targets and must not trigger `maximumNegativeTargetFpr`.
 - Tool liveness/system stability, corpus readiness, and local quality assessment remain separate: all six tools can be alive while local corpus readiness is blocked or quality thresholds fail.
+
+Local threshold configuration is fail-closed:
+
+- `thresholds.requiredSplits` defaults to `validation`/`test`/`canary` when omitted.
+- Explicit empty or blank-only `requiredSplits` fails with `QUALITY_REQUIRED_SPLITS_NOT_DECLARED`.
+- Known split names are assessed in canonical `validation`, `test`, `canary` order; unknown nonblank split names fail via `SPLIT_METRICS_MISSING` unless metrics exist.
+- At least one threshold criterion must be declared: `minimumTargetRecall`, `minimumFindingPrecision`, or `maximumNegativeTargetFpr`; otherwise local quality fails with `QUALITY_THRESHOLDS_NOT_DECLARED`.
+- `findings_by_config` payload must include all required current-six config keys, each value must be a non-string sequence of findings, and each finding must be `SastFinding` or mapping; otherwise `FINDINGS_BY_CONFIG_INPUT_INVALID` suppresses scoring.
+- `matchingPolicy` payload must be a mapping/object; non-mapping payloads fail with `ORACLE_MATCHING_POLICY_INPUT_INVALID`, suppress oracle-derived scored metrics, and do not echo raw payloads.
+- `matchingPolicy` semantic fields are strict: optional fields default to `lineWindowDefault=5` and `functionFallbackDefault=false`; explicit schema drift, unknown keys, bool/non-int/out-of-range line windows, or non-bool fallback values fail closed before scoring with sanitized `ORACLE_MATCHING_POLICY_INPUT_INVALID` diagnostics.
+- Legacy `external_corpus_status` is sanitized compatibility context only. Reserved/readiness-owned keys and malformed/forbidden entries are omitted from `decisionSupport.externalCorpusStatus` and exposed, when needed, as sanitized `legacyExternalCorpusStatusInputValidation`; final `qualityGate`/`requiredFollowUps` continue to consume readiness-derived projection only.
+- Offline Tool Portfolio report identity is validated before decision-cycle construction: invalid `runId`, `createdAt`, or `phase` is replaced with safe placeholders, reported through sanitized `reportIdentityValidation`, suppresses oracle scoring, and cannot leak raw identity strings into top-level `runId` or `decisionCycleId`.
+- Offline Tool Portfolio threshold payloads are checked for JSON-serializability before decision-cycle checksum. Invalid threshold payloads use sanitized deterministic checksum input and local quality fails with `QUALITY_THRESHOLDS_INPUT_INVALID`; metric scoring remains available when system/matching/findings prerequisites pass.
+- `thresholds` payload must be a mapping/object; non-mapping payloads fail with `QUALITY_THRESHOLDS_INPUT_INVALID` without echoing raw payloads.
+- Declared threshold values must be numeric, finite, and within `[0.0, 1.0]`; otherwise local quality fails with `QUALITY_THRESHOLD_VALUE_INVALID` before split scoring.
+- `primaryToolSetConfig` defaults to `full-current-six` only when absent/null; explicit blank, non-string, or unknown configs fail with `QUALITY_PRIMARY_TOOL_SET_CONFIG_INVALID` before split scoring.
+- If system stability and corpus readiness pass, invalid local threshold configuration yields final `qualityGate.status="fail"`.
 
 ### 도구 최소 버전
 

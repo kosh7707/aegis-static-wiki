@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa"
-last_verified: "2026-04-15"
+last_verified: "2026-05-18"
 service_tags: ["s2", "s8"]
 decision_tags: ["code-review-followup", "container-gateway", "path-boundary", "git-pull-workflow"]
 related_pages: ["wiki/canon/handoff/s8/readme.md", "wiki/canon/specs/container-gateway.md", "wiki/canon/api/container-gateway-api.md", "wiki/canon/handoff/s2/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s8-post-merge-s8-follow-up-pull-latest-main-then-fix-the-reviewed-container-workspa"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s8"]
-completed_by: []
+completed_by: [{"lane":"s8","completed_at":"2026-05-18T01:49:07.990Z","note":"Administrative bulk close on user instruction. Not reviewed by S8 in this pass; treated as stale/not used."}]
 registered_at: "2026-04-15T01:47:16.460Z"
+completed_at: "2026-05-18T01:49:07.990Z"
 ---
 
 # Post-merge S8 follow-up: pull latest main, then fix the reviewed container/workspace boundary issues and reply by WR

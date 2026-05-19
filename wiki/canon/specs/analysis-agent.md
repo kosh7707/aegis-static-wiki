@@ -303,3 +303,24 @@ The public response-schema details for claim lifecycle state are intentionally d
 
 Therefore this spec does not duplicate the full field schema; it records the service-level invariant and defers exact public field shape to the API contract page.
 <!-- S3-WP0A-20260427:END -->
+
+---
+
+<!-- S3-S4-V0112-CONSUMER-SPEC-20260518:START -->
+## 11. S4 v0.11.2 consumer contract: local evidence only, fail-closed readiness
+
+S3 consumes S4 v0.11.2 as a deterministic local static-analysis evidence provider. S4 evidence can support local observations only inside the S4-declared claim boundary. It must not by itself support final security verdicts, vulnerability absence, CWE absence, exploitability, external vulnerability affectedness, semantic graph completeness, S5 routing sufficiency/non-necessity, or tool add/remove/upgrade recommendations.
+
+Runtime S4 `staticEvidenceContract` is clean-ready only when all of the following are true:
+- gates are positive: `systemStability=pass`, `evidenceReadiness=ready`, `claimSupportReadiness=pass`;
+- required local coverage surfaces are present: `staticToolExecution`, `sastFindings`, `findingLocations`, `findingCweMapping`, `originClassification`;
+- unsupported claim categories remain explicitly unsupported: vulnerability absence, CWE absence, external affectedness, runtime behavior, exploitability judgment, semantic graph completeness, and final security verdict;
+- `toolEvidenceMatrix` contains the current six S4 tools in stable order: `semgrep`, `cppcheck`, `flawfinder`, `clang-tidy`, `scan-build`, `gcc-fanalyzer`;
+- no malformed, duplicate, or unsafe projection rows are present.
+
+S4 Tool Portfolio reports are offline diagnostic surfaces. `qualityReady` is always false for runtime vulnerability analysis, and `toolPortfolioDecisionGradeUsable` never authorizes runtime vulnerability claims. `runnerIntegrityOnly` is runner-integrity diagnostic evidence only and is false whenever unsafe projection exists.
+
+S4 `/v1/build` output is usable as canonical Quick input only when the Build Agent verifies the full readiness tuple: `success=true`, `readiness.status="ready"`, `compileCommandsReady=true`, `quickEligible=true`, `buildEvidence.compileCommandsPath` present, `userEntries>0`, and `exitCode=0`. Partial/not-ready output is a bounded build diagnostic, not usable compile database evidence.
+
+S4 standardized durable ownership and error envelopes must be preserved as JSON where available. S3 consumers should reason over stable fields such as `errorDetail.code`, `retryable`, `failureDetail.category`, readiness/status/count fields, sanitized reason codes, and S4 consumer-policy fields, not raw host-local paths, SDK roots, parser exception text, raw build stdout/stderr, or redacted include/system path values.
+<!-- S3-S4-V0112-CONSUMER-SPEC-20260518:END -->

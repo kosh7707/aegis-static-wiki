@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro"
-last_verified: "2026-05-13"
+last_verified: "2026-05-18"
 service_tags: ["s5", "s3", "s4", "knowledge-base", "source-code-kg", "producer-contract"]
 decision_tags: ["source-code-kg-contract-v1", "s5-api-authority", "s3-s4-producer-alignment", "rich-analysis-ir"]
 related_pages: ["wiki/canon/api/knowledge-base-api.md", "wiki/canon/specs/s5-graphrag-source-code-boundary.md", "wiki/canon/handoff/s5/session-2026-05-13-s5-source-code-kg-contract-v1.md"]
 migration_status: "canonicalized"
 wr_id: "s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s5"
 to_lanes: ["s3", "s4"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-05-13T05:38:07.114Z","note":"S3 implemented Source Code KG producer contract consumption in services/analysis-agent: fetches and validates GET /v1/contracts/source-code-kg before POST, gates POST on repositorySnapshot.commitHash, validates version/path, sends X-Timeout-Ms, emits explicit graphNodes/graphEdges/evidenceSnippets/richIrArtifacts/sourceArtifacts families, records coverageComplete and reasonCodes for missing optional producer coverage, covers build-and-analyze and individual-tool Phase 1 paths, and keeps Source KG status operational-only (not verdict/affectedness proof). Duplicate function occurrence edge-source bug found by Critic was fixed and regression-tested. Evidence: session wiki/canon/handoff/s3/session-2026-05-13-s3-api-contract-consumption.md; full S3 suite 664 passed; compileall passed; final Critic re-review PASS."},{"lane":"s4","completed_at":"2026-05-18T01:49:07.672Z","note":"Administrative bulk close on user instruction. Not reviewed by S4 in this pass; treated as stale/not used."}]
 registered_at: "2026-05-13T02:16:01.671Z"
+completed_at: "2026-05-18T01:49:07.672Z"
 ---
 
 # S5 Source Code KG producer contract v1 is now machine-readable; please review producer adoption

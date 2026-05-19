@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs"
-last_verified: "2026-04-15"
+last_verified: "2026-05-18"
 service_tags: ["s2", "s8"]
 decision_tags: ["handoff-process", "git-pull-workflow", "container-gateway"]
 related_pages: ["wiki/canon/handoff/s8/readme.md", "wiki/canon/specs/container-gateway.md", "wiki/canon/api/container-gateway-api.md", "wiki/canon/handoff/s2/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s2-to-s8-sync-to-the-merged-s8-baseline-and-use-wr-git-pull-reply-flow-for-next-handoffs"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s2"
 to_lanes: ["s8"]
-completed_by: []
+completed_by: [{"lane":"s8","completed_at":"2026-05-18T01:49:08.148Z","note":"Administrative bulk close on user instruction. Not reviewed by S8 in this pass; treated as stale/not used."}]
 registered_at: "2026-04-15T01:45:23.880Z"
+completed_at: "2026-05-18T01:49:08.148Z"
 ---
 
 # Sync to the merged S8 baseline and use WR + git-pull reply flow for next handoffs

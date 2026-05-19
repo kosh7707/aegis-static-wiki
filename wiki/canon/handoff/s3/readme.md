@@ -852,3 +852,73 @@ Critic status:
 - S3 fixed that blocker by recording missing/malformed contracts as not-ready across `/v1/scan`, `/v1/build-and-analyze`, and precomputed quickContext/trusted paths, then adding regressions for the fail-closed behavior.
 - Final Critic pass (2026-05-13, Pascal) returned PASS with no blocking findings after reviewing the WR, S3 handoff, S4 contract alignment, fail-closed readiness handling, prompt warnings, and focused S3 tests (`114 passed in 1.33s`).
 <!-- S3-S4-API-ALIGNMENT-20260512:END -->
+
+---
+
+<!-- S3-S4-V0112-FULL-CONSUMPTION-20260518:START -->
+## 26. 2026-05-18 S4 v0.11.2 API/evidence contract full safe consumption
+
+S3 implemented the S4 action WR `wiki/canon/work-requests/s4-to-s3-s3-must-implement-full-safe-consumption-of-current-s4-v0.11.2-api-and-evidence-c.md` as **code-change-needed**. This pass supersedes the earlier S3-side partial/staticEvidence-only alignment by making the current S4 v0.11.2 API and evidence surface an explicit S3 adapter/test target.
+
+Implementation decisions:
+- `staticEvidenceContract` is summarized with exact consumer summary schema `s4-static-evidence-contract-consumer-summary-v1` and fails closed unless S4's local deterministic evidence gates, required coverage surfaces, claim-boundary statuses, and current-six tool matrix are all safe and complete.
+- The current-six S4 tool matrix is consumed in stable order only: `semgrep`, `cppcheck`, `flawfinder`, `clang-tidy`, `scan-build`, `gcc-fanalyzer`. Duplicate, malformed, or unsafe projection rows force `STATIC_EVIDENCE_CONTRACT_UNSAFE_PROJECTION` and suppress clean readiness.
+- Already degraded/non-ready S4 evidence remains bounded diagnostic evidence; S3 does not mark it unsafe solely because readiness/completeness is already missing.
+- S4 Tool Portfolio reports are consumed as offline diagnostic/runner-integrity surfaces only. They never become runtime vulnerability evidence, final quality evidence, tool add/remove/upgrade recommendations, or S5-routing sufficiency evidence.
+- Build Agent now treats `/v1/build` output as canonical Quick input only when all S4 build readiness conditions are true: `success=true`, `readiness.status="ready"`, `compileCommandsReady=true`, `quickEligible=true`, `buildEvidence.compileCommandsPath` present, `userEntries>0`, and `exitCode=0`. Partial/not-ready build output is not clean success.
+- Analysis/Build S4 durable ownership clients preserve standardized JSON error/status envelopes for `REQUEST_NOT_FOUND`, `REQUEST_EXPIRED`, `REQUEST_ID_CONFLICT`, and related status/result failures instead of flattening them to raw text.
+- BuildProfile SDK semantics are explicit: `sdkResolutionMode="none"` forbids SDK fields, `non-registered` uses descriptor mode without legacy `custom` sentinel fallback, and unknown bare `sdkId` remains an S4 registry/root lookup failure path rather than source-only fallback.
+- `options.tools` invalidity remains caller contract failure (`SCAN_TOOL_INVALID`) and is not interpreted as S4 instability or vulnerability evidence.
+- S4 provenance is lineage only. It does not prove readiness, quality, vulnerability presence, or vulnerability absence.
+
+Forbidden conclusions from S4 alone, now reinforced in code/tests/docs:
+- final security verdict;
+- vulnerability absence from empty findings;
+- CWE absence;
+- exploitability or runtime behavior;
+- external vulnerability affectedness;
+- semantic GraphRAG/codegraph completeness;
+- S5 routing sufficiency/non-necessity;
+- tool add/remove/upgrade recommendation;
+- real-world decision-grade quality unless a dedicated offline S4 report explicitly marks the report usable, and even then not as runtime vulnerability evidence.
+
+Code anchors:
+- `services/analysis-agent/app/core/s4_static_evidence.py`
+- `services/analysis-agent/app/core/s4_tool_portfolio_report.py`
+- `services/analysis-agent/app/clients/s4_ownership.py`
+- `services/analysis-agent/app/tools/implementations/metadata_tool.py`
+- `services/build-agent/app/clients/s4_ownership.py`
+- `services/build-agent/app/tools/implementations/try_build.py`
+- `services/build-agent/app/routers/build_resolve_handler.py`
+- `services/build-agent/app/core/agent_loop.py`
+
+Regression anchors:
+- `services/analysis-agent/tests/test_s4_static_evidence.py`
+- `services/analysis-agent/tests/test_s4_tool_portfolio_report.py`
+- `services/analysis-agent/tests/test_s4_ownership.py`
+- `services/analysis-agent/tests/test_metadata_tool.py`
+- `services/analysis-agent/tests/test_phase_one.py`
+- `services/build-agent/tests/test_s4_ownership.py`
+- `services/build-agent/tests/test_tools_try_build.py`
+
+Planning/Critic evidence:
+- S3 created implementation matrix `.omx/plans/s3-s4-v0.11.2-consumption-matrix-20260518.md` mapping WR sections A-G to code/tests/docs.
+- First Critic plan review blocked until the matrix explicitly covered A1-A10/B-G, exact current-six order, unsafe projection tests, full build readiness, value-free diagnostics, and forbidden S4-alone conclusions.
+- Revised plan received Critic PASS.
+- Implementation review Critic PASS confirmed S3-only scope, fail-closed S4 projection handling, offline-only Tool Portfolio semantics, full build-readiness semantics, ownership JSON-envelope preservation, and strong RED/GREEN verification.
+
+Fresh verification:
+- Analysis focused RED before implementation: `13 failed, 16 passed`.
+- Build focused RED before implementation: `7 failed, 1 passed`.
+- Analysis focused GREEN: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_s4_static_evidence.py tests/test_s4_tool_portfolio_report.py tests/test_s4_ownership.py tests/test_metadata_tool.py tests/test_phase_one.py::test_run_sast_scan_tool_invalid_is_caller_contract_failure_not_negative_evidence -q` → `29 passed in 0.18s`.
+- Analysis related GREEN: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest tests/test_s4_static_evidence.py tests/test_s4_tool_portfolio_report.py tests/test_s4_ownership.py tests/test_metadata_tool.py tests/test_phase_one.py tests/test_evidence_catalog.py tests/test_sast_tool.py -q` → `153 passed in 1.60s`.
+- Build focused GREEN: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest tests/test_tools_try_build.py::test_validate_success tests/test_tools_try_build.py::test_validate_requires_canonical_s4_build_readiness tests/test_s4_ownership.py -q` → `8 passed in 0.02s`.
+- Build related GREEN: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest tests/test_tools_try_build.py tests/test_s4_ownership.py tests/test_build_resolve_handler.py tests/test_agent_loop.py -q` → `53 passed in 0.22s`.
+- Analysis Agent full suite: `cd /home/kosh/AEGIS/services/analysis-agent && .venv/bin/python -m pytest -q` → `681 passed in 6.59s`.
+- Build Agent full suite: `cd /home/kosh/AEGIS/services/build-agent && .venv/bin/python -m pytest -q` → `396 passed in 0.96s`.
+- Static/syntax: `python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval services/build-agent/app && git diff --check -- services/analysis-agent services/build-agent .omx/plans/s3-s4-v0.11.2-consumption-matrix-20260518.md` → PASS.
+
+Operational reminder:
+- This is not a shortcut for S4-only conclusions. S4 remains deterministic local static evidence. S3 must still consult/record S5, source context, graph evidence, or UNKNOWN outcomes where S4's claim boundary matrix says the surface is unsupported.
+- Do not reintroduce exit-code-only build success wording or legacy `sdkId="custom"` no-SDK fallback.
+<!-- S3-S4-V0112-FULL-CONSUMPTION-20260518:END -->
