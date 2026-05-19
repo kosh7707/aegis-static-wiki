@@ -6692,3 +6692,29 @@ related_pages:
 - Created canonical crystallization artifact: wiki/canon/handoff/s4/s4-paper-static-evidence-implementation-crystallization.md
 - Closed interview session artifact: wiki/canon/handoff/s4/session-s4-paper-static-evidence-implementation-interview-20260519.md
 - Captured S3-accepted failure policy, diagnosticRefs cardinality, PAPER_EXPORT_READY compatibility, validation split, current-six toolRun rule, surfaceStatus rule, bundle-local ID policy, empty semantics, and implementation stop condition.
+
+## [2026-05-19] mcp | register_wr | s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ.md
+
+## [2026-05-19] implemented-and-verified | S4 paper static-evidence endpoint
+- Implemented S4 `POST /v1/paper/static-evidence` in services/sast-runner.
+- Added shared paper bundle builder/validator/file-backed writer and paper request schemas.
+- Verified with S4 full suite: 1365 passed, 1 skipped.
+- Real admitted-target smoke for bt-0001-certificate_maker passed with produced, contract-valid bundle.
+- Registered S3 notice WR: wiki/canon/work-requests/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ.md
+
+## [2026-05-19] Implemented and verified S5 Paper Context API hard-now subset | s5-paper-context-api
+- Implemented /v1/contracts/paper-context and /v1/paper/code-kb/prepare, /finding-context/retrieve, /threat-context/generic in services/knowledge-base.
+- Uses real S5 internals: Source KG ingest/context ledger, provider_observation mapping, threat retrieval evidence, and taxonomy fallback.
+- TDD evidence recorded on S5 handoff session: targeted 13 passed, related regression 142 passed, full S5 service-root suite 725 passed.
+- S5_FREEZE_GATE remains not_run; second hardening goal still required for full freeze gate.
+
+## [2026-05-19] mcp | register_wr | s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption.md
+
+## [2026-05-19] Registered S5 notice to S3 for paper-context API consumption | s5-to-s3-paper-context-hard-now-notice
+- WR: wiki/canon/work-requests/s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption.md
+- Completed S3 HYBRID WR from S5 lane perspective with verification evidence.
+- S3-owned paper-analysis API doc was not edited by S5; notice asks S3 to reconcile placeholders against S5 contract if needed.

@@ -710,17 +710,17 @@ The examples below are contract-shape examples, not complete generated fixtures.
     "compileContextRef": "compile-context:case-001:target-001"
   },
   "surfaceStatus": {
-    "findings": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "evidence": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "sourceFiles": { "status": "produced", "count": 1, "consumerPolicy": "local_static_structure_only", "reasonCodes": [] },
-    "functions": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "includeEdges": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "libraries": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_no_vulnerable_dependencies", "reasonCodes": [] },
-    "toolRuns": { "status": "produced", "count": 1, "consumerPolicy": "local_tool_execution_state_only", "reasonCodes": [] },
-    "targetMetadata": { "status": "produced", "count": 1, "consumerPolicy": "producer_metadata_only", "reasonCodes": [] },
-    "staticEvidenceContract": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [] },
-    "claimBoundaryMatrix": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [] },
-    "claimBoundaries": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [] }
+    "findings": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "evidence": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "sourceFiles": { "status": "produced", "count": 1, "consumerPolicy": "local_static_structure_only", "reasonCodes": [], "diagnosticRefs": [] },
+    "functions": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "includeEdges": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "libraries": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_no_vulnerable_dependencies", "reasonCodes": [], "diagnosticRefs": [] },
+    "toolRuns": { "status": "produced", "count": 1, "consumerPolicy": "local_tool_execution_state_only", "reasonCodes": [], "diagnosticRefs": [] },
+    "targetMetadata": { "status": "produced", "count": 1, "consumerPolicy": "producer_metadata_only", "reasonCodes": [], "diagnosticRefs": [] },
+    "staticEvidenceContract": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [], "diagnosticRefs": [] },
+    "claimBoundaryMatrix": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [], "diagnosticRefs": [] },
+    "claimBoundaries": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [], "diagnosticRefs": [] }
   },
   "diagnostics": [],
   "findings": [],
@@ -731,6 +731,7 @@ The examples below are contract-shape examples, not complete generated fixtures.
       "path": "src/main.c",
       "language": "c",
       "compileContextRef": "compile-context:case-001:target-001",
+      "diagnosticRefs": [],
       "trace": {
         "caseId": "case-001",
         "buildTargetId": "target-001",
@@ -753,13 +754,14 @@ The examples below are contract-shape examples, not complete generated fixtures.
     {
       "toolRunId": "s4:tool-run:semgrep:case-001",
       "toolId": "semgrep",
-      "status": "ok",
+      "status": "success",
       "findingsCount": 0,
       "version": "1.45.0",
       "elapsedMs": 123,
       "degraded": false,
       "degradeReasons": [],
       "consumerPolicy": "local_tool_execution_state_only_not_vulnerability_verdict",
+      "diagnosticRefs": [],
       "trace": {
         "caseId": "case-001",
         "buildTargetId": "target-001",
@@ -846,16 +848,16 @@ A failed bundle preserves as much safe producer evidence as possible but is not 
   "provenance": { "paperRunId": "paper-run-001", "buildSnapshotId": "build-snapshot-001", "buildUnitId": "build-unit-001", "sourceRootRef": "source-root:case-001:target-001", "compileContextRef": "compile-context:case-001:target-001" },
   "surfaceStatus": {
     "findings": { "status": "error", "count": 0, "consumerPolicy": "producer_diagnostic_not_security_evidence", "reasonCodes": ["REQUIRED_TOOL_EXECUTION_INCOMPLETE"], "diagnosticRefs": ["s4:diagnostic:case-001:0"] },
-    "evidence": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "sourceFiles": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "functions": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "includeEdges": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [] },
-    "libraries": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_no_vulnerable_dependencies", "reasonCodes": [] },
+    "evidence": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "sourceFiles": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "functions": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "includeEdges": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_negative_evidence", "reasonCodes": [], "diagnosticRefs": [] },
+    "libraries": { "status": "empty", "count": 0, "consumerPolicy": "empty_is_not_no_vulnerable_dependencies", "reasonCodes": [], "diagnosticRefs": [] },
     "toolRuns": { "status": "error", "count": 0, "consumerPolicy": "local_tool_execution_state_only", "reasonCodes": ["REQUIRED_TOOL_EXECUTION_INCOMPLETE"], "diagnosticRefs": ["s4:diagnostic:case-001:0"] },
-    "targetMetadata": { "status": "error", "count": 0, "consumerPolicy": "producer_diagnostic_not_security_evidence", "reasonCodes": ["REQUIRED_TOOL_EXECUTION_INCOMPLETE"] },
-    "staticEvidenceContract": { "status": "error", "count": 0, "consumerPolicy": "claim_boundary_contract_unavailable", "reasonCodes": ["STATIC_EVIDENCE_CONTRACT_MISSING"] },
-    "claimBoundaryMatrix": { "status": "empty", "count": 0, "consumerPolicy": "claim_boundary_contract_unavailable", "reasonCodes": ["STATIC_EVIDENCE_CONTRACT_MISSING"] },
-    "claimBoundaries": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [] }
+    "targetMetadata": { "status": "error", "count": 0, "consumerPolicy": "producer_diagnostic_not_security_evidence", "reasonCodes": ["REQUIRED_TOOL_EXECUTION_INCOMPLETE"], "diagnosticRefs": ["s4:diagnostic:case-001:0"] },
+    "staticEvidenceContract": { "status": "error", "count": 0, "consumerPolicy": "claim_boundary_contract_unavailable", "reasonCodes": ["STATIC_EVIDENCE_CONTRACT_MISSING"], "diagnosticRefs": ["s4:diagnostic:case-001:0"] },
+    "claimBoundaryMatrix": { "status": "empty", "count": 0, "consumerPolicy": "claim_boundary_contract_unavailable", "reasonCodes": [], "diagnosticRefs": [] },
+    "claimBoundaries": { "status": "produced", "count": 1, "consumerPolicy": "claim_boundary_contract", "reasonCodes": [], "diagnosticRefs": [] }
   },
   "diagnostics": [
     {

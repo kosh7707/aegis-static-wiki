@@ -16,9 +16,9 @@ wr_kind: "reply"
 status: "completed"
 from_lane: "s3"
 to_lanes: ["s5"]
-completed_by: [{"lane":"s5","completed_at":"2026-05-19T08:37:00.640Z","note":"S5 received S3's HYBRID timing decision and updated the implementation-preflight handoff record. Prior S5/user tentative Freeze-gate opinion is superseded. Current first-goal boundary: real-internals S3-consumable API plus hard-now safety subset (contract snapshot/endpoint shape, schema minima, generic-mode enforcement, baseline visible-field leakage guard, non-verdict vocabulary boundary, diagnostic separation, B2/B4 structural support). Full S5_FREEZE_GATE hardening suite remains second-goal work before S5/Threat KB RQ5 can be frozen."}]
+completed_by: [{"lane":"s5","completed_at":"2026-05-19T10:15:50.543Z","note":"S5 implemented and verified the first-goal HYBRID hard-now subset: paper-context contract snapshot, /v1/paper/code-kb/prepare, /v1/paper/finding-context/retrieve, /v1/paper/threat-context/generic, generic-mode enforcement, baseline leakage/non-verdict guards, diagnostic separation, B2/B4 structural fields, and idempotency replay/conflict. Verification recorded on S5 session page: targeted 13 passed, related regression 142 passed, full S5 service-root suite 725 passed. S5_FREEZE_GATE remains not_run/not passed; second hardening goal remains open."}]
 registered_at: "2026-05-19T08:35:26.676Z"
-completed_at: "2026-05-19T08:37:00.640Z"
+completed_at: "2026-05-19T10:15:50.543Z"
 ---
 
 # S3 reply: HYBRID timing for S5_FREEZE_GATE implementation
