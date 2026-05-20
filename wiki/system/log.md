@@ -6722,3 +6722,11 @@ related_pages:
 ## [2026-05-19] mcp | register_wr | s3-to-s4-confirm-s4-handling-of-traceaudit-dry-run-retry-conditions
 - Registered question WR for s4
 - Path: wiki/canon/work-requests/s3-to-s4-confirm-s4-handling-of-traceaudit-dry-run-retry-conditions.md
+
+## [2026-05-20] mcp | register_wr | s3-to-s4-implement-heartbeat-ownership-semantics-for-paper-static-evidence
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-implement-heartbeat-ownership-semantics-for-paper-static-evidence.md
+
+## [2026-05-20] mcp | register_wr | s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy.md
