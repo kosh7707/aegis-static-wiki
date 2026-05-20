@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-05-19"
+last_verified: "2026-05-20"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -306,6 +306,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-traceaudit-usecases-state-machine-20260519|Session history — s3 / session-s3-traceaudit-usecases-state-machine-20260519]] — - Lane: s3 *(verified 2026-05-19; s3)*
 - [[wiki/canon/handoff/s3/session-s3-traceaudit-v4-inplace-patch-20260518|Session history — S3 / s3-traceaudit-v4-inplace-patch-20260518]] — - Lane: S3 *(verified 2026-05-18; s3)*
 - [[wiki/canon/handoff/s3/session-s3-wr-inbox-20260421|Session history — s3 / s3-wr-inbox-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-traceaudit-50-dry-run-2026-05-20|Session history — S3 / traceaudit-50-dry-run-2026-05-20]] — - Lane: S3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — 상태: 구현 완료 / /v1 계약 반영 *(verified 2026-04-13; s4)*
 - [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-14; s4)*
 - [[wiki/canon/handoff/s4/s4-paper-static-evidence-implementation-crystallization|S4 paper static evidence implementation crystallization]] — This page crystallizes the pre-implementation interview for the S4 paper static-evidence endpoint. It is the implementation handoff for the next S4 coding loop. *(verified 2026-05-19; s4/s3/s5/paper-api/static-evidence/traceaudit)*
@@ -613,6 +614,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s3-post-ralplan-execution-followup-defects-20260427|S3 post-ralplan execution followup defects (2026-04-27)]] — - Kind: self-followup (next S3 session inherits) *(verified 2026-04-28; s3/analysis-agent/build-agent)*
 - [[wiki/canon/work-requests/s3-to-s3-s3-implement-health-control-v2-consumers-and-cross-lane-live-evidence|S3 implement health-control v2 consumers and cross-lane live evidence]] — - Kind: request *(verified 2026-05-08; s3/analysis-agent/build-agent/timeout-policy/health-control-v2/live-test)*
 - [[wiki/canon/work-requests/s3-to-s4-clarify-why-live-s4-v1-health-does-not-expose-request-summary-fields-yet|clarify why live S4 /v1/health does not expose request-summary fields yet]] — - Kind: question *(verified 2026-04-14; s3/s4)*
+- [[wiki/canon/work-requests/s3-to-s4-confirm-s4-handling-of-traceaudit-dry-run-retry-conditions|Confirm S4 handling of TraceAudit dry-run retry conditions]] — - Kind: question *(verified 2026-05-19; S3/S4/paper-path/traceaudit/dry-run)*
 - [[wiki/canon/work-requests/s3-to-s4-define-s4-health-request-summary-mapping-for-local-ack-control-rollout|define S4 /health request-summary mapping for local-ack control rollout]] — - Kind: request *(verified 2026-04-13; s3/s4)*
 - [[wiki/canon/work-requests/s3-to-s4-follow-up-request-clarify-next-step-wait-while-alive-contract-for-s4-build-scan-|follow-up request: clarify next-step wait-while-alive contract for S4 build/scan surfaces after S3 timeout inventory]] — - Kind: request *(verified 2026-04-14; s3/s4/health/timeout-policy/ack-liveness/build/scan)*
 - [[wiki/canon/work-requests/s3-to-s4-inspect-gateway-webserver-findings-drift-in-s4-logs|Inspect gateway-webserver findings drift in S4 logs]] — - Kind: request *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
@@ -813,7 +815,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-19; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-20; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*

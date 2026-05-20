@@ -6718,3 +6718,7 @@ related_pages:
 - WR: wiki/canon/work-requests/s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption.md
 - Completed S3 HYBRID WR from S5 lane perspective with verification evidence.
 - S3-owned paper-analysis API doc was not edited by S5; notice asks S3 to reconcile placeholders against S5 contract if needed.
+
+## [2026-05-19] mcp | register_wr | s3-to-s4-confirm-s4-handling-of-traceaudit-dry-run-retry-conditions
+- Registered question WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-confirm-s4-handling-of-traceaudit-dry-run-retry-conditions.md
