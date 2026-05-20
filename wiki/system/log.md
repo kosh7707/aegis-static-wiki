@@ -6730,3 +6730,172 @@ related_pages:
 ## [2026-05-20] mcp | register_wr | s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy
 - Registered request WR for s5
 - Path: wiki/canon/work-requests/s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy.md
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-reply-paper-endpoints-aligned-with-no-absolute-timeout-liveness-policy
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-reply-paper-endpoints-aligned-with-no-absolute-timeout-liveness-policy.md
+
+## [2026-05-20] mcp | complete_wr | s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] Aligned S5 paper endpoints with S3 no-absolute-timeout WR | s5-paper-timeout-liveness-policy
+- Completed WR wiki/canon/work-requests/s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy.md from S5 lane perspective.
+- S5 paper endpoints no longer require X-Timeout-Ms; a supplied legacy timeout header is validated but not treated as semantic terminal deadline.
+- Updated S5 paper context API docs and registered S5 reply WR to S3.
+- Verification: targeted paper-context 13 passed; compile + related Source KG/Judge regression 142 passed.
+
+## [2026-05-20] implemented-and-verified | S4 paper static-evidence durable ownership
+- Added Prefer: respond-async durable ownership mode for POST /v1/paper/static-evidence using existing /v1/requests/{requestId} status/result/cancel surfaces.
+- Preflight request validation remains synchronous before ownership submit; PaperStaticEvidenceContractError is retained as a sanitized failed owned result, not INTERNAL_ERROR.
+- Updated wiki/canon/api/sast-runner-paper-static-evidence-api.md and wiki/canon/api/sast-runner-api.md for no absolute HTTP read timeout semantics.
+- Verified S4 full suite: 1368 passed, 1 skipped.
+
+## [2026-05-20] mcp | register_wr | s4-to-s3-s4-reply-paper-static-evidence-durable-ownership-implemented-and-verified
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-reply-paper-static-evidence-durable-ownership-implemented-and-verified.md
+
+## [2026-05-20] mcp | register_wr | s4-to-s5-s3-s4-reply-no-judge-fallbacktrace-consumer-in-s4-future-consumption-will-use-s5-co
+- Registered reply WR for s5, s3
+- Path: wiki/canon/work-requests/s4-to-s5-s3-s4-reply-no-judge-fallbacktrace-consumer-in-s4-future-consumption-will-use-s5-co.md
+
+## [2026-05-20] mcp | complete_wr | s3-to-s4-implement-heartbeat-ownership-semantics-for-paper-static-evidence
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s3-to-s4-s3-reply-s4-v0.11.2-api-and-evidence-contracts-fully-consumed
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s4-s3-s4-consume-judge-fallbacktrace-validator-issue-catalog-without-negative-evide
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-reply-paper-endpoints-aligned-with-no-absolute-timeout-liveness-policy
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s4-to-s5-s3-s4-reply-no-judge-fallbacktrace-consumer-in-s4-future-consumption-will-use-s5-co
+- Lane s5 completed recipient-side handling
+- Status: open
+
+## [2026-05-20] mcp | register_wr | s5-to-s4-s4-requested-define-and-report-paper-static-evidence-freeze-validation-gate-stat
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s5-to-s4-s4-requested-define-and-report-paper-static-evidence-freeze-validation-gate-stat.md
+
+## [2026-05-20] defined-and-reported | S4_STATIC_EVIDENCE_FREEZE_GATE
+- Defined canonical S4 paper static-evidence freeze gate in wiki/canon/api/sast-runner-paper-static-evidence-api.md.
+- Current status: pass.
+- Verified focused S4 paper tests: 33 passed, 1 skipped; wiki validation/diff-check pass; Critic plan validation pass.
+
+## [2026-05-20] mcp | register_wr | s4-to-s5-s3-s4-reply-accept_with_status-for-s4_static_evidence_freeze_gate
+- Registered reply WR for s5, s3
+- Path: wiki/canon/work-requests/s4-to-s5-s3-s4-reply-accept_with_status-for-s4_static_evidence_freeze_gate.md
+
+## [2026-05-20] mcp | complete_wr | s5-to-s4-s4-requested-define-and-report-paper-static-evidence-freeze-validation-gate-stat
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s4-to-s5-s3-s4-reply-accept_with_status-for-s4_static_evidence_freeze_gate
+- Lane s5 completed recipient-side handling
+- Status: open
+
+## [2026-05-20] mcp | register_wr | s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request
+- Registered request WR for s4, s5
+- Path: wiki/canon/work-requests/s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request.md
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-notice-s5_freeze_gate-passed-for-s5-producer-exported-fixture-obligations
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-notice-s5_freeze_gate-passed-for-s5-producer-exported-fixture-obligations.md
+
+## [2026-05-20] implemented-and-verified | S5_FREEZE_GATE
+- S5_FREEZE_GATE pass for S5 producer/exported-fixture obligations; S3 consumer execution remains pending_s3_owned_validation.
+- Focused freeze/API: 47 passed in 172.13s; related regression: 176 passed in 358.81s; audit wrapper: status pass; full S5 suite: 760 passed in 1641.59s.
+- Post-implementation Critic validation: PASS.
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-reply-paper-path-observability.md-compliance-alignment-completed
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-reply-paper-path-observability.md-compliance-alignment-completed.md
+
+## [2026-05-20] mcp | complete_wr | s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request
+- Lane s5 completed recipient-side handling
+- Status: open
+
+## [2026-05-20] S5 completed S3 paper-path observability WR | s5-paper-observability-alignment
+- Aligned S5 paper-facing endpoints with observability.md requestId/error/log lifecycle rules.
+- Added TDD coverage in services/knowledge-base/tests/test_paper_context_observability.py.
+- Verification: observability 5 passed; paper/freeze regression 53 passed; compileall passed; full S5 service-root 765 passed.
+- Registered reply WR wiki/canon/work-requests/s5-to-s3-s5-reply-paper-path-observability.md-compliance-alignment-completed.md and completed original WR for lane s5.
+
+## [2026-05-20] mcp | register_wr | s4-to-s3-s4-reply-paper-static-evidence-observability-alignment-and-freeze-gate-hardening
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-reply-paper-static-evidence-observability-alignment-and-freeze-gate-hardening.md
+
+## [2026-05-20] mcp | register_wr | s4-to-s5-s3-s4-notice-s4_static_evidence_freeze_gate-revalidated-after-critic-correction
+- Registered notice WR for s5, s3
+- Path: wiki/canon/work-requests/s4-to-s5-s3-s4-notice-s4_static_evidence_freeze_gate-revalidated-after-critic-correction.md
+
+## [2026-05-20] Updated paper workspace docs and recorded 50BT validation evidence | S3 TraceAudit docs and build-target status snapshot
+- Updated /home/kosh/aegis-for-paper README, S3/S4/S5 state-machine companion, triage-core README/protocol, dataset README, and new BUILD-TARGET-STATUS.md.
+- Validated build-targets-v1 with require-50: PASS target_count=50.
+- Recorded S3 session evidence at wiki/canon/handoff/s3/session-s3-traceaudit-docs-buildtargets-20260520.md.
+
+## [2026-05-20] mcp | complete_wr | s4-to-s5-s3-s4-notice-s4_static_evidence_freeze_gate-revalidated-after-critic-correction
+- Lane s5 completed recipient-side handling
+- Status: open
+
+## [2026-05-20] S5 completed recipient handling for S4 static-evidence freeze-gate revalidation notice | s5-wr-intake
+- Reviewed S4 notice and related contract/session pages.
+- No S5 implementation or API contract change required.
+- Completed WR for lane s5: wiki/canon/work-requests/s4-to-s5-s3-s4-notice-s4_static_evidence_freeze_gate-revalidated-after-critic-correction.md
+
+## [2026-05-20] implemented-and-verified | S3 consumed S4 paper static-evidence completion WRs
+- Processed S4 endpoint, durable ownership, observability/freeze-gate, freeze-gate revalidation, and no-Judge fallbackTrace notices/replies.
+- Updated S3 paper S4 client to prefer durable ownership for /v1/paper/static-evidence and retain sync/file-backed compatibility.
+- Verification: focused S4/S5 paper-client tests 3 passed; related paper/observability/ownership 63 passed; full Analysis Agent 752 passed; compileall/diff-check passed; wiki validation passed.
+
+## [2026-05-20] mcp | complete_wr | s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s4-to-s3-s4-reply-paper-static-evidence-durable-ownership-implemented-and-verified
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s4-to-s3-s4-reply-paper-static-evidence-observability-alignment-and-freeze-gate-hardening
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | register_wr | s4-to-s3-s4-notice-e2e-smoke-ready-with-verified-s4-responsibility-boundary
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-notice-e2e-smoke-ready-with-verified-s4-responsibility-boundary.md
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-notice-e2e-smoke-ready-for-s5-paper-context-producer-scope
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-notice-e2e-smoke-ready-for-s5-paper-context-producer-scope.md
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-reply-paper-path-observability.md-compliance-alignment-completed
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-notice-s5_freeze_gate-passed-for-s5-producer-exported-fixture-obligations
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-notice-e2e-smoke-ready-for-s5-paper-context-producer-scope
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s4-to-s3-s4-notice-e2e-smoke-ready-with-verified-s4-responsibility-boundary
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] S3 removed legacy timeout-policy and S4 sync-fallback shims after S4/S5 x-req observability readiness | S3 paper x-request-id legacy cleanup
+- S3 now requires S4 durable ownership for paper static-evidence live calls instead of falling back to synchronous compatibility mode.
+- S3 S5 paper client now emits X-Request-Id without legacy X-AEGIS-Timeout-Policy.
+- TraceAudit state-machine docs synced to canonical wiki; S5_FREEZE_GATE producer readiness recorded with S3 consumer/e2e validation still pending.
+- Verification: focused cleanup tests 4 passed; related paper/observability/S4 ownership tests 64 passed; full analysis-agent suite 753 passed; compileall and diff-check passed; wiki validation passed.

@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/handoff/s3/session-traceaudit-50-dry-run-2026-05-20.
 migration_status: "canonicalized"
 wr_id: "s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s5"]
-completed_by: []
+completed_by: [{"lane":"s5","completed_at":"2026-05-20T01:27:44.326Z","note":"Accepted and implemented. S5 paper endpoints no longer require X-Timeout-Ms; if supplied, it is positive-only legacy compatibility and not a semantic terminal deadline. Contract snapshot exposes timeoutHeaderRequired=false plus paperCallLivenessPolicy/callerReadTimeoutPolicy/legacyTimeoutHeaderPolicy. Verification: targeted paper-context 13 passed in 28.00s; compile + related Source KG/Judge regression 142 passed in 139.72s. Reply WR: wiki/canon/work-requests/s5-to-s3-s5-reply-paper-endpoints-aligned-with-no-absolute-timeout-liveness-policy.md"}]
 registered_at: "2026-05-20T01:12:50.945Z"
+completed_at: "2026-05-20T01:27:44.326Z"
 ---
 
 # Align paper API calls with no-absolute-timeout liveness policy

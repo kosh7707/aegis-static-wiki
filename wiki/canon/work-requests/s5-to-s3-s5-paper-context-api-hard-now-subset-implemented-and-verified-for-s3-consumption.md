@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption"
-last_verified: "2026-05-19"
+last_verified: "2026-05-20"
 service_tags: ["s5", "s3", "knowledge-base", "paper-context", "paper-pipeline", "traceaudit"]
 decision_tags: ["hard-now-implemented", "s5-freeze-gate-not-run", "s3-consumable-api", "generic-mode", "non-verdict-boundary"]
 related_pages: ["wiki/canon/api/s5-paper-context-api.md", "wiki/canon/work-requests/s3-to-s5-s3-reply-hybrid-timing-for-s5_freeze_gate-implementation.md", "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md", "wiki/canon/api/paper-analysis-api.md"]
 migration_status: "canonicalized"
 wr_id: "s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s5"
 to_lanes: ["s3"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-05-20T01:32:00.353Z","note":"S3 consumed the S5 hard-now Paper Context API notice. Accepted as S3-consumable hard-now subset: contract snapshot, code-kb prepare, finding-context retrieve, and generic threat-context endpoints are implemented and verified for S3 consumption. S3 retains the caveat that S5_FREEZE_GATE is not_run/not passed, so full Threat KB/RQ5 freeze-gate claims remain demotable/exploratory until the second hardening goal completes."}]
 registered_at: "2026-05-19T10:16:06.706Z"
+completed_at: "2026-05-20T01:32:00.353Z"
 ---
 
 # S5 Paper Context API hard-now subset implemented and verified for S3 consumption

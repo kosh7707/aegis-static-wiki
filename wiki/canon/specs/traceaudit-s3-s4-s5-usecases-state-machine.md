@@ -9,7 +9,7 @@ source_refs:
   - "wiki/canon/work-requests/s4-to-s3-s4-accepts-final-paper-anchor.md-freeze-with-implementation-boundary-notes.md"
   - "wiki/canon/work-requests/s5-to-s3-s5-final-review-paper-anchor-accepted-with-no-anchor-change-request.md"
   - "wiki/canon/work-requests/s5-to-s3-s5-reply-accept_with_scope-for-paper-facing-code-kb-and-retrieval-tool-call-cont.md"
-last_verified: "2026-05-19"
+last_verified: "2026-05-20"
 service_tags: ["s3", "s4", "s5", "paper-pipeline", "traceaudit", "state-machine", "use-cases"]
 decision_tags: ["paper-api", "execution-contract", "state-machine", "producer-boundary", "evidence-ledger", "s4-static-evidence-producer", "s5-code-kb", "s5-freeze-gate", "b2-b4-evidence-control"]
 related_pages: ["wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/paper-analysis-pipeline-design.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/knowledge-base-api.md"]
@@ -101,6 +101,42 @@ Status distinction:
 | operational anomaly | service/runtime issue after admission | report separately; not triage UNKNOWN by itself |
 | producer diagnostic | bounded S4/S5 status or failure | ledger diagnostic artifact; not security evidence |
 | triage UNKNOWN | S3 finding-level claim-boundary outcome | counted as a triage result |
+
+## 4.1 Current readiness snapshot — 2026-05-20
+
+This document defines the intended execution contract. Current implementation
+readiness is:
+
+```text
+S3 paper path: structurally implemented for S4/S5/S7 consumption.
+S4 paper endpoint: implemented by S4 and structurally consumed by S3 via
+  durable ownership (`Prefer: respond-async`) or file-backed raw bundle.
+S4_STATIC_EVIDENCE_FREEZE_GATE: pass as S4 producer-boundary readiness only.
+S5 paper endpoints: implemented by S5 with X-Request-Id lifecycle logging.
+S5_FREEZE_GATE: pass for S5 producer/exported-fixture obligations; S3
+  consumer execution remains S3-owned until live/file-backed e2e proof.
+S3 tool-call acquisition: implemented with tool schemas, multi-round execution,
+tool-result history, deterministic fallback, and finalizer separation.
+S3 observability: implemented and unit-verified in the AEGIS repo.
+Trace50/Audit120 results: not run; no metric claims yet.
+```
+
+Latest dataset validation from `~/aegis-for-paper`:
+
+```text
+python3 scripts/validation/validate-build-targets-v1.py --root datasets/build-targets-v1 --require-50
+PASS
+target_count=50
+```
+
+Interpretation:
+
+```text
+The 50 targets are valid admitted inputs.
+They are not proof that S3/S4/S5/S7 live analysis has completed.
+No high-level S3 optimization should be chosen before at least one live case
+reaches PAPER_EXPORT_READY with traceable artifacts.
+```
 
 ## 5. A-to-Z use cases
 
@@ -733,15 +769,18 @@ invalid or non-buildable target
 Before the pipeline can run as a mainline paper experiment:
 
 ```text
-[ ] 50 admitted build targets verified.
-[ ] S4 /v1/paper/static-evidence consumed by S3 or file-backed equivalent prepared.
-[ ] File-backed S4 artifacts, if used, satisfy the same S4 paper bundle semantics: producer refs, row-local traces, surfaceStatus, targetMetadata, claim-boundary surfaces, and no checksum/hash semantics.
-[ ] S5 prepare_code_kb / retrieve_finding_context / retrieve_generic_threat_context implemented or file-backed equivalent prepared.
-[ ] S5_FREEZE_GATE satisfied or S5/Threat KB portions of RQ5 demoted.
-[ ] S3 evidence ledger can link all S4/S5 normalized rows to producer traces.
+[x] 50 admitted build targets verified by dataset validator on 2026-05-20.
+[x] S4 /v1/paper/static-evidence consumed by S3 with durable ownership first and synchronous/file-backed compatibility paths.
+[x] File-backed S4 artifacts, if used, pass the same S4 paper bundle validator before normalization.
+[x] S5 prepare_code_kb / retrieve_finding_context / retrieve_generic_threat_context producer/exported-fixture obligations implemented by S5.
+[x] S5_FREEZE_GATE satisfied for S5 producer/exported-fixture obligations. S3 consumer execution remains separately gated by live/file-backed e2e proof.
+[ ] S3 evidence ledger can link all S4/S5 normalized rows to producer traces. S4 rows are structurally covered; S5 coverage still requires live/file-backed e2e proof.
 [ ] S3 consumer guard rejects forbidden S4/S5 status-to-verdict inferences.
 [ ] B2/B4 renderer proves same evidence rows/text/order.
 [ ] Paper export writes all case-local and aggregate artifacts required by the anchor.
+[ ] One live smoke target reaches PAPER_EXPORT_READY with inspectable
+    state-trace, S4/S5 raw+normalized artifacts, evidence-ledger, LLM transcript,
+    findings, analysis-envelope, and correlated logs.
 ```
 
 ## 17. Ownership checklist

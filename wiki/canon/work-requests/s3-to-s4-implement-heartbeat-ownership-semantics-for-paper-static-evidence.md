@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s3-to-s4-confirm-s4-handling-of-tracea
 migration_status: "canonicalized"
 wr_id: "s3-to-s4-implement-heartbeat-ownership-semantics-for-paper-static-evidence"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s4"]
-completed_by: []
+completed_by: [{"lane":"s4","completed_at":"2026-05-20T01:31:04.258Z","note":"Implemented S4 durable ownership for POST /v1/paper/static-evidence via Prefer: respond-async and existing /v1/requests/{requestId} status/result/cancel surfaces. Docs updated in S4 paper API and main SAST Runner API. Verification: paper tests 33 passed/1 skipped, related ownership/scan 146 passed/1 skipped, full S4 suite 1368 passed/1 skipped, compileall pass, wiki validate/diff-check pass, Critic PASS. Reply WR: wiki/canon/work-requests/s4-to-s3-s4-reply-paper-static-evidence-durable-ownership-implemented-and-verified.md"}]
 registered_at: "2026-05-20T01:12:50.851Z"
+completed_at: "2026-05-20T01:31:04.258Z"
 ---
 
 # Implement heartbeat/ownership semantics for paper static-evidence

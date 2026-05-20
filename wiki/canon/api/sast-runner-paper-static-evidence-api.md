@@ -7,9 +7,11 @@ source_refs:
   - "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md"
   - "wiki/canon/api/paper-analysis-api.md"
   - "wiki/canon/specs/sast-runner-static-evidence-contract.md"
-last_verified: "2026-05-19"
+  - "wiki/canon/work-requests/s3-to-s4-implement-heartbeat-ownership-semantics-for-paper-static-evidence.md"
+  - "wiki/canon/work-requests/s5-to-s4-s4-requested-define-and-report-paper-static-evidence-freeze-validation-gate-stat.md"
+last_verified: "2026-05-20"
 service_tags: ["s4", "s3", "paper-pipeline", "traceaudit", "sast-runner", "static-evidence"]
-decision_tags: ["paper-api", "static-evidence-endpoint", "s4-static-evidence-producer", "consumer-contract", "producer-boundary", "b2-b4-evidence-control", "critic-pass-with-changes-incorporated"]
+decision_tags: ["paper-api", "static-evidence-endpoint", "s4-static-evidence-producer", "consumer-contract", "producer-boundary", "b2-b4-evidence-control", "critic-pass-with-changes-incorporated", "durable-ownership", "timeout-policy", "s4-static-evidence-freeze-gate"]
 related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/paper-analysis-pipeline-design.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
 ---
 
@@ -18,7 +20,7 @@ related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/tracea
 > Status: implementation-aligned S4 paper producer contract; S3 accepted core consumer semantics.
 > Owner: S4 / SAST Runner.
 > Endpoint: `POST /v1/paper/static-evidence`.
-> Last verified: 2026-05-19.
+> Last verified: 2026-05-20.
 > Scope: field-level S4 producer contract for TraceAudit paper experiments.
 
 ## 1. Purpose and authority
@@ -164,12 +166,63 @@ S4 should return a paper bundle envelope whenever it can parse enough request id
 |---|---|---|
 | `200`, `success=true`, `bundleStatus="produced"` | Contract-valid consumable bundle | `S4_STATIC_EVIDENCE_READY = done` |
 | `200`, `success=false`, `bundleStatus="failed"` | Parsed request but non-consumable S4 bundle | `S4_STATIC_EVIDENCE_READY = diagnostic` |
+| `202` with `Prefer: respond-async` | Durable S4 ownership accepted; poll status/result URLs | Keep waiting while request state is `queued` or `running` and service remains alive |
 | `4xx` before bundle envelope | Request cannot be parsed/validated enough to create paper bundle | Input/operational anomaly, not finding UNKNOWN |
 | `5xx` or transport failure | Service/runtime anomaly | Operational anomaly, not finding UNKNOWN |
 
 Raw exceptions, host secrets, raw stdout/stderr, and arbitrary caller strings must not be echoed.
 
-### 4.1 Required top-level response fields
+### 4.1 Durable ownership / no absolute HTTP read timeout mode
+
+S4 supports durable ownership for the paper endpoint with the same request-ownership surface used by other long-running S4 production endpoints.
+
+Recommended S3 call shape:
+
+```http
+POST /v1/paper/static-evidence
+Prefer: respond-async
+X-Request-Id: <s3-owned-or-s4-generated-trace-id>
+```
+
+Initial accepted response:
+
+```json
+{
+  "requestId": "paper-static-evidence-001",
+  "endpoint": "paper-static-evidence",
+  "state": "queued",
+  "resultReady": false,
+  "statusUrl": "/v1/requests/paper-static-evidence-001",
+  "resultUrl": "/v1/requests/paper-static-evidence-001/result",
+  "submittedAt": 1779230000000,
+  "startedAt": null,
+  "completedAt": null,
+  "expiresAt": null
+}
+```
+
+Polling contract:
+
+```http
+GET /v1/requests/{requestId}
+GET /v1/requests/{requestId}/result
+DELETE /v1/requests/{requestId}
+```
+
+Rules:
+
+- `state="queued"` or `state="running"` means S4 owns the request and S3 should keep waiting while the S4 service remains healthy.
+- `GET /v1/requests/{requestId}/result` returns `202` while the result is not ready and `200` with a terminal envelope when ready.
+- Terminal states are `completed`, `failed`, `cancelled`, and expired/not-found transport errors.
+- A terminal `failed` owned result is an operational/input/producer diagnostic, not finding-level `UNKNOWN`.
+- Caller-side wall-clock duration is not itself a correctness failure. S3 must not convert a long-running alive/progressing S4 request into TP/FP/UNKNOWN evidence.
+- `X-Timeout-Ms` may still bound internal tool/subprocess evidence collection when supplied; it is not an HTTP read-deadline correctness mechanism in ownership mode.
+- If the same `X-Request-Id` is resubmitted to `POST /v1/paper/static-evidence` while the existing owned request is retained, S4 returns the existing ownership status instead of launching duplicate work.
+- Reusing the same `X-Request-Id` for a different S4 endpoint returns `REQUEST_ID_CONFLICT`.
+
+Synchronous `200` remains available as a compatibility behavior, but paper-path consumers should prefer durable ownership when scans may exceed ordinary client read deadlines.
+
+### 4.2 Required top-level response fields
 
 | Field | Type | Required | Semantics |
 |---|---:|:---:|---|
@@ -195,7 +248,7 @@ Raw exceptions, host secrets, raw stdout/stderr, and arbitrary caller strings mu
 
 Additive fields are allowed, but S3 must not need them for v1.
 
-### 4.2 Producer provenance
+### 4.3 Producer provenance
 
 ```json
 {
@@ -909,7 +962,8 @@ File-backed artifacts must satisfy the same contract:
 - `diagnosticRefs` required arrays on diagnostic-capable rows and surface status entries;
 - no TP/FP/UNKNOWN/verdict/safe/risk fields;
 - no checksum/hash/digest/fingerprint/artifact-hash/replay-hash semantics;
-- B2/B4-visible row text/order preserved.
+- no integrity/reproducibility/final verdict/safe/risk-score alias semantics;
+- B2/B4-visible evidence and diagnostic row text/order preserved.
 
 Recommended file-backed refs:
 
@@ -985,7 +1039,7 @@ S4 should provide executable tests or validators before implementation is mainli
 | Empty semantics | `findings=[]` and array `empty` can still produce `success=true`, `bundleStatus=produced`. |
 | Stage diagnostic semantics | `bounded_partial` alone never makes the bundle failed. |
 | Required tool invariant | Every produced paper bundle has all current-six `toolRuns[]`; unavailable/incomplete tools require explicit producer diagnostics. |
-| Row trace | Every major row and `targetMetadata` has required trace refs. |
+| Row trace | Every major row, diagnostic row, and non-empty `targetMetadata` has required trace refs: `caseId`, `buildTargetId`, `bundleRef`, `s4RequestId`, `s4ProducerRunId`, `sourceRootRef`, `compileContextRef`, `surfaceId`, `surface`, and `rawObjectRef`. |
 | Diagnostic refs | Diagnostic-capable rows and surface status entries always include `diagnosticRefs`; non-empty refs resolve against top-level `diagnostics[]`. |
 | Claim-boundary mirrors | Top-level `claimBoundaryMatrix`/`claimBoundaries` match the static contract projection. |
 | Claim boundary | Unsupported negative/final verdict claims stay unsupported even with empty findings. |
@@ -995,11 +1049,79 @@ S4 should provide executable tests or validators before implementation is mainli
 | Duplicate IDs | Malformed or duplicate IDs fail closed. |
 | Validation report split | S4 emits `contractValidation` and `producerSanityValidation` separately. |
 | File-backed equivalence | Raw file artifact validates against same schema as live response and has a matching validation report. |
-| B2/B4 stability | Fixture proves same row text/order feeds both packet conditions. |
+| B2/B4 stability | Fixture proves same evidence and diagnostic row text/order feeds both packet conditions. |
+| Observability boundary | Paper endpoint preserves/generates `X-Request-Id`, emits lifecycle start/end/error/accepted logs, and has no outbound HTTP calls. |
 
 Existing `staticEvidenceContract` and consumer canary tests remain relevant but are not sufficient alone. The paper endpoint also needs envelope, top-level surface, trace, file-backed, and B2/B4 order checks.
 
-## 17. Compatibility with existing S4 APIs
+## 17. S4 static evidence freeze/validation gate
+
+The S4-owned paper static-evidence freeze gate is:
+
+```text
+S4_STATIC_EVIDENCE_FREEZE_GATE = pass | fail | not_run
+```
+
+Current status as of 2026-05-20:
+
+```text
+S4_STATIC_EVIDENCE_FREEZE_GATE = pass
+```
+
+This gate is S4 producer-boundary readiness only. It is not an S5 KB/context gate, not an S3 rendering/orchestration gate, and not a final security-verdict or vulnerability-quality claim.
+
+### 17.1 Status vocabulary
+
+| Status | Meaning |
+|---|---|
+| `pass` | S4 paper static-evidence producer invariants are implemented and covered by executable validation/test evidence. S3 may consume S4 paper static-evidence as mainline producer evidence under this contract. |
+| `fail` | One or more required S4 producer invariants are known broken, uncovered by validation, or unsafe to consume as a paper producer boundary. |
+| `not_run` | The S4 freeze/validation gate has not been executed or no current evidence is available. |
+
+### 17.2 Gate scope
+
+`S4_STATIC_EVIDENCE_FREEZE_GATE=pass` requires at least:
+
+- request schema and forbidden-field fail-closed behavior;
+- `compile_commands.json` admission with source-root escape rejection;
+- produced and failed bundle envelope shape;
+- full `surfaceStatus` coverage with required `diagnosticRefs`;
+- row-local trace coverage for all major rows and `targetMetadata`;
+- sanitized diagnostics that remain diagnostic-only;
+- no conversion of `findings=[]`, `empty`, `not_available`, `failed`, `error`, or `bounded_partial` into negative security evidence or finding-level `TP | FP | UNKNOWN`;
+- no S4 producer-emitted final verdict, safe/risk score, checksum/hash/digest/fingerprint, artifact-integrity, or reproducibility claim semantics;
+- top-level claim-boundary mirrors matching the nested `staticEvidenceContract` projection;
+- current-six `toolRuns[]` honesty or explicit unavailable/incomplete diagnostics;
+- file-backed raw/validation artifact equivalence to the live response contract;
+- B2/B4 same-row/text/order stability for reviewer-visible S4 evidence;
+- durable ownership liveness for long-running paper static-evidence calls via `Prefer: respond-async` and `/v1/requests/{requestId}`.
+
+### 17.3 Current validation evidence
+
+The current pass status is backed by:
+
+```bash
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py -q
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py tests/test_scan_endpoint.py::test_request_validation_error_does_not_echo_raw_body_values tests/test_scan_endpoint.py::test_request_validation_error_redacts_dynamic_location_keys tests/test_scan_endpoint.py::test_request_validation_error_redacts_safe_named_dynamic_map_keys tests/test_scan_endpoint.py::test_scan_request_id_propagation tests/test_scan_endpoint.py::test_scan_generates_request_id_if_missing -q
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/python -m compileall app
+cd /home/kosh/aegis-static-wiki && python3 tools/validate_wiki.py
+```
+
+Last recorded evidence after the 2026-05-20 Critic FAIL correction and S4-only hardening pass:
+
+- paper static-evidence focused suite: `60 passed, 1 skipped`;
+- paper static-evidence + request-id/logging related suite: `69 passed, 1 skipped`;
+- full S4 service-root suite: `1395 passed, 1 skipped`;
+- `compileall app`: pass;
+- wiki validation: `PASS: wiki next-phase migration, control files, and MCP scaffolding look valid`;
+- post-implementation Critic review: PASS (`tests/test_paper_static_evidence.py -q` rerun by Critic: `60 passed, 1 skipped`).
+
+The 2026-05-20 correction explicitly adds executable coverage for failed-bundle validation mode, strict trace required fields, diagnostic category/reason/message sanitization, surfaceStatus count reconciliation, integrity/reproducibility/final-verdict alias blocking, multi-row B2/B4 reviewer-visible text stability, file-backed/live-equivalent validation, paper endpoint lifecycle logs, requestId propagation/generation, 422 generated request IDs, async `Prefer: respond-async` acceptance logs, and a no-outbound-HTTP static guard.
+
+S3 consumer-contract update is not mandatory for safety. S3 may optionally surface this gate as a lane-owned readiness input distinct from `S5_FREEZE_GATE` and S3's own paper pipeline/export readiness.
+
+## 18. Compatibility with existing S4 APIs
 
 `POST /v1/paper/static-evidence` is a paper producer wrapper over existing deterministic S4 evidence surfaces. S3 should not need to call older S4 surfaces directly to build the paper bundle:
 
@@ -1013,7 +1135,7 @@ Existing `staticEvidenceContract` and consumer canary tests remain relevant but 
 
 The older surfaces remain production/compatibility APIs. The paper endpoint is the canonical S4 raw producer surface for TraceAudit experiments.
 
-## 18. Open implementation decisions
+## 19. Open implementation decisions
 
 S4 may finalize these without changing paper semantics:
 

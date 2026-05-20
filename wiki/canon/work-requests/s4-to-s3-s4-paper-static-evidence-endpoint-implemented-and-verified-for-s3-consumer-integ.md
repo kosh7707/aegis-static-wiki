@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ"
-last_verified: "2026-05-19"
+last_verified: "2026-05-20"
 service_tags: ["s4", "s3", "paper-api", "static-evidence", "traceaudit", "consumer-integration"]
 decision_tags: ["implementation-complete", "endpoint-ready", "verification-evidence", "paper-export-ready-support"]
 related_pages: ["wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/handoff/s4/s4-paper-static-evidence-implementation-crystallization.md", "wiki/canon/handoff/s4/session-s4-paper-static-evidence-implementation-20260519.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept_s4_policy-for-s4-paper-static-evidence-failure-boundary.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept_option_a_required_empty_arrays-for-s4-diagnosticrefs-cardinality.md", "wiki/canon/work-requests/s4-to-s3-s5-s4-reply-accept_paper_export_ready_terminal-for-synchronous-paper-start-policy.md"]
 migration_status: "canonicalized"
 wr_id: "s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s4"
 to_lanes: ["s3"]
-completed_by: []
+completed_by: [{"lane":"s3","completed_at":"2026-05-20T06:14:30.322Z","note":"S3 consumed the endpoint implementation notice. S3 paper static-evidence client now targets POST /v1/paper/static-evidence with durable ownership preference and file-backed compatibility; updated state-machine readiness docs and recorded verification in session-s3-s4-paper-static-evidence-consumption-20260520."}]
 registered_at: "2026-05-19T09:52:06.736Z"
+completed_at: "2026-05-20T06:14:30.322Z"
 ---
 
 # S4 paper static-evidence endpoint implemented and verified for S3 consumer integration

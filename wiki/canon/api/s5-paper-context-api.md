@@ -9,20 +9,21 @@ source_refs:
   - "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md"
   - "wiki/canon/work-requests/s5-to-s3-s5-reply-accept_with_scope-for-paper-facing-code-kb-and-retrieval-tool-call-cont.md"
   - "wiki/canon/api/knowledge-base-api.md"
-last_verified: "2026-05-19"
-service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract"]
-decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now"]
+  - "wiki/canon/work-requests/s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request.md"
+last_verified: "2026-05-20"
+service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability"]
+decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned"]
 related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/paper-analysis-pipeline-design.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/handoff/s5/readme.md", "wiki/canon/work-requests/s3-to-s5-s3-reply-hybrid-timing-for-s5_freeze_gate-implementation.md", "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md"]
 ---
 
 # S5 Paper Context API Contract
 
-> Status: **implemented hard-now subset for S3 consumption**.
+> Status: **S5_FREEZE_GATE pass for S5 producer obligations**.
 > Owner: S5 / Knowledge Base lane.
 > Consumer: S3 / paper harness.
-> Last verified: 2026-05-19.
-> Critic status: implementation review `PASS_WITH_CHANGES`; no blocking S5 implementation issue found.
-> Implementation status: the `/v1/paper/*` endpoints are implemented in `services/knowledge-base/**` for the S3 HYBRID hard-now subset. `S5_FREEZE_GATE` remains **not_run / not passed** until the second hardening goal completes.
+> Last verified: 2026-05-20.
+> Critic status: post-implementation freeze-gate review `PASS`; no blocking S5 implementation issue found.
+> Implementation status: the `/v1/paper/*` endpoints and `GET /v1/contracts/paper-context` are implemented in `services/knowledge-base/**` with S5-owned freeze-gate validation. S3 consumer execution remains separately owned and is advertised as `pending_s3_owned_validation`.
 
 ## 1. Scope and boundary
 
@@ -89,8 +90,12 @@ Implemented files:
 services/knowledge-base/app/contracts/paper_context.py
 services/knowledge-base/app/paper_context/models.py
 services/knowledge-base/app/paper_context/service.py
+services/knowledge-base/app/paper_context/freeze_gate.py
 services/knowledge-base/app/routers/paper_context_api.py
+services/knowledge-base/scripts/paper-freeze-gate.py
 services/knowledge-base/tests/test_paper_context_api_contract.py
+services/knowledge-base/tests/test_paper_context_freeze_gate.py
+services/knowledge-base/tests/test_paper_context_observability.py
 ```
 
 Wiring updates:
@@ -109,15 +114,16 @@ Project it into generic context rows or diagnostics under this contract.
 
 ## 3. Common transport conventions
 
-All `POST /v1/paper/*` calls are synchronous JSON calls and require:
+All `POST /v1/paper/*` calls are synchronous JSON calls. Required transport shape:
 
 ```http
 Content-Type: application/json
 Accept: application/json
-X-Timeout-Ms: <positive integer>
 ```
 
-The contract endpoint `GET /v1/contracts/paper-context` does not require `X-Timeout-Ms`.
+`X-Timeout-Ms` is **not required** for S5 paper endpoints. If supplied by a legacy caller, it must be a positive integer, but it is a compatibility/transport hint only and **not** a semantic terminal deadline. S3 may use no-read-timeout compatibility mode for these calls: while S5 is alive and the request is still progressing, caller-side wall-clock expiry must not be interpreted as S5 producer failure or security evidence.
+
+The contract endpoint `GET /v1/contracts/paper-context` also does not require `X-Timeout-Ms`.
 
 Each POST body has required `requestId` and `idempotencyKey`:
 
@@ -128,7 +134,7 @@ idempotencyKey: stable for the logical paper operation being retried.
 
 If `X-Request-Id` is supplied and differs from body `requestId`, S5 returns `400 / S5_PAPER_SCHEMA_INVALID`.
 
-Paper-specific error codes are preserved in the common error envelope for paper routes, including:
+Paper-specific error codes are preserved in the common error envelope for paper routes. `S5_PAPER_TIMEOUT_HEADER_MISSING_OR_INVALID` now applies only when a legacy `X-Timeout-Ms` header is supplied with an invalid non-positive value, not when the header is absent. Codes include:
 
 ```text
 S5_PAPER_TIMEOUT_HEADER_MISSING_OR_INVALID
@@ -137,6 +143,59 @@ S5_PAPER_VISIBILITY_MODE_UNSUPPORTED
 S5_PAPER_FORBIDDEN_LEAKAGE_CLASSES_REQUIRED
 S5_PAPER_IDEMPOTENCY_CONFLICT
 S5_PAPER_LEAKAGE_POLICY_VIOLATION
+```
+
+### 3.1 Observability and request-id behavior
+
+S5 paper-facing endpoints are aligned with `wiki/canon/specs/observability.md` for the paper path:
+
+```http
+GET  /v1/contracts/paper-context
+POST /v1/paper/code-kb/prepare
+POST /v1/paper/finding-context/retrieve
+POST /v1/paper/threat-context/generic
+```
+
+Request-id rules:
+
+- If `X-Request-Id` is supplied, S5 stores it in request context and returns it in `X-Request-Id`.
+- If `X-Request-Id` is missing for `GET /v1/contracts/paper-context`, S5 generates `req-{uuid}` and returns it.
+- If `X-Request-Id` is missing for `POST /v1/paper/*`, S5 preserves the existing paper contract by using body `requestId` as the operation request id and returning it in `X-Request-Id`.
+- If `X-Request-Id` is supplied for `POST /v1/paper/*`, it must match body `requestId`; mismatches fail with `400 / S5_PAPER_SCHEMA_INVALID`.
+- Legacy non-paper S5 endpoints retain their existing no-header behavior unless their own contract already echoes a supplied `X-Request-Id`.
+
+Error-envelope rules:
+
+- Paper HTTP and validation errors use the common envelope:
+  `success=false`, `error`, and `errorDetail.code/message/requestId/retryable`.
+- Paper validation errors use `S5_PAPER_SCHEMA_INVALID` and sanitize Pydantic errors by removing raw `input`/`ctx` values so malformed requests do not echo caller secrets.
+
+Structured log rules:
+
+- JSONL logs are emitted through the S5 logger with numeric `level`, epoch-ms `time`, `service=s5-kb`, `msg`, and contextual `requestId`.
+- Paper endpoint lifecycle logs use messages `S5 paper endpoint start`, `S5 paper endpoint end`, and `S5 paper endpoint error`.
+- Lifecycle metadata includes `method`, `path`, `caseId`, `buildTargetId`, `paperRunId`, optional `findingId`, `status`, `elapsedMs`, and S5 producer/retrieval ids where available.
+- S5 paper-context endpoints do not perform outbound service-to-service HTTP calls; no outbound `target/method/path/status/elapsedMs` log pair is currently applicable inside this S5 paper path.
+
+Representative log shape:
+
+```json
+{
+  "level": 30,
+  "time": 1779253596407,
+  "service": "s5-kb",
+  "msg": "S5 paper endpoint end",
+  "requestId": "s3-s5-observability-prepare-001",
+  "method": "POST",
+  "path": "/v1/paper/code-kb/prepare",
+  "caseId": "case-001",
+  "buildTargetId": "target-001",
+  "paperRunId": "paper-run-001",
+  "status": 200,
+  "elapsedMs": 85,
+  "s5ProducerRunId": "s5-producer-run-code-kb-...",
+  "surfaceStatus": "produced"
+}
 ```
 
 ## 4. Common schema fragments
@@ -256,13 +315,18 @@ The current implementation returns:
 ```text
 schemaVersion = s5-paper-context-contract-v1
 contractVersion = s5-paper-context-api-v1
-status = implemented_hard_now_subset_freeze_gate_not_passed
+status = implemented_s5_freeze_gate_pass_for_s5_producer_obligations
 defaultVisibilityMode = generic
-freezeGate.s5FreezeGate = not_run
-freezeGate.hardNowSubsetImplemented = true
+freezeGate.s5FreezeGate = pass
+freezeGate.s5VisiblePacketSchemaFinalized = true
+freezeGate.validationSuiteVersion = s5-paper-freeze-gate-v1
+freezeGate.validationReportRef = s5-freeze-gate-report:s5-paper-freeze-gate-v1
+freezeGate.idempotencyDurability = ledger_backed_all_paper_endpoints
+freezeGate.s3ConsumerExecutionStatus = pending_s3_owned_validation
+freezeGate.missingValidationItems = []
 ```
 
-This endpoint does not itself mean `S5_FREEZE_GATE=pass`.
+The runtime contract pass is an S5 producer-boundary claim only. It does not mean S3 has executed its own renderer/consumer validation, and it does not turn S5 context into final triage evidence.
 
 ## 7. Endpoint: `POST /v1/paper/code-kb/prepare`
 
@@ -314,9 +378,9 @@ Implemented behavior:
 - Anchor-matches `finding.sourceAnchors` against Source KG graph nodes/snippets using file path, line overlap, and symbol/display identity.
 - Projects matched graph nodes/snippets into generic paper rows.
 - Returns `rowSetId`, stable ordered `rows[].itemId`, stable ordered `rows[].text`, and stable ordered `rows[].orderingKey`.
-- If no context row matches, returns `surfaceStatus=no_hit`, `rows=[]`, and a diagnostic with `negativeEvidenceAllowed=false`.
-
-Caveat for future hardening: missing/unmapped Source KG preparation currently becomes a diagnostic no-hit style response. A stricter state-machine distinction between “not prepared/unavailable” and “valid anchored no-hit” is a second-goal hardening item.
+- If no prepared Source KG mapping or explicit selectors are available, returns `surfaceStatus=not_available`, `rows=[]`, and primary diagnostic `S5_PAPER_SOURCE_KG_NOT_PREPARED` with `negativeEvidenceAllowed=false`.
+- If prepared Source KG selectors exist but cannot resolve to selectable context, returns `surfaceStatus=not_available` with diagnostic `S5_PAPER_SOURCE_KG_NOT_AVAILABLE`.
+- If Source KG context is prepared/selectable but no anchor row matches, returns `surfaceStatus=no_hit`, `rows=[]`, and diagnostic `S5_PAPER_CONTEXT_NO_HIT` with `negativeEvidenceAllowed=false`.
 
 ## 9. Endpoint: `POST /v1/paper/threat-context/generic`
 
@@ -356,7 +420,7 @@ patch text
 hidden provenance ledger values
 ```
 
-The hard-now implementation applies a baseline recursive sanitizer/validator to paper POST responses before returning them. It covers rows, source refs, producer trace/provenance, retrieval trace, diagnostics, and visible artifact refs represented in the response object. Full synthetic leakage corpus/matrix coverage remains deferred to the second S5_FREEZE_GATE hardening goal.
+The freeze-gate implementation applies a key-aware recursive sanitizer/validator to paper POST responses before returning them and to exported S5 guard fixtures. It covers rows, source refs, producer trace/provenance, retrieval trace, diagnostics, visible artifact refs, and unsafe visible keys. The freeze suite includes a synthetic corpus for CVE/GHSA/fix-commit/advisory/exploit-writeup/patch-text leakage plus final-authority vocabulary. Diagnostic `code` fields remain allowed as diagnostic codes only; diagnostic messages/metadata are still subject to the visible-packet policy.
 
 ## 11. Idempotency and retry
 
@@ -367,17 +431,23 @@ requestId: unique per transport attempt for observability and replay logs.
 idempotencyKey: stable for the logical paper operation being retried.
 ```
 
-Implemented hard-now behavior:
+Implemented freeze-gate behavior:
 
 ```text
 cache key = (endpoint, idempotencyKey)
-stored value = { fingerprint, response }
+ledger provider = s5-paper-context-idempotency
+ledger subjectKey = {endpoint}:{idempotencyKey}
+stored value = { schemaVersion, endpoint, idempotencyKey, fingerprint, response }
 fingerprint = canonical_json(request body excluding requestId and attempt metadata)
 ```
 
-Same key + same fingerprint replays the stored paper response. Same key + different fingerprint returns `409 / S5_PAPER_IDEMPOTENCY_CONFLICT`.
+Same endpoint + same key + same fingerprint replays the stored paper response, including stable S5 IDs/row surfaces while echoing the current transport `requestId`. Same endpoint + same key + different semantic fingerprint returns `409 / S5_PAPER_IDEMPOTENCY_CONFLICT`. The same `idempotencyKey` may be used by different paper endpoints without collision because endpoint scoping is part of the subject key.
 
-This is an in-process run-safety implementation for the first S3-consumable goal; full durable idempotency matrix/hardening remains deferred.
+Freeze-gate durability claim:
+
+```text
+idempotencyDurability = ledger_backed_all_paper_endpoints
+```
 
 ## 12. B2/B4 evidence control
 
@@ -398,7 +468,7 @@ Rules:
 - S5 returns one canonical ordered row list per request.
 - `rowSetId` identifies the canonical row set that S3 must use for both B2 and B4 render inputs.
 - S5 must not return richer row text for B4 than for B2.
-- Full B2/B4 regression suite remains deferred to the second freeze-gate hardening goal.
+- The freeze-gate suite validates S5-exported B2/B4 guard fixtures with identical row IDs, text, ordering keys, and diagnostic rows. S3 still owns executing its own renderer/consumer validation over those fixtures.
 
 ## 13. Forbidden inference and non-verdict language
 
@@ -427,33 +497,7 @@ absenceEvidence
 
 If a backing Judge/Threat Retrieval object contains affectedness/verdict/status vocabulary, the paper projection drops, rewrites, or diagnostic-wraps it before S3 consumption.
 
-## 14. S5_FREEZE_GATE validation plan
-
-S5_FREEZE_GATE is **not satisfied** by this hard-now implementation alone. It passes only after the second hardening/freeze goal proves the full invariant suite.
-
-Hard-now tests implemented in `services/knowledge-base/tests/test_paper_context_api_contract.py` cover:
-
-1. contract snapshot endpoint shape;
-2. timeout header required for all POSTs;
-3. non-`generic` visibility fail-closed;
-4. missing/incorrect forbidden leakage classes fail-closed;
-5. prepare without real Source KG data does not synthesize success;
-6. seeded Source KG prepare/retrieve using real `SQLiteLedgerRepository + ingest_source_kg`;
-7. no-hit diagnostic with `negativeEvidenceAllowed=false`;
-8. whole-visible-field leakage guard over source rows/provenance/refs;
-9. non-verdict vocabulary guard;
-10. B2/B4 structural fields;
-11. idempotency same-key replay and conflict.
-
-Deferred to the second `S5_FREEZE_GATE` goal:
-
-- full generic Threat KB leakage corpus/matrix;
-- complete whole-packet leakage fixture matrix;
-- full B2/B4 stable-row regression suite;
-- full durable idempotency conflict matrix;
-- complete S3 consumer guard fixtures;
-- appendix/non-mainline visibility extension tests beyond fail-closed;
-- exhaustive CI packaging needed to mark `S5_FREEZE_GATE=pass`.
+## 14. S5_FREEZE_GATE validation status
 
 Gate result vocabulary:
 
@@ -464,58 +508,205 @@ S5_FREEZE_GATE = pass | fail | not_run
 Current status:
 
 ```text
-S5_FREEZE_GATE = not_run
+S5_FREEZE_GATE = pass
 hard-now subset = implemented and tested
+S5 producer freeze-gate obligations = pass
+S3 consumer execution status = pending_s3_owned_validation
 ```
 
-Until `pass`, S5/Threat KB contributions to RQ5 remain exploratory or demotable according to the frozen anchor.
+The pass claim is deliberately narrow: S5 has frozen and validated the S5-produced paper-context packets, diagnostics, idempotency behavior, readiness distinctions, and exported S3 guard fixtures. S3 still owns orchestration, rendering, paper packet construction, final triage, and consumer-side execution validation.
+
+The exact runtime `freezeGate.passedChecks` / `validationItems` set is:
+
+```text
+contract_snapshot_pass_schema
+whole_visible_packet_key_value_guard
+generic_threat_leakage_corpus
+b2_b4_stable_rows_and_diagnostics
+paper_endpoint_idempotency_replay_conflict_matrix
+source_kg_not_prepared_distinction
+appendix_visibility_fail_closed
+s5_exported_consumer_guard_fixtures
+malformed_forbidden_leakage_classes_fail_closed
+```
+
+Every `validationItems[]` entry includes:
+
+```text
+id
+status = pass
+scope
+evidenceRefs
+testCommands
+lastVerified
+```
+
+`freezeGate.missingValidationItems` is `[]`.
+
+Freeze-gate tests in `services/knowledge-base/tests/test_paper_context_freeze_gate.py` cover:
+
+1. exact contract snapshot pass schema and validation item manifest;
+2. key-aware whole-visible-packet leakage/final-authority validator;
+3. generic Threat KB leakage corpus for CVE/GHSA/fix-commit/advisory/exploit-writeup/patch-text markers;
+4. S5-exported B2/B4 stable row and diagnostic fixture validation;
+5. ledger-backed idempotency replay/conflict matrix across prepare, finding-context, and threat-context endpoints;
+6. unprepared Source KG `not_available` vs prepared anchor miss `no_hit` distinction;
+7. appendix/non-mainline visibility fail-closed behavior across all paper endpoints;
+8. S5-exported S3 consumer guard fixture packaging with S3 execution explicitly pending;
+9. malformed `forbiddenLeakageClasses` fail-closed permutations: missing, partial, extra, wrong-case, duplicate.
+
+Timeout/liveness update for S3 WR `s3-to-s5-align-paper-api-calls-with-no-absolute-timeout-liveness-policy` remains:
+
+```text
+S5 paper endpoints remain synchronous and bounded by internal work shape.
+X-Timeout-Ms is optional and not a semantic terminal deadline.
+S3 may wait without a fixed absolute read deadline while S5 remains alive/progressing.
+```
+
+S5/Threat KB contributions to RQ5 may now be treated as S5-freeze-gate-ready producer context, still bounded by the no-final-verdict and S3-owned consumer execution boundaries above.
 
 ## 15. Verification evidence
 
-Fresh verification from the implementation session:
+Fresh verification from the S3 observability alignment WR:
 
 ```text
-RED: services/knowledge-base/.venv/bin/python -m pytest services/knowledge-base/tests/test_paper_context_api_contract.py -q
-     -> 4 failed, 9 errors before implementation because paper-context endpoints/modules were missing.
+TDD RED for missing paper-path observability:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py -q
+     -> 4 failed, 0 passed initially.
+     Expected failures: paper contract missing generated X-Request-Id; paper POST missing body requestId response echo;
+     paper lifecycle logs absent; malformed paper request missing generated request id and sanitized validation log.
 
-GREEN targeted: services/knowledge-base/.venv/bin/python -m pytest services/knowledge-base/tests/test_paper_context_api_contract.py -q
-     -> 13 passed in 23.11s.
+TDD RED for paper contract lifecycle logging:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py::test_paper_contract_logs_request_lifecycle_with_generated_request_id -q
+     -> 1 failed in 1.25s.
+     Expected failure: GET /v1/contracts/paper-context did not log S5 paper endpoint start/end.
 
-Related regression: services/knowledge-base/.venv/bin/python -m pytest services/knowledge-base/tests/test_paper_context_api_contract.py services/knowledge-base/tests/test_source_code_kg_contract_v1.py services/knowledge-base/tests/test_source_code_kg_v1.py services/knowledge-base/tests/test_judge_api_contract_v1.py -q
-     -> 142 passed in 146.41s.
+Focused observability GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py -q
+     -> 5 passed in 5.49s.
 
-Compile check: services/knowledge-base/.venv/bin/python -m compileall -q services/knowledge-base/app/paper_context services/knowledge-base/app/routers/paper_context_api.py services/knowledge-base/app/contracts/paper_context.py
-     -> pass.
+Focused observability + paper contract GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py tests/test_paper_context_api_contract.py -q
+     -> 18 passed in 30.24s.
 
-Full S5 service-root suite: cd services/knowledge-base && .venv/bin/python -m pytest tests -q
-     -> 725 passed in 667.66s.
+Regression catch and fix:
+cd services/knowledge-base && .venv/bin/python -m pytest tests -q
+     -> 1 failed, 764 passed in 583.16s.
+     Failure: legacy non-paper /v1/search without X-Request-Id received a generated response header.
+
+Post-fix paper/freeze regression GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py tests/test_paper_context_api_contract.py tests/test_paper_context_freeze_gate.py -q
+     -> 53 passed in 94.53s.
+
+Post-fix full S5 service-root GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests -q
+     -> 765 passed in 586.87s.
+
+Compile check:
+cd services/knowledge-base && .venv/bin/python -m compileall -q app/main.py app/routers/paper_context_api.py app/routers/contracts_api.py
+     -> passed.
 ```
 
-Note: a repo-root invocation of the full S5 suite produced 3 relative-path failures in tests that read `app/main.py` and `scripts/neo4j-seed.py` from the current working directory. Re-running from `services/knowledge-base`, which matches those tests' path assumptions, passed.
+Fresh verification from the S5 freeze-gate implementation session:
+
+```text
+TDD RED baseline:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_freeze_gate.py -q
+     -> 6 failed, 9 passed in 26.42s.
+     Expected failures: contract still advertised not_run, unprepared Source KG still returned no_hit,
+     freeze_gate module was absent, and ledger-backed idempotency records were absent.
+
+Focused freeze-gate GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_freeze_gate.py -q
+     -> 34 passed in 114.79s.
+
+Focused + hard-now contract GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_api_contract.py tests/test_paper_context_freeze_gate.py -q
+     -> 47 passed in 172.05s.
+```
+
+Critic implementation validation initially found one blocker:
+
+```text
+validate_visible_packet() did not reject uppercase final-authority keys TP / FP / UNKNOWN.
+```
+
+S5 then added a dedicated regression and fixed the validator:
+
+```text
+RED for blocker:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_freeze_gate.py::test_whole_visible_packet_validator_rejects_uppercase_final_authority_keys -q
+     -> 1 failed in 1.38s.
+
+GREEN for blocker:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_freeze_gate.py::test_whole_visible_packet_validator_rejects_uppercase_final_authority_keys -q
+     -> 1 passed in 1.27s.
+
+Post-fix focused + hard-now contract GREEN:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_freeze_gate.py tests/test_paper_context_api_contract.py -q
+     -> 48 passed in 230.45s.
+
+Post-fix audit wrapper GREEN:
+cd services/knowledge-base && .venv/bin/python scripts/paper-freeze-gate.py
+     -> status pass; nested pytest 48 passed in 382.52s; passedChecks matched the exact freeze-gate set.
+```
+
+Related and full-service verification:
+
+```text
+Compile + Source KG/Judge related regression:
+cd services/knowledge-base && .venv/bin/python -m compileall -q app/paper_context app/contracts/paper_context.py app/routers/paper_context_api.py scripts/paper-freeze-gate.py && .venv/bin/python -m pytest tests/test_source_code_kg_contract_v1.py tests/test_source_code_kg_v1.py tests/test_judge_api_contract_v1.py -q
+     -> 129 passed in 189.06s.
+
+Full S5 service-root suite:
+cd services/knowledge-base && .venv/bin/python -m pytest tests -q
+     -> 759 passed in 1655.67s.
+```
 
 Critic validation:
 
 ```text
-Plan validation #1: REJECT -> plan needed exact schemas/mapping/errors/tests.
-Plan validation #2: PASS_WITH_CHANGES -> clarified CWE/CAPEC fallback, idempotency cache, router wiring.
-Implementation validation: PASS_WITH_CHANGES -> no blocking S5 implementation issue; docs must state hard-now implemented but S5_FREEZE_GATE not passed.
+Plan validation: PASS_WITH_CHANGES.
+Required changes incorporated: S5-only producer/exported-fixture claim, S3 consumer execution pending;
+ledger-backed endpoint-scoped idempotency using provider_observation; mandatory audit wrapper;
+appendix visibility frozen as fail_closed_unsupported; canonical docs updated only after GREEN + Critic.
+
+Implementation validation #1: REJECT.
+Blocker: uppercase TP/FP/UNKNOWN keys were not rejected by whole-packet validator.
+
+Implementation validation #2: PASS.
+Previous blocker closed; S5_FREEZE_GATE may be marked pass for S5-owned producer/exported-fixture obligations,
+while S3 consumer execution remains pending S3-owned validation.
 ```
 
-## 16. Open implementation items after hard-now
+Retained earlier evidence from hard-now and timeout/liveness sessions:
 
-Completed for the first S3-consumable goal:
+```text
+Hard-now targeted: 13 passed in 23.11s.
+Hard-now related regression: 142 passed in 146.41s.
+Timeout/liveness targeted: 13 passed in 28.00s.
+Timeout/liveness related regression: 142 passed in 139.72s.
+Previous full S5 service-root suite before freeze-gate expansion: 725 passed in 667.66s.
+```
 
-1. paper-context contract snapshot implementation;
+## 16. Open implementation items after S5_FREEZE_GATE pass
+
+Completed for the S5 producer freeze gate:
+
+1. paper-context contract snapshot with exact freeze-gate pass schema;
 2. paper-facing Pydantic request models and projection service;
 3. Code KB prepare over real Source KG ingest/context readiness;
 4. finding context retrieval over real Source KG context selection;
 5. generic Threat KB projection over real threat retrieval internals plus taxonomy/API fallback;
-6. hard-now safety tests for S3 HYBRID subset.
+6. key-aware visible-packet sanitizer and validator;
+7. Source KG not-prepared vs valid anchor no-hit state distinction;
+8. ledger-backed endpoint-scoped idempotency replay/conflict behavior for all paper endpoints;
+9. S5-exported B2/B4/S3 consumer guard fixture validator and freeze-gate audit wrapper;
+10. TDD freeze-gate and related regression evidence plus Critic implementation validation.
 
-Remaining for second S5_FREEZE_GATE hardening goal:
+Remaining outside S5's producer freeze gate:
 
-1. full synthetic leakage corpus and fixture matrix;
-2. durable idempotency or complete conflict matrix, if required by S3 runtime;
-3. richer distinction between Source KG not-prepared/unavailable and valid anchored no-hit;
-4. complete S3 consumer guard fixtures; S3-owned `paper-analysis-api` updates should be coordinated via S3 rather than silently edited by S5;
-5. formal `S5_FREEZE_GATE=pass` CI packaging and audit.
+1. S3-owned consumer execution/renderer validation over S5-exported guard fixtures;
+2. S3-owned paper packet construction, scoring, and final triage validation;
+3. optional broader CI placement by S2/S3 if they want the S5 freeze wrapper in shared pipelines;
+4. commit hygiene for local ledger artifacts before any repository commit.
