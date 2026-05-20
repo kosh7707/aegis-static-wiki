@@ -4,350 +4,155 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "conversation://current-thread"
-  - "mcp://aegis-static-wiki/register_wr"
-  - "mcp://aegis-static-wiki/complete_wr"
-last_verified: "2026-05-19"
+  - "wiki/canon/api/sast-runner-paper-static-evidence-api.md"
+  - "wiki/canon/handoff/s4/session-s4-paper-static-evidence-implementation-interview-20260519.md"
+  - "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md"
+  - "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md"
+last_verified: "2026-05-20"
 service_tags: ["s4", "s3", "s5", "paper-api", "static-evidence", "traceaudit"]
-decision_tags: ["implementation-crystallization", "paper-static-evidence", "failure-policy", "diagnostics", "quality-gate", "tdd"]
-related_pages: ["wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/handoff/s4/session-s4-paper-static-evidence-implementation-interview-20260519.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept-s4-paper-static-evidence-api-contract.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept_s4_policy-for-s4-paper-static-evidence-failure-boundary.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept_option_a_required_empty_arrays-for-s4-diagnosticrefs-cardinality.md", "wiki/canon/work-requests/s3-to-s4-s5-s3-consensus-requested-synchronous-paper-start-terminal-policy-and-paper_export_.md", "wiki/canon/work-requests/s4-to-s3-s5-s4-reply-accept_paper_export_ready_terminal-for-synchronous-paper-start-policy.md"]
+decision_tags: ["implementation-crystallization", "paper-static-evidence", "historical-crystallization", "producer-boundary", "traceability", "tdd"]
+related_pages: ["wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept-s4-paper-static-evidence-api-contract.md", "wiki/canon/work-requests/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ.md", "wiki/canon/work-requests/s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-.md"]
 ---
 
 # S4 paper static evidence implementation crystallization
 
-## Purpose
+Last verified: 2026-05-20
+Status: historical crystallization, implementation completed and superseded by current API/spec pages
 
-This page crystallizes the pre-implementation interview for the S4 paper static-evidence endpoint. It is the implementation handoff for the next S4 coding loop.
+This page records the pre-implementation decisions that shaped `POST /v1/paper/static-evidence`. It is no longer the current API contract. For implementation-facing work, use:
 
-The implementation objective is to make S4 a deterministic, non-LLM, paper-ready static-evidence producer that S3 can consume safely for TraceAudit experiments.
+- `wiki/canon/api/sast-runner-paper-static-evidence-api.md`
+- `wiki/canon/api/sast-runner-api.md`
+- `wiki/canon/specs/sast-runner-static-evidence-contract.md`
+- `wiki/canon/handoff/s4/readme.md`
 
-## Crystallized principle
+## 1. Crystallized principle
 
-S4 is not a verdict engine. S4 is an evidence producer.
+S4 is an evidence producer, not a verdict engine.
 
-The core implementation principle is:
+Core rule:
 
 > S4 must precisely and traceably report what it did and what it could not do.
 
-Therefore:
+Therefore S4 must not convert gaps, empty outputs, timeouts, unavailable tools, skipped surfaces, or bounded partial evidence into TP/FP/UNKNOWN, exploitability, risk, safe-code, or negative-vulnerability evidence.
 
-- S4 must not convert evidence gaps into TP/FP/UNKNOWN, risk, verdict, exploitability, or negative evidence.
-- S4 must not hide failed, skipped, unavailable, partial, or degraded work.
-- Every S4 action or non-action must have an explainable, traceable reason.
-- S3 consumes S4 evidence and diagnostics, but S4 owns first-pass validity of its own output.
+## 2. Endpoint decision
 
-## Scope decision
-
-The new paper endpoint is the S4 canonical producer interface:
+The accepted S4 paper producer surface is:
 
 ```http
 POST /v1/paper/static-evidence
 ```
 
-The file-backed equivalent is:
+File-backed equivalent:
 
 ```text
-{caseRoot}/s4-static-evidence.raw.json
-{caseRoot}/s4-static-evidence.validation.json
+cases/{caseId}/s4-static-evidence.raw.json
+cases/{caseId}/s4-static-evidence.validation.json
 ```
 
-Implementation may reuse existing S4 internals, but it must not be shaped by legacy S1/S2-facing API compatibility. Future consumers that need S4 paper evidence should adapt to this new endpoint and artifact contract.
+The live endpoint and file-backed artifact must share the same bundle/validation semantics. Consumers that need paper static evidence should adapt to this surface rather than ask S4 to special-case old S1/S2 paths.
 
-## Live and file-backed implementation
+## 3. Boundary decisions from the interview
 
-First implementation must deliver both paths in the same loop:
+### Producer boundary
 
-1. live endpoint: `POST /v1/paper/static-evidence`;
-2. file-backed raw artifact: `s4-static-evidence.raw.json`;
-3. file-backed validation artifact: `s4-static-evidence.validation.json`.
+S4 emits raw local deterministic evidence and diagnostics. S3 owns normalization, ledger import, packet rendering, final TP/FP/UNKNOWN, and paper export readiness. S5 owns knowledge/context/GraphRAG surfaces.
 
-The live endpoint and file-backed producer must share the same builder and validator logic. Raw output must be the same bundle shape in both paths.
+### No checksum/hash semantics
 
-## Fixture basis and anti-overfitting rule
+The paper API intentionally excludes checksum/hash/digest/fingerprint/artifact-integrity/reproducibility fields. S4 may use internal deterministic IDs, but public row IDs are bundle-local audit refs, not equality proofs or reproducible-build claims.
 
-The first smoke/fixture basis should use a real admitted target from `/home/kosh/aegis-for-paper`, not only a synthetic toy C project.
+### Full traceability over stable-id mythology
 
-Anti-overfitting constraints:
+The accepted trace policy is not “same input must produce same ID”. The accepted policy is: any copied row must remain traceable back to the case, build target, bundle, producer run, source root ref, compile context ref, surface, and raw object location.
 
-- no target-specific path/name hardcoding;
-- inputs must come through a dataset/case manifest/compile context;
-- validators must check contract shape, trace, `surfaceStatus`, `toolRuns`, diagnostics, and boundary semantics, not target-specific contents;
-- the real target is smoke evidence only, not the basis for special-case implementation;
-- adding a second target smoke soon is preferred to prevent accidental overfitting.
-
-## Failure policy accepted by S3
-
-S3 accepted S4's failure-policy split.
-
-### Bundle/request failure
-
-Admission, request, provenance, and contract failures may reject the request or yield:
-
-```json
-{"success": false, "bundleStatus": "failed"}
-```
-
-Examples:
-
-- missing or unreadable `sourceRoot`;
-- missing/invalid compile context;
-- missing mandatory provenance refs;
-- forbidden request semantics;
-- non-consumable bundle shape;
-- missing required top-level surfaces;
-- broken row-local traces;
-- inconsistent claim-boundary mirrors;
-- broken producer refs;
-- duplicate IDs;
-- forbidden verdict/risk/integrity/checksum/hash fields;
-- unresolved diagnostic refs.
-
-These are producer/system/contract failures, not security evidence.
-
-### Produced bundle with bounded gaps
-
-After admission, per-surface or per-tool failures do not automatically fail the whole bundle if the bundle remains contract-valid and consumable.
-
-S4 should return:
-
-```json
-{"success": true, "bundleStatus": "produced"}
-```
-
-and represent affected gaps through:
-
-- `surfaceStatus`;
-- `toolRuns[]`;
-- `diagnostics[]`;
-- row-local trace/provenance where applicable.
-
-Single current-six tool timeout/unavailability after admission should be represented as producer diagnostics, not as automatic bundle failure.
-
-## Current-six liveness boundary
-
-Current-six tool liveness is a separate system-stability Quality Gate.
-
-The paper bundle may be produced with a per-tool failure row if still contract-valid, but CI/validator quality gates must fail if S4 cannot prove configured current-six tools are reachable/executable in the intended implementation environment.
-
-Current-six tools:
-
-- `semgrep`
-- `cppcheck`
-- `flawfinder`
-- `clang-tidy`
-- `scan-build`
-- `gcc-fanalyzer`
-
-## `diagnosticRefs` cardinality accepted by S3
-
-S3 accepted Option A: required empty arrays.
-
-For diagnostic-capable row/tool/surface objects:
+Minimum trace doctrine:
 
 ```text
-missing diagnosticRefs  => schema/contract failure
-diagnosticRefs: []      => explicitly no associated producer diagnostics
-diagnosticRefs: [...]   => refs must resolve against top-level diagnostics[]
+caseId
+buildTargetId
+bundleRef
+s4RequestId
+s4ProducerRunId
+sourceRootRef
+compileContextRef
+surfaceId
+surface
+rawObjectRef
 ```
 
-This applies at minimum to:
+Row IDs are useful join handles inside one bundle. Trace fields are the audit mechanism.
 
-- `findings[]`
-- `evidence[]`
-- `sourceFiles[]`
-- `functions[]`
-- `includeEdges[]`
-- `libraries[]`
-- `toolRuns[]`
+### `diagnosticRefs` cardinality
 
-It does not need to be forced onto pure envelope/provenance objects unless their schema explicitly supports diagnostics.
+Diagnostic-capable rows and surface statuses require `diagnosticRefs` arrays. Empty arrays mean “explicitly no associated producer diagnostic”. Non-empty arrays must resolve against top-level `diagnostics[]`.
 
-## ID and trace policy
+### Empty semantics
 
-S4 row IDs are bundle-local stable IDs.
+`empty` is a normal first-class state when a surface was attempted and yielded zero rows. SAST tools often produce zero findings. This must not be treated as failure, safe code, or no vulnerability. Failed/not-run/unavailable/skipped work must not be disguised as `empty`.
 
-Rules:
+### Validation split
 
-- S4 owns deterministic per-call/per-bundle ID assignment.
-- IDs must be unique within a bundle.
-- IDs are not hash/checksum/integrity claims.
-- IDs do not carry cross-bundle identity.
-- Cross-bundle equivalence/identity is S3/S5 normalization or ledger responsibility.
-- Row-level auditability must come from `trace` and provenance, not from ID semantics alone.
-
-## Validation report split
-
-S4 must generate validation evidence for its own output. Validation is not delegated solely to S3 or CI.
-
-Validation report shape should separate:
+S4 owns first-pass validation of its own bundle:
 
 ```json
 {
   "schemaVersion": "s4-static-evidence-validation-v1",
-  "bundleRef": "...",
   "overallStatus": "pass|fail",
-  "contractValidation": {
-    "status": "pass|fail",
-    "errors": [],
-    "warnings": []
-  },
-  "producerSanityValidation": {
-    "status": "pass|fail",
-    "errors": [],
-    "warnings": []
-  }
+  "contractValidation": { "status": "pass|fail", "errors": [], "warnings": [] },
+  "producerSanityValidation": { "status": "pass|fail", "errors": [], "warnings": [] }
 }
 ```
 
-### Contract validation
+`contractValidation` protects S3 consumer safety. `producerSanityValidation` protects S4 honesty about tool/surface work.
 
-Contract validation proves S3 consumer safety. It covers:
+## 4. Current implementation result
 
-- required top-level fields;
-- forbidden fields;
-- required top-level surfaces;
-- row-local trace requirements;
-- duplicate IDs;
-- `diagnosticRefs` presence and resolution;
-- `surfaceStatus`, `toolRuns`, and `diagnostics` structural consistency;
-- claim-boundary mirror consistency;
-- no verdict/risk/integrity/checksum/hash semantics.
-
-### Producer sanity validation
-
-Producer sanity validation proves S4 operational honesty/completeness. It covers:
-
-- all current-six tools appear in `toolRuns[]`;
-- every current-six toolRun has an explicit status;
-- non-success tool states have diagnostic reasons;
-- all required surfaces have explicit `surfaceStatus` entries;
-- non-`produced`/`empty` surface states have diagnostic reasons;
-- the bundle adequately states what S4 did and could not do.
-
-## `toolRuns[]` rule
-
-Every produced paper bundle must include all current-six tools in `toolRuns[]`, regardless of success/failure.
-
-Each toolRun must have explicit status, such as:
-
-- `success`
-- `failed`
-- `timeout`
-- `not_available`
-- `skipped`
-
-For `failed`, `timeout`, `not_available`, or `skipped`, `diagnosticRefs` must be non-empty and point to top-level `diagnostics[]` entries explaining the reason.
-
-Missing current-six toolRun rows are producer sanity failures.
-
-## `surfaceStatus` rule
-
-Major S4 paper surfaces must always have `surfaceStatus` entries:
-
-- `findings`
-- `evidence`
-- `sourceFiles`
-- `functions`
-- `includeEdges`
-- `libraries`
-- `targetMetadata`
-- `staticEvidenceContract`
-- `claimBoundaryMatrix`
-- `claimBoundaries`
-
-Each surface must have an explicit state such as:
-
-- `produced`
-- `partial`
-- `empty`
-- `failed`
-- `not_available`
-- `skipped`
-
-`produced` and `empty` may have `diagnosticRefs: []`.
-
-`partial`, `failed`, `not_available`, and `skipped` require diagnostic reasons.
-
-Missing required `surfaceStatus` entries are contract validation failures.
-
-## `empty` semantics
-
-`empty` means a surface was successfully attempted/produced and yielded zero rows.
-
-For example, `findings: []` with `surfaceStatus.findings.status = "empty"` is valid when tools/surfaces actually ran and produced zero findings. This is common for SAST tools and must remain a first-class normal state.
-
-Failed, not-run, unavailable, or skipped analysis must never be disguised as `empty`.
-
-## S3 `/paper start` terminal compatibility
-
-S4 accepted S3's synchronous `/paper` start policy:
+The crystallized work was implemented. Current state:
 
 ```text
-POST /v1/paper/analysis-cases/{caseId}/start returns 200 only if S3 reaches PAPER_EXPORT_READY.
+S4_STATIC_EVIDENCE_FREEZE_GATE = pass
+S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
+S4_E2E_SMOKE_READINESS = ready
 ```
 
-This is an S3-owned terminal/export boundary, not an S4 producer boundary.
+Implementation covers:
 
-S4's implementation obligation is to produce strict enough live/file-backed evidence for S3 to reach `PAPER_EXPORT_READY` under valid operational conditions.
+- live paper endpoint;
+- file-backed bundle/validation-equivalent semantics;
+- produced and failed bundle shapes;
+- forbidden request/response semantics;
+- current-six `toolRuns[]` honesty;
+- `surfaceStatus` coverage/count rules;
+- row-local traces;
+- required `diagnosticRefs`;
+- claim-boundary mirrors;
+- no verdict/risk/hash/checksum/integrity/reproducibility projections;
+- B2/B4 same evidence text/order constraints;
+- async durable ownership;
+- JSONL lifecycle logging and log-analyzer traceability.
 
-Contract-valid S4 bundles with bounded diagnostics/gaps should still allow normal `PAPER_EXPORT_READY`. S4 admission/contract/non-consumable bundle failures may prevent normal 200 completion as system/producer failures.
+## 5. Current verification evidence
 
-## Test gates for implementation
+Current full S4 suite during doc refresh:
 
-Release readiness requires all gates below; they are independent perspectives, not a single priority ladder.
-
-### Gate 1 — contract validator
-
-Must include positive and negative tests for:
-
-- required fields;
-- forbidden fields;
-- duplicate IDs;
-- missing row-local trace;
-- missing `diagnosticRefs` on diagnostic-capable rows;
-- unresolved diagnostic refs;
-- missing required `surfaceStatus`;
-- invalid produced/failed boundary;
-- forbidden verdict/risk/hash/checksum semantics.
-
-### Gate 2 — producer sanity validator
-
-Must include positive and negative tests for:
-
-- all current-six `toolRuns[]` present;
-- missing toolRun fails producer sanity;
-- non-success tool status without diagnostic fails;
-- required surfaces have explicit status;
-- non-produced/non-empty surface status without diagnostic fails;
-- `empty` only means successful zero-row production.
-
-### Gate 3 — file-backed artifact
-
-Must produce and validate:
-
-```text
-s4-static-evidence.raw.json
-s4-static-evidence.validation.json
+```bash
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+# 1395 passed, 1 skipped in 34.93s
 ```
 
-from a real admitted target while avoiding target-specific implementation.
+Focused paper/logging evidence:
 
-### Gate 4 — live endpoint
+```bash
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py -q
+# 63 passed, 1 skipped in 2.02s
+```
 
-`POST /v1/paper/static-evidence` must return the same contract-valid bundle shape and pass the same validator.
+Log-analyzer proof exists for request `req-s4-log-proof-1779259710-6143`, showing S4 paper lifecycle start/end, terminal status 200, `bundleStatus=produced`, and non-empty `s4ProducerRunId` in canonical JSONL logs.
 
-### Gate 5 — current-six liveness
+## 6. How to use this page now
 
-Must verify configured current-six tools are reachable/executable as a separate system-stability Quality Gate.
+Use this page as rationale/history. Do not implement from this page alone. If it conflicts with the current API/spec pages, the current API/spec pages win.
 
-## Implementation stop condition
-
-The next S4 implementation loop may stop only when:
-
-1. the live endpoint exists and returns contract-valid paper bundles;
-2. the file-backed producer writes raw and validation artifacts;
-3. the shared builder/validator is used by both paths;
-4. contract and producer-sanity validation are implemented with negative tests;
-5. current-six toolRun and liveness behavior are tested;
-6. a real admitted target smoke passes without target-specific hardcoding;
-7. docs/API notes are updated if implementation reveals contract drift;
-8. S3 is notified by WR after implementation/verification evidence is available.
+If S3/S5 disagree with paper producer semantics, open a new WR against the current API page rather than editing this historical crystallization as if it were the live contract.

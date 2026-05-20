@@ -6,14 +6,43 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/architecture.md"
 original_path: "docs/s5-handoff/architecture.md"
-last_verified: "2026-04-14"
+last_verified: "2026-05-20"
 service_tags: ["s5"]
 decision_tags: []
-related_pages: []
+related_pages:
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 migration_status: "canonicalized"
 ---
 
+
 # S5 Knowledge Base — 아키텍처 상세
+
+
+## Current architecture refresh — 2026-05-20
+
+Current active architecture is summarized in [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]]. This page remains the S5 architecture detail page, but older sections predating the paper-context work must be interpreted through the following updates.
+
+Active runtime surfaces now include three layers:
+
+1. General S5 KB APIs: threat search, CVE lookup, code graph, project memory, Source Code KG, Judge, Analyst Brief, target-context acquisition.
+2. Paper projection APIs: `GET /v1/contracts/paper-context` and `POST /v1/paper/*`, implemented as bounded projections over real S5 internals rather than raw internal exposure.
+3. Observability path: JSON structured logs with `service=s5-kb` in `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl`, consumable by `log-analyzer`.
+
+Paper-context files added to the active architecture:
+
+```text
+app/contracts/paper_context.py
+app/paper_context/models.py
+app/paper_context/service.py
+app/paper_context/freeze_gate.py
+app/routers/paper_context_api.py
+scripts/paper-freeze-gate.py
+tests/test_paper_context_api_contract.py
+tests/test_paper_context_freeze_gate.py
+tests/test_paper_context_observability.py
+```
+
+The architectural boundary is S5 producer/context-provider only. S3 owns paper packet construction, rendering, final triage, and consumer execution validation.
 
 > README.md에서 분리된 기술 상세 문서.
 

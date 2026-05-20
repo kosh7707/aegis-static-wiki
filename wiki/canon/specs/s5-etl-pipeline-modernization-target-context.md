@@ -6,13 +6,28 @@ source_refs:
   - ".omx/specs/deep-interview-s5-etl-pipeline-modernization.md"
   - "wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md"
   - "wiki/canon/work-requests/s5-to-s3-s3-target-context-bundle-discussion-for-s5-acquisition-diagnostics-and-non-silen.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-20"
 service_tags: ["s5", "s3", "knowledge-base", "analysis-agent", "etl", "acquisition-diagnostics", "target-context"]
 decision_tags: ["one-track-contract", "target-context-bundle-v1", "acquisition-envelope-v1", "non-silent-fallback", "acquisition-quality-gate", "durable-target-knowledge", "analyst-brief-v1"]
-related_pages: ["wiki/canon/api/knowledge-base-api.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/specs/knowledge-base.md", "wiki/canon/specs/s5-acquisition-state-machine/readme.md", "wiki/canon/handoff/s5/readme.md", "wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md"]
+related_pages:
+  - "wiki/canon/api/knowledge-base-api.md"
+  - "wiki/canon/api/analysis-agent-api.md"
+  - "wiki/canon/specs/knowledge-base.md"
+  - "wiki/canon/specs/s5-acquisition-state-machine/readme.md"
+  - "wiki/canon/handoff/s5/readme.md"
+  - "wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 ETL Pipeline Modernization — Target Context Acquisition Contract
+
+
+## Current-state note — 2026-05-20
+
+This target-context modernization document remains design/history context for S5 acquisition diagnostics. It is not the active paper/e2e entry point. Current S5 implementation state, paper API readiness, freeze-gate status, and observability proof are summarized in [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
+
+Do not infer final TP/FP/UNKNOWN or absence evidence from target-context acquisition, Source KG gaps, or S5 paper diagnostics. These remain contextual/operational diagnostics for S3 to consume safely.
 
 ## Status
 

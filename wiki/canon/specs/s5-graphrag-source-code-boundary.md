@@ -4,13 +4,24 @@ page_type: "spec"
 canonical: true
 source_refs:
   - "user discussion 2026-05-12 S5 GraphRAG/source-code boundary"
-last_verified: "2026-05-12"
+last_verified: "2026-05-20"
 service_tags: ["S5", "knowledge-base", "graphrag", "source-code-graph", "threat-kb"]
 decision_tags: ["architecture-boundary", "discussion-context", "answerability", "source-kg-ownership", "rich-analysis-ir", "repository-snapshot-versioning", "source-artifact-retention", "s5-api-authority", "judge-taxonomy", "grounded-unknown", "source-code-kg-ledger-v1", "judge-answer-contract-v1"]
-related_pages: ["wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md", "wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db.md"]
+related_pages:
+  - "wiki/canon/specs/s5-threat-kb-megagoal-discussion-context.md"
+  - "wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 GraphRAG and Source Code Graph Boundary
+
+
+## Current-state note — 2026-05-20
+
+This boundary document remains the S5 GraphRAG/Source Code Graph background reference. Current active e2e/paper state is summarized in [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
+
+For paper work, Source Code KG is consumed through the S5 Paper Context API: `prepare_code_kb` over real Source KG ingest/context, then `retrieve_finding_context` over prepared selectors or explicit selectors. S5 distinguishes unprepared `not_available`, unresolved `not_available`, prepared no-hit `no_hit`, and produced rows; none of these statuses are final security verdicts.
 
 Last updated: 2026-05-12
 

@@ -4,13 +4,24 @@ page_type: "spec"
 canonical: true
 source_refs:
   - "user discussion 2026-05-12 S5 Threat KB megagoal"
-last_verified: "2026-05-12"
+last_verified: "2026-05-20"
 service_tags: ["S5", "knowledge-base", "threat-kb", "graphrag", "golden-set"]
 decision_tags: ["discussion-context", "megagoal", "answerability", "quality-gate", "answerability-native-golden-set-v1", "scoring-policy-v1", "serving-requery-contract-v1", "source-coverage-matrix-v1", "typed-conflict-model-v1"]
-related_pages: ["wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db.md", "wiki/canon/handoff/s5/session-2026-05-12-s5-evidence-grounded-threat-kb-foundation.md"]
+related_pages:
+  - "wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db.md"
+  - "wiki/canon/handoff/s5/session-2026-05-12-s5-evidence-grounded-threat-kb-foundation.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 Threat KB Megagoal Discussion Context
+
+
+## Current-state note — 2026-05-20
+
+This megagoal discussion remains useful for direction, but it is no longer the active operational entry point. Use [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]] for current implementation state and [[wiki/canon/api/s5-paper-context-api]] for S3-consumable paper API details.
+
+The current S5 role is narrower and safer than a final judge: S5 supplies contextual Threat KB / Source Code KG rows, diagnostics, provenance IDs, and traceability. S3 remains responsible for final packet construction and triage semantics.
 
 Last updated: 2026-05-12
 Lane: S5 / `services/knowledge-base/**`

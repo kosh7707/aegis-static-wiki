@@ -2,76 +2,99 @@
 title: "S5 Knowledge Base — Roadmap"
 page_type: "canonical-roadmap"
 canonical: true
-source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/roadmap.md"
-original_path: "docs/s5-handoff/roadmap.md"
-last_verified: "2026-04-07"
-service_tags: ["s5"]
-decision_tags: []
-related_pages: []
-migration_status: "canonicalized"
+  - "wiki/canon/handoff/s5/session-s5-freeze-gate-implementation-20260520.md"
+  - "wiki/canon/handoff/s5/session-s5-paper-observability-alignment-20260520.md"
+  - "wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520.md"
+last_verified: "2026-05-20"
+service_tags: ["s5", "knowledge-base", "paper-context", "source-code-kg", "threat-kb", "observability"]
+decision_tags: ["current-state", "post-freeze-gate", "e2e-smoke", "producer-boundary"]
+related_pages: ["wiki/canon/specs/s5-current-implementation-snapshot-20260520.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/handoff/s5/readme.md", "wiki/canon/work-requests/s5-to-s3-s5-notice-e2e-smoke-ready-for-s5-paper-context-producer-scope.md", "wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e.md"]
 ---
 
 # S5 Knowledge Base — Roadmap
 
----
+> Current as of 2026-05-20. This roadmap supersedes the older 2026-04 immediate-work list. Historical roadmap entries remain represented in older session pages and the one-track modernization plan.
 
-## 즉시 다음 작업
+## Current status
 
-| # | 작업 | 우선순위 |
-|---|------|---------|
-| 1 | S3가 `s5-to-s3-search-readiness-and-provenance-update.md`에 회신하거나 후속 WR을 보낼 때까지 canonical WR MCP (`list_my_open_wrs`) 기준으로 계약 변화 모니터링 | 높음 |
-| 2 | code graph multi-snapshot coexistence 설계 (`project당 활성 그래프 1개` → snapshot-aware 모델) | 중간 |
-| 3 | graph-aware benchmark oracle 확장 (`relation-family`, `top1 exact-hit`, `match_type_counts` 활용 강화) | 중간 |
+S5 is e2e-smoke ready for the S5-owned producer/context-provider boundary.
 
-## 최근 완료 (2026-04-02)
+```text
+S5 paper producer freeze gate: pass
+S3 consumer execution status: pending_s3_owned_validation
+Canonical JSONL/log-analyzer traceability: pass
+Open S5 WRs at refresh: none
+```
 
-| # | 작업 | 결과 |
-|---|------|------|
-| 1 | **Degraded mode 시그널링** (구 로드맵 #6) | 2026-04-02 시점 구현. 이후 2026-04-04 readiness hardening으로 threat search 성공 payload의 `degraded`는 제거되어 현재는 **historical context**만 남음 |
-| 2 | **Qdrant 서버 모드 지원** (구 로드맵 #3) | `qdrant_url` 설정으로 file/server 듀얼 모드. 테스트 5개 |
-| 3 | **벤치마크 프레임워크** (구 로드맵 #2) | `scripts/benchmark/` — validation set 35쿼리 + metrics + runner + sweep. 테스트 15개 |
+Use [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]] as the active current-state snapshot.
 
 ---
 
-## 최근 완료 (2026-04-03)
+## Immediate next work
 
-| # | 작업 | 결과 |
-|---|------|------|
-| 1 | **벤치마크 validation set 확장** | validation set 35→45 쿼리. automotive/authorization/configuration/concurrency/attack/capec coverage 보강 |
-| 2 | **Sweep 결과 출력 보강 + 실제 실행** | `scripts/benchmark/sweep.py` — 범위 축소 실행 옵션 + CSV/JSON 요약 출력 지원. Qdrant-only 36조합 sweep 실행 결과 NDCG@5/MRR이 전 구간 동일(0.4048/0.4636) |
-| 3 | **벤치마크 회귀 테스트 추가** | `test_benchmark_artifacts.py` 신설 — fixture shape/coverage + sweep summary 회귀 검증 |
-
----
-
-## 최근 완료 (2026-04-04)
-
-| # | 작업 | 결과 |
-|---|------|------|
-| 1 | **Graph-aware benchmark compare** | `run_benchmark.py --compare-neo4j` 추가. Qdrant-only 대비 Neo4j-enabled에서 `ndcg_5 0.4048 → 0.6111`, `mrr 0.4636 → 0.7399`, `hit_rate 0.7442 → 0.9070` 확인 |
-| 2 | **Compare 회귀 테스트 추가** | compare summary 집계/정렬과 sequential profile 실행을 테스트로 고정 |
-| 3 | **Neo4j-enabled 36조합 sweep 실행** | `min_score 0.25~0.4 × neighbor_score 0.7~0.9 × rrf_k 30/60/100` 전 구간에서 `ndcg_5=0.6111`, `mrr=0.7399`로 동일. 현재 benchmark는 graph-aware 상태에서도 파라미터 감도가 낮음 |
-| 4 | **Graph-aware oracle 추가** | validation set의 일부 exact query에 `required_match_types`를 추가하고 benchmark runner가 oracle full-pass/mean-pass를 집계하도록 확장. compare 기준 Qdrant-only `0/6` vs Neo4j-enabled `6/6` |
-| 5 | **Threat search readiness hardening + provenance seam** | Qdrant-only degraded fallback 제거. threat search는 Neo4j 필수로 정렬. code graph / project memory는 optional `buildSnapshotId` / `buildUnitId` / `sourceBuildAttemptId` seam 추가 |
-| 6 | **S3 회신 + architect 승인 + closeout sync** | `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md` 작성, Boyle architect 승인 확보, handoff/spec/API 문서 최신 상태로 동기화 |
+| # | Work | Priority | Trigger / stop condition |
+|---|---|---|---|
+| 1 | Support S3 e2e smoke on S5 paper-context endpoints | High | Triggered by S3 smoke failures/WRs. Stop when S3 can consume S5 context rows/diagnostics without contract mismatch. |
+| 2 | Preserve S5 producer boundary during smoke fixes | High | Any fix must keep `S5 hit != vulnerable`, `S5 no_hit != safe`, and no final TP/FP/UNKNOWN authority. |
+| 3 | Keep canonical JSONL traceability intact | High | Any new paper endpoint/change must preserve `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl`, `service=s5-kb`, numeric levels, requestId, lifecycle rows, and `log-analyzer.trace_request` visibility. |
+| 4 | Coordinate commit hygiene for runtime/test artifacts | Medium | S2 owns commits. `services/knowledge-base/data/s5-ledger.sqlite` may be a local runtime/test artifact and must be reviewed before repository commit. |
+| 5 | Add shared CI placement for `scripts/paper-freeze-gate.py` only if requested by S2/S3 | Medium | Current wrapper passes locally; broader CI ownership is outside S5 producer gate unless requested. |
 
 ---
 
-## 최근 완료 (2026-04-07)
+## Recently completed — 2026-05-20
 
-| # | 작업 | 결과 |
-|---|------|------|
-| 1 | **gateway-webserver 분석 drift 로그 점검** | `live-*` / `e2e-*` 로그, request trace, prompt dump를 대조해 S5 drift보다는 S3-side synthesis/tool-use failure가 주원인임을 확인. S5는 search/project-memory/dangerous-callers를 정상 공급 |
-| 2 | **optional provenance warning noise 완화** | `project_memory_service.py`, `code_graph_service.py` read/query 경로를 `properties(node)['...']` map access 기반으로 바꿔 legacy `Function`/`Memory` 노드의 `01N52 property key does not exist` warning을 줄임. API 계약 변화는 없어서 WR은 발행하지 않음 |
+| Work | Result |
+|---|---|
+| S5 Paper Context API hard-now implementation | `GET /v1/contracts/paper-context` and `POST /v1/paper/{code-kb/prepare,finding-context/retrieve,threat-context/generic}` implemented. |
+| S5_FREEZE_GATE | `s5FreezeGate=pass`, `validationSuiteVersion=s5-paper-freeze-gate-v1`, `missingValidationItems=[]`; S3 consumer execution remains pending/S3-owned. |
+| Paper observability alignment | Paper endpoints emit request-id lifecycle logs with S5 producer/retrieval IDs where applicable. |
+| No absolute paper timeout semantics | `X-Timeout-Ms` optional/positive-only compatibility hint; not a semantic terminal deadline. |
+| Canonical JSONL/log-analyzer proof | Live proof request IDs appeared in `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl`; `log-analyzer.trace_request` found all proof IDs. |
+| S3 readiness notice/reply WRs | S5 sent e2e-smoke readiness notice and canonical logging traceability reply. |
+
+Verification evidence retained in current docs/session history:
+
+```text
+Paper/freeze/observability focused: 53 passed
+S5 freeze wrapper: pass
+Full S5 service-root suite: 765 passed
+Paper observability/API focused after live log proof: 18 passed in 37.47s
+git diff --check -- services/knowledge-base: pass
+```
 
 ---
 
-## 후순위 / 장기 계획
+## Near-term post-smoke candidates
 
-| # | 작업 | 현재 상태 | 향후 방향 |
-|---|------|---------|---------|
-| 1 | Other 카테고리 비율 52% | 8개 상위 카테고리 + 5단계 부모 탐색 | 수작업 큐레이션 또는 다중 레이블 분류 검토 |
-| 2 | 다운로드 실패 시 전체 파이프라인 중단 | all-or-nothing (부분 빌드 미지원) | 소스별 독립 빌드 또는 이전 캐시 fallback 도입 |
-| 3 | 소스 무결성 검증 없음 | 버전 및 메타데이터만 기록 | checksum 또는 schema validation 도입 검토 |
-| 4 | 코드 그래프 대규모 적재 미검증 | RE100(53노드/54관계) 정상 | 대규모 프로젝트 테스트 필요 |
+These are deliberately gated by actual S3/S4 smoke evidence rather than speculative redesign.
+
+| Candidate | Why | Guardrail |
+|---|---|---|
+| Paper context schema refinements | If S3 finds consumer-shape holes during e2e smoke | Must update `wiki/canon/api/s5-paper-context-api.md` and tests first. |
+| Source KG fixture/dataset hardening | If S3 needs stronger prepared-context examples or reproducible target cases | Must not synthesize readiness from paths alone. |
+| Generic Threat KB row quality improvements | If smoke reveals low-value rows for paper packets | Must preserve generic visibility and hidden CVE/fix/advisory redaction. |
+| Freeze-gate fixture export ergonomics | If S3 wants automated fixture import | Must keep S3 consumer execution S3-owned. |
+| Broader benchmark/golden-set expansion | If paper metrics need stronger RQ evidence | Must not treat offline quality labels as runtime final verdicts. |
+
+---
+
+## Longer-term backlog
+
+| Work | Status | Notes |
+|---|---|---|
+| Code graph multi-snapshot coexistence | Backlog | Current code graph remains effectively project-active/snapshot-seam oriented; multi-snapshot persistence needs a separate design. |
+| Graph-aware benchmark oracle expansion | Backlog | Existing graph-aware compare proved Neo4j uplift; post-smoke evidence should drive next oracle additions. |
+| Source-specific ETL partial build/cache fallback | Backlog | Historical all-or-nothing ETL limitation remains lower priority than paper smoke. |
+| Source integrity/checksum expansion | Backlog/partially addressed in Source KG contracts | Preserve redaction and payload-budget policies. |
+| Large-project code graph stress validation | Backlog | RE100-scale historical evidence is not enough for large target claims. |
+
+---
+
+## Historical completed milestones
+
+- 2026-04-02 to 2026-04-07: Qdrant file/server support, benchmark framework, graph-aware compare, threat-search readiness hardening, provenance seam, optional provenance warning noise reduction.
+- 2026-05-11 to 2026-05-12: acquisition modernization, evidence-grounded Threat KB, Source Code KG/Judge contracts, retrieval quality modernization.
+- 2026-05-19 to 2026-05-20: TraceAudit paper-context API, S5_FREEZE_GATE, observability alignment, canonical JSONL/log-analyzer readiness.

@@ -9,101 +9,137 @@ source_refs:
   - "services/sast-runner/tests/test_tool_portfolio_system_stability_gate.py"
   - "services/sast-runner/tests/test_orchestrator.py"
   - "services/sast-runner/tests/test_scan_endpoint.py"
-  - "services/sast-runner/tests/test_semgrep_runner.py"
-last_verified: "2026-05-12"
-service_tags: ["s4"]
-decision_tags: ["system-stability-gate", "quality-gate", "sast-runner", "tool-preflight", "fail-closed"]
-related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/handoff/s4/readme.md"]
+  - "services/sast-runner/tests/test_paper_static_evidence.py"
+last_verified: "2026-05-20"
+service_tags: ["s4", "sast-runner", "system-stability", "quality-gate", "tool-preflight"]
+decision_tags: ["system-stability-gate", "quality-gate", "tool-preflight", "fail-closed", "current-six-tools"]
+related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
 ---
 
 # S4 SAST Runner System Stability and Quality Gate Separation v1
 
-Status: **implemented**
-Owner: **S4 / SAST Runner**
-Scope: **deterministic local SAST execution and tool-portfolio experiment reports**
+Last verified: 2026-05-20
+Owner: S4 / SAST Runner
+Status: implemented
 
-## Purpose
+## 1. Principle
 
-S4 must separate two questions that were previously easy to conflate:
+S4 separates three different questions that must never be collapsed:
 
-1. **System Stability Gate** — can this SAST execution or experiment artifact be trusted as a complete execution artifact?
-2. **Quality Gate** — after system stability passes, what do oracle-backed TP/FP/FN, coverage, unique contribution, and regression metrics say?
+1. **System Stability Gate** — did the required local tools/steps run completely enough to trust this as an execution artifact?
+2. **Evidence/Producer Contract Gate** — did S4 describe emitted evidence, missing evidence, diagnostics, traces, and claim boundaries safely enough for consumers?
+3. **Quality Gate** — after stable execution and a frozen oracle/corpus profile, what do recall/precision/noise/coverage metrics say?
 
-A failed System Stability Gate blocks Quality Gate evaluation. Tool quality must not be scored when required tools did not run, timed out, failed, were skipped unexpectedly, or were unavailable because of environment drift.
+A failed System Stability Gate blocks quality scoring. A produced paper/static-evidence bundle with bounded diagnostics can still be consumable if its contract is valid and it honestly says what was not produced. Neither gate is a vulnerability verdict.
 
-## Runtime rule
+## 2. Runtime system-stability rule
 
-Default `/v1/scan` execution requires the current six S4 tools:
+Default `/v1/scan` execution requires the current six tools:
 
-- semgrep
-- cppcheck
-- flawfinder
-- clang-tidy
-- scan-build
-- gcc-fanalyzer
+```text
+semgrep
+cppcheck
+flawfinder
+clang-tidy
+scan-build
+gcc-fanalyzer
+```
 
-If any required default tool is unavailable at preflight, S4 fails closed before executing any analyzer. The failed response preserves S3-consumable evidence surfaces:
+Preflight failure returns a system-stability failure before analyzer execution:
 
-- HTTP status `503`
-- `errorDetail.code="REQUIRED_TOOL_UNAVAILABLE"`
-- `execution.toolResults` matrix
-- `staticEvidenceContract.gates.systemStability.status="fail"`
-- failure log message: `Required SAST tool preflight failed`
+```text
+HTTP 503
+errorDetail.code = REQUIRED_TOOL_UNAVAILABLE
+staticEvidenceContract.gates.systemStability.status = fail
+```
 
-After preflight, the authoritative required tool set remains `options.tools` when explicitly provided, otherwise the full current-six portfolio. Every required tool must emit a recorded `toolResults[tool]` with `status="ok"` and `degraded=false`. Missing results, `failed`, `partial`, `skipped`, degraded `ok`, invalid/non-JSON tool output, or unknown status are system-stability failures, not quality findings. Runtime responses fail closed with:
+Post-execution failure returns a system-stability failure when any required tool is missing, failed, partial, skipped unexpectedly, degraded, invalid, or unknown:
 
-- HTTP status `503`
-- `errorDetail.code="REQUIRED_TOOL_EXECUTION_INCOMPLETE"`
-- `staticEvidenceContract.gates.systemStability.status="fail"`
-- `staticEvidenceContract.gates.evidenceReadiness.status="not_ready"`
-- `staticEvidenceContract.gates.claimSupportReadiness.status="fail"`
+```text
+HTTP 503
+errorDetail.code = REQUIRED_TOOL_EXECUTION_INCOMPLETE
+staticEvidenceContract.gates.systemStability.status = fail
+staticEvidenceContract.gates.evidenceReadiness.status = not_ready
+staticEvidenceContract.gates.claimSupportReadiness.status = fail
+```
 
-This post-execution check runs before project-level SCA/code-graph enrichment, so an incomplete local SAST execution cannot be hidden by downstream enrichment errors or promoted into quality evaluation.
+Unknown `options.tools[]` values are caller input errors, not S4 system instability:
 
-Unknown `options.tools[]` values are caller input errors, not S4 system instability. They return HTTP `400` with `errorDetail.code="SCAN_TOOL_INVALID"`.
+```text
+HTTP 400
+errorDetail.code = SCAN_TOOL_INVALID
+```
 
-Explicit subsets are still allowed for intentional single-tool or leave-one-out experiments. In that case only the requested tool set is required, and unrequested tools are represented as `operator-requested-subset`. Such results must not be promoted to full-current-six portfolio evidence.
+Explicit subsets are allowed only as intentional subset experiments. A subset artifact must not be promoted to full current-six evidence.
 
-## Semgrep canonical executable rule
+## 3. Paper producer gate rule
 
-Semgrep must be probed and executed through the S4 service-local canonical executable when present:
+For `POST /v1/paper/static-evidence`, S4 additionally separates:
 
-`services/sast-runner/.venv/bin/semgrep`
+- **bundle consumability**: `success=true` and `bundleStatus=produced`;
+- **per-surface status**: `produced`, `empty`, `partial`, `failed`, `not_available`, `skipped`, `error`;
+- **producer diagnostics**: sanitized `diagnostics[]` plus `diagnosticRefs[]`;
+- **paper freeze gate**: whether S4's producer contract has executable validation coverage.
 
-PATH fallback is allowed only when the canonical service executable does not exist. This prevents a repeat of the 2026-05-12 environment-drift incident where Semgrep existed in the service venv but was skipped because `semgrep` was not on shell PATH.
+Current state:
 
-## Experiment/report rule
+```text
+S4_STATIC_EVIDENCE_FREEZE_GATE = pass
+```
 
-Tool-portfolio reports now expose separate gates:
+This gate means S4's paper producer boundary is validated. It does not mean S3 paper export is ready, S5 context is ready, or the code under analysis is secure.
 
-- `systemStabilityGate`
-- `qualityGate`
+## 4. Offline quality gate rule
 
-If `systemStabilityGate.status="fail"`:
+Quality evaluation requires a named validation/test/canary profile. Runtime S4 must not invent quality scores.
+
+If `systemStabilityGate.status="fail"` in a tool-portfolio report:
 
 - `qualityGate.status="blocked"`
 - `qualityGate.decision="invalid-precondition"`
-- `validationMetrics`, `testMetrics`, and `canaryMetrics` are `blocked`
-- `portfolioMetrics.status="blocked"`
-- `decisionSupport.currentDecision="invalid-precondition"`
+- validation/test/canary metrics are blocked
+- decision support remains diagnostic, not a tool-quality claim
 
-This blocked report path must still be emitted even if normal current-six `findings_by_config` inputs are absent, so tool-off and preflight-failed runs remain machine-readable evidence instead of disappearing as exceptions.
+If system stability passes but the corpus/readiness profile is not decision-grade, quality remains blocked/not decision-grade. S4 must not use a one-off run or a missing corpus as a portfolio-change basis.
 
-## Verification evidence
+## 5. Semgrep executable lesson
 
-Implementation/test evidence from 2026-05-12:
+Semgrep is probed and executed through the service-local canonical executable when present:
 
-- Focused new failure/gate tests: `13 passed`
-- Combined S4 gate/API/report runner suite: `137 passed in 11.67s`
-- Full S4 pytest: `562 passed in 22.74s`
-- All-six required-tool focused TDD gate: `83 passed in 0.15s`
-- Critic RED reproduction for raw unknown/non-normal report-side statuses: `2 failed` before fix
-- System-stability related runner/API suite after report-side unknown/non-normal fix: `210 passed in 13.04s`
-- Full S4 pytest after all-six system-stability hardening: `641 passed in 25.79s`
-- Intentional preflight failure log test: `5 passed in 1.05s`, with live log `Required SAST tool preflight failed`
-- Actual local tool preflight after fix: all six tools available; Semgrep `1.156.0` detected at `services/sast-runner/.venv/bin/semgrep`
-- Six-tool local operational battery: `benchmark/results/tool_portfolio/s4-local-six-tool-battery-20260512T045335Z.json`, 8/8 projects OK, all six tools `ok x8`
+```text
+services/sast-runner/.venv/bin/semgrep
+```
 
-## Consumer policy
+PATH fallback is allowed only if the service-local executable is absent. This rule exists because prior work proved that a tool can be installed but silently missed if only shell PATH is checked.
 
-System stability evidence is not security quality evidence. A green System Stability Gate means only that local deterministic tool execution was complete enough to enter quality scoring. It does not imply vulnerability absence, exploitability, affectedness, or final security verdict.
+## 6. Consumer policy
+
+Consumers may use a passing System Stability Gate as a precondition for considering S4 local evidence. They must not use it as:
+
+- no-vulnerability evidence;
+- exploitability/affectedness evidence;
+- final verdict;
+- S5/GraphRAG sufficiency;
+- evidence that all static tools are globally adequate.
+
+Quality reports may support tool/governance decisions only when system stability, corpus readiness, oracle split, threshold policy, and consumer canary checks all pass for that decision cycle.
+
+## 7. Verification evidence
+
+Current verification for this document refresh:
+
+```bash
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+# 1395 passed, 1 skipped in 34.93s
+```
+
+Relevant suites:
+
+- `tests/test_tool_portfolio_system_stability_gate.py`
+- `tests/test_orchestrator.py`
+- `tests/test_scan_endpoint.py`
+- `tests/test_static_evidence_contract.py`
+- `tests/test_paper_static_evidence.py`
+- `tests/test_tool_portfolio_report_consumer_canary.py`
+
+Prior focused hardening remains documented in session history, but the current source of truth is this split: system stability gates tool execution, producer validation gates contract safety, and offline quality gates benchmark/oracle claims.

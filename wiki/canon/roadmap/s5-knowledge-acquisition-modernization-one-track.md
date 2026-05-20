@@ -7,13 +7,34 @@ source_refs:
   - "mcp://aegis-static-wiki/read_page/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c"
   - "mcp://aegis-static-wiki/read_page/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d"
   - "mcp://aegis-static-wiki/read_page/s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl"
-last_verified: "2026-05-11"
+last_verified: "2026-05-20"
 service_tags: ["s5", "s3", "s4", "knowledge-base", "etl", "graphrag", "acquisition-ledger", "knowledge-corpus", "cve", "code-graph"]
 decision_tags: ["one-track-plan", "knowledge-acquisition-modernization", "golden-set-first", "runtime-vs-offline-evaluation", "typed-retrieval", "system-stability-vs-quality-gate", "sqlite-ledger", "neo4j-qdrant-projections", "keyword-as-signal", "automotive-first-native-system-scope", "s3-conditional-pass"]
-related_pages: ["wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c.md", "wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d.md", "wiki/canon/work-requests/s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl.md", "wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-.md", "wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s.md", "wiki/canon/work-requests/s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual.md", "wiki/canon/specs/s5-etl-pipeline-modernization-target-context.md", "wiki/canon/specs/s5-acquisition-state-machine/readme.md", "wiki/canon/specs/s5-acquisition-state-machine/storage-ownership.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md", "wiki/canon/work-requests/s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio.md"]
+related_pages:
+  - "wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-coverage-and-acquisition-readiness-c.md"
+  - "wiki/canon/work-requests/s3-to-s5-reply-s3-conditionally-accepts-s5-knowledge-corpus-taxonomy-split-and-requests-d.md"
+  - "wiki/canon/work-requests/s3-to-s5-reply-s3-validates-s5-runtime-candidate-semantics-vs-offline-quality-metrics-spl.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-coverage-and-acquisition-readiness-contract-v1-.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-knowledge-corpus-v1-taxonomy-and-specialization-profile-s.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-review-requested-validate-s5-future-typed-acquisition-runtime-vs-offline-qual.md"
+  - "wiki/canon/specs/s5-etl-pipeline-modernization-target-context.md"
+  - "wiki/canon/specs/s5-acquisition-state-machine/readme.md"
+  - "wiki/canon/specs/s5-acquisition-state-machine/storage-ownership.md"
+  - "wiki/canon/api/knowledge-base-api.md"
+  - "wiki/canon/specs/s3-claim-evidence-state-machine/evidence-ref-and-slots.md"
+  - "wiki/canon/work-requests/s3-to-s4-reply-s3-conditionally-accepts-s4-c-c-static-evidence-coverage-contract-directio.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 Knowledge Acquisition Modernization — One-track Plan
+
+
+## Current-state note — 2026-05-20
+
+This one-track modernization plan is complete as a historical execution plan for G001-G010-era acquisition work. Current active S5 state and post-paper-context readiness live in [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
+
+Future acquisition work should start from concrete post-smoke evidence, S3 WRs, or benchmark gaps, and must preserve the current producer-boundary rule: S5 context is supporting evidence, not final TP/FP/UNKNOWN authority.
 
 > Status: `$ultragoal` execution complete — G001-G010 complete
 > Owner: S5 Knowledge Base

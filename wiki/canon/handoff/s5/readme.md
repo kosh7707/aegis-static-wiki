@@ -6,21 +6,56 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/README.md"
 original_path: "docs/s5-handoff/README.md"
-last_verified: "2026-05-19"
+last_verified: "2026-05-20"
 service_tags: ["s5"]
 decision_tags: ["judge-question-credential-url-redaction-v1", "judge-control-credential-url-redaction-v1", "judge-serving-ledger-source-context-request-redaction-v1", "judge-source-context-query-echo-redaction-v1", "source-kg-partial-resolution-selector-redaction-v1", "judge-source-kg-validator-diagnostic-payload-budget-v1", "judge-source-kg-validator-diagnostic-payload-redaction-v1", "judge-source-kg-nested-url-redaction-validator-v1", "health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary", "judge-threat-retrieval-validator-dynamic-field-catalog-v1", "judge-threat-retrieval-validator-issue-code-coverage-v1", "judge-threat-retrieval-validator-issue-code-ast-guard-v1", "judge-threat-retrieval-runtime-diagnostic-contract-v1", "judge-threat-retrieval-runtime-diagnostic-coverage-v1", "judge-source-kg-issue-diagnostic-catalog-v1", "source-kg-serving-diagnostic-coverage-v1", "judge-source-kg-serving-diagnostic-catalog-v1", "judge-relation-conflict-issue-code-catalog-v1", "judge-forbidden-inference-policy-v1", "judge-runtime-vocabulary-policy-v1", "judge-quality-gate-policy-v1", "judge-answer-status-policy-v1", "judge-verdict-policy-v1", "judge-uncertainty-followup-policy-v1", "judge-control-effects-policy-v1", "judge-fallback-trace-policy-v1", "judge-reasoning-path-policy-v1", "judge-reasoning-path-validator-v1", "judge-reasoning-path-sequence-semantics-v1", "judge-reasoning-path-validator-case-coverage-v1", "judge-reasoning-path-validator-issue-catalog-v1", "judge-fallback-trace-validator-v1", "judge-fallback-trace-validator-issue-catalog-v1", "judge-control-effects-validator-v1", "judge-control-effects-trace-scope-v1", "judge-control-effects-trace-alignment-v1", "judge-control-effects-accepted-control-alignment-v1", "judge-control-effects-risk-signal-key-contract-v1", "judge-fallback-trace-payload-validator-v1", "judge-uncertainty-followup-validator-v1", "judge-fallback-trace-payload-cardinality-v1", "judge-uncertainty-field-shape-validator-v1"]
 related_pages:
   - "wiki/canon/specs/health-control-signal-rollout-v2.md"
   - "wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 migration_status: "canonicalized"
 ---
 
+
 # S5. Knowledge Base 인수인계서
+
+
+## Current state refresh — 2026-05-20
+
+This handoff now reflects the post-paper-context / S5_FREEZE_GATE / log-analyzer readiness state. For the compact canonical current-state entry point, read [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
+
+Active S5 status:
+
+- S5 paper-context producer scope is e2e-smoke ready for S3.
+- `GET /v1/contracts/paper-context` and all `POST /v1/paper/*` endpoints are implemented in `services/knowledge-base/**`.
+- `freezeGate.s5FreezeGate = pass`, `freezeGate.validationSuiteVersion = s5-paper-freeze-gate-v1`, and `freezeGate.missingValidationItems = []`.
+- S3 consumer execution remains S3-owned and is intentionally advertised as `pending_s3_owned_validation`.
+- Canonical JSONL logging is verified at `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl`; `log-analyzer.trace_request` found S5 proof request IDs.
+- Current open S5 WR count was zero at this refresh.
+
+Recent verification to treat as current evidence:
+
+```text
+Paper/freeze/observability focused: 53 passed
+S5 freeze wrapper: pass
+Full S5 service-root suite: 765 passed
+Paper observability/API focused after live log proof: 18 passed in 37.47s
+git diff --check -- services/knowledge-base: pass
+```
+
+Hard boundary for downstream consumers remains:
+
+```text
+S5 evidence rows are contextual support, not final verdict authority.
+S5 hit != vulnerable.
+S5 no_hit != safe.
+S5 partial/not_available/error != TP/FP evidence.
+```
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S5(Knowledge Base) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-05-19 (Judge question credential URL redaction, Judge control credential URL redaction, Judge serving ledger sourceContext request redaction, Judge sourceContext query echo redaction, Source KG partial resolution selector redaction, Judge Source KG validator diagnostic payload budget, Judge Source KG validator diagnostic payload redaction, Judge Source KG nested URL redaction validator, Threat KB/Source Code KG hardening, Judge uncertainty field shape validator, Judge fallback trace payload cardinality, Judge uncertainty/follow-up validator, Judge fallback trace payload validator, Judge control effects risk-signal key contract, Judge control effects accepted-control alignment, Judge control effects trace alignment, Judge control effects trace scope, Judge control effects validator, fallback trace validator issue catalog/validator, reasoning path validator issue catalog/case coverage/sequence semantics/validator/policy, uncertainty/follow-up, verdict/status/quality gate/runtime vocabulary policy, forbidden inference, Threat Retrieval validator/runtime diagnostic 계약 반영)**
+> **마지막 업데이트: 2026-05-20 (S5 Paper Context API 구현, S5_FREEZE_GATE pass, paper-path observability alignment, canonical JSONL/log-analyzer traceability proof, e2e-smoke S5 producer readiness 반영)**
 
 ---
 
@@ -212,10 +247,10 @@ curl http://localhost:8002/v1/health
 ## 7. 테스트
 
 ```bash
-.venv/bin/python -m pytest tests/ -q  # 710 passed (2026-05-19)
+.venv/bin/python -m pytest tests/ -q  # 765 passed (2026-05-20 evidence)
 ```
 
-2026-05-19 KST 현재 S5 full suite 기준은 **712 passed in 464.57s**이며, 최신 focused S5/Judge/Source KG suite는 다음 범위로 **276 passed in 292.72s**를 기록했다:
+2026-05-20 KST 현재 S5 full suite의 최신 증거는 **765 passed**이며, paper/freeze/observability focused suite는 **53 passed**, paper observability/API focused recheck는 **18 passed in 37.47s**다. 기존 Judge/Source KG focused suite 기록은 아래 범위의 regression context로 유지한다:
 
 ```bash
 .venv/bin/python -m pytest \

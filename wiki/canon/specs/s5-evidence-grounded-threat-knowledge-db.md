@@ -21,13 +21,26 @@ source_refs:
   - "services/knowledge-base/tests/test_relation_conflict_model_v1.py"
   - ".omx/reports/s5_threat_knowledge_db_external_review.md"
   - ".omx/reports/s5-external-review-integration-20260512.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-20"
 service_tags: ["s5", "knowledge-base", "threat-knowledge", "etl", "quality-gate", "projection"]
 decision_tags: ["evidence-ledger", "affectedness-first", "manual-cache", "no-production-overwrite", "projection-dry-run", "coverage-profile", "cwe-catalog", "source-coverage-matrix", "cached-artifact-adapter", "typed-conflict-model"]
-related_pages: ["wiki/canon/specs/knowledge-base.md", "wiki/canon/specs/s5-acquisition-state-machine/storage-ownership.md", "wiki/canon/specs/s5-retrieval-quality-modernization.md", "wiki/canon/api/knowledge-base-api.md"]
+related_pages:
+  - "wiki/canon/specs/knowledge-base.md"
+  - "wiki/canon/specs/s5-acquisition-state-machine/storage-ownership.md"
+  - "wiki/canon/specs/s5-retrieval-quality-modernization.md"
+  - "wiki/canon/api/knowledge-base-api.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 Evidence-Grounded Threat Knowledge DB Foundation
+
+
+## Current-state note — 2026-05-20
+
+This foundation document remains valid as S5 Threat KB rationale. Current active implementation state is now tracked by [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
+
+For TraceAudit/e2e smoke, Threat KB output is exposed through `POST /v1/paper/threat-context/generic` as generic context only. Hidden CVE/fix/advisory/provenance material is filtered or redacted; S5 Threat KB rows are not final verdict evidence.
 
 ## Status
 

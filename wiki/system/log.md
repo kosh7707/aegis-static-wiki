@@ -6899,3 +6899,52 @@ related_pages:
 - S3 S5 paper client now emits X-Request-Id without legacy X-AEGIS-Timeout-Policy.
 - TraceAudit state-machine docs synced to canonical wiki; S5_FREEZE_GATE producer readiness recorded with S3 consumer/e2e validation still pending.
 - Verification: focused cleanup tests 4 passed; related paper/observability/S4 ownership tests 64 passed; full analysis-agent suite 753 passed; compileall and diff-check passed; wiki validation passed.
+
+## [2026-05-20] mcp | register_wr | s3-to-s4-s3-request-verify-s4-canonical-jsonl-logging-and-log-analyzer-traceability-befor
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s3-request-verify-s4-canonical-jsonl-logging-and-log-analyzer-traceability-befor.md
+
+## [2026-05-20] mcp | register_wr | s3-to-s5-s3-request-verify-s5-canonical-jsonl-logging-and-log-analyzer-traceability-befor
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-s3-request-verify-s5-canonical-jsonl-logging-and-log-analyzer-traceability-befor.md
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e.md
+
+## [2026-05-20] mcp | complete_wr | s3-to-s5-s3-request-verify-s5-canonical-jsonl-logging-and-log-analyzer-traceability-befor
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | register_wr | s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-.md
+
+## [2026-05-20] mcp | complete_wr | s3-to-s4-s3-request-verify-s4-canonical-jsonl-logging-and-log-analyzer-traceability-befor
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] Fixed analysis-agent default JSONL log path for log-analyzer traceability | S3 canonical log path fix
+- S3 logs now default to /home/kosh/AEGIS/logs/aegis-analysis-agent.jsonl instead of /home/kosh/AEGIS/services/logs/aegis-analysis-agent.jsonl.
+- Added tests for default repo-root log path and LOG_DIR override.
+- Live paper request log-check-S3-paper-20260520 was visible through log-analyzer trace_request/list_requests/service_stats.
+- Critic final review returned PASS.
+
+## [2026-05-20] mcp | complete_wr | s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] S5 docs current-state refresh completed | S5 canonical docs
+- Added wiki/canon/specs/s5-current-implementation-snapshot-20260520.md as the active S5 current-state pointer.
+- Updated S5 handoff, architecture, roadmap, general KB API/spec, S5 paper-context API, and active S5 design/roadmap context pages to 2026-05-20 overlays.
+- Rebuilt wiki/system/index.md and validated refreshed S5 doc frontmatter/link structure.
+- Session history recorded at wiki/canon/handoff/s5/session-s5-doc-refresh-20260520.md.
+
+## [2026-05-20] S4 current documentation refresh completed | s4-docs-current-state-refresh
+- Updated all active S4-owned current contract/context docs to 2026-05-20 state.
+- Recorded session evidence at wiki/canon/handoff/s4/session-s4-docs-current-state-refresh-20260520.md.
+- Critic final review PASS; wiki validation PASS.

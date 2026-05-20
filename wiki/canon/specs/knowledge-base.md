@@ -6,19 +6,54 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/specs/knowledge-base.md"
 original_path: "docs/specs/knowledge-base.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-20"
 service_tags: ["s5"]
 decision_tags: ["health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary"]
 related_pages:
   - "wiki/canon/specs/health-control-signal-rollout-v2.md"
   - "wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 migration_status: "canonicalized"
 ---
 
+
 # Knowledge Base 명세서
 
+
+## Current implementation refresh — 2026-05-20
+
+The current S5 implementation state is summarized in [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]]. Older sections of this spec remain valid as subsystem background, but active TraceAudit/e2e smoke work must use the 2026-05-20 overlay below.
+
+Current active subsystems:
+
+- Threat KB / GraphRAG retrieval and static corpus/index serving.
+- Source Code KG ingest/context and Code KB readiness.
+- Judge, Threat Retrieval, Analyst Brief, and target-context acquisition contracts.
+- S5 Paper Context API as a bounded S3-facing projection over Source Code KG and Threat KB internals.
+- S5_FREEZE_GATE for producer/exported-fixture obligations.
+- Canonical JSONL observability and `log-analyzer` requestId traceability.
+
+Current paper/e2e status:
+
+```text
+S5 producer freeze gate: pass
+S3 consumer execution status: pending_s3_owned_validation
+S5 e2e-smoke producer readiness: ready
+Open S5 WRs at refresh: none
+```
+
+Current verification evidence:
+
+```text
+53 passed — paper/freeze/observability focused suite
+pass — scripts/paper-freeze-gate.py
+765 passed — full S5 service-root suite
+18 passed in 37.47s — paper observability/API focused after live log proof
+PASS — canonical JSONL/log-analyzer traceability proof
+```
+
 > **소유자**: S5
-> **최종 업데이트**: 2026-05-11 (Knowledge Coverage/Acquisition Readiness Contract v1; Golden Set v1; Knowledge Corpus v1; SQLite LedgerRepository foundation; Corpus Source Manifests v1; Transform Decision / Signal Model v1; Ledger-derived Projections v1; CVE Candidate/Discovery Split v1; Typed GraphRAG Retrieval Trace v1; RetrievalPolicy v1; Lexical Signal Enhancer v1; Retrieval Quality Lab v1; CAPEC/ATT&CK fixture coverage delta)
+> **최종 업데이트**: 2026-05-20 (S5 Paper Context API, S5_FREEZE_GATE pass, paper-path observability, canonical JSONL/log-analyzer traceability, e2e-smoke S5 producer readiness overlay 반영)
 
 ---
 

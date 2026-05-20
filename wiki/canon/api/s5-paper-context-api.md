@@ -13,10 +13,34 @@ source_refs:
 last_verified: "2026-05-20"
 service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability"]
 decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned"]
-related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/paper-analysis-pipeline-design.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/handoff/s5/readme.md", "wiki/canon/work-requests/s3-to-s5-s3-reply-hybrid-timing-for-s5_freeze_gate-implementation.md", "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md"]
+related_pages:
+  - "wiki/canon/api/paper-analysis-api.md"
+  - "wiki/canon/specs/paper-analysis-pipeline-design.md"
+  - "wiki/canon/api/knowledge-base-api.md"
+  - "wiki/canon/handoff/s5/readme.md"
+  - "wiki/canon/work-requests/s3-to-s5-s3-reply-hybrid-timing-for-s5_freeze_gate-implementation.md"
+  - "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md"
+  - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
 ---
 
+
 # S5 Paper Context API Contract
+
+
+## Current-state overlay — 2026-05-20 post-log-analyzer WR
+
+S5 additionally verified canonical JSONL logging and `log-analyzer` traceability for the paper/contract path before S3 e2e smoke. See [[wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e]] and [[wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520]].
+
+Live proof request IDs found in `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl` and by `log-analyzer.trace_request`:
+
+```text
+s5-logproof-contract-20260520-001
+s5-logproof-prepare-20260520-001
+s5-logproof-finding-20260520-001
+s5-logproof-threat-20260520-001
+```
+
+All proof rows carried `service=s5-kb`, numeric `level=30`, request ID, method/path, lifecycle start/end messages, status/timing on end rows, and POST case/build/paper IDs where applicable. Health remains a liveness endpoint without explicit lifecycle logging; paper/contract endpoints are the traceability proof surface.
 
 > Status: **S5_FREEZE_GATE pass for S5 producer obligations**.
 > Owner: S5 / Knowledge Base lane.
