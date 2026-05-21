@@ -361,15 +361,20 @@ Best-effort cancel endpoint.
 
 #### Pre-first-byte zero-byte failure contract for S3 paper callers (2026-05-21)
 
-The certificate-maker TraceAudit reruns established a separate failure class from the old elapsed-time ceiling: S7 can dispatch an async request to DGX/vLLM, observe `backendActivity.activitySource="stream-dispatch"`, receive **zero** response headers/SSE bytes for about 17m45s, and then receive a backend transport disconnect while S7 health remains `ready=true`/`llmReady=true`.
+The certificate-maker TraceAudit reruns established a separate failure class from the old elapsed-time ceiling: S7 can dispatch an async request to DGX/vLLM, observe `backendActivity.activitySource="stream-dispatch"`, receive **zero** response headers/SSE bytes for about 17m45s, and then receive a backend transport disconnect while S7 health remains `ready=true`/`llmReady=true`. The 2026-05-21 addendum then disproved the simple “large prompt” explanation: the first acquisition body was only about `7.7KB` / `~2k` input tokens, while the requested completion budget was `max_tokens=32768`.
+
+S7 RCA for that incident: the first-byte stall was caused by the DGX OpenVPN proxy path, not by S3 prompt size or by the S7 async elapsed-read policy. The original proxy used OpenVPN `mssfix 1360`; OpenVPN logged `EMSGSIZE Path-MTU=1380` during the failing request, and the DGX-facing TCP socket showed unsent request bytes in `Send-Q` with a retransmission timer. Rebuilding/restarting the proxy with `OPENVPN_MSSFIX=1200` made the same request family produce response-side stream chunks immediately.
 
 S3 must consume this contract as follows:
 
 - `stream-dispatch` with `streamChunkCount=0` and `responseBytes=0` means S7 owns a backend transport attempt but has **not** observed model response progress. It is not equivalent to `stream-open` or `stream-chunk`.
 - Terminal `blockedReason="backend_transport_disconnected"` with the last activity still `stream-dispatch` is a dependency/transport failure before first byte, not a live-runtime output deficiency and not proof that the model produced unusable content.
-- If the same paper unit repeatedly fails in this shape while `/v1/health.ready=true`, S3 should treat the LLM unit as too large/too slow/too brittle for the current DGX HTTP path and split or reshape the caller workload rather than waiting solely on elapsed wall-clock time. Recommended S3 mitigations are: narrower per-finding prompts, fewer bundled evidence/tool choices per acquisition turn, smaller `max_tokens` for acquisition/tool-call turns, and explicit phase partitioning before a schema finalizer.
-- S7 cannot emit an application heartbeat before DGX/vLLM returns HTTP response headers. Therefore `/v1/async-chat-requests` provides durable ownership/status/result retention, but it cannot guarantee no transport loss for a backend request that never produces response-side bytes.
-- S7 emits a redacted level-40 `llm_exchange` failure record for async backend timeout/transport disconnect/stream-parse failures. In paper mode this record includes `controlObservability`, redacted request summary, `asyncRequestId`, `traceRequestId`, `blockedReason`, `error`, and `retryable`, without raw prompt/schema/seed/response content. S3 should cite this log plus async status when reporting repeated pre-first-byte failures.
+- For the 2026-05-21 certificate-maker case specifically, S3 should **not** treat small prompt partitioning as the primary fix. The evidence points to S7/OpenVPN proxy MTU/MSS. S7 has updated the operational proxy default to `OPENVPN_MSSFIX=1200` and the S7 runbook now requires a large POST first-byte smoke, because `/health` and `/v1/models` alone do not exercise this failure mode.
+- `max_tokens=32768` remains a caller-owned generation budget. It may still affect run time and total cost, but the validated `mssfix=1200` probes showed that `max_tokens=32768` with tools enabled can receive first bytes immediately; it was not the cause of this zero-byte pre-first-byte stall.
+- If this exact shape recurs after the proxy reports `mssfix=1200`, no OpenVPN `EMSGSIZE` is observed, and a large POST first-byte smoke passes, then S7/S3 should re-open the request-shaping hypothesis (tool schema, completion budget, phase split). Until then, the first remediation is S7 proxy configuration, not S3 prompt splitting.
+- S7 cannot emit an HTTP/SSE heartbeat before vLLM sends response headers. Therefore S3 must continue to use `backendActivity.activitySource` to distinguish dispatch-only ownership from response-side progress.
+
+S7 emits redacted level-40 `llm_exchange` failure records for async backend timeout/transport-disconnect/stream-parse failures. In paper mode these logs include `controlObservability`, redacted request/response summaries, and failure metadata, but not raw prompt text, raw schema text, raw seed values, or raw response bodies.
 
 ### `/v1/tasks` task-level ownership decision (2026-05-08)
 

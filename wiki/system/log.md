@@ -7179,3 +7179,31 @@ related_pages:
 - Run root: /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-164211
 - S7 async: acr_a3c6de6e40bc42e8
 - Measured first acquisition request body: 7,740 bytes; crude estimate 1.9k-2.6k tokens; max_tokens=32768
+
+## [2026-05-21] S7 completed RCA and contract update for S3 certificate-maker pre-first-byte disconnect WRs | s7 certificate-maker OpenVPN MSS RCA
+- Root cause moved from S3 prompt size to S7 DGX OpenVPN proxy MTU/MSS after S3 addendum showed ~7.7KB/~2k-token first payload.
+- Original mssfix 1360 correlated with EMSGSIZE Path-MTU=1380 and DGX-facing TCP Send-Q/retransmission.
+- Operational proxy rebuilt/restarted with OPENVPN_MSSFIX=1200; large POST first-byte smoke passed.
+- S7 API/handoff/ops docs updated and async failure llm_exchange redacted logging added.
+
+## [2026-05-21] mcp | register_wr | s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-.md
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s3-addendum-certificate-maker-first-llm-payload-is-only-about-2k-tokens-despite-
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] verification-complete | S3 certificate-maker E2E rerun after S7 OpenVPN MSS fix
+- Run completed at /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-174803.
+- HTTP 200; TOTAL_TIME=3561.608181s; PAPER_EXPORT_READY; all stages done.
+- Generated 19 findings, 19 triage rows, 19 LLM transcripts, 347 evidence ledger rows, 100 audit packet files.
+- Completed S7 reply WR wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-.md for S3.

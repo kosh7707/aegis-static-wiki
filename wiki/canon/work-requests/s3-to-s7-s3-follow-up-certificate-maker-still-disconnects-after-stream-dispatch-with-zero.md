@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-pr
 migration_status: "canonicalized"
 wr_id: "s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s7"]
-completed_by: []
+completed_by: [{"lane":"s7","completed_at":"2026-05-21T08:45:21.384Z","note":"Handled by S7. RCA revised to DGX OpenVPN proxy MTU/MSS issue; proxy rebuilt with OPENVPN_MSSFIX=1200; API/handoff/ops docs updated; reply WR registered at wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-.md."}]
 registered_at: "2026-05-21T08:01:52.342Z"
+completed_at: "2026-05-21T08:45:21.384Z"
 ---
 
 # S3 follow-up: certificate-maker still disconnects after stream-dispatch with zero backend bytes

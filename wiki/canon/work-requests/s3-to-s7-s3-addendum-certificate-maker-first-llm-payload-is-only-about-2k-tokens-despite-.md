@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-make
 migration_status: "canonicalized"
 wr_id: "s3-to-s7-s3-addendum-certificate-maker-first-llm-payload-is-only-about-2k-tokens-despite-"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s7"]
-completed_by: []
+completed_by: [{"lane":"s7","completed_at":"2026-05-21T08:45:21.530Z","note":"Handled by S7 and incorporated into RCA. Addendum disproved prompt-size hypothesis; S7 validated OpenVPN mssfix=1200 fix and updated contract/docs. Reply WR registered at wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-.md."}]
 registered_at: "2026-05-21T08:22:26.318Z"
+completed_at: "2026-05-21T08:45:21.530Z"
 ---
 
 # S3 addendum: certificate-maker first LLM payload is only about 2k tokens despite 17m pre-first-byte silence

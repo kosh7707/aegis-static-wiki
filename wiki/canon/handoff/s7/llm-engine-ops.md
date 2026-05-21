@@ -72,6 +72,7 @@ docker run -d --name dgx-spark-proxy \
   -e DGX_HOST=10.126.37.19 \
   -e DGX_PORT=8000 \
   -e LISTEN_PORT=18000 \
+  -e OPENVPN_MSSFIX=1200 \
   -v "$PWD/accslab.ovpn:/vpn/accslab.ovpn:ro" \
   -v "$PWD/auth.txt:/vpn/auth.txt:ro" \
   -p 127.0.0.1:18000:18000 \
@@ -83,25 +84,58 @@ curl -sS --max-time 5 http://127.0.0.1:18000/health
 curl -sS --max-time 5 http://127.0.0.1:18000/v1/models | python3 -m json.tool
 ```
 
+Large POST first-byte smoke is required after proxy rebuilds because `/health` and `/v1/models` use tiny request bodies and do not exercise the MTU/MSS failure mode:
+
+```bash
+python3 - <<'PY' > /tmp/s7-large-post-smoke.json
+import json
+payload = {
+  "model": "Qwen/Qwen3.6-27B",
+  "messages": [{"role": "user", "content": "Return OK after reading this padding. " + ("A" * 6000)}],
+  "max_tokens": 64,
+  "temperature": 0.0,
+  "top_p": 0.95,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 0.0,
+  "repetition_penalty": 1.0,
+  "chat_template_kwargs": {"enable_thinking": False},
+  "stream": True,
+  "stream_options": {"include_usage": True},
+}
+print(json.dumps(payload))
+PY
+
+curl -sS -N --max-time 30 \
+  -H 'Content-Type: application/json' \
+  --data-binary @/tmp/s7-large-post-smoke.json \
+  -w 'http=%{http_code} ttfb=%{time_starttransfer} total=%{time_total} bytes=%{size_download}\n' \
+  http://127.0.0.1:18000/v1/chat/completions | head -20
+```
+
 Expected proxy log signs:
 - `tun0 is up`
 - `backend tcp reachable`
 - `socat ... TCP-LISTEN:18000 ... TCP:10.126.37.19:8000`
+- `target=10.126.37.19:8000 listen=0.0.0.0:18000 mssfix=1200`
 - `socat tcp keepalive keepidle=60 keepintvl=15 keepcnt=8` (또는 운영자가 명시한 `SOCAT_KEEP*` 값)
 
-#### Proxy TCP keepalive policy (2026-05-21)
+#### Proxy MTU/MSS and TCP keepalive policy (2026-05-21)
 
-Certificate-maker TraceAudit rerun에서 S7 async 요청은 accepted/running 상태였지만 DGX/vLLM이 긴 pre-first-byte/prefill 구간 동안 response headers를 보내기 전에 proxy 경로가 약 17분 후 `Connection timed out`으로 끊겼다. 기본 Linux TCP keepalive(`tcp_keepalive_time=7200`)는 이 구간을 보호하지 못하므로 `entrypoint.sh`의 `socat` 양쪽 socket에 keepalive를 켠다.
+Certificate-maker TraceAudit rerun에서 S7 async 요청은 accepted/running 상태였지만 DGX/vLLM response headers를 받기 전에 proxy 경로가 약 17분 후 `Connection timed out`으로 끊겼다. 후속 RCA에서 단순 idle-timeout보다 더 직접적인 증거가 나왔다: 기존 proxy의 OpenVPN `mssfix 1360` 상태에서 failing request 시점에 `EMSGSIZE Path-MTU=1380`가 기록됐고, DGX-facing TCP socket에 request bytes가 `Send-Q`로 남아 retransmission timer가 돌았다. 즉 작은 `/health` request는 통과하지만 큰 POST body는 VPN path MTU/MSS 문제로 blackhole/retransmit될 수 있다.
 
-기본값:
+운영 기본값:
 
 ```bash
+OPENVPN_MSSFIX=1200
 SOCAT_KEEPIDLE=60
 SOCAT_KEEPINTVL=15
 SOCAT_KEEPCNT=8
 ```
 
-이 값은 `/home/kosh/temp/openvpn/dgx-spark-proxy/entrypoint.sh`의 기본값이며 `docker run -e SOCAT_KEEPIDLE=...` 방식으로 override할 수 있다. 이미 떠 있는 `dgx-spark-proxy` 컨테이너는 entrypoint 변경을 자동 반영하지 않으므로, S7 active request가 없는지 먼저 확인한 뒤 rebuild/recreate해야 한다.
+`OPENVPN_MSSFIX=1200`은 2026-05-21 certificate-maker 재현에서 검증된 값이다. 동일 계열 request가 기존 `mssfix 1360`에서는 zero-byte pre-first-byte로 멈췄지만, `mssfix 1200`에서는 tools enabled 및 `max_tokens=32768`에서도 `TTFB≈0.17s`로 response-side stream chunks를 받았다.
+
+이 값들은 `/home/kosh/temp/openvpn/dgx-spark-proxy/entrypoint.sh`의 기본값이며 `docker run -e OPENVPN_MSSFIX=... -e SOCAT_KEEPIDLE=...` 방식으로 override할 수 있다. 이미 떠 있는 `dgx-spark-proxy` 컨테이너는 entrypoint 변경을 자동 반영하지 않으므로, S7 active request가 없는지 먼저 확인한 뒤 rebuild/recreate해야 한다.
 
 안전한 rollout 순서:
 
@@ -118,6 +152,7 @@ docker run -d --name dgx-spark-proxy \
   -e DGX_HOST=10.126.37.19 \
   -e DGX_PORT=8000 \
   -e LISTEN_PORT=18000 \
+  -e OPENVPN_MSSFIX=1200 \
   -e SOCAT_KEEPIDLE=60 \
   -e SOCAT_KEEPINTVL=15 \
   -e SOCAT_KEEPCNT=8 \
@@ -126,7 +161,7 @@ docker run -d --name dgx-spark-proxy \
   -p 127.0.0.1:18000:18000 \
   dgx-spark-proxy:local
 
-docker logs dgx-spark-proxy --tail 120 | grep -E 'tun0 is up|backend tcp reachable|socat tcp keepalive'
+docker logs dgx-spark-proxy --tail 120 | grep -E 'tun0 is up|backend tcp reachable|mssfix=1200|socat tcp keepalive'
 curl -sS --max-time 5 http://127.0.0.1:18000/health
 ```
 
@@ -172,7 +207,7 @@ ssh -i /home/kosh/.ssh/dgx_spark \
 | SSH direct to `10.126.37.19` fails but proxy SSH works | expected in current tmux/Codex environment | use the proxy `ProxyCommand` form |
 | `curl 127.0.0.1:18000` fails | HTTP proxy port not published or OpenVPN route down | inspect container logs and port binding |
 | DGX SSH works but `/v1/models` fails | vLLM container not serving | run `~/qwen27-vllm status`, `~/qwen27-vllm start`, then recheck |
-| Long async request fails around 15~20분 with `backend_transport_disconnected` and no response bytes | proxy/VPN path or DGX/vLLM pre-first-byte path lost a silent HTTP flow before response headers; keepalive may not be sufficient if the request never produces response-side bytes | first verify `socat tcp keepalive ...` appears in proxy logs; if already enabled and the request still ends at `stream-dispatch` with 0 bytes, treat it as the pre-first-byte zero-byte class and ask S3 to split/reshape the paper LLM unit per `llm-gateway-api.md` rather than applying another elapsed-time wait |
+| Long async request fails around 15~20분 with `backend_transport_disconnected` and no response bytes | First suspect OpenVPN MTU/MSS if `/health` works but large POST stays at `stream-dispatch`; 2026-05-21 evidence showed `EMSGSIZE Path-MTU=1380` and DGX-facing TCP `Send-Q` under `mssfix 1360` | verify proxy logs include `mssfix=1200`; search `/tmp/openvpn.log` for `EMSGSIZE`; run a large POST first-byte smoke. Do not ask S3 to split prompts until `mssfix=1200` and large POST smoke are proven healthy |
 
 ---
 
