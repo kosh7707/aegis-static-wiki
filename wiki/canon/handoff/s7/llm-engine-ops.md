@@ -165,6 +165,87 @@ docker logs dgx-spark-proxy --tail 120 | grep -E 'tun0 is up|backend tcp reachab
 curl -sS --max-time 5 http://127.0.0.1:18000/health
 ```
 
+#### Proxy retirement / direct DGX route policy
+
+The Docker OpenVPN proxy is a **current-environment workaround**, not a permanent S7 contract. If the AEGIS host/tmux/Codex environment later has a stable direct route to DGX Spark with OpenVPN disabled or otherwise unnecessary, S7 should retire the proxy path deliberately instead of carrying the container forever.
+
+Use the direct path only when all of the following are true:
+
+1. Direct SSH to `accslab@10.126.37.19` works from the S7 host namespace without `ProxyCommand`.
+2. Direct HTTP to `http://10.126.37.19:8000/health` and `/v1/models` works.
+3. A direct **large POST first-byte smoke** succeeds; small health/model probes are not sufficient because the 2026-05-21 incident only appeared on larger POST bodies.
+4. S7 Gateway is configured to use `AEGIS_LLM_ENDPOINT=http://10.126.37.19:8000` instead of the proxy endpoint `http://127.0.0.1:18000`.
+5. Gateway `/v1/health` reports `ready=true`, `llmReady=true`, and no active requests are in-flight during the endpoint switch.
+
+Direct-route validation:
+
+```bash
+# SSH must work without Docker/OpenVPN ProxyCommand.
+ssh -i /home/kosh/.ssh/dgx_spark \
+  -o BatchMode=yes \
+  -o ConnectTimeout=8 \
+  accslab@10.126.37.19 \
+  'hostname && whoami && ~/qwen27-vllm status'
+
+# Direct engine readiness.
+curl -sS --max-time 5 http://10.126.37.19:8000/health
+curl -sS --max-time 5 http://10.126.37.19:8000/v1/models | python3 -m json.tool
+```
+
+Direct large-POST smoke:
+
+```bash
+python3 - <<'PY' > /tmp/s7-large-post-smoke.json
+import json
+payload = {
+  "model": "Qwen/Qwen3.6-27B",
+  "messages": [{"role": "user", "content": "Return OK after reading this padding. " + ("A" * 6000)}],
+  "max_tokens": 64,
+  "temperature": 0.0,
+  "top_p": 0.95,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 0.0,
+  "repetition_penalty": 1.0,
+  "chat_template_kwargs": {"enable_thinking": False},
+  "stream": True,
+  "stream_options": {"include_usage": True},
+}
+print(json.dumps(payload))
+PY
+
+curl -sS -N --max-time 30 \
+  -H 'Content-Type: application/json' \
+  --data-binary @/tmp/s7-large-post-smoke.json \
+  -w 'http=%{http_code} ttfb=%{time_starttransfer} total=%{time_total} bytes=%{size_download}\n' \
+  http://10.126.37.19:8000/v1/chat/completions | head -20
+```
+
+Gateway endpoint switch:
+
+```bash
+# Confirm no S7 request is in-flight before changing the endpoint.
+curl -sS --max-time 3 http://127.0.0.1:8000/v1/health | python3 -m json.tool
+
+# S7 runtime configuration should point at the direct engine endpoint.
+# In the current local env file this is:
+#   services/llm-gateway/.env
+#   AEGIS_LLM_ENDPOINT=http://10.126.37.19:8000
+#
+# Roll out via the normal S7 service restart path for the environment in use.
+
+curl -sS --max-time 5 http://127.0.0.1:8000/v1/health | python3 -m json.tool
+curl -sS --max-time 5 http://127.0.0.1:8000/v1/models | python3 -m json.tool
+```
+
+After the direct endpoint is proven, the proxy container may be stopped to avoid masking direct-route regressions:
+
+```bash
+docker rm -f dgx-spark-proxy
+```
+
+Keep `/home/kosh/temp/openvpn/dgx-spark-proxy` and its runbook material available unless the project explicitly decides to remove the fallback. If direct-route smokes later regress, revert the Gateway endpoint to `http://127.0.0.1:18000`, restart `dgx-spark-proxy` with `OPENVPN_MSSFIX=1200`, and rerun the proxy large-POST smoke before blaming S3 prompt shape or S7 async timeout policy.
+
 #### SSH through the proxy namespace
 
 Use this when direct SSH to `10.126.37.19` fails or when the session has no host VPN route. The key point is the `ProxyCommand=docker exec -i dgx-spark-proxy socat - TCP:10.126.37.19:22` line.

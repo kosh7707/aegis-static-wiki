@@ -34,7 +34,7 @@ related_pages: []
    - `wiki/canon/api/llm-gateway-api.md` — current public contract, including `X-AEGIS-Paper-Controls`.
    - `wiki/canon/handoff/s7/session-omx-1779269184895-8gprdc.md` — latest completed S7 implementation session.
    - `wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path.md` — notice sent to S3 with the implemented contract.
-   - `wiki/canon/handoff/s7/llm-engine-ops.md` — DGX Spark / OpenVPN proxy / SSH runbook.
+   - `wiki/canon/handoff/s7/llm-engine-ops.md` — DGX Spark / OpenVPN proxy / direct-route retirement / SSH runbook.
 4. Before editing code:
    - Run `git status --short`.
    - Restrict S7 edits to `services/llm-gateway/**` unless the user explicitly changes lane/scope.
@@ -392,7 +392,7 @@ S3's addendum was decisive: the first certificate-maker acquisition body was onl
 - A temporary proxy using `OPENVPN_MSSFIX=1200` made the same request family stream immediately (`TTFB≈0.17s`) with tools enabled and with `max_tokens=32768`.
 - The production `dgx-spark-proxy` was rebuilt/restarted with `OPENVPN_MSSFIX=1200`; S7 health returned `ready=true`/`llmReady=true`, and an async paper-mode smoke progressed to `stream-chunk` and then `stream-done` (`acr_b0fdbd8e95754ac9`, `streamChunkCount=267`, `responseBytes=184697`, `blockedReason=null`).
 
-S7 conclusion for handoff: this was not an S7 async elapsed-read timeout and not primarily an S3 prompt-shaping failure. It was an S7-owned DGX OpenVPN proxy MTU/MSS operational failure that only large-enough POST bodies exposed. `/health` and `/v1/models` were insufficient readiness probes because they used tiny request bodies. The canonical contract wording lives in `wiki/canon/api/llm-gateway-api.md` under “Pre-first-byte zero-byte failure contract for S3 paper callers”. The operational runbook lives in `wiki/canon/handoff/s7/llm-engine-ops.md`.
+S7 conclusion for handoff: this was not an S7 async elapsed-read timeout and not primarily an S3 prompt-shaping failure. It was an S7-owned DGX OpenVPN proxy MTU/MSS operational failure that only large-enough POST bodies exposed. `/health` and `/v1/models` were insufficient readiness probes because they used tiny request bodies. The canonical contract wording lives in `wiki/canon/api/llm-gateway-api.md` under “Pre-first-byte zero-byte failure contract for S3 paper callers”. The operational runbook lives in `wiki/canon/handoff/s7/llm-engine-ops.md`; it now also documents how to retire the proxy and switch `AEGIS_LLM_ENDPOINT` back to direct `http://10.126.37.19:8000` if a future environment no longer needs OpenVPN/proxy routing.
 
 S7 code also now adds redacted level-40 `llm_exchange` failure records for async backend timeout/transport-disconnect/stream-parse failures so future S3/S7 RCA can prove which controls S3 sent without logging raw paper prompt/schema/seed/response.
 

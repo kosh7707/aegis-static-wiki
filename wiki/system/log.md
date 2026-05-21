@@ -7207,3 +7207,26 @@ related_pages:
 - HTTP 200; TOTAL_TIME=3561.608181s; PAPER_EXPORT_READY; all stages done.
 - Generated 19 findings, 19 triage rows, 19 LLM transcripts, 347 evidence ledger rows, 100 audit packet files.
 - Completed S7 reply WR wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-zero-byte-pre-first-byte-rca-resolved-as-openvpn-mss-.md for S3.
+
+## [2026-05-21] interview-evidence-recorded | S3 analysis-agent quality interview after certificate-maker UNKNOWN result
+- Recorded session history at wiki/canon/handoff/s3/session-s3-20260521-analysis-agent-quality-interview.md.
+- Captured agreed problem framing: remaining work is analysis-agent quality hardening, not transport recovery.
+- Captured four hardening axes: Source KG/manifest generator quality, per-finding runner execution and incremental writes, tool-call policy/traceability, and human-readable evidence UX.
+
+## [2026-05-21] mcp | register_wr | s3-to-s5-s5-support-needed-context-coverage-diagnostics-and-exploratory-source-kg-query-s
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-s5-support-needed-context-coverage-diagnostics-and-exploratory-source-kg-query-s.md
+
+## [2026-05-21] Updated S7 LLM Engine ops docs with direct DGX route / OpenVPN proxy retirement procedure. | s7-direct-route-proxy-retirement-runbook
+- Added criteria for when the Docker OpenVPN proxy may be retired.
+- Documented direct SSH/HTTP and large-POST first-byte validation before switching `AEGIS_LLM_ENDPOINT` to `http://10.126.37.19:8000`.
+- Updated S7 handoff README to point future sessions at the direct-route retirement guidance.
+
+## [2026-05-21] implemented_verified | s5-source-kg-coverage-exploration
+- S5 added contextCoverage and S5_PAPER_CONTEXT_NON_OVERLAPPING for finding-context responses.
+- S5 added POST /v1/paper/source-kg/explore / explore_source_kg for bounded Source KG exploration.
+- Focused paper API/freeze-gate tests passed: 60 passed in 130.04s; compileall passed.
+
+## [2026-05-21] mcp | complete_wr | s3-to-s5-s5-support-needed-context-coverage-diagnostics-and-exploratory-source-kg-query-s
+- Lane s5 completed recipient-side handling
+- Status: completed

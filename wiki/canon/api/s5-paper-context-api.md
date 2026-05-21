@@ -11,8 +11,8 @@ source_refs:
   - "wiki/canon/api/knowledge-base-api.md"
   - "wiki/canon/work-requests/s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request.md"
 last_verified: "2026-05-21"
-service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability"]
-decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned"]
+service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability", "source-kg-exploration", "coverage-diagnostics"]
+decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned", "source-kg-coverage", "source-kg-exploration"]
 related_pages:
   - "wiki/canon/api/paper-analysis-api.md"
   - "wiki/canon/specs/paper-analysis-pipeline-design.md"
@@ -22,6 +22,7 @@ related_pages:
   - "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md"
   - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
   - "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"
+  - "wiki/canon/work-requests/s3-to-s5-s5-support-needed-context-coverage-diagnostics-and-exploratory-source-kg-query-s.md"
 ---
 
 
@@ -50,6 +51,25 @@ All proof rows carried `service=s5-kb`, numeric `level=30`, request ID, method/p
 > Critic status: post-implementation freeze-gate review `PASS`; no blocking S5 implementation issue found.
 > Implementation status: the `/v1/paper/*` endpoints and `GET /v1/contracts/paper-context` are implemented in `services/knowledge-base/**` with S5-owned freeze-gate validation. S3 consumer execution remains separately owned and is advertised as `pending_s3_owned_validation`.
 
+### Current-state overlay — 2026-05-21 coverage/exploration update
+
+S5 implemented the S3-requested context-coverage and exploratory Source KG support in response to [[wiki/canon/work-requests/s3-to-s5-s5-support-needed-context-coverage-diagnostics-and-exploratory-source-kg-query-s]]. Additive runtime/API behavior now includes:
+
+- `retrieve_finding_context` returns top-level `contextCoverage` (`schemaVersion=s5-paper-context-coverage-v1`) with `coverageStatus`, requested anchors, returned spans, tri-state `lineOverlap`, and diagnostic rows.
+- Same-file but line-disjoint Source KG context is no longer silently `produced`: the response is `surfaceStatus=partial`, `contextCoverage.coverageStatus=non_overlapping`, and includes diagnostic `S5_PAPER_CONTEXT_NON_OVERLAPPING`.
+- New endpoint/tool `POST /v1/paper/source-kg/explore` / `explore_source_kg` supports bounded `source_slice`, `function_body`, `callers`, `callees`, `symbol_lookup`, `neighborhood`, and `data_flow` exploration over prepared Source KG selectors. `data_flow` returns explicit `not_available` unless selected rich IR / PDG / taint artifacts exist.
+- Freeze-gate endpoint matrices now include the exploratory endpoint for idempotency, visibility fail-closed, malformed leakage class fail-closed, and visible packet validation.
+
+Fresh focused verification:
+
+```text
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_api_contract.py tests/test_paper_context_freeze_gate.py -q
+     -> 60 passed in 130.04s
+
+cd services/knowledge-base && .venv/bin/python -m compileall app/paper_context app/routers/paper_context_api.py app/contracts/paper_context.py
+     -> passed
+```
+
 ## 1. Scope and boundary
 
 This API makes S5 a bounded **Contextual Knowledge Provider / Code KB Provider** for AEGIS TraceAudit.
@@ -60,6 +80,7 @@ Implemented HTTP surface:
 GET  /v1/contracts/paper-context
 POST /v1/paper/code-kb/prepare
 POST /v1/paper/finding-context/retrieve
+POST /v1/paper/source-kg/explore
 POST /v1/paper/threat-context/generic
 ```
 
@@ -68,6 +89,7 @@ Equivalent S3 tool names:
 ```text
 prepare_code_kb
 retrieve_finding_context
+explore_source_kg
 retrieve_generic_threat_context
 ```
 
@@ -76,7 +98,8 @@ S5 accepts these names as the v1 paper-facing contract. S3 may call HTTP directl
 S5 owns:
 
 - target-scoped Code KB / Source Code KG readiness;
-- finding-scoped code/source context retrieval;
+- finding-scoped code/source context retrieval plus explicit anchor coverage diagnostics;
+- bounded exploratory Source KG query support for S3 iterative tool use;
 - generic Threat KB context retrieval;
 - S5 producer run identifiers, policy versions, and diagnostics;
 - leakage filtering for S5-visible rows and B4-visible trace/provenance fields in the hard-now subset;
@@ -106,7 +129,7 @@ The paper endpoints project existing S5 capabilities instead of exposing raw run
 | Existing capability | Existing route / contract | Paper projection |
 |---|---|---|
 | Contract discovery | `GET /v1/contracts/source-code-kg`, `GET /v1/contracts/judge`, `GET /v1/contracts/acquisition`, `GET /v1/contracts/analyst-brief` | `GET /v1/contracts/paper-context` |
-| Source Code KG ingest/context | `POST /v1/source-code-kg/ingest`, `POST /v1/source-code-kg/context` | `POST /v1/paper/code-kb/prepare`, then code rows in `retrieve_finding_context` |
+| Source Code KG ingest/context | `POST /v1/source-code-kg/ingest`, `POST /v1/source-code-kg/context` | `POST /v1/paper/code-kb/prepare`, code rows plus `contextCoverage` in `retrieve_finding_context`, and bounded exploratory rows in `explore_source_kg` |
 | Judge / Threat Retrieval | `POST /v1/judge/query`, `GET /v1/contracts/judge` | generic, non-verdict Threat KB rows in `retrieve_generic_threat_context` |
 
 Implemented files:
@@ -178,6 +201,7 @@ S5 paper-facing endpoints are aligned with `wiki/canon/specs/observability.md` f
 GET  /v1/contracts/paper-context
 POST /v1/paper/code-kb/prepare
 POST /v1/paper/finding-context/retrieve
+POST /v1/paper/source-kg/explore
 POST /v1/paper/threat-context/generic
 ```
 
@@ -229,6 +253,8 @@ Representative log shape:
 
 ```text
 SurfaceStatus = produced | no_hit | partial | not_available | error
+ContextCoverageStatus = covered | partial | non_overlapping | not_available | error
+SourceKgExploreMode = source_slice | function_body | callers | callees | symbol_lookup | neighborhood | data_flow
 SourceType = code | symbol | cwe | capec | generic_security_note | library_provenance | diagnostic
 VisibleLeakageClass = generic | cve_id | fix_commit | advisory | exploit_writeup | patch_text
 VisibilityMode = generic
@@ -455,12 +481,133 @@ Implemented behavior:
 - Calls `SQLiteLedgerRepository.get_source_kg_context` for real ledger context.
 - Anchor-matches `finding.sourceAnchors` against Source KG graph nodes/snippets using file path, line overlap, and symbol/display identity.
 - Projects matched graph nodes/snippets into generic paper rows.
+- Emits `contextCoverage` so S3 can distinguish overlapping, partial, same-file non-overlapping, unavailable, and unsatisfied-anchor cases.
 - Returns `rowSetId`, stable ordered `rows[].itemId`, stable ordered `rows[].text`, and stable ordered `rows[].orderingKey`.
 - If no prepared Source KG mapping or explicit selectors are available, returns `surfaceStatus=not_available`, `rows=[]`, and primary diagnostic `S5_PAPER_SOURCE_KG_NOT_PREPARED` with `negativeEvidenceAllowed=false`.
 - If prepared Source KG selectors exist but cannot resolve to selectable context, returns `surfaceStatus=not_available` with diagnostic `S5_PAPER_SOURCE_KG_NOT_AVAILABLE`.
 - If Source KG context is prepared/selectable but no anchor row matches, returns `surfaceStatus=no_hit`, `rows=[]`, and diagnostic `S5_PAPER_CONTEXT_NO_HIT` with `negativeEvidenceAllowed=false`.
+- If rows exist but same-file returned spans do not overlap the requested line/range anchor, returns `surfaceStatus=partial`, `contextCoverage.coverageStatus=non_overlapping`, and diagnostic `S5_PAPER_CONTEXT_NON_OVERLAPPING`.
 
-## 9. Endpoint: `POST /v1/paper/threat-context/generic`
+## 9. Endpoint: `POST /v1/paper/source-kg/explore`
+
+Tool name: `explore_source_kg`.
+
+Purpose: expose bounded Source KG exploration for S3's iterative analysis loop without turning S5 into a final verdict authority. S3 can call this after `prepare_code_kb` when one-shot finding context is suspicious but insufficient.
+
+Request schema version:
+
+```text
+s5-explore-source-kg-request-v1
+```
+
+Required common fields are the same paper fields used by other `POST /v1/paper/*` endpoints: `caseId`, `buildTargetId`, `paperRunId`, `requestId`, `idempotencyKey`, `visibilityMode=generic`, and the full `forbiddenLeakageClasses` set. The request also includes:
+
+```json
+{
+  "codeKbRef": "s5-code-kb:case-001:target-001",
+  "sourceKgRef": "s5-source-kg:case-001:target-001",
+  "queryIntent": "source_kg_exploration",
+  "retrievalProfile": "paper-source-kg-explore-default-v1",
+  "topK": 5,
+  "exploration": {
+    "mode": "source_slice",
+    "path": "main.cpp",
+    "lineStart": 35,
+    "lineEnd": 35,
+    "symbolName": "run",
+    "functionRef": null,
+    "graphNodeId": null,
+    "depth": 1
+  }
+}
+```
+
+At least one of `sourceKgRef`, explicit `sourceKgSelectors`, or an explicit exploration selector (`path`, line, symbol/function, or graph node) must be supplied. In practice, row-producing exploration requires a prepared Source KG mapping (`sourceKgRef`) or explicit selectors that resolve in S5's Source KG ledger. Explicit path/symbol selectors alone are schema-accepted but return `not_available` if S5 cannot resolve them to a prepared Source KG context.
+
+Supported `exploration.mode` values:
+
+| mode | Behavior | Limitation |
+|---|---|---|
+| `source_slice` | Return bounded evidence snippets by `path` plus optional line/range. | Snippet coverage only; no full source dump. |
+| `function_body` | Return matching function graph nodes and linked snippets by symbol or path/line. | Only as complete as S4/S5 Source KG node/snippet facts. |
+| `symbol_lookup` | Return matching graph nodes by symbol/function/node selector. | No final evidence inference. |
+| `callers` | Return incoming graph-edge neighbors for a seed node. | Requires Source KG `graphEdges`. |
+| `callees` | Return outgoing graph-edge neighbors for a seed node. | Requires Source KG `graphEdges`. |
+| `neighborhood` | Return bounded incoming/outgoing graph-edge neighborhood. | Depth is bounded; current implementation is conservative. |
+| `data_flow` | Return data-flow context only when selected rich IR / PDG / taint artifacts exist. | Otherwise returns `S5_PAPER_SOURCE_KG_DATA_FLOW_NOT_AVAILABLE`. |
+
+Response schema version:
+
+```text
+s5-explore-source-kg-response-v1
+```
+
+Response fields include `surfaceStatus`, stable `rowSetId`, stable ordered `rows[]`, `retrievalTrace`, `capabilities`, `producerProvenance`, and `diagnostics`. Rows use the same `s5-paper-evidence-row-v1` shape and are subject to the same generic leakage/final-authority sanitizer as finding/threat context rows.
+
+S3 tool-policy guidance:
+
+```text
+Use explore_source_kg as bounded evidence navigation only.
+A row means contextual source graph/snippet material exists; it does not imply TP/FP/UNKNOWN.
+If data_flow or graph-neighborhood modes return not_available, preserve the diagnostic and continue/stop according to S3's own budget.
+Do not treat no_hit/not_available as absence-of-vulnerability evidence.
+```
+
+## 9.1 Finding-context coverage diagnostics
+
+`POST /v1/paper/finding-context/retrieve` now returns additive top-level `contextCoverage`:
+
+```json
+{
+  "schemaVersion": "s5-paper-context-coverage-v1",
+  "coverageStatus": "covered",
+  "requestedAnchors": [
+    {"path": "main.cpp", "lineStart": 35, "lineEnd": 35, "function": "run", "symbol": "run"}
+  ],
+  "returnedSpans": [
+    {
+      "kind": "source_kg_snippet",
+      "path": "main.cpp",
+      "startLine": 1,
+      "endLine": 24,
+      "nodeId": null,
+      "snippetId": "snippet-main-1-24",
+      "pathMatch": true,
+      "lineOverlap": false,
+      "symbolOrFunctionMatch": false
+    }
+  ],
+  "lineOverlap": false,
+  "diagnostics": [{"code": "S5_PAPER_CONTEXT_NON_OVERLAPPING"}],
+  "pathMatchPolicy": "normalized_exact_or_suffix"
+}
+```
+
+Coverage status semantics:
+
+| coverageStatus | Meaning | S3 consumption |
+|---|---|---|
+| `covered` | At least one returned span path-matches and overlaps the requested line/range anchor. | May be used as overlapping context, still not final verdict evidence. |
+| `partial` | Context exists but overlap cannot be proven or only non-line context matched. | Preserve diagnostic/caveat. |
+| `non_overlapping` | Returned context path-matches but line range is disjoint from requested anchor. | Treat as inadequate for anchor-specific reasoning unless S3 obtains more context. |
+| `not_available` | Source KG is not prepared/resolved or no selectable span can satisfy the anchor. | Context gap only, no negative evidence. |
+| `error` | Reserved for future explicit errors. | Do not infer security result. |
+
+Line overlap is tri-state at returned-span level: `true`, `false`, or `null` when S5 lacks enough line metadata. Path matching uses normalized exact-or-suffix matching.
+
+If rows exist but all same-file returned spans are line-disjoint from the requested anchor, S5 sets:
+
+```json
+{
+  "surfaceStatus": "partial",
+  "contextCoverage": {"coverageStatus": "non_overlapping", "lineOverlap": false},
+  "diagnostics": [{"code": "S5_PAPER_CONTEXT_NON_OVERLAPPING"}]
+}
+```
+
+This specifically covers the certificate-maker mismatch pattern where S3 requested anchors such as `main.cpp:35` but S5 Source KG rows pointed at `main.cpp:1-24`.
+
+## 10. Endpoint: `POST /v1/paper/threat-context/generic`
 
 Tool name: `retrieve_generic_threat_context`.
 
@@ -474,7 +621,7 @@ Implemented behavior:
 - Emits generic redaction diagnostics with counts/reasons but no hidden identifiers when internal candidates are omitted.
 - If no generic rows can be produced, returns `surfaceStatus=no_hit` with diagnostic-only context gap.
 
-## 10. Leakage policy
+## 11. Leakage policy
 
 In `visibilityMode=generic`, S5 may show:
 
@@ -500,7 +647,7 @@ hidden provenance ledger values
 
 The freeze-gate implementation applies a key-aware recursive sanitizer/validator to paper POST responses before returning them and to exported S5 guard fixtures. It covers rows, source refs, producer trace/provenance, retrieval trace, diagnostics, visible artifact refs, and unsafe visible keys. The freeze suite includes a synthetic corpus for CVE/GHSA/fix-commit/advisory/exploit-writeup/patch-text leakage plus final-authority vocabulary. Diagnostic `code` fields remain allowed as diagnostic codes only; diagnostic messages/metadata are still subject to the visible-packet policy.
 
-## 11. Idempotency and retry
+## 12. Idempotency and retry
 
 S3 must provide:
 
@@ -527,7 +674,7 @@ Freeze-gate durability claim:
 idempotencyDurability = ledger_backed_all_paper_endpoints
 ```
 
-## 12. B2/B4 evidence control
+## 13. B2/B4 evidence control
 
 S5 supports S3 rendering B2 and B4 from the same evidence rows/text/order through:
 
@@ -548,7 +695,7 @@ Rules:
 - S5 must not return richer row text for B4 than for B2.
 - The freeze-gate suite validates S5-exported B2/B4 guard fixtures with identical row IDs, text, ordering keys, and diagnostic rows. S3 still owns executing its own renderer/consumer validation over those fixtures.
 
-## 13. Forbidden inference and non-verdict language
+## 14. Forbidden inference and non-verdict language
 
 S5 paper-visible responses must avoid final-verdict authority.
 
@@ -575,7 +722,7 @@ absenceEvidence
 
 If a backing Judge/Threat Retrieval object contains affectedness/verdict/status vocabulary, the paper projection drops, rewrites, or diagnostic-wraps it before S3 consumption.
 
-## 14. S5_FREEZE_GATE validation status
+## 15. S5_FREEZE_GATE validation status
 
 Gate result vocabulary:
 
@@ -627,7 +774,7 @@ Freeze-gate tests in `services/knowledge-base/tests/test_paper_context_freeze_ga
 2. key-aware whole-visible-packet leakage/final-authority validator;
 3. generic Threat KB leakage corpus for CVE/GHSA/fix-commit/advisory/exploit-writeup/patch-text markers;
 4. S5-exported B2/B4 stable row and diagnostic fixture validation;
-5. ledger-backed idempotency replay/conflict matrix across prepare, finding-context, and threat-context endpoints;
+5. ledger-backed idempotency replay/conflict matrix across prepare, finding-context, source-kg exploration, and threat-context endpoints;
 6. unprepared Source KG `not_available` vs prepared anchor miss `no_hit` distinction;
 7. appendix/non-mainline visibility fail-closed behavior across all paper endpoints;
 8. S5-exported S3 consumer guard fixture packaging with S3 execution explicitly pending;
@@ -643,7 +790,23 @@ S3 may wait without a fixed absolute read deadline while S5 remains alive/progre
 
 S5/Threat KB contributions to RQ5 may now be treated as S5-freeze-gate-ready producer context, still bounded by the no-final-verdict and S3-owned consumer execution boundaries above.
 
-## 15. Verification evidence
+## 16. Verification evidence
+
+Fresh verification from the S5 Source KG coverage/exploration WR:
+
+```text
+Focused paper API + freeze gate coverage/exploration regression:
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_api_contract.py tests/test_paper_context_freeze_gate.py -q
+     -> 60 passed in 130.04s.
+
+Compile check:
+cd services/knowledge-base && .venv/bin/python -m compileall app/paper_context app/routers/paper_context_api.py app/contracts/paper_context.py
+     -> passed.
+
+Deterministic non-overlap fixture:
+tests/test_paper_context_api_contract.py::test_finding_context_reports_non_overlapping_source_kg_coverage
+     -> reproduces requested main.cpp:35 against returned main.cpp:1-24 and asserts surfaceStatus=partial, contextCoverage.coverageStatus=non_overlapping, lineOverlap=false, and diagnostic S5_PAPER_CONTEXT_NON_OVERLAPPING.
+```
 
 Fresh verification from the S3 observability alignment WR:
 
@@ -767,7 +930,14 @@ Timeout/liveness related regression: 142 passed in 139.72s.
 Previous full S5 service-root suite before freeze-gate expansion: 725 passed in 667.66s.
 ```
 
-## 16. Open implementation items after S5_FREEZE_GATE pass
+## 17. Open implementation items after S5_FREEZE_GATE pass
+
+Completed in the Source KG coverage/exploration update:
+
+1. additive `contextCoverage` diagnostics on finding-context responses;
+2. same-file line-disjoint coverage represented as `surfaceStatus=partial` plus `S5_PAPER_CONTEXT_NON_OVERLAPPING`;
+3. `explore_source_kg` endpoint for bounded source slice/function/symbol/caller/callee/neighborhood/data-flow exploration;
+4. freeze-gate endpoint matrices expanded to include `explore_source_kg`.
 
 Completed for the S5 producer freeze gate:
 
