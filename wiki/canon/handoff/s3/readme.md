@@ -9,7 +9,7 @@ source_refs:
 last_verified: "2026-05-21"
 service_tags: ["s3"]
 decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed", "traceaudit", "paper-path", "s4-s5-s7-consumption", "observability", "semgrep-coverage-caveat"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md", "wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md", "wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md", "wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md", "wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
@@ -34,13 +34,15 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 7. Latest S3 session evidence:
    - `wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md`
    - `wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md`
+   - `wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md`
 
 Current one-line state:
 
 ```text
 S3 paper path is implemented as the consumer/orchestrator for S4 static evidence,
 S5 paper context, and S7 Qwen paper controls. Unit/contract tests are green.
-Live end-to-end smoke over one admitted target remains the next meaningful gate.
+Live certificate-maker validation now reaches S7 async ownership but still fails
+before backendActivity with backend_transport_disconnected; S7 follow-up is open.
 ```
 
 Do not restart the benchmark design discussion unless a live/e2e gate fails in a way the anchor's downgrade paths cannot explain. The frozen paper direction remains TraceAudit: reviewer-auditable SAST triage decision artifacts, not model-SOTA or frontier parity.
@@ -1215,3 +1217,82 @@ wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md
 3. Only after one case reaches `PAPER_EXPORT_READY` with inspectable evidence should S3 decide any further optimization or batching direction.
 4. Do not tune for speed by shrinking Qwen `max_tokens` or prompt context unless paper claim quality and claim-evidence grounding remain intact.
 <!-- S3-TRACEAUDIT-PAPER-PATH-CURRENT-20260521:END -->
+
+---
+
+<!-- S3-S7-BACKENDACTIVITY-WR-HANDLING-20260521:START -->
+## 28. 2026-05-21 S7 async backendActivity WR handling / certificate-maker rerun
+
+S3 consumed three S7 WRs about async-chat stream aggregation, truncated-stream guarding, and long DGX streaming smoke evidence:
+
+- `wiki/canon/work-requests/s7-to-s3-s7-reply-async-chat-dgx-stream-aggregation-and-backendactivity-contract-implemen.md`
+- `wiki/canon/work-requests/s7-to-s3-s7-notice-async-chat-truncated-stream-guard-added-after-critic-review.md`
+- `wiki/canon/work-requests/s7-to-s3-s7-notice-long-dgx-async-streaming-smoke-passed-beyond-prior-timeout-window.md`
+
+S3-side implementation:
+
+- `services/analysis-agent/app/paper/llm_client.py` now preserves S7 async request metadata in live paper LLM transcript request objects:
+  - `requestId`
+  - `traceRequestId`
+  - resolved `statusUrl` / `resultUrl`
+  - accepted/expiry/result timestamps where present
+  - compact `lastStatus`, including S7 `backendActivity`
+- This is intentionally transcript/audit metadata only; S3 does not duplicate S7's stream parser.
+
+Fresh S3 verification:
+
+```text
+cd services/analysis-agent && .venv/bin/python -m pytest tests/test_paper_path.py::test_live_s7_chat_request_uses_generation_controls_and_openai_response tests/test_paper_path.py::test_live_s7_acquisition_request_uses_tools_auto_without_strict_json -q
+# RED before implementation: KeyError 's7Async'
+# GREEN after implementation: 2 passed in 0.04s
+
+cd services/analysis-agent && .venv/bin/python -m pytest tests/test_paper_path.py tests/test_generation_policy.py -q
+# 86 passed in 0.60s
+
+cd services/analysis-agent && .venv/bin/python -m pytest -q && .venv/bin/python -m compileall -q app
+# 764 passed in 10.88s; compileall PASS
+
+cd services/build-agent && .venv/bin/python -m pytest -q && .venv/bin/python -m compileall -q app
+# 396 passed in 3.25s; compileall PASS
+
+python3 -m compileall -q services/analysis-agent/app services/analysis-agent/eval services/build-agent/app && git diff --check -- services/analysis-agent services/build-agent
+# PASS
+```
+
+Recipient validation reran certificate-maker against already-running services; no service start/stop was performed.
+
+Evidence:
+
+```text
+Run root:
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-153850
+
+S3 root request id:
+e2e-certmaker-rerun-start-20260521-153850
+
+S7 async request id:
+acr_4ec11c2a720c42c7
+
+Start response:
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-153850/start.response.json
+```
+
+Observed result:
+
+- S3 returned HTTP 502 after `1060.389556s` (`17m41s` in log analyzer).
+- S7 terminal async status was `state=failed`, `localAckState=ack-break`, `blockedReason=backend_transport_disconnected`, `retryable=true`.
+- `backendActivity` remained `null`, so S7 did not observe stream-open/chunk activity before the disconnect.
+- S3 state trace reached `CASE_REGISTERED`, `BUILD_CONTEXT_READY`, `SETUP_RUNNING` done, `S4_STATIC_EVIDENCE_READY`, `S5_CODE_KB_READY`; it did not reach `PAPER_EXPORT_READY`.
+
+Current interpretation:
+
+- S7's long DGX smoke proves the post-stream/chunk-observed phase can remain alive beyond the prior timeout window.
+- The certificate-maker path still exposes a pre-first-byte / prefill silent-window failure that S3 cannot fix locally without changing the paper prompt/quality envelope.
+- S3 registered S7 follow-up WR `wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md` with absolute artifact paths and request IDs for S7 analyze.
+
+Canonical session evidence:
+
+```text
+wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md
+```
+<!-- S3-S7-BACKENDACTIVITY-WR-HANDLING-20260521:END -->

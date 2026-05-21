@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -269,7 +269,17 @@ Durable ownership 상태 조회 엔드포인트.
   "expiresAt": "2026-04-14T03:45:00+00:00",
   "statusUrl": "/v1/async-chat-requests/acr_01abc...",
   "resultUrl": "/v1/async-chat-requests/acr_01abc.../result",
-  "cancelUrl": "/v1/async-chat-requests/acr_01abc..."
+  "cancelUrl": "/v1/async-chat-requests/acr_01abc...",
+  "backendActivity": {
+    "backendStartedAt": "2026-04-14T03:30:01+00:00",
+    "lastBackendActivityAt": "2026-04-14T03:30:12+00:00",
+    "backendElapsedMs": 11000,
+    "backendIdleMs": 250,
+    "streamChunkCount": 42,
+    "responseBytes": 18432,
+    "approxCompletionChars": 8192,
+    "activitySource": "stream-chunk"
+  }
 }
 ```
 
@@ -286,6 +296,19 @@ Durable ownership 상태 조회 엔드포인트.
 - `completed` → `null`
 - `failed` / `cancelled` → `ack-break`
 - `expired` → `null`
+
+`backendActivity`는 additive이며 backend stream이 열렸거나 chunk/HTTP-error/[DONE] activity가 관측된 뒤 status에 포함된다. 이 필드는 async status와 `/v1/health.requestSummary`에만 나타나며 `/result` payload에는 포함되지 않는다.
+
+| Field | 의미 |
+|---|---|
+| `backendStartedAt` | S7이 DGX/vLLM backend stream을 열기 시작한 시각 |
+| `lastBackendActivityAt` | 마지막 backend stream open/chunk/[DONE]/HTTP-error 관측 시각 |
+| `backendElapsedMs` | backend stream 시작 이후 경과 시간 |
+| `backendIdleMs` | 마지막 backend activity 이후 경과 시간 |
+| `streamChunkCount` | 수신/집계한 JSON stream chunk 수 (`[DONE]` 제외) |
+| `responseBytes` | 관측한 SSE/HTTP response bytes 근사치 |
+| `approxCompletionChars` | 집계한 assistant content 문자 수 근사치 |
+| `activitySource` | 마지막 activity source (`stream-open`, `stream-chunk`, `stream-done`, `stream-http-error`) |
 
 ### GET /v1/async-chat-requests/{requestId}/result
 
@@ -313,6 +336,8 @@ Final result retrieval endpoint.
 - failed/cancelled → explicit terminal non-success response (`409`)
 - strict JSON contract violation → explicit terminal failure (`409`) with `error="Strict JSON contract violated"`, `blockedReason="strict_json_contract_violation"`, `errorDetail`, and `retryable: true`
 - LLM response contract violation → explicit terminal failure (`409`) with `error="LLM response contract violated"`, `blockedReason="response_contract_violation"`, `errorDetail`, and `retryable: true`
+- Backend transport disconnect after dispatch → explicit terminal failure (`409`) with `error="LLM backend transport disconnected"`, `blockedReason="backend_transport_disconnected"`, exception class/detail, and `retryable: true`
+- Malformed, non-object, or truncated backend SSE stream (including EOF before `[DONE]`) → explicit terminal failure (`409`) with `error="LLM backend stream parse error"`, `blockedReason="backend_stream_parse_error"`, and `retryable: true`
 - expired/not retained → explicit expired response (`410`)
 - idle/empty ambiguity는 허용하지 않는다
 
@@ -325,13 +350,14 @@ Best-effort cancel endpoint.
 ### async ownership semantics — health-control v2 wait-while-alive (2026-05-08)
 
 - `/v1/chat`는 여전히 finite synchronous compatibility surface다. `X-Timeout-Seconds`는 이 sync path에서만 canonical이며 기본/상한은 1800초다.
-- `/v1/async-chat-requests`는 production long-running LLM ownership surface다. `X-Timeout-Seconds`는 async ownership path에서 **superseded** 되며, S7은 live non-streaming backend read를 elapsed-age-only ceiling으로 terminal abort하지 않는다.
+- `/v1/async-chat-requests`는 production long-running LLM ownership surface다. `X-Timeout-Seconds`는 async ownership path에서 **superseded** 되며, S7은 live backend read를 elapsed-age-only ceiling으로 terminal abort하지 않는다.
+- async backend dispatch uses OpenAI-compatible `stream=true` with `stream_options.include_usage=true` internally. S7 aggregates SSE chunks back into the existing non-streaming `/result.response` chat-completion shape, so callers do not need to consume SSE.
 - async backend connect/write/pool transport establishment/resource failures may still become terminal `failed` with `blockedReason="backend_timeout"`; this is not a fixed inference-age deadline.
-- `queued` and `running` are continue states when `blockedReason=null` and `localAckState` is `phase-advancing` or `transport-only`. `transport-only` means S7 still owns a live backend transport attempt but cannot prove token-level progress. It is not success and not an abort signal.
+- `queued` and `running` are continue states when `blockedReason=null` and `localAckState` is `phase-advancing` or `transport-only`. `transport-only` means S7 still owns a backend transport attempt; when `backendActivity.streamChunkCount` or `lastBackendActivityAt` advances, S7 has observed concrete backend response progress. It is not success and not an abort signal.
 - Active `expiresAt` is an ownership lease hint and is refreshed while the request remains `queued`/`running`; callers must not treat active request age or a long elapsed wall-clock duration as an abort reason.
 - Terminal states are explicit: `completed`, `failed`, `cancelled`, `expired`. Polling callers should chain abort on `failed`, `cancelled`, `expired`, `localAckState="ack-break"`, or a non-null `blockedReason`.
 - Terminal `completed`/`failed`/`cancelled` records retain result or terminal failure detail for at least **15분** after terminal transition; after unrecoverable retention expiry, result lookup returns explicit `410 expired`.
-- A permanently open but silent backend transport may remain `running + transport-only` until explicit cancel, service shutdown, backend/transport exception, circuit failure before dispatch, parser/response-contract failure after response, backend HTTP failure, or a future non-age ownership-loss detector.
+- A permanently open but silent backend transport may remain `running + transport-only` until explicit cancel, service shutdown, backend/transport exception, circuit failure before dispatch, stream parser/response-contract failure after response, backend HTTP failure, truncated stream EOF before `[DONE]`, or a future non-age ownership-loss detector.
 
 ### `/v1/tasks` task-level ownership decision (2026-05-08)
 
@@ -882,7 +908,17 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
     "lastAckSource": "queue-exit",
     "blockedReason": null,
     "phase": "llm-inference",
-    "elapsedMs": 18432
+    "elapsedMs": 18432,
+    "backendActivity": {
+      "backendStartedAt": "2026-04-14T03:30:01+00:00",
+      "lastBackendActivityAt": "2026-04-14T03:30:12+00:00",
+      "backendElapsedMs": 11000,
+      "backendIdleMs": 250,
+      "streamChunkCount": 42,
+      "responseBytes": 18432,
+      "approxCompletionChars": 8192,
+      "activitySource": "stream-chunk"
+    }
   },
   "rag": {
     "enabled": true,
@@ -904,7 +940,8 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 - `requestSummary`는 full request dump가 아니라 polling caller용 compact control signal이다.
 - `requestSummary.localAckState`는 `phase-advancing | transport-only | ack-break | null(idle)` 중 하나다.
 - async ownership surface가 활성일 때 `requestSummary.endpoint`는 `async-chat`이 될 수 있다.
-- 장시간 비스트리밍 `llm-inference` 구간에서 S7은 보통 `localAckState="transport-only"`만 보고할 수 있다. 이는 **alive but progress-unproven** 을 의미하며, elapsed time alone으로 abort하면 안 된다.
+- async ownership surface가 backend stream activity를 관측하면 `requestSummary.backendActivity`를 포함한다. 이 값은 async status의 `backendActivity`와 같은 필드 집합이며, status polling caller가 `lastBackendActivityAt`/`backendIdleMs`/`streamChunkCount`를 기준으로 idle transport 상태를 구분할 수 있게 한다.
+- 장시간 `llm-inference` 구간에서 S7은 최소 `localAckState="transport-only"`를 보고한다. `backendActivity`가 있으면 S7이 backend response progress를 관측한 것이며, 둘 다 elapsed time alone으로 abort하면 안 된다.
 - 반대로 현재 `/v1/chat` transport timeout이 실제로 발생하면 그 transport attempt는 terminal failure이며, S7은 해당 active request를 `/health` history로 유지하지 않는다.
 - `rag` 필드는 항상 포함. `status`가 `"ok"`이면 RAG 활성 상태(S5 KB 연결 확인), `"disabled"`이면 비활성 (설정 off 또는 S5 미연결).
 - `rag.topK`, `rag.minScore`, `rag.policy`는 현재 Gateway가 task-pipeline RAG를 어떤 정책으로 적용하는지 노출하는 low-cardinality control signal이다. S7은 RAG 결과를 자동으로 caller evidence catalog에 등록하지 않으며, RAG hit 수는 task audit의 `ragHits`로만 반영된다.
@@ -1055,6 +1092,8 @@ This section answers S3's system-stability WRs for async lifecycle, timeout, str
 | Backend overload / retryable backend HTTP | task path `LLM_OVERLOADED`; chat may pass through backend HTTP status | Dependency/runtime failure unless S3 has a valid completed envelope from another attempt |
 | Sync `/v1/chat` hard read timeout | `/v1/chat` HTTP 504 `retryable=true`; task path `TIMEOUT` where applicable | Finite compatibility request deadline failure |
 | Async backend transport timeout before/while establishing ownership transport | async `failed`, `blockedReason=backend_timeout`, `localAckState=ack-break` | Dependency/runtime transport failure; not an elapsed inference-age ceiling |
+| Async backend transport disconnect after dispatch | async `failed`, `blockedReason=backend_transport_disconnected`, `error="LLM backend transport disconnected"`, `retryable=true` | Dependency/runtime transport failure with actionable disconnect detail; not `internal_error` |
+| Async malformed/truncated backend SSE stream | async `failed`, `blockedReason=backend_stream_parse_error`, `error="LLM backend stream parse error"`, `retryable=true` | Backend protocol/stream parsing failure, including EOF before `[DONE]`; retryable infrastructure/protocol issue |
 | Client cancel | async `cancelled`, `blockedReason=cancelled_by_client` | Caller/runtime cancellation, not output deficiency |
 | Async retention expired | result endpoint `410`, state `expired` | Ownership/retention miss; treat as runtime/deadline failure |
 | Unsupported tool choice (`required`/named) | `/v1/chat` and async submit HTTP 422 `INVALID_TOOL_CHOICE`, `retryable=false` | Caller shaping/configuration failure; update caller to `auto`/`none` |
@@ -1072,7 +1111,7 @@ Interpretation rule: if S7 is reachable and the failure proves the model produce
 
 ### Health, capacity, and traceability
 
-- `/v1/health` exposes process liveness (`status`), service/LLM readiness (`ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`), bounded-freshness backend probe metadata (`llmBackend.cached`, `llmBackend.cacheTtlMs`), dependency snapshots (`dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`), capacity hints (`llmConcurrency`, `activeRequestCount`), and compact active request `requestSummary`.
+- `/v1/health` exposes process liveness (`status`), service/LLM readiness (`ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`), bounded-freshness backend probe metadata (`llmBackend.cached`, `llmBackend.cacheTtlMs`), dependency snapshots (`dependencyStatus`, `llmBackend`, `circuitBreaker`, `rag`), capacity hints (`llmConcurrency`, `activeRequestCount`), compact active request `requestSummary`, and async backend stream activity when available.
 - `/v1/models` is the authoritative model identity/capability surface (`profileId`, `modelName`, `contextLimit`, task allowlist, availability).
 - Current gap: no explicit `costTier`, `queueDepth`, or queue saturation percentage field exists. Consumers should use `modelProfiles`/`/v1/models` for identity and `ready`/`llmReady` + `activeRequestCount` + `llmConcurrency` + `circuitBreaker` + request status for readiness signals.
 - `X-Request-Id` is propagated to the LLM Engine on sync `/v1/chat`; async stores it as `traceRequestId` across submit/status/result while using a separate durable async `requestId`.

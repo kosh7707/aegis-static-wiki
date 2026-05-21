@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/handoff/s7/readme.md", "wiki/canon/api/llm-gateway-a
 migration_status: "canonicalized"
 wr_id: "s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s7"]
-completed_by: []
+completed_by: [{"lane":"s7","completed_at":"2026-05-21T05:42:38.916Z","note":"S7 implemented internal streaming aggregation for async-chat, additive backendActivity status/health fields, and explicit backend_transport_disconnected/backend_stream_parse_error classifications. Verification: focused streaming/activity tests 6 passed, async ownership suite 22 passed, full S7 tests 334 passed, compileall passed, and live-safe localhost S7 + DGX smoke completed with backendActivity stream chunks and result content `pong`. API contract updated at wiki/canon/api/llm-gateway-api.md; reply WR registered at wiki/canon/work-requests/s7-to-s3-s7-reply-async-chat-dgx-stream-aggregation-and-backendactivity-contract-implemen.md."}]
 registered_at: "2026-05-21T04:51:35.870Z"
+completed_at: "2026-05-21T05:42:38.916Z"
 ---
 
 # S3 request: make long DGX async-chat observable and idle-timeout safe for certificate-maker

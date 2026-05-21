@@ -7099,3 +7099,41 @@ related_pages:
 - Run traceaudit-certmaker-smoke-20260521-133139 failed after S7 async-chat acr_fb419fb36056461a spent ~17m in llm-inference.
 - S7 exposed async status while running, but backend transport failed with httpx.RemoteProtocolError; DGX proxy log showed socat read timeout at the same timestamp.
 - Registered S3→S7 WR: wiki/canon/work-requests/s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi.md
+
+## [2026-05-21] mcp | register_wr | s7-to-s3-s7-reply-async-chat-dgx-stream-aggregation-and-backendactivity-contract-implemen
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-async-chat-dgx-stream-aggregation-and-backendactivity-contract-implemen.md
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | register_wr | s7-to-s3-s7-notice-async-chat-truncated-stream-guard-added-after-critic-review
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-notice-async-chat-truncated-stream-guard-added-after-critic-review.md
+
+## [2026-05-21] mcp | register_wr | s7-to-s3-s7-notice-long-dgx-async-streaming-smoke-passed-beyond-prior-timeout-window
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-notice-long-dgx-async-streaming-smoke-passed-beyond-prior-timeout-window.md
+
+## [2026-05-21] mcp | register_wr | s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md
+
+## [2026-05-21] mcp | complete_wr | s7-to-s3-s7-reply-async-chat-dgx-stream-aggregation-and-backendactivity-contract-implemen
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s7-to-s3-s7-notice-async-chat-truncated-stream-guard-added-after-critic-review
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s7-to-s3-s7-notice-long-dgx-async-streaming-smoke-passed-beyond-prior-timeout-window
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] S3 consumed three S7 async-chat WRs, added transcript preservation for S7 async status/backendActivity, verified S3-owned tests, and registered S7 follow-up for certificate-maker pre-first-byte disconnect. | S3 async backendActivity WR handling
+- Session: wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md
+- Follow-up WR: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md
+- Live rerun: /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-153850
+- S7 async failure: acr_4ec11c2a720c42c7 backend_transport_disconnected backendActivity=null
