@@ -87,6 +87,48 @@ Expected proxy log signs:
 - `tun0 is up`
 - `backend tcp reachable`
 - `socat ... TCP-LISTEN:18000 ... TCP:10.126.37.19:8000`
+- `socat tcp keepalive keepidle=60 keepintvl=15 keepcnt=8` (또는 운영자가 명시한 `SOCAT_KEEP*` 값)
+
+#### Proxy TCP keepalive policy (2026-05-21)
+
+Certificate-maker TraceAudit rerun에서 S7 async 요청은 accepted/running 상태였지만 DGX/vLLM이 긴 pre-first-byte/prefill 구간 동안 response headers를 보내기 전에 proxy 경로가 약 17분 후 `Connection timed out`으로 끊겼다. 기본 Linux TCP keepalive(`tcp_keepalive_time=7200`)는 이 구간을 보호하지 못하므로 `entrypoint.sh`의 `socat` 양쪽 socket에 keepalive를 켠다.
+
+기본값:
+
+```bash
+SOCAT_KEEPIDLE=60
+SOCAT_KEEPINTVL=15
+SOCAT_KEEPCNT=8
+```
+
+이 값은 `/home/kosh/temp/openvpn/dgx-spark-proxy/entrypoint.sh`의 기본값이며 `docker run -e SOCAT_KEEPIDLE=...` 방식으로 override할 수 있다. 이미 떠 있는 `dgx-spark-proxy` 컨테이너는 entrypoint 변경을 자동 반영하지 않으므로, S7 active request가 없는지 먼저 확인한 뒤 rebuild/recreate해야 한다.
+
+안전한 rollout 순서:
+
+```bash
+# S7이 처리 중인 request가 없을 때만 proxy를 교체한다.
+curl -sS --max-time 3 http://127.0.0.1:8000/v1/health | python3 -m json.tool
+
+cd /home/kosh/temp/openvpn/dgx-spark-proxy
+docker build -t dgx-spark-proxy:local .
+docker rm -f dgx-spark-proxy
+docker run -d --name dgx-spark-proxy \
+  --cap-add=NET_ADMIN \
+  --device /dev/net/tun \
+  -e DGX_HOST=10.126.37.19 \
+  -e DGX_PORT=8000 \
+  -e LISTEN_PORT=18000 \
+  -e SOCAT_KEEPIDLE=60 \
+  -e SOCAT_KEEPINTVL=15 \
+  -e SOCAT_KEEPCNT=8 \
+  -v "$PWD/accslab.ovpn:/vpn/accslab.ovpn:ro" \
+  -v "$PWD/auth.txt:/vpn/auth.txt:ro" \
+  -p 127.0.0.1:18000:18000 \
+  dgx-spark-proxy:local
+
+docker logs dgx-spark-proxy --tail 120 | grep -E 'tun0 is up|backend tcp reachable|socat tcp keepalive'
+curl -sS --max-time 5 http://127.0.0.1:18000/health
+```
 
 #### SSH through the proxy namespace
 
@@ -130,6 +172,7 @@ ssh -i /home/kosh/.ssh/dgx_spark \
 | SSH direct to `10.126.37.19` fails but proxy SSH works | expected in current tmux/Codex environment | use the proxy `ProxyCommand` form |
 | `curl 127.0.0.1:18000` fails | HTTP proxy port not published or OpenVPN route down | inspect container logs and port binding |
 | DGX SSH works but `/v1/models` fails | vLLM container not serving | run `~/qwen27-vllm status`, `~/qwen27-vllm start`, then recheck |
+| Long async request fails around 15~20분 with `backend_transport_disconnected` and no response bytes | proxy/VPN path treated pre-first-byte vLLM prefill as idle TCP flow | verify `socat tcp keepalive ...` appears in proxy logs; if not, roll out the keepalive-enabled proxy after S7 `activeRequestCount=0` |
 
 ---
 

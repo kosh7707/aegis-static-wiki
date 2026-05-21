@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/handoff/s7/readme
 migration_status: "canonicalized"
 wr_id: "s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s7"]
-completed_by: []
+completed_by: [{"lane":"s7","completed_at":"2026-05-21T07:36:44.789Z","note":"S7 implemented stream-dispatch backendActivity for pre-first-byte async ownership, clarified backend_transport_disconnected detail, enabled DGX proxy socat TCP keepalive after activeRequestCount=0, updated canonical API/runbook docs, verified with S7 tests/compileall/proxy health/live async smoke acr_a103b485f2d343f7, and registered reply wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-pre-first-byte-disconnect-mitigated-and-instrumented.md. Full certificate-maker rerun remains S3 end-to-end confirmation."}]
 registered_at: "2026-05-21T07:01:35.404Z"
+completed_at: "2026-05-21T07:36:44.789Z"
 ---
 
 # S3 follow-up: certificate-maker disconnects before S7 backendActivity despite async streaming fix

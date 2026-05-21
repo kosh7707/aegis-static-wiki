@@ -297,18 +297,18 @@ Durable ownership 상태 조회 엔드포인트.
 - `failed` / `cancelled` → `ack-break`
 - `expired` → `null`
 
-`backendActivity`는 additive이며 backend stream이 열렸거나 chunk/HTTP-error/[DONE] activity가 관측된 뒤 status에 포함된다. 이 필드는 async status와 `/v1/health.requestSummary`에만 나타나며 `/result` payload에는 포함되지 않는다.
+`backendActivity`는 additive이며 backend dispatch를 시작한 순간부터 status에 포함될 수 있다. `activitySource="stream-dispatch"`는 S7이 DGX/vLLM backend 요청을 송신하기 시작했지만 아직 response headers/SSE bytes를 받지 못한 pre-first-byte 상태를 뜻한다. 이후 stream-open/chunk/HTTP-error/[DONE] activity가 관측되면 같은 필드가 갱신된다. 이 필드는 async status와 `/v1/health.requestSummary`에만 나타나며 `/result` payload에는 포함되지 않는다.
 
 | Field | 의미 |
 |---|---|
-| `backendStartedAt` | S7이 DGX/vLLM backend stream을 열기 시작한 시각 |
-| `lastBackendActivityAt` | 마지막 backend stream open/chunk/[DONE]/HTTP-error 관측 시각 |
-| `backendElapsedMs` | backend stream 시작 이후 경과 시간 |
+| `backendStartedAt` | S7이 DGX/vLLM backend 요청을 dispatch하기 시작한 시각 |
+| `lastBackendActivityAt` | 마지막 backend dispatch/open/chunk/[DONE]/HTTP-error 관측 시각 |
+| `backendElapsedMs` | backend dispatch 시작 이후 경과 시간 |
 | `backendIdleMs` | 마지막 backend activity 이후 경과 시간 |
-| `streamChunkCount` | 수신/집계한 JSON stream chunk 수 (`[DONE]` 제외) |
-| `responseBytes` | 관측한 SSE/HTTP response bytes 근사치 |
+| `streamChunkCount` | 수신/집계한 JSON stream chunk 수 (`[DONE]` 제외). `stream-dispatch` 상태에서는 0일 수 있다 |
+| `responseBytes` | 관측한 SSE/HTTP response bytes 근사치. pre-first-byte `stream-dispatch` 상태에서는 0이다 |
 | `approxCompletionChars` | 집계한 assistant content 문자 수 근사치 |
-| `activitySource` | 마지막 activity source (`stream-open`, `stream-chunk`, `stream-done`, `stream-http-error`) |
+| `activitySource` | 마지막 activity source (`stream-dispatch`, `stream-open`, `stream-chunk`, `stream-done`, `stream-http-error`) |
 
 ### GET /v1/async-chat-requests/{requestId}/result
 
@@ -336,7 +336,7 @@ Final result retrieval endpoint.
 - failed/cancelled → explicit terminal non-success response (`409`)
 - strict JSON contract violation → explicit terminal failure (`409`) with `error="Strict JSON contract violated"`, `blockedReason="strict_json_contract_violation"`, `errorDetail`, and `retryable: true`
 - LLM response contract violation → explicit terminal failure (`409`) with `error="LLM response contract violated"`, `blockedReason="response_contract_violation"`, `errorDetail`, and `retryable: true`
-- Backend transport disconnect after dispatch → explicit terminal failure (`409`) with `error="LLM backend transport disconnected"`, `blockedReason="backend_transport_disconnected"`, exception class/detail, and `retryable: true`
+- Backend transport disconnect after dispatch, including disconnect before response headers/first byte → explicit terminal failure (`409`) with `error="LLM backend transport disconnected"`, `blockedReason="backend_transport_disconnected"`, exception class/detail, and `retryable: true`
 - Malformed, non-object, or truncated backend SSE stream (including EOF before `[DONE]`) → explicit terminal failure (`409`) with `error="LLM backend stream parse error"`, `blockedReason="backend_stream_parse_error"`, and `retryable: true`
 - expired/not retained → explicit expired response (`410`)
 - idle/empty ambiguity는 허용하지 않는다
@@ -353,7 +353,7 @@ Best-effort cancel endpoint.
 - `/v1/async-chat-requests`는 production long-running LLM ownership surface다. `X-Timeout-Seconds`는 async ownership path에서 **superseded** 되며, S7은 live backend read를 elapsed-age-only ceiling으로 terminal abort하지 않는다.
 - async backend dispatch uses OpenAI-compatible `stream=true` with `stream_options.include_usage=true` internally. S7 aggregates SSE chunks back into the existing non-streaming `/result.response` chat-completion shape, so callers do not need to consume SSE.
 - async backend connect/write/pool transport establishment/resource failures may still become terminal `failed` with `blockedReason="backend_timeout"`; this is not a fixed inference-age deadline.
-- `queued` and `running` are continue states when `blockedReason=null` and `localAckState` is `phase-advancing` or `transport-only`. `transport-only` means S7 still owns a backend transport attempt; when `backendActivity.streamChunkCount` or `lastBackendActivityAt` advances, S7 has observed concrete backend response progress. It is not success and not an abort signal.
+- `queued` and `running` are continue states when `blockedReason=null` and `localAckState` is `phase-advancing` or `transport-only`. `transport-only` means S7 still owns a backend transport attempt. `backendActivity.activitySource="stream-dispatch"` proves dispatch/pre-first-byte ownership but does not prove backend response progress; `stream-open`, `stream-chunk`, `stream-done`, or `stream-http-error` prove response-side backend activity. Neither case is success or an abort signal by elapsed time alone.
 - Active `expiresAt` is an ownership lease hint and is refreshed while the request remains `queued`/`running`; callers must not treat active request age or a long elapsed wall-clock duration as an abort reason.
 - Terminal states are explicit: `completed`, `failed`, `cancelled`, `expired`. Polling callers should chain abort on `failed`, `cancelled`, `expired`, `localAckState="ack-break"`, or a non-null `blockedReason`.
 - Terminal `completed`/`failed`/`cancelled` records retain result or terminal failure detail for at least **15분** after terminal transition; after unrecoverable retention expiry, result lookup returns explicit `410 expired`.
@@ -940,8 +940,8 @@ test-plan-propose의 result는 공통 assessment 필드에 더해 plan 필드를
 - `requestSummary`는 full request dump가 아니라 polling caller용 compact control signal이다.
 - `requestSummary.localAckState`는 `phase-advancing | transport-only | ack-break | null(idle)` 중 하나다.
 - async ownership surface가 활성일 때 `requestSummary.endpoint`는 `async-chat`이 될 수 있다.
-- async ownership surface가 backend stream activity를 관측하면 `requestSummary.backendActivity`를 포함한다. 이 값은 async status의 `backendActivity`와 같은 필드 집합이며, status polling caller가 `lastBackendActivityAt`/`backendIdleMs`/`streamChunkCount`를 기준으로 idle transport 상태를 구분할 수 있게 한다.
-- 장시간 `llm-inference` 구간에서 S7은 최소 `localAckState="transport-only"`를 보고한다. `backendActivity`가 있으면 S7이 backend response progress를 관측한 것이며, 둘 다 elapsed time alone으로 abort하면 안 된다.
+- async ownership surface가 backend dispatch 또는 stream activity를 관측하면 `requestSummary.backendActivity`를 포함한다. 이 값은 async status의 `backendActivity`와 같은 필드 집합이며, status polling caller가 `activitySource`/`lastBackendActivityAt`/`backendIdleMs`/`streamChunkCount`를 기준으로 pre-first-byte idle transport 상태와 response progress 상태를 구분할 수 있게 한다.
+- 장시간 `llm-inference` 구간에서 S7은 최소 `localAckState="transport-only"`를 보고한다. `backendActivity.activitySource="stream-dispatch"`는 backend dispatch/pre-first-byte ownership만 증명하며 response progress를 증명하지 않는다. `stream-open`/`stream-chunk`/`stream-done`/`stream-http-error`는 response-side backend activity를 관측한 것이다. 어느 경우든 elapsed time alone으로 abort하면 안 된다.
 - 반대로 현재 `/v1/chat` transport timeout이 실제로 발생하면 그 transport attempt는 terminal failure이며, S7은 해당 active request를 `/health` history로 유지하지 않는다.
 - `rag` 필드는 항상 포함. `status`가 `"ok"`이면 RAG 활성 상태(S5 KB 연결 확인), `"disabled"`이면 비활성 (설정 off 또는 S5 미연결).
 - `rag.topK`, `rag.minScore`, `rag.policy`는 현재 Gateway가 task-pipeline RAG를 어떤 정책으로 적용하는지 노출하는 low-cardinality control signal이다. S7은 RAG 결과를 자동으로 caller evidence catalog에 등록하지 않으며, RAG hit 수는 task audit의 `ragHits`로만 반영된다.

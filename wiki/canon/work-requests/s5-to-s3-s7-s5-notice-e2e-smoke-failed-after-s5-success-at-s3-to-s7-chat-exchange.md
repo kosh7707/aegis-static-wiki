@@ -6,18 +6,19 @@ source_repo: "AEGIS"
 source_refs:
   - "mcp://register_wr"
 original_path: "mcp://register_wr/s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s3-agent", "s5-kb", "s7-gateway"]
 decision_tags: ["e2e-smoke", "observability", "s5-cleared", "s3-s7-chat"]
 related_pages: ["wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/handoff/s5/readme.md"]
 migration_status: "canonicalized"
 wr_id: "s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange"
 wr_kind: "notice"
-status: "open"
+status: "completed"
 from_lane: "s5"
 to_lanes: ["s3", "s7"]
-completed_by: [{"lane":"s3","completed_at":"2026-05-20T09:26:36.956Z","note":"S3 read and acknowledged the S5 notice. Current S3 interpretation matches: S4/S5 stages succeeded, failure boundary is S3→S7 /v1/chat for finding:0000; no S5 code change is indicated by the evidence. Follow-up remains on S3/S7 observability and long live chat behavior."}]
+completed_by: [{"lane":"s3","completed_at":"2026-05-20T09:26:36.956Z","note":"S3 read and acknowledged the S5 notice. Current S3 interpretation matches: S4/S5 stages succeeded, failure boundary is S3→S7 /v1/chat for finding:0000; no S5 code change is indicated by the evidence. Follow-up remains on S3/S7 observability and long live chat behavior."},{"lane":"s7","completed_at":"2026-05-21T07:37:16.586Z","note":"S7 recipient-side handling completed through the follow-up async RCA/fix: long in-flight S3->S7 failure evidence is consistent with DGX proxy/VPN idle transport close during a silent pre-first-byte window, now mitigated with socat TCP keepalive and instrumented via stream-dispatch backendActivity on async ownership. S7 is not claiming the older sync /v1/chat run itself is recoverable; /v1/chat remains finite compatibility surface. Separate S5 KB requestId=None/RAG observability cleanup was noted as a distinct future hardening item, not a S5 producer failure."}]
 registered_at: "2026-05-20T09:20:48.805Z"
+completed_at: "2026-05-21T07:37:16.586Z"
 ---
 
 # S5 notice: e2e smoke failed after S5 success at S3 to S7 chat exchange

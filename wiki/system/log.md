@@ -7137,3 +7137,35 @@ related_pages:
 - Follow-up WR: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md
 - Live rerun: /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-153850
 - S7 async failure: acr_4ec11c2a720c42c7 backend_transport_disconnected backendActivity=null
+
+## [2026-05-21] S7 addressed S3 certificate-maker disconnect WR | S7 pre-first-byte async telemetry and DGX proxy keepalive
+- Root cause narrowed to DGX proxy/VPN idle disconnect during vLLM pre-first-byte/prefill window; S7 previously did not mark backendActivity until response headers/stream open.
+- Implemented stream-dispatch backendActivity before async backend stream enter and clarified backend_transport_disconnected detail for pre-response disconnects.
+- Updated DGX proxy entrypoint to enable socat keepalive keepidle=60 keepintvl=15 keepcnt=8 and rolled out after S7 activeRequestCount=0.
+- Verification: S7 pytest 336 passed; async ownership suite 24 passed; compileall passed; live async smoke acr_a103b485f2d343f7 showed stream-dispatch then completed OK.
+
+## [2026-05-21] mcp | register_wr | s7-to-s3-s7-reply-certificate-maker-pre-first-byte-disconnect-mitigated-and-instrumented
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-reply-certificate-maker-pre-first-byte-disconnect-mitigated-and-instrumented.md
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | register_wr | s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero.md
+
+## [2026-05-21] mcp | complete_wr | s7-to-s3-s7-reply-certificate-maker-pre-first-byte-disconnect-mitigated-and-instrumented
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] Certificate-maker E2E rerun still failed before response headers/SSE bytes; S7 instrumentation now shows stream-dispatch only for ~1065s, so S3 registered another S7 follow-up WR. | S3 certificate-maker rerun after S7 stream-dispatch instrumentation
+- Run root: /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-164211
+- S3 request: e2e-certmaker-rerun-start-20260521-164211
+- S7 async: acr_a3c6de6e40bc42e8
+- Follow-up WR: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero.md
