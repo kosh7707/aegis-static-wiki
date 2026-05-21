@@ -172,7 +172,7 @@ ssh -i /home/kosh/.ssh/dgx_spark \
 | SSH direct to `10.126.37.19` fails but proxy SSH works | expected in current tmux/Codex environment | use the proxy `ProxyCommand` form |
 | `curl 127.0.0.1:18000` fails | HTTP proxy port not published or OpenVPN route down | inspect container logs and port binding |
 | DGX SSH works but `/v1/models` fails | vLLM container not serving | run `~/qwen27-vllm status`, `~/qwen27-vllm start`, then recheck |
-| Long async request fails around 15~20분 with `backend_transport_disconnected` and no response bytes | proxy/VPN path treated pre-first-byte vLLM prefill as idle TCP flow | verify `socat tcp keepalive ...` appears in proxy logs; if not, roll out the keepalive-enabled proxy after S7 `activeRequestCount=0` |
+| Long async request fails around 15~20분 with `backend_transport_disconnected` and no response bytes | proxy/VPN path or DGX/vLLM pre-first-byte path lost a silent HTTP flow before response headers; keepalive may not be sufficient if the request never produces response-side bytes | first verify `socat tcp keepalive ...` appears in proxy logs; if already enabled and the request still ends at `stream-dispatch` with 0 bytes, treat it as the pre-first-byte zero-byte class and ask S3 to split/reshape the paper LLM unit per `llm-gateway-api.md` rather than applying another elapsed-time wait |
 
 ---
 

@@ -7169,3 +7169,13 @@ related_pages:
 - S3 request: e2e-certmaker-rerun-start-20260521-164211
 - S7 async: acr_a3c6de6e40bc42e8
 - Follow-up WR: wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-still-disconnects-after-stream-dispatch-with-zero.md
+
+## [2026-05-21] mcp | register_wr | s3-to-s7-s3-addendum-certificate-maker-first-llm-payload-is-only-about-2k-tokens-despite-
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-addendum-certificate-maker-first-llm-payload-is-only-about-2k-tokens-despite-.md
+
+## [2026-05-21] S3 registered an S7 addendum WR noting that the first certificate-maker LLM payload is only ~7.7KB/about 2k tokens despite 17m pre-first-byte silence. | S3 certificate-maker token measurement addendum
+- WR: wiki/canon/work-requests/s3-to-s7-s3-addendum-certificate-maker-first-llm-payload-is-only-about-2k-tokens-despite-.md
+- Run root: /home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-164211
+- S7 async: acr_a3c6de6e40bc42e8
+- Measured first acquisition request body: 7,740 bytes; crude estimate 1.9k-2.6k tokens; max_tokens=32768

@@ -359,6 +359,18 @@ Best-effort cancel endpoint.
 - Terminal `completed`/`failed`/`cancelled` records retain result or terminal failure detail for at least **15분** after terminal transition; after unrecoverable retention expiry, result lookup returns explicit `410 expired`.
 - A permanently open but silent backend transport may remain `running + transport-only` until explicit cancel, service shutdown, backend/transport exception, circuit failure before dispatch, stream parser/response-contract failure after response, backend HTTP failure, truncated stream EOF before `[DONE]`, or a future non-age ownership-loss detector.
 
+#### Pre-first-byte zero-byte failure contract for S3 paper callers (2026-05-21)
+
+The certificate-maker TraceAudit reruns established a separate failure class from the old elapsed-time ceiling: S7 can dispatch an async request to DGX/vLLM, observe `backendActivity.activitySource="stream-dispatch"`, receive **zero** response headers/SSE bytes for about 17m45s, and then receive a backend transport disconnect while S7 health remains `ready=true`/`llmReady=true`.
+
+S3 must consume this contract as follows:
+
+- `stream-dispatch` with `streamChunkCount=0` and `responseBytes=0` means S7 owns a backend transport attempt but has **not** observed model response progress. It is not equivalent to `stream-open` or `stream-chunk`.
+- Terminal `blockedReason="backend_transport_disconnected"` with the last activity still `stream-dispatch` is a dependency/transport failure before first byte, not a live-runtime output deficiency and not proof that the model produced unusable content.
+- If the same paper unit repeatedly fails in this shape while `/v1/health.ready=true`, S3 should treat the LLM unit as too large/too slow/too brittle for the current DGX HTTP path and split or reshape the caller workload rather than waiting solely on elapsed wall-clock time. Recommended S3 mitigations are: narrower per-finding prompts, fewer bundled evidence/tool choices per acquisition turn, smaller `max_tokens` for acquisition/tool-call turns, and explicit phase partitioning before a schema finalizer.
+- S7 cannot emit an application heartbeat before DGX/vLLM returns HTTP response headers. Therefore `/v1/async-chat-requests` provides durable ownership/status/result retention, but it cannot guarantee no transport loss for a backend request that never produces response-side bytes.
+- S7 emits a redacted level-40 `llm_exchange` failure record for async backend timeout/transport disconnect/stream-parse failures. In paper mode this record includes `controlObservability`, redacted request summary, `asyncRequestId`, `traceRequestId`, `blockedReason`, `error`, and `retryable`, without raw prompt/schema/seed/response content. S3 should cite this log plus async status when reporting repeated pre-first-byte failures.
+
 ### `/v1/tasks` task-level ownership decision (2026-05-08)
 
 For S2 direct `LlmTaskClient` consumption, `/v1/tasks` remains the finite synchronous TaskResponse-envelope surface for now.
@@ -1092,7 +1104,7 @@ This section answers S3's system-stability WRs for async lifecycle, timeout, str
 | Backend overload / retryable backend HTTP | task path `LLM_OVERLOADED`; chat may pass through backend HTTP status | Dependency/runtime failure unless S3 has a valid completed envelope from another attempt |
 | Sync `/v1/chat` hard read timeout | `/v1/chat` HTTP 504 `retryable=true`; task path `TIMEOUT` where applicable | Finite compatibility request deadline failure |
 | Async backend transport timeout before/while establishing ownership transport | async `failed`, `blockedReason=backend_timeout`, `localAckState=ack-break` | Dependency/runtime transport failure; not an elapsed inference-age ceiling |
-| Async backend transport disconnect after dispatch | async `failed`, `blockedReason=backend_transport_disconnected`, `error="LLM backend transport disconnected"`, `retryable=true` | Dependency/runtime transport failure with actionable disconnect detail; not `internal_error` |
+| Async backend transport disconnect after dispatch | async `failed`, `blockedReason=backend_transport_disconnected`, `error="LLM backend transport disconnected"`, `retryable=true`; if last `backendActivity.activitySource="stream-dispatch"` and bytes/chunks are 0, no response-side progress was observed | Dependency/runtime transport failure with actionable disconnect detail; not `internal_error`; zero-byte pre-first-byte failures are not output deficiency |
 | Async malformed/truncated backend SSE stream | async `failed`, `blockedReason=backend_stream_parse_error`, `error="LLM backend stream parse error"`, `retryable=true` | Backend protocol/stream parsing failure, including EOF before `[DONE]`; retryable infrastructure/protocol issue |
 | Client cancel | async `cancelled`, `blockedReason=cancelled_by_client` | Caller/runtime cancellation, not output deficiency |
 | Async retention expired | result endpoint `410`, state `expired` | Ownership/retention miss; treat as runtime/deadline failure |

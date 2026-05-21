@@ -373,6 +373,21 @@ Paper-mode `llm_exchange` logs include prompt-redacted `controlObservability` wi
 
 Do not re-open hyperparameter value selection in S7. The user decided S3 owns values and should use official Qwen recommendations. S7 only owns the gateway contract and runtime evidence.
 
+## Certificate-maker pre-first-byte disconnect follow-up (2026-05-21)
+
+S3 reran certificate-maker after S7 added `stream-dispatch` and proxy TCP keepalive. The instrumentation worked, but the run still failed before first byte:
+
+- Run root: `/home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-rerun-20260521-164211`
+- S3 root request: `e2e-certmaker-rerun-start-20260521-164211`
+- S7 async request: `acr_a3c6de6e40bc42e8`
+- S7 terminal status: `failed`, `blockedReason=backend_transport_disconnected`, `retryable=true`
+- Last backend activity: `activitySource=stream-dispatch`, `streamChunkCount=0`, `responseBytes=0`, `approxCompletionChars=0`, elapsed/idle about 1060s
+- Proxy evidence: the failing child wrote the request body to DGX (`8192 + 2249` bytes) and received zero response bytes before `read(...): Connection timed out` at `2026-05-21T08:00:24Z`; concurrent health probes still succeeded.
+
+S7 conclusion for handoff: this is no longer an S7 async elapsed-read timeout. It is a backend/proxy pre-first-byte zero-byte transport-loss class. S7 cannot send an HTTP/SSE heartbeat before vLLM returns response headers. S7 now adds redacted level-40 `llm_exchange` failure records for async backend timeout/transport-disconnect/stream-parse failures so future S3/S7 RCA can prove which controls S3 sent without logging raw paper prompt/schema/seed/response.
+
+S3-facing recommendation is contractual rather than another proxy-only fix: if the same paper unit repeats `stream-dispatch` + zero bytes + `backend_transport_disconnected` while S7 health is ready, S3 should split/reshape the LLM unit (narrower per-finding acquisition, fewer bundled evidence/tool choices, smaller acquisition `max_tokens`, explicit finalizer phase) instead of treating elapsed time alone as liveness. The canonical wording lives in `wiki/canon/api/llm-gateway-api.md` under “Pre-first-byte zero-byte failure contract for S3 paper callers”.
+
 ## S3/S2 계약 메모 (2026-05-08)
 
 - `/v1/health.status` is process liveness only. Use `ready`, `llmReady`, `degraded`, `degradeReasons`, `blockedReason`, and `dependencyStatus` to distinguish DGX/vLLM readiness. Backend unreachable keeps HTTP 200 + `status="ok"` but reports `ready=false`, `llmReady=false`, `degraded=true`, `blockedReason="backend_unreachable"`.
