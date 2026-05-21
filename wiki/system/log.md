@@ -7090,3 +7090,12 @@ related_pages:
 - Updated wiki/canon/handoff/s7/llm-engine-ops.md with dgx-spark-proxy Docker/OpenVPN namespace runbook.
 - Added SSH ProxyCommand using docker exec socat to 10.126.37.19:22 and HTTP proxy on 127.0.0.1:18000.
 - Linked llm-engine-ops.md from S7 fresh-session bootstrap checklist.
+
+## [2026-05-21] mcp | register_wr | s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi.md
+
+## [2026-05-21] registered-work-request | S3 certificate-maker smoke blocked by S7/DGX idle transport timeout
+- Run traceaudit-certmaker-smoke-20260521-133139 failed after S7 async-chat acr_fb419fb36056461a spent ~17m in llm-inference.
+- S7 exposed async status while running, but backend transport failed with httpx.RemoteProtocolError; DGX proxy log showed socat read timeout at the same timestamp.
+- Registered S3→S7 WR: wiki/canon/work-requests/s3-to-s7-s3-request-make-long-dgx-async-chat-observable-and-idle-timeout-safe-for-certifi.md
