@@ -49,7 +49,7 @@ S4 does not perform or emit:
 | Version | `0.11.2` (`app/config.py`) |
 | Service log identity | `s4-sast` |
 | Canonical log file | `/home/kosh/AEGIS/logs/s4-sast-runner.jsonl` |
-| Current test gate | `1395 passed, 1 skipped in 34.93s` on 2026-05-20 |
+| Current test gate | `1406 passed, 1 skipped in 34.39s` on 2026-05-20 |
 
 ## 4. Current route surfaces
 
@@ -86,7 +86,7 @@ gcc-fanalyzer
 
 | Tool | Role | Notes |
 |---|---|---|
-| Semgrep | Pattern + taint rules | Service-local venv executable preferred. |
+| Semgrep | Pattern + taint rules | Service-local venv executable preferred; C++ command-injection canary rules and effective-coverage metadata are reported separately from liveness. |
 | Cppcheck | C/C++ static diagnostics | Original profile to avoid SDK-header blowups. |
 | Flawfinder | Dangerous function canary | Fast text evidence, not semantic proof. |
 | clang-tidy | Compiler-backed CERT/static checks | Enriched profile when compile context supports it. |
@@ -149,6 +149,7 @@ S4 keeps these concerns separate:
 | System Stability Gate | runtime scan and offline reports | Required local execution is complete enough to score/use artifact. |
 | Evidence Readiness | `staticEvidenceContract` and paper bundle validation | Local evidence surfaces are present/partial/not-ready. |
 | Claim Support Readiness | `staticEvidenceContract` | Bounded local claim-support classification, not a quality score. |
+| Effective Coverage Gate | `staticEvidenceContract.gates.coverageQuality`, `toolRuns[].coverage*` | Whether configured local Semgrep coverage has caveats such as unproven C++ rule coverage; not a quality score. |
 | Quality Gate | offline benchmark/tool-portfolio reports | Oracle-backed validation/test/canary metrics after system/corpus readiness. |
 
 A green system-stability gate is not a quality verdict. A green quality gate is not a final security verdict.
@@ -165,6 +166,7 @@ Key principles:
 - current-six `toolEvidenceMatrix` is stable order;
 - out-of-scope surfaces are explicit `not_provided`;
 - `qualityEvaluation` is `not_evaluated` in ordinary runtime responses;
+- `coverageQuality` reports effective-coverage caveats separately from system stability and offline quality scoring;
 - empty findings are never vulnerability absence evidence.
 
 ### Paper static-evidence bundle
@@ -246,7 +248,7 @@ It is not semantic GraphRAG and does not claim completeness for vulnerability re
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/python -m compileall app
 # pass, last recorded in S4 freeze hardening evidence

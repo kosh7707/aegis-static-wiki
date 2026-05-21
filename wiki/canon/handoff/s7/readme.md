@@ -4,7 +4,7 @@ page_type: "canonical-handoff"
 canonical: true
 source_refs:
   - "docs/s7-handoff/README.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -15,9 +15,41 @@ related_pages: []
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S7(LLM Gateway + LLM Engine 관리) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-05-11**
+> **마지막 업데이트: 2026-05-21**
 
 ---
+
+## 0. Fresh-session bootstrap checklist (2026-05-21)
+
+다음 S7 세션은 아래 순서대로 읽으면 된다. 이 섹션이 현재 S7 bootstrap의 압축 진입점이다.
+
+1. Local bootstrap:
+   - AEGIS repo: `docs/AEGIS.md`
+   - AEGIS repo: `docs/mcp.md`
+2. Canonical wiki:
+   - `wiki/system/index.md`
+   - `wiki/canon/charter/aegis.md`
+   - 이 문서: `wiki/canon/handoff/s7/readme.md`
+3. Current S7 contract pages:
+   - `wiki/canon/api/llm-gateway-api.md` — current public contract, including `X-AEGIS-Paper-Controls`.
+   - `wiki/canon/handoff/s7/session-omx-1779269184895-8gprdc.md` — latest completed S7 implementation session.
+   - `wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path.md` — notice sent to S3 with the implemented contract.
+   - `wiki/canon/handoff/s7/llm-engine-ops.md` — DGX Spark / OpenVPN proxy / SSH runbook.
+4. Before editing code:
+   - Run `git status --short`.
+   - Restrict S7 edits to `services/llm-gateway/**` unless the user explicitly changes lane/scope.
+   - Treat current non-S7 worktree modifications under S3/S4/S5 paths as other-lane state; do not revert or “clean up” them from an S7 session.
+5. S7 verification baseline:
+   - Use a venv if needed; previous verification used `/tmp/aegis-s7-venv`.
+   - Canonical command: `cd services/llm-gateway && PYTHONPATH=. /tmp/aegis-s7-venv/bin/pytest -q tests`.
+   - Latest recorded result: **328 passed in 6.61s**.
+6. Open WR triage:
+   - Use `aegis-static-wiki.list_my_open_wrs(lane="s7", include_to_all=true)`.
+   - As of this refresh, S7 completed the S3 paper-controls ITERATE WR and the S3 async/observability unblock WR. The remaining S5 notice is informational/RCA follow-up, not evidence of S5 failure.
+
+## Current handoff headline
+
+S7 has implemented the phase-scoped TraceAudit paper-controls contract requested by S3. S3 should now use `X-AEGIS-Paper-Controls: true` and send all Qwen controls explicitly. S7 remains value-agnostic: it validates, preserves, forwards, observes, and fails loudly; S3 owns concrete hyperparameter values.
 
 ## 1. 프로젝트 전체 그림
 
@@ -42,7 +74,7 @@ related_pages: []
 
 | 서비스 | 포트/위치 | 역할 |
 |--------|-----------|------|
-| **LLM Gateway** | :8000 | 5개 taskType + `/v1/chat` 프록시 + opt-in strict JSON mode + async ownership surface (LLM 단일 관문) |
+| **LLM Gateway** | :8000 | 5개 taskType + `/v1/chat` 프록시 + `/v1/async-chat-requests` + opt-in strict JSON + opt-in paper-controls 계약 (LLM 단일 관문) |
 | **LLM Engine** | 10.126.37.19:8000 (DGX Spark) | `Qwen/Qwen3.6-27B`, vLLM 0.20.0 + MTP=1 서빙 |
 
 ### S7의 정체성
@@ -89,6 +121,7 @@ related_pages: []
   - 다른 서비스와의 소통은 **WR로만** 한다.
   - 연동 판단은 API 계약서만 보고, 계약이 비었거나 낡았으면 담당자에게 WR을 보낸다.
   - **커밋은 하지 않는다**. 커밋은 S2 세션만 한다.
+  - S7 세션은 `services/llm-gateway/**`만 수정한다. 현재 worktree에 S3/S4/S5 파일 변경이 보여도 다른 lane state로 취급하고 revert하지 않는다.
   - `scripts/start*.sh`, `scripts/stop*.sh`, 서비스 기동 명령은 **사용자 허락 없이 실행하지 않는다**.
   - 로그/장애 분석은 `log-analyzer` MCP를 우선 사용한다.
 - 장기 S7 작업 메모와 후속 세션 인계는 `$note`와 `.omx` 메모리를 사용한다.
@@ -107,8 +140,8 @@ related_pages: []
 | 메서드 | 경로 | 용도 |
 |--------|------|------|
 | POST | `/v1/tasks` | Task 기반 AI 분석 요청 (5개 taskType) |
-| POST | `/v1/chat` | OpenAI-compatible chat completion 프록시 (opt-in strict JSON 지원) |
-| POST | `/v1/async-chat-requests` | reconnect-safe async ownership submit |
+| POST | `/v1/chat` | OpenAI-compatible chat completion 프록시 (finite sync, strict JSON/paper-controls smoke 지원) |
+| POST | `/v1/async-chat-requests` | reconnect-safe async ownership submit; TraceAudit paper long-running route |
 | GET | `/v1/async-chat-requests/{requestId}` | async ownership status |
 | GET | `/v1/async-chat-requests/{requestId}/result` | async ownership result fetch |
 | DELETE | `/v1/async-chat-requests/{requestId}` | best-effort cancel |
@@ -154,7 +187,7 @@ phase-2 no-result-loss semantics용 별도 surface.
 
 | 항목 | 상태 |
 |------|------|
-| 테스트 | **235 passed** (`.venv/bin/python -m pytest -q`, 2026-04-24 검증) |
+| 테스트 | **328 passed** (`cd services/llm-gateway && PYTHONPATH=. /tmp/aegis-s7-venv/bin/pytest -q tests`, 2026-05-20 검증) |
 | LLM 모드 | `real` (DGX Spark vLLM) |
 | 모델 | `Qwen/Qwen3.6-27B` 원본 dense (`Qwen/Qwen3.6-27B-default`, contextLimit 131072, FP8/quantized 아님) |
 | Circuit Breaker | 구현 완료 (CLOSED/OPEN/HALF_OPEN) |
@@ -163,7 +196,7 @@ phase-2 no-result-loss semantics용 별도 surface.
 | Request-aware health | **구현 완료** (`activeRequestCount`, `requestSummary`, `requestId` query targeting) |
 | Phase-2 방향 | **Option C — `/v1/chat`는 finite compatibility surface로 두고, stronger no-result-loss semantics는 새 async surface로 분리** |
 | Async ownership surface | **구현 완료** (`submit/status/result/cancel`, 15분 retention, `traceRequestId` echo, explicit expiry) |
-| 미완료 항목 | Qwen3.6-27B live cutover 완료. 남은 항목은 장기/대규모 S3 실사용 latency 관측치 축적 |
+| 미완료 항목 | S7 paper-controls contract 구현 완료. 남은 항목은 S3가 새 계약으로 TraceAudit live smoke를 재실행하고, 필요 시 S7이 RCA/운영 로그를 보강하는 것 |
 
 ### 최근 변경 (2026-04-14)
 
@@ -287,6 +320,58 @@ phase-2 no-result-loss semantics용 별도 surface.
 - `frequencyPenalty`/`frequency_penalty` remains unsupported because it is not in the Qwen3.6 recommended sampling family documented in the temperature-policy analysis.
 - Downstream callers must update through WR. S7 does not directly edit S2/S3 code.
 - Follow-up S7-owned readiness items from the temperature-policy analysis are now tracked separately from the API break: generation controls are recorded in exchange logs and Prometheus; `/v1/health.rag` exposes RAG `topK`, `minScore`, and policy; model fallback remains explicitly absent (single profile + circuit breaker); S3-owned tool-choice, timeout, prompt-injection, and tool-argument validation issues are WR-only for S7.
+
+
+## TraceAudit paper-controls contract (2026-05-20/21)
+
+Status: **implemented and verified on S7**.
+
+Canonical contract:
+- API spec: `wiki/canon/api/llm-gateway-api.md`
+- Implementation session: `wiki/canon/handoff/s7/session-omx-1779269184895-8gprdc.md`
+- S3 notice WR: `wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path.md`
+- Original S3 ITERATE WR: `wiki/canon/work-requests/s3-to-s7-s3-review-reply-iterate-s7-qwen-paper-controls-plan-before-implementation.md` (completed by S7 on 2026-05-21)
+
+### What S7 now enforces
+
+Header: `X-AEGIS-Paper-Controls: true` on `/v1/async-chat-requests` or `/v1/chat`.
+
+Common required fields in paper mode:
+- `max_tokens`, `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty`, `repetition_penalty`
+- `seed`
+- `logprobs`
+- `chat_template_kwargs.enable_thinking`
+- `chat_template_kwargs.preserve_thinking`
+- `tool_choice`
+
+`logprobs=true` requires `top_logprobs` as a non-negative integer. `logprobs=false` requires `top_logprobs` to be omitted. Missing/invalid controls fail before vLLM with HTTP 422 `INVALID_GENERATION_CONTROLS` and field-specific `missingFields` / `invalidFields`.
+
+### Phase split
+
+| Phase | Shape S7 expects | Schema behavior |
+|---|---|---|
+| acquisition/tool-call | non-empty `tools`, `tool_choice="auto"`, no `response_format`, no `structured_outputs`, no `X-AEGIS-Strict-JSON` | schema/strict JSON is rejected for this phase |
+| finalizer/schema | no tools, `tool_choice="none"`, `response_format={"type":"json_schema", "json_schema": {"schema": ...}}` | S7 preserves JSON schema and does not fall back to `json_object` |
+
+`X-AEGIS-Strict-JSON: true` still works for non-paper JSON-object mode. In paper finalizer mode, if the strict header is also present, S7 preserves caller-supplied `json_schema`; in paper acquisition mode, strict JSON is rejected as phase-incompatible.
+
+### Observability delivered
+
+Paper-mode `llm_exchange` logs include prompt-redacted `controlObservability` with request IDs, async request ID, trace request ID, accepted/forwarded/observed controls, control diff, `schemaSnapshotHash`, `profileSnapshotHash`, request/control/response-summary hashes, and known-unverified fields. Paper-mode logs are tested not to contain raw prompt text, raw schema text, raw seed values, or raw response body content.
+
+### Verification evidence
+
+- Analyze artifact: `.omx/analysis/s7-paper-controls-analyze-20260520.md`
+- Plan artifact: `.omx/plans/s7-paper-controls-implementation-plan-20260520.md`
+- Tests: `328 passed in 6.61s`
+- DGX vLLM direct probes:
+  - seed/logprobs/top_logprobs/preserve_thinking request returned HTTP 200 with logprobs returned.
+  - `response_format={"type":"json_schema",...}` finalizer returned HTTP 200 with schema-shaped JSON content and no reasoning.
+- Critic validation: analyze APPROVE, plan ITERATE→APPROVE, implementation APPROVE.
+
+### Next-session caution
+
+Do not re-open hyperparameter value selection in S7. The user decided S3 owns values and should use official Qwen recommendations. S7 only owns the gateway contract and runtime evidence.
 
 ## S3/S2 계약 메모 (2026-05-08)
 

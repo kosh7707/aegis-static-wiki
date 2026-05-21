@@ -273,7 +273,9 @@ Required: `libraryId`, `name`, `versionCandidates[]`, `identityMethod`, `confide
 ### `toolRuns[]`
 Required: `toolRunId`, `toolId`, `status`, `findingsCount`, `version|null`, `elapsedMs|null`, `degraded`, `degradeReasons[]`, `consumerPolicy`, `diagnosticRefs[]`, `trace`.
 
-`toolRuns[]` must include all current-six tool ids in stable order. Non-success status requires diagnostics.
+Additive Semgrep effective-coverage fields may appear on tool rows: `coverage`, `coverageDegraded`, and `coverageReasons[]`. `status="success"` with `coverageDegraded=true` remains an execution success but requires a `tool-coverage` diagnostic so S3 cannot read `findingsCount=0` as clean evidence.
+
+`toolRuns[]` must include all current-six tool ids in stable order. Non-success status requires diagnostics. Success with coverage caveats also requires diagnostics.
 
 ## 9. `staticEvidenceContract` and claim-boundary mirrors
 
@@ -328,7 +330,7 @@ S4 freeze readiness requires positive and negative executable coverage for:
 - row-local trace required fields;
 - required `diagnosticRefs` and reference resolution;
 - sanitized diagnostics;
-- current-six `toolRuns[]` honesty;
+- current-six `toolRuns[]` honesty, including Semgrep effective-coverage diagnostics;
 - duplicate ID failure;
 - claim-boundary mirror consistency;
 - no verdict/risk/safe/TP/FP/UNKNOWN fields;
@@ -350,7 +352,7 @@ cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_st
 # 63 passed, 1 skipped in 2.02s
 
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 ```
 
 Log-analyzer proof exists for request `req-s4-log-proof-1779259710-6143`: S4 emitted canonical JSONL lifecycle logs from paper request start to terminal HTTP 200, with non-empty `s4ProducerRunId` and `bundleStatus=produced`.

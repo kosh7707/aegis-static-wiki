@@ -23,6 +23,8 @@ Last verified: 2026-05-20
 Owner: S4 / SAST Runner
 Current decision: `keep-current-six-tools`
 
+Decision: **keep-current-six-tools**
+
 This page defines how S4 decides whether to add, remove, or upgrade deterministic C/C++ SAST tools. It is a governance policy, not a tool-change request. As of 2026-05-20, S4 deliberately keeps the current six tools and focuses on measurement, stability, contract safety, and paper/e2e integration.
 
 ## 1. Current portfolio
@@ -65,15 +67,19 @@ A future add/remove/upgrade decision must pass all gates below.
 
 | Gate | Required evidence |
 |---|---|
-| A. Corpus/golden coverage | Golden Corpus or successor manifest validates and covers contract, tool capability, evidence bundle, and vulnerability-family canaries. |
-| B. Static evidence compatibility | `staticEvidenceContract` semantics remain intact: no external vuln knowledge, GraphRAG, runtime behavior, exploitability, final verdict, or negative-evidence projection. |
+| A. Golden Corpus coverage | Golden Corpus or successor manifest validates and covers contract, tool capability, evidence bundle, and vulnerability-family canaries. |
+| B. Evidence contract compatibility | `staticEvidenceContract` semantics remain intact: no external vuln knowledge, GraphRAG, runtime behavior, exploitability, final verdict, or negative-evidence projection. |
 | C. Parser compatibility | Representative raw output fixture parses into existing S4 normalized evidence without executing external tools. |
 | D. Benchmark slice coverage | Historical and current benchmark slices remain distinct by validation/test/canary, source, CWE, variant, and matching policy. |
-| E. Unique contribution accounting | Contribution/overlap/limitations are recorded per tool. |
-| F. Runtime stability budget | Tool liveness, timeout, failure behavior, deterministic parser availability, and resource impact are documented. |
+| E. Unique contribution / overlap accounting | Contribution/overlap/limitations are recorded per tool. |
+| F. Runtime and stability budget | Tool liveness, timeout, failure behavior, deterministic parser availability, and resource impact are documented. |
 | G. Consumer safety | S3/S5-facing behavior remains safe or is handled by an explicit WR/API contract before rollout. |
 
 ## 4. Add/remove/upgrade policy
+
+The current decision does **not** add a new SAST tool.
+
+The current decision does **not** remove or upgrade any current-six tool.
 
 Add a tool only if it provides a deterministic local evidence class not covered by the current six and improves a frozen validation/test artifact without adding network, LLM, external vuln lookup, or final-verdict semantics.
 
@@ -117,7 +123,7 @@ Current full S4 verification:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 ```
 
 Relevant governance/experiment assets:

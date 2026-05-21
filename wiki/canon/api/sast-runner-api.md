@@ -69,6 +69,7 @@ S4 must keep operational failures, tool failures, contract failures, and vulnera
 - Request validation errors return structured `errorDetail`/diagnostics and must not echo raw request bodies, host paths, secrets, raw stdout/stderr, or arbitrary exception strings.
 - Required tool liveness/execution failures are system-stability failures, not TP/FP/UNKNOWN and not “safe code”.
 - Empty SAST output is never negative security evidence.
+- Semgrep effective-coverage caveats are reported as `coverageDegraded` / `coverageReasons` / `coverage`, not as runtime `degraded`. They indicate bounded coverage limits, not tool process failure.
 - S4 may emit producer diagnostics and claim-boundary metadata; consumers own final interpretation.
 
 ## 4. Route surface inventory
@@ -166,6 +167,7 @@ Normal response includes:
 - `success`, `scanId`, `status`
 - `findings[]`
 - `execution` including tool results/degradation metadata
+- Semgrep `execution.toolResults.semgrep.coverage`, `coverageDegraded`, and `coverageReasons` when Semgrep runs; these are effective-coverage caveats, not system-stability failures
 - optional `sca`, `codeGraph`, `metadata`
 - `provenance` echo when supplied
 - additive `staticEvidenceContract`
@@ -232,7 +234,7 @@ Latest service-root verification for this document refresh:
 
 ```bash
 cd services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 ```
 
 Additional current focused evidence:
@@ -240,6 +242,12 @@ Additional current focused evidence:
 ```bash
 cd services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py -q
 # 63 passed, 1 skipped in 2.02s
+
+cd services/sast-runner && .venv/bin/semgrep --validate --config rules
+# Configuration is valid - found 0 configuration error(s), and 41 rule(s).
+
+# Direct certmaker Semgrep proof after C++ canary rule pack:
+# services.sast-runner.rules.cpp.aegis.cpp.cwe-78-popen-with-variable at main.cpp:35
 ```
 
 These prove S4 service behavior and documentation claims were checked against the live codebase on 2026-05-20. Cross-lane integration still belongs to the owning S3/S5 e2e smoke gates.

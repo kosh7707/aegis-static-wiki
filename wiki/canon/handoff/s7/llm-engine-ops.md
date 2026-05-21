@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s7-handoff/llm-engine-ops.md"
 original_path: "docs/s7-handoff/llm-engine-ops.md"
-last_verified: "2026-04-28"
+last_verified: "2026-05-21"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -34,6 +34,102 @@ migration_status: "canonicalized"
 ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19
 ssh -i ~/.ssh/dgx_spark accslab@10.126.37.19 'hostname && docker ps | grep vllm_node'
 ```
+
+### 현재 Codex/tmux 환경의 OpenVPN 특수성 (2026-05-21)
+
+현재 AEGIS 작업 환경에서는 DGX Spark `10.126.37.19`가 항상 host/network namespace에서 직접 라우팅된다고 가정하면 안 된다. 특히 fresh Codex/tmux 세션에서는 direct SSH/curl이 실패할 수 있으므로, **OpenVPN을 host에 직접 붙이는 대신 Docker proxy container의 VPN namespace를 사용**한다.
+
+로컬 proxy 작업 디렉터리:
+
+```bash
+/home/kosh/temp/openvpn/dgx-spark-proxy
+```
+
+구성 파일:
+- `Dockerfile` — `openvpn`, `socat`, `curl`, `iproute2` 포함 Ubuntu image
+- `entrypoint.sh` — OpenVPN을 `--route-nopull`로 띄우고 DGX 단일 host route만 추가한 뒤 `socat` TCP proxy 실행
+- `accslab.ovpn`, `auth.txt` — VPN config/credential material. **문서나 로그에 내용을 복사하지 말 것.**
+
+#### Proxy container 기동/확인
+
+이미 떠 있으면 재사용한다:
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep dgx-spark-proxy
+```
+
+없으면 아래처럼 띄운다. 이 컨테이너는 host 전체 route를 바꾸지 않고 container 내부에만 OpenVPN route를 만든다.
+
+```bash
+cd /home/kosh/temp/openvpn/dgx-spark-proxy
+
+docker build -t dgx-spark-proxy:local .
+
+docker rm -f dgx-spark-proxy 2>/dev/null || true
+docker run -d --name dgx-spark-proxy \
+  --cap-add=NET_ADMIN \
+  --device /dev/net/tun \
+  -e DGX_HOST=10.126.37.19 \
+  -e DGX_PORT=8000 \
+  -e LISTEN_PORT=18000 \
+  -v "$PWD/accslab.ovpn:/vpn/accslab.ovpn:ro" \
+  -v "$PWD/auth.txt:/vpn/auth.txt:ro" \
+  -p 127.0.0.1:18000:18000 \
+  dgx-spark-proxy:local
+
+# readiness / diagnostics
+docker logs dgx-spark-proxy --tail 120
+curl -sS --max-time 5 http://127.0.0.1:18000/health
+curl -sS --max-time 5 http://127.0.0.1:18000/v1/models | python3 -m json.tool
+```
+
+Expected proxy log signs:
+- `tun0 is up`
+- `backend tcp reachable`
+- `socat ... TCP-LISTEN:18000 ... TCP:10.126.37.19:8000`
+
+#### SSH through the proxy namespace
+
+Use this when direct SSH to `10.126.37.19` fails or when the session has no host VPN route. The key point is the `ProxyCommand=docker exec -i dgx-spark-proxy socat - TCP:10.126.37.19:22` line.
+
+```bash
+ssh -i /home/kosh/.ssh/dgx_spark \
+  -o BatchMode=yes \
+  -o ConnectTimeout=8 \
+  -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/tmp/aegis_dgx_known_hosts \
+  -o KexAlgorithms=curve25519-sha256 \
+  -o HostKeyAlgorithms=ssh-ed25519 \
+  -o PubkeyAcceptedAlgorithms=ssh-ed25519 \
+  -c aes128-ctr \
+  -m hmac-sha2-256 \
+  -o IPQoS=none \
+  -o 'ProxyCommand=docker exec -i dgx-spark-proxy socat - TCP:10.126.37.19:22' \
+  accslab@10.126.37.19 \
+  'hostname && whoami && ~/qwen27-vllm status'
+```
+
+#### Direct vLLM probes through SSH
+
+For reliable live probes, prefer SSHing into DGX and curling `127.0.0.1:8000` from there. This avoids ambiguity about whether the AEGIS host currently has a direct VPN route.
+
+```bash
+ssh -i /home/kosh/.ssh/dgx_spark \
+  -o 'ProxyCommand=docker exec -i dgx-spark-proxy socat - TCP:10.126.37.19:22' \
+  accslab@10.126.37.19 \
+  'curl -sS --max-time 5 http://127.0.0.1:8000/health && \
+   curl -sS --max-time 5 http://127.0.0.1:8000/v1/models'
+```
+
+#### Failure modes
+
+| Symptom | Likely cause | Action |
+|---|---|---|
+| `docker exec ... dgx-spark-proxy ... No such container` | proxy container is not running | start it with the `docker run` command above |
+| `tun0` never appears | OpenVPN credential/config issue or missing NET_ADMIN/TUN | check `docker logs dgx-spark-proxy --tail 120`; verify `--cap-add=NET_ADMIN --device /dev/net/tun` |
+| SSH direct to `10.126.37.19` fails but proxy SSH works | expected in current tmux/Codex environment | use the proxy `ProxyCommand` form |
+| `curl 127.0.0.1:18000` fails | HTTP proxy port not published or OpenVPN route down | inspect container logs and port binding |
+| DGX SSH works but `/v1/models` fails | vLLM container not serving | run `~/qwen27-vllm status`, `~/qwen27-vllm start`, then recheck |
 
 ---
 

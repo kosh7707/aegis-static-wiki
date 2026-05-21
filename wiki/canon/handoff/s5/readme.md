@@ -6,13 +6,16 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/README.md"
 original_path: "docs/s5-handoff/README.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s5"]
 decision_tags: ["judge-question-credential-url-redaction-v1", "judge-control-credential-url-redaction-v1", "judge-serving-ledger-source-context-request-redaction-v1", "judge-source-context-query-echo-redaction-v1", "source-kg-partial-resolution-selector-redaction-v1", "judge-source-kg-validator-diagnostic-payload-budget-v1", "judge-source-kg-validator-diagnostic-payload-redaction-v1", "judge-source-kg-nested-url-redaction-validator-v1", "health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary", "judge-threat-retrieval-validator-dynamic-field-catalog-v1", "judge-threat-retrieval-validator-issue-code-coverage-v1", "judge-threat-retrieval-validator-issue-code-ast-guard-v1", "judge-threat-retrieval-runtime-diagnostic-contract-v1", "judge-threat-retrieval-runtime-diagnostic-coverage-v1", "judge-source-kg-issue-diagnostic-catalog-v1", "source-kg-serving-diagnostic-coverage-v1", "judge-source-kg-serving-diagnostic-catalog-v1", "judge-relation-conflict-issue-code-catalog-v1", "judge-forbidden-inference-policy-v1", "judge-runtime-vocabulary-policy-v1", "judge-quality-gate-policy-v1", "judge-answer-status-policy-v1", "judge-verdict-policy-v1", "judge-uncertainty-followup-policy-v1", "judge-control-effects-policy-v1", "judge-fallback-trace-policy-v1", "judge-reasoning-path-policy-v1", "judge-reasoning-path-validator-v1", "judge-reasoning-path-sequence-semantics-v1", "judge-reasoning-path-validator-case-coverage-v1", "judge-reasoning-path-validator-issue-catalog-v1", "judge-fallback-trace-validator-v1", "judge-fallback-trace-validator-issue-catalog-v1", "judge-control-effects-validator-v1", "judge-control-effects-trace-scope-v1", "judge-control-effects-trace-alignment-v1", "judge-control-effects-accepted-control-alignment-v1", "judge-control-effects-risk-signal-key-contract-v1", "judge-fallback-trace-payload-validator-v1", "judge-uncertainty-followup-validator-v1", "judge-fallback-trace-payload-cardinality-v1", "judge-uncertainty-field-shape-validator-v1"]
 related_pages:
   - "wiki/canon/specs/health-control-signal-rollout-v2.md"
   - "wiki/canon/work-requests/s3-to-s5-s5-plan-long-running-kb-and-codegraph-ownership-for-health-control-v2-follow-up.md"
   - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
+  - "wiki/canon/api/s5-paper-context-api.md"
+  - "wiki/canon/api/knowledge-base-api.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"
 migration_status: "canonicalized"
 ---
 
@@ -20,7 +23,19 @@ migration_status: "canonicalized"
 # S5. Knowledge Base 인수인계서
 
 
-## Current state refresh — 2026-05-20
+## Current state refresh — 2026-05-21
+
+This handoff is the S5 bootstrap surface for a fresh session. The intended first-read order is:
+
+```text
+1. /home/kosh/AEGIS/docs/AEGIS.md
+2. /home/kosh/AEGIS/docs/mcp.md
+3. wiki/canon/handoff/s5/readme.md                  # this page
+4. wiki/canon/specs/s5-current-implementation-snapshot-20260520.md
+5. wiki/canon/api/s5-paper-context-api.md
+6. wiki/canon/api/knowledge-base-api.md              # broader S5 contract background
+7. list_my_open_wrs(lane="s5", include_to_all=true)  # currently expected: none
+```
 
 This handoff now reflects the post-paper-context / S5_FREEZE_GATE / log-analyzer readiness state. For the compact canonical current-state entry point, read [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
 
@@ -32,6 +47,9 @@ Active S5 status:
 - S3 consumer execution remains S3-owned and is intentionally advertised as `pending_s3_owned_validation`.
 - Canonical JSONL logging is verified at `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl`; `log-analyzer.trace_request` found S5 proof request IDs.
 - Current open S5 WR count was zero at this refresh.
+- S5 now distinguishes **selectable Source KG presence** from **complete/high-confidence Code KG quality**. Weak/smoke/manual Source KG bundles are still consumable when `stageReadiness=ready` and `readiness.contextSelectable=true`, but they return `surfaceStatus=partial` plus `readiness.sourceKgQualityGate=accepted_with_caveats`.
+- S3 has an outgoing S5 request WR to consume that additive contract update: [[wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow]].
+- The previous live certmaker prepare response that looked clean-ready must not be over-read. Re-run `prepare_code_kb` after the idempotency v2 patch before claiming live certmaker output is now `partial`.
 
 Recent verification to treat as current evidence:
 
@@ -40,6 +58,8 @@ Paper/freeze/observability focused: 53 passed
 S5 freeze wrapper: pass
 Full S5 service-root suite: 765 passed
 Paper observability/API focused after live log proof: 18 passed in 37.47s
+Source KG partial-quality contract/update suite: 143 passed in 154.34s
+Live /v1/contracts/paper-context exposes sourceKgQualityGatePolicy/sourceKgQualityDiagnostics/sourceKgPartialReadiness
 git diff --check -- services/knowledge-base: pass
 ```
 
@@ -55,7 +75,7 @@ S5 partial/not_available/error != TP/FP evidence.
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.** 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다.
 > 이 문서는 S5(Knowledge Base) 개발을 이어받는 다음 세션을 위한 인수인계서다.
 > 이것만 읽으면 현재 상태를 파악하고 바로 작업을 이어갈 수 있어야 한다.
-> **마지막 업데이트: 2026-05-20 (S5 Paper Context API 구현, S5_FREEZE_GATE pass, paper-path observability alignment, canonical JSONL/log-analyzer traceability proof, e2e-smoke S5 producer readiness 반영)**
+> **마지막 업데이트: 2026-05-21 (S5 Paper Context API 구현, S5_FREEZE_GATE pass, paper-path observability alignment, canonical JSONL/log-analyzer traceability proof, Source KG partial-quality gate, e2e-smoke S5 producer readiness 반영)**
 
 ---
 
@@ -114,7 +134,7 @@ AEGIS 플랫폼의 **위협 지식 그래프 + 코드 구조 그래프 + 실시�
   - S3/S2 소비자 규칙: `KB_NOT_READY`, `TIMEOUT`, future degraded/transport-only, code graph `partial`/unexpected `empty`는 operational diagnostic 또는 inconclusive context이며 negative security evidence가 아니다.
   - 향후 구현 WR이 열리면 code graph ingest를 1순위 durable/request-aware 후보로 보고, search/CVE는 latency 증가 시 response-owned retry 또는 retained-result 모델 중 하나를 명시한다.
 - 최신 S2 회신 WR: `wiki/canon/work-requests/s5-to-s2-quick-stage-code-graph-graphrag-capability-contract-prepared.md`
-- 최신 S3 회신 WR: `wiki/canon/work-requests/s5-to-s3-search-readiness-and-provenance-update.md`
+- 최신 S3 소비 요청 WR: `wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md`
 - 최신 작업 세션 기록: `wiki/canon/handoff/s5/session-omx-1778663363090-gw9lq6.md` (Threat KB/Source Code KG/Judge 계약 hardening + full KB 670-pass 검증 + Critic ACCEPT 기록)
 - 직전 마감 세션 기록: `wiki/canon/handoff/s5/session-omx-1776068998838-lap2tj.md` (Quick-stage code-graph / GraphRAG capability contract 구현 + 문서/검증 + closeout sync)
 - skill을 써도 **다른 서비스 코드를 보는 대신 계약서와 work-request로 소통**한다.

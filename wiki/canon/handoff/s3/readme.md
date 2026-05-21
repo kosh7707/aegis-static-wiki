@@ -6,20 +6,44 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-12"
+last_verified: "2026-05-21"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed", "traceaudit", "paper-path", "s4-s5-s7-consumption", "observability", "semgrep-coverage-caveat"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md", "wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-12**
+> **마지막 업데이트: 2026-05-21**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-08 기준 최신 implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-21 기준 TraceAudit paper-path implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
+
+## 0. 2026-05-21 세션 재시작용 fast bootstrap
+
+새 S3 세션은 아래 순서로 읽으면 된다. 이 순서가 현재 paper-path 작업의 최소 bootstrap이다.
+
+1. 로컬 bootstrap: `/home/kosh/AEGIS/docs/AEGIS.md`, `/home/kosh/AEGIS/docs/mcp.md`.
+2. Canonical charter/index: `wiki/canon/charter/aegis.md`, `wiki/system/index.md`.
+3. 이 S3 handoff: `wiki/canon/handoff/s3/readme.md`.
+4. Paper identity anchor: `wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md` 또는 `/home/kosh/aegis-for-paper/PAPER-ANCHOR.md`.
+5. Execution companion: `wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md` 또는 `/home/kosh/aegis-for-paper/TRACEAUDIT-S3-S4-S5-USECASES-STATE-MACHINE.md`.
+6. Consumer API contracts: `wiki/canon/api/paper-analysis-api.md`, `wiki/canon/api/sast-runner-api.md`, `wiki/canon/api/s5-paper-context-api.md`, `wiki/canon/api/llm-gateway-api.md`.
+7. Latest S3 session evidence:
+   - `wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md`
+   - `wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md`
+
+Current one-line state:
+
+```text
+S3 paper path is implemented as the consumer/orchestrator for S4 static evidence,
+S5 paper context, and S7 Qwen paper controls. Unit/contract tests are green.
+Live end-to-end smoke over one admitted target remains the next meaningful gate.
+```
+
+Do not restart the benchmark design discussion unless a live/e2e gate fails in a way the anchor's downgrade paths cannot explain. The frozen paper direction remains TraceAudit: reviewer-auditable SAST triage decision artifacts, not model-SOTA or frontier parity.
 
 ## 1. S3의 역할
 
@@ -27,7 +51,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 
 | 서비스 | 포트/위치 | 역할 |
 |---|---|---|
-| Analysis Agent | `:8001` | `deep-analyze`, `generate-poc` |
+| Analysis Agent | `:8001` | `deep-analyze`, `generate-poc`, TraceAudit paper `/v1/paper/**` |
 | Build Agent | `:8003` | `build-resolve`, `sdk-analyze` |
 | agent_runtime (service-local) | 각 서비스 내부 `app/agent_runtime/` | Analysis/Build 각각의 로컬 LLM/도구/정책/스키마 프레임. 공유 런타임 디렉터리는 retired/deleted 상태 |
 
@@ -35,9 +59,9 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 
 | 서비스 | 소유 | 역할 |
 |---|---|---|
-| S7 Gateway (`:8000`) | S7 | 모든 LLM 호출 단일 관문 |
-| S4 SAST Runner (`:9000`) | S4 | scan / functions / libraries / build-and-analyze / build |
-| S5 Knowledge Base (`:8002`) | S5 | KB search / CVE lookup / code-graph / project-memory |
+| S7 Gateway (`:8000` / DGX proxy as configured) | S7 | 모든 LLM 호출 단일 관문; TraceAudit paper path uses async chat requests with explicit Qwen controls |
+| S4 SAST Runner (`:9000`) | S4 | scan / functions / libraries / build-and-analyze / build; TraceAudit paper static evidence producer |
+| S5 Knowledge Base (`:8002`) | S5 | KB search / CVE lookup / code-graph / project-memory; TraceAudit Code KB / Source KG / generic Threat KB producer |
 
 ### S3의 정체성
 
@@ -98,6 +122,12 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 - `GET /v1/health`
 - `GET /v1/models`
 - `GET /v1/prompts`
+- TraceAudit paper API under `/v1/paper`
+  - `POST /v1/paper/analysis-cases`
+  - `GET /v1/paper/analysis-cases`
+  - `GET /v1/paper/analysis-cases/{caseId}`
+  - `POST /v1/paper/analysis-cases/{caseId}/start`
+  - `GET /v1/paper/analysis-cases/{caseId}/artifacts`
 
 ### Build Agent 공개 surface
 - `POST /v1/tasks`
@@ -110,6 +140,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | 영역 | 현재 파일 |
 |---|---|
 | analysis public router | `services/analysis-agent/app/routers/tasks.py` |
+| analysis paper router | `services/analysis-agent/app/paper/api.py` |
 | analysis handlers | `services/analysis-agent/app/routers/deep_analyze_handler.py`, `generate_poc_handler.py` |
 | analysis phase1 façade / flow | `services/analysis-agent/app/core/phase_one*.py` |
 | analysis loop / result assembly | `services/analysis-agent/app/core/agent_loop.py`, `result_assembler.py` |
@@ -119,6 +150,7 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
 | build phase0 / loop / result assembly | `services/build-agent/app/core/phase_zero.py`, `agent_loop.py`, `result_assembler.py` |
 | build ToolIntent dispatch | `services/build-agent/app/core/agent_loop.py`, `services/build-agent/app/agent_runtime/llm/caller.py` |
 | service-local caller / policy / router | `services/analysis-agent/app/agent_runtime/**`, `services/build-agent/app/agent_runtime/**` |
+| paper path orchestration | `services/analysis-agent/app/paper/{runner,s4_client,s5_client,llm_client,normalize,validation,packets,observability}.py` |
 | analysis legacy direct caller | `services/analysis-agent/app/clients/real.py` |
 | analysis eval helper | `services/analysis-agent/eval/eval_runner.py` |
 
@@ -922,3 +954,264 @@ Operational reminder:
 - This is not a shortcut for S4-only conclusions. S4 remains deterministic local static evidence. S3 must still consult/record S5, source context, graph evidence, or UNKNOWN outcomes where S4's claim boundary matrix says the surface is unsupported.
 - Do not reintroduce exit-code-only build success wording or legacy `sdkId="custom"` no-SDK fallback.
 <!-- S3-S4-V0112-FULL-CONSUMPTION-20260518:END -->
+
+---
+
+<!-- S3-TRACEAUDIT-PAPER-PATH-CURRENT-20260521:START -->
+## 27. 2026-05-21 TraceAudit paper path current implementation snapshot
+
+This is the current handoff anchor for S3 paper-path work after the S4/S5/S7 contract-consumption round. It supersedes older paper-path implementation guesses in this handoff, but does not supersede the frozen paper anchor.
+
+### Current implemented surface
+
+S3 Analysis Agent now exposes a paper-only API under `/v1/paper`:
+
+```text
+POST /v1/paper/analysis-cases
+GET  /v1/paper/analysis-cases
+GET  /v1/paper/analysis-cases/{caseId}
+POST /v1/paper/analysis-cases/{caseId}/start
+GET  /v1/paper/analysis-cases/{caseId}/artifacts
+```
+
+The implementation lives under:
+
+```text
+services/analysis-agent/app/paper/
+  api.py
+  runner.py
+  s4_client.py
+  s5_client.py
+  llm_client.py
+  normalize.py
+  validation.py
+  packets.py
+  observability.py
+  timeout_policy.py
+```
+
+Request model anchor:
+
+```text
+services/analysis-agent/app/paper/models.py::PaperCaseCreateRequest
+```
+
+Important request fields:
+
+```text
+paperRunId, paperRunRoot, caseId, buildTargetId,
+sourceRoot, sourceRootRef,
+compileCommandsPath, compileContextRef,
+buildSnapshotId, buildUnitId,
+scope,
+producerArtifacts,
+serviceEndpoints
+```
+
+`producerArtifacts` enables file-backed S4/S5/LLM fixtures. If no file-backed artifact is supplied, S3 calls live S4/S5/S7 endpoints from settings or `serviceEndpoints` where supported.
+
+### Current stage flow
+
+`PaperCaseRunner` executes this synchronous per-case flow:
+
+```text
+BUILD_CONTEXT_READY
+SETUP_RUNNING
+S4_STATIC_EVIDENCE_READY
+S5_CODE_KB_READY
+S5_FINDING_CONTEXT_READY
+S3_TRIAGE_COMPLETED
+PAPER_EXPORT_READY
+```
+
+Important design decision:
+
+```text
+No batch-start API is exposed by S3. Batch generation/validation/execution belongs
+to the experiment harness, not to S3 service responsibility.
+```
+
+### S4 consumption status
+
+S3 calls S4 paper static evidence at:
+
+```text
+POST /v1/paper/static-evidence
+```
+
+Live mode uses S4 durable ownership first via `Prefer: respond-async` / ownership helpers. File-backed mode loads `producerArtifacts.s4StaticEvidencePath` and runs the same S4 paper-bundle validator before normalization.
+
+S3 validation/normalization rules now include:
+
+- every required S4 surface must satisfy the paper bundle contract before use;
+- unresolved `diagnosticRefs` are rejected;
+- `staticEvidenceContract` is preserved in `s4-static-evidence.normalized.json`;
+- S4 findings become ordinary `s3-evidence:*` rows only when they are produced evidence;
+- S4 diagnostics and caveats become `s3-diagnostic:*` rows;
+- `toolRuns[].coverageDegraded=true` is a producer coverage caveat, not system liveness failure and not clean/security evidence;
+- `coverageDegraded=true` requires non-empty `coverageReasons` and resolved `diagnosticRefs`.
+
+Current Semgrep coverage caveat consumer rule:
+
+```text
+S4 status=success + findingsCount=0 + coverageDegraded=true
+  => PAPER_EXPORT_READY may still be reached for a zero-finding case,
+     but the toolRun row is diagnostic and must not be interpreted as clean or safe evidence.
+```
+
+### S5 consumption status
+
+S3 calls S5 paper context endpoints:
+
+```text
+POST /v1/paper/code-kb/prepare
+POST /v1/paper/finding-context/retrieve
+POST /v1/paper/threat-context/generic
+```
+
+Current S3 request-builder anchors:
+
+```text
+build_prepare_code_kb_request()
+build_finding_context_request()
+build_generic_threat_request()
+```
+
+S3 enforces:
+
+- `visibilityMode="generic"`;
+- forbidden leakage classes: `cve_id`, `fix_commit`, `advisory`, `exploit_writeup`, `patch_text`;
+- S5 request `X-Request-Id` equals body `requestId`;
+- S5 diagnostics must set `negativeEvidenceAllowed=false`;
+- S5 partial-but-ready Source KG with `sourceKgQualityGate="accepted_with_caveats"` is selectable with caveats;
+- S5 `no_hit`, `partial`, `not_available`, and `error` are diagnostic/context surfaces, not TP/FP evidence and not safe/vulnerable evidence.
+
+### S7 / Qwen paper controls status
+
+S3 consumes S7 async chat at:
+
+```text
+POST /v1/async-chat-requests
+GET  /v1/async-chat-requests/{requestId}
+GET  /v1/async-chat-requests/{requestId}/result
+```
+
+The paper path is phase-scoped:
+
+1. Acquisition phase:
+   - profile `traceaudit-qwen36-acquisition-v1`;
+   - `max_tokens=32768`;
+   - thinking-general controls;
+   - `seed=20260520`;
+   - `logprobs=false`;
+   - `preserve_thinking=false`;
+   - tools present;
+   - `tool_choice="auto"`;
+   - no strict JSON / no response schema.
+2. Finalizer phase:
+   - profile `traceaudit-qwen36-finalizer-v1`;
+   - `max_tokens=32768`;
+   - non-thinking instruct controls;
+   - `seed=20260520`;
+   - `logprobs=false`;
+   - `preserve_thinking=false`;
+   - no tools;
+   - `tool_choice="none"`;
+   - strict JSON schema via `response_format=json_schema`;
+   - `X-AEGIS-Strict-JSON: true`.
+
+S3 intentionally does not use `tool_choice="required"` for acquisition because Qwen/vLLM thinking + required tool choice was previously observed as incompatible. Instead, S3 uses `tool_choice="auto"` plus deterministic fallback for required S5 context tools.
+
+### Tool-call acquisition status
+
+S3 acquisition tools are defined in `services/analysis-agent/app/paper/llm_client.py::paper_tool_schemas()`:
+
+```text
+retrieve_finding_context
+retrieve_generic_threat_context
+list_evidence_rows
+```
+
+`PaperCaseRunner` supports up to three acquisition rounds. It preserves OpenAI-style assistant/tool history between rounds and then applies deterministic fallback for missing required S5 context tools:
+
+```text
+retrieve_finding_context
+retrieve_generic_threat_context
+```
+
+This means a weak/no-tool LLM acquisition turn does not silently skip S5. S3 still attempts the required S5 context surfaces before finalization.
+
+### Finalizer safety status
+
+Final TP/FP/UNKNOWN rows are validated by S3 before acceptance:
+
+- TP/FP require cited evidence refs;
+- cited refs must exist for the current finding packet;
+- grounding refs must be non-diagnostic produced evidence for TP/FP;
+- diagnostic refs may be used only as diagnostic/context support;
+- invalid or ungrounded finalizer rows recover to `UNKNOWN_CLAIM_BOUNDARY` with unsupported-claim notes, not task failure.
+
+### B0-B4 packet rendering status
+
+S3 renders paper packets under case artifacts:
+
+```text
+audit-packets/case-level/
+audit-packets/findings/{findingId}/
+```
+
+Current packet conditions:
+
+```text
+b0-sast-only.json
+b1-raw-llm-rationale.json
+b2-evidence-dump-no-ledger.json
+b3-aegis-ledger-no-verdict.json
+b4-aegis-full-packet.json
+```
+
+S3 enforces B2/B4 same evidence text/order via `validate_b2_b4_same_rows()`. B2 hides ledger refs/producer traces/claim links; B4 exposes ledger structure.
+
+### Observability status
+
+Paper routes use `PaperObservedRoute`, which propagates/returns `X-Request-Id` and logs structured events:
+
+```text
+paper_request_start / paper_request_end / paper_request_error
+paper_case_registered / paper_case_start_requested / paper_case_completed
+paper_stage
+paper_http_call_start / paper_http_call_end / paper_http_call_error
+paper llm exchange
+```
+
+S3 logs child calls with target/path/case/buildTarget/paperRun/finding and child request ids. S4/S5 also implemented X-Request-Id trace logging, so old S3-only xid workaround paths should not be reintroduced.
+
+### Current verification snapshot
+
+Fresh S3 verification after S7 paper-controls consumption and S4 Semgrep coverage-caveat consumption:
+
+```text
+cd services/analysis-agent && .venv/bin/python -m pytest tests/test_paper_path.py::test_s4_semgrep_coverage_caveat_is_preserved_as_diagnostic_not_clean_evidence -q
+# 1 passed in 0.17s
+
+cd services/analysis-agent && .venv/bin/python -m pytest tests/test_paper_path.py tests/test_generation_policy.py -q
+# 86 passed in 0.54s
+
+cd services/analysis-agent && .venv/bin/python -m pytest -q && .venv/bin/python -m compileall -q app
+# 764 passed in 7.06s; compileall PASS
+```
+
+Canonical evidence:
+
+```text
+wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md
+wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md
+```
+
+### Next meaningful gates
+
+1. Run a fresh live/file-backed e2e smoke on one admitted build target, preferably `certificate-maker`, with S3/S4/S5/S7 logs correlated by `X-Request-Id`.
+2. Inspect produced artifacts by hand: `state-trace.jsonl`, S4/S5 raw+normalized artifacts, `evidence-ledger.jsonl`, `llm-transcript.*`, `triage-envelope.jsonl`, `analysis-envelope.json`, and B0-B4 packets.
+3. Only after one case reaches `PAPER_EXPORT_READY` with inspectable evidence should S3 decide any further optimization or batching direction.
+4. Do not tune for speed by shrinking Qwen `max_tokens` or prompt context unless paper claim quality and claim-evidence grounding remain intact.
+<!-- S3-TRACEAUDIT-PAPER-PATH-CURRENT-20260521:END -->

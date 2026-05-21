@@ -4,6 +4,7 @@ page_type: "canonical-spec"
 canonical: true
 source_refs:
   - "services/knowledge-base/app/main.py"
+  - "services/knowledge-base/app/contracts/paper_context.py"
   - "services/knowledge-base/app/observability.py"
   - "services/knowledge-base/app/routers/contracts_api.py"
   - "services/knowledge-base/app/routers/paper_context_api.py"
@@ -12,19 +13,36 @@ source_refs:
   - "services/knowledge-base/tests/test_paper_context_observability.py"
   - "services/knowledge-base/tests/test_paper_context_api_contract.py"
   - "services/knowledge-base/tests/test_paper_context_freeze_gate.py"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s5", "knowledge-base", "paper-context", "source-code-kg", "threat-kb", "judge", "observability", "log-analyzer"]
 decision_tags: ["current-state", "s5-freeze-gate", "producer-boundary", "canonical-jsonl", "request-id-traceability", "paper-api", "source-code-kg", "threat-kb"]
-related_pages: ["wiki/canon/handoff/s5/readme.md", "wiki/canon/handoff/s5/architecture.md", "wiki/canon/roadmap/s5-roadmap.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/specs/knowledge-base.md", "wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520.md", "wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e.md"]
+related_pages: ["wiki/canon/handoff/s5/readme.md", "wiki/canon/handoff/s5/architecture.md", "wiki/canon/roadmap/s5-roadmap.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/specs/knowledge-base.md", "wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520.md", "wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e.md", "wiki/canon/work-requests/s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r.md", "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"]
 ---
 
 # S5 Current Implementation Snapshot — 2026-05-20
 
 > This page is the canonical S5 current-state pointer for documents that predate the 2026-05-20 paper-context/freeze-gate/observability work. Historical pages remain useful for design rationale, but this snapshot is the preferred entry point for active S5 implementation state.
 
+## Bootstrap contract for fresh S5 sessions
+
+Use this page as the compact current-state pointer after reading `docs/AEGIS.md`, `docs/mcp.md`, and [[wiki/canon/handoff/s5/readme]]. A fresh S5 session should not start from historical `docs/**` material or old session logs unless this page links there for a specific reason.
+
+Immediate S5 bootstrap checklist:
+
+```text
+1. Confirm lane scope: services/knowledge-base/** only.
+2. Check open S5 WRs through list_my_open_wrs(lane="s5", include_to_all=true).
+3. Use wiki/canon/api/s5-paper-context-api.md for S3 paper-context consumption.
+4. Use wiki/canon/api/knowledge-base-api.md for broader S5/Judge/Source KG contracts.
+5. Use log-analyzer for runtime/request tracing; do not scrape logs first unless the MCP is unavailable.
+6. Do not claim live certmaker prepare output is partial until prepare_code_kb is rerun after the idempotency v2 patch.
+```
+
 ## Status summary
 
-S5 / Knowledge Base is ready for S3 e2e smoke within the S5-owned producer/context-provider boundary.
+S5 / Knowledge Base is ready for S3 e2e smoke within the S5-owned producer/context-provider boundary. After the live certmaker Source KG quality check on 2026-05-20, S5 now distinguishes selectable Source KG presence from complete graph quality: smoke/manual harness or low-confidence Source KG bundles are returned as `surfaceStatus=partial` with `sourceKgQualityGate=accepted_with_caveats`, not as clean `produced` Code KB readiness.
+
+S3 consumer action is required for the additive paper-context contract update: `stageReadiness=ready` and `readiness.contextSelectable=true` still allow S3 to consume `codeKbRef`/`sourceKgRef`, but `readiness.sourceKgQualityGate=accepted_with_caveats` must be preserved as a graph-quality caveat and must not be rendered as complete/high-confidence Source KG coverage.
 
 Current live-facing status:
 
@@ -36,6 +54,7 @@ Paper contract endpoint: GET /v1/contracts/paper-context
 S5 freeze gate: pass
 S3 consumer execution status: pending_s3_owned_validation
 Open S5 WRs: none at the time of this refresh
+Outgoing S5->S3 WR: consume sourceKgQualityGate=accepted_with_caveats
 ```
 
 ## Active responsibilities
@@ -99,6 +118,18 @@ freezeGate.s5FreezeGate = pass
 freezeGate.validationSuiteVersion = s5-paper-freeze-gate-v1
 freezeGate.s3ConsumerExecutionStatus = pending_s3_owned_validation
 freezeGate.missingValidationItems = []
+policies.sourceKgQualityGatePolicy = selectable_context_may_be_partial_with_caveats
+policies.sourceKgQualityDiagnostics = [
+  S5_PAPER_SOURCE_KG_SMOKE_HARNESS_PROVENANCE,
+  S5_PAPER_SOURCE_KG_LOW_CONFIDENCE_EDGES,
+  S5_PAPER_SOURCE_KG_NODE_SNIPPET_COVERAGE_EMPTY,
+  S5_PAPER_SOURCE_KG_EDGE_COVERAGE_EMPTY,
+  S5_PAPER_SOURCE_KG_RICH_IR_NOT_AVAILABLE
+]
+policies.sourceKgPartialReadiness.surfaceStatus = partial
+policies.sourceKgPartialReadiness.stageReadiness = ready
+policies.sourceKgPartialReadiness.sourceKgQualityGate = accepted_with_caveats
+policies.sourceKgPartialReadiness.negativeEvidenceAllowed = false
 ```
 
 ## Implementation mapping
@@ -153,6 +184,12 @@ cd services/knowledge-base && .venv/bin/python -m pytest tests -q
 
 cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_observability.py tests/test_paper_context_api_contract.py -q
   -> 18 passed in 37.47s
+
+cd services/knowledge-base && .venv/bin/python -m pytest tests/test_paper_context_api_contract.py tests/test_paper_context_observability.py tests/test_paper_context_freeze_gate.py tests/test_source_code_kg_v1.py tests/test_source_code_kg_contract_v1.py -q
+  -> 143 passed in 154.34s
+
+curl -sS http://localhost:8002/v1/contracts/paper-context
+  -> policies.sourceKgQualityGatePolicy/sourceKgQualityDiagnostics/sourceKgPartialReadiness present
 
 git diff --check -- services/knowledge-base
   -> pass

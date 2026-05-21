@@ -6,15 +6,15 @@ source_refs:
   - "services/sast-runner/app/routers/scan.py"
   - "services/sast-runner/tests/test_paper_static_evidence.py"
   - "wiki/canon/work-requests/s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-.md"
-last_verified: "2026-05-20"
-service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit"]
-decision_tags: ["roadmap", "e2e-smoke-ready", "current-six-tools", "quality-gate"]
-related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md"]
+last_verified: "2026-05-21"
+service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit", "semgrep-effective-coverage"]
+decision_tags: ["roadmap", "e2e-smoke-ready", "current-six-tools", "quality-gate", "session-reset-bootstrap"]
+related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md", "wiki/canon/handoff/s4/session-s4-semgrep-effective-coverage-hardening-20260520.md", "wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md"]
 ---
 
 # S4 SAST Runner — 로드맵
 
-> Last verified: **2026-05-20**
+> Last verified: **2026-05-21**
 > Owner: **S4 / SAST Runner**
 
 ## Current state
@@ -23,17 +23,30 @@ related_pages: ["wiki/canon/handoff/s4/readme.md", "wiki/canon/specs/sast-runner
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass
 S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
 S4_E2E_SMOKE_READINESS = ready
-Open S4 WRs = none at last check
+S4_SEMGREP_CPP_EFFECTIVE_COVERAGE_CANARY = pass
+Open S4 WRs = none at 2026-05-21 bootstrap refresh
+S3_SEMGREP_COVERAGE_NOTICE_WR = registered
 ```
 
 Current verification:
 
-- Full S4 service suite: `1395 passed, 1 skipped in 34.93s`.
+- Full S4 service suite: `1406 passed, 1 skipped in 34.39s`.
 - Paper/logging focused suite: `63 passed, 1 skipped in 2.02s`.
 - Canonical JSONL/log-analyzer proof request: `req-s4-log-proof-1779259710-6143`.
 - Wiki validation: `PASS`.
+- S3 notice WR for Semgrep coverage contract: registered.
+- Critic final state for Semgrep hardening: `PASS_WITH_CHANGES` with all mandatory changes resolved.
 
 ## Immediate next
+
+### 0. Bootstrap reset rule
+
+A fresh S4 session should **not** reopen the Semgrep issue from scratch. The Semgrep hardening checkpoint is complete unless S3 reports a concrete consumer mismatch. First actions after reset:
+
+1. Read `wiki/canon/handoff/s4/readme.md` section 0.1.
+2. Check `git status --short -- services/sast-runner` and preserve S4-only changes.
+3. Check open WRs with `list_my_open_wrs(lane="S4", include_to_all=true)`.
+4. If no new WR exists, support S3 e2e smoke or await S3 response to the Semgrep coverage notice.
 
 ### 1. Support S3 e2e smoke
 
@@ -69,9 +82,9 @@ Even though current-six tools were available in the latest runtime proof, the ho
 
 ## Medium-term S4 work
 
-### A. Paper static-evidence consumer hardening follow-up
+### A. S3 consumer feedback follow-up
 
-Do only if S3 e2e reveals gaps:
+Do only if S3 e2e or S3 response to the Semgrep coverage notice reveals gaps:
 
 - add more file-backed/live-equivalent examples;
 - add additional consumer canary fixture variants;
@@ -101,11 +114,20 @@ Maintain current boundaries:
 
 - CWE-457 recall/noise investigation after decision-grade corpus runs.
 - Additional parser compatibility fixtures for newly observed tool output variants.
+- Broader C++ Semgrep rule-family expansion only after a validation/oracle plan exists; the current C++ command-injection rule pack is a canary, not a comprehensive C++ coverage claim.
 - More real-CVE-pair corpus candidates after manifest/checksum/provenance rules are satisfied.
 - Refine SCA library version/diff evidence without turning it into CVE affectedness or integrity proof.
 - Further observability improvements only if e2e traces show blind spots.
 
 ## Recently completed highlights
+
+### 2026-05-20 — Semgrep C++ effective-coverage hardening
+
+- Added C++ Semgrep command-injection canary rules for `system()` and `popen()`.
+- Fixed C++/mixed Semgrep include filtering so `.cpp/.cc/.cxx/.hpp/.hh/.hxx/.ipp/.txx` are not silently excluded.
+- Added `coverage`, `coverageDegraded`, and `coverageReasons` fields on Semgrep tool execution results.
+- Added `staticEvidenceContract.gates.coverageQuality` and paper `tool-coverage` diagnostics so S3 sees coverage caveats even when `toolRuns[].status="success"`.
+- Direct certmaker proof now reports `aegis.cpp.cwe-78-popen-with-variable` at `main.cpp:35`.
 
 ### 2026-05-20 — canonical log-analyzer traceability proof
 

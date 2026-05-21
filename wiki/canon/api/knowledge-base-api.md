@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/knowledge-base-api.md"
 original_path: "docs/api/knowledge-base-api.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s5"]
 decision_tags: ["judge-question-credential-url-redaction-v1", "judge-control-credential-url-redaction-v1", "judge-serving-ledger-source-context-request-redaction-v1", "judge-source-context-query-echo-redaction-v1", "source-kg-partial-resolution-selector-redaction-v1", "judge-source-kg-validator-diagnostic-payload-budget-v1", "judge-source-kg-validator-diagnostic-payload-redaction-v1", "judge-source-kg-nested-url-redaction-validator-v1", "health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary", "target-context-bundle-v1", "acquisition-envelope-v1", "non-silent-fallback", "knowledge-coverage-contract-v1", "acquisition-readiness-contract-v1", "runtime-vs-offline-evaluation", "analyst-brief-v1", "source-code-kg-ingest-v1", "judge-answer-contract-v1", "judge-threat-retrieval-topk-policy-v1", "source-kg-context-resolution-v1", "source-kg-rich-ir-payload-policy-v1", "runtime-log-redaction-v1", "judge-candidate-pool-truncation-v1", "judge-control-echo-policy-v1", "source-kg-ingest-size-policy-v1", "judge-keyword-match-discovery-v1", "judge-question-term-discovery-v1", "sync-timeout-no-side-effect-v1", "source-kg-producer-identity-policy-v1", "judge-control-list-cardinality-policy-v1", "judge-missing-version-threat-context-v1", "source-kg-atomic-ingest-policy-v1", "source-kg-producer-id-uniqueness-v1", "judge-force-context-budget-policy-v1", "judge-keyword-match-fielded-policy-v1", "threat-retrieval-runtime-trace-parity-v1", "judge-topk-canonicalization-policy-v1", "source-kg-container-lineage-rebind-policy-v1", "judge-unsupported-control-echo-budget-v1", "judge-compact-revision-hash-policy-v1", "runtime-qdrant-url-log-redaction-v1", "etl-seed-url-redaction-v1", "url-query-secret-redaction-v1", "source-kg-producer-reference-id-length-policy-v1", "source-kg-generated-identity-uniqueness-v1", "source-kg-served-url-redaction-v1", "analyst-brief-selector-non-echo-v1", "analyst-brief-judge-answer-v1", "analyst-brief-contract-v1", "source-kg-checksum-integrity-v1", "ready-ledger-dependency-v1", "source-kg-line-span-validation-v1", "source-kg-repository-root-immutability-v1", "source-kg-explicit-id-content-immutability-v1", "source-kg-nested-object-budget-v1", "source-kg-serving-nested-object-redaction-v1", "judge-source-kg-nested-redaction-validator-v1", "source-kg-redacted-context-diagnostic-v1", "source-kg-projection-diagnostic-budget-v1", "source-kg-compile-commands-artifact-context-v1", "judge-source-kg-url-redaction-validator-v1", "judge-compile-commands-artifact-contract-parity-v1", "source-kg-source-artifact-resolution-accounting-v1", "judge-compile-commands-artifact-validator-v1", "judge-compile-commands-artifact-validator-tolerance-v1", "judge-source-kg-context-resolution-integrity-validator-v1", "judge-source-kg-context-resolution-shape-validator-v1", "judge-source-kg-context-resolution-issue-redaction-v1", "judge-threat-retrieval-authority-boundary-validator-v1", "judge-threat-retrieval-child-authority-validator-v1", "judge-threat-retrieval-authority-issue-metadata-redaction-v1", "judge-threat-retrieval-validator-diagnostic-redaction-v1", "judge-threat-retrieval-validator-field-path-policy-v1", "judge-threat-retrieval-validator-field-normalization-v1", "judge-threat-retrieval-validator-field-catalog-v1", "judge-threat-retrieval-validator-dynamic-field-catalog-v1", "judge-threat-retrieval-validator-issue-code-coverage-v1", "judge-threat-retrieval-validator-issue-code-ast-guard-v1", "judge-threat-retrieval-runtime-diagnostic-contract-v1", "judge-threat-retrieval-runtime-diagnostic-coverage-v1", "judge-source-kg-issue-diagnostic-catalog-v1", "source-kg-serving-diagnostic-coverage-v1", "judge-source-kg-serving-diagnostic-catalog-v1", "judge-relation-conflict-issue-code-catalog-v1", "judge-forbidden-inference-policy-v1", "judge-runtime-vocabulary-policy-v1", "judge-quality-gate-policy-v1", "judge-answer-status-policy-v1", "judge-verdict-policy-v1", "judge-uncertainty-followup-policy-v1", "judge-control-effects-policy-v1", "judge-fallback-trace-policy-v1", "judge-reasoning-path-policy-v1", "judge-reasoning-path-validator-v1", "judge-reasoning-path-sequence-semantics-v1", "judge-reasoning-path-validator-case-coverage-v1", "judge-reasoning-path-validator-issue-catalog-v1", "judge-fallback-trace-validator-v1", "judge-fallback-trace-validator-issue-catalog-v1", "judge-control-effects-validator-v1", "judge-control-effects-trace-scope-v1", "judge-control-effects-trace-alignment-v1", "judge-control-effects-accepted-control-alignment-v1", "judge-control-effects-risk-signal-key-contract-v1", "judge-fallback-trace-payload-validator-v1", "judge-uncertainty-followup-validator-v1", "judge-fallback-trace-payload-cardinality-v1", "judge-uncertainty-field-shape-validator-v1"]
 related_pages:
@@ -15,6 +15,8 @@ related_pages:
   - "wiki/canon/specs/s5-etl-pipeline-modernization-target-context.md"
   - "wiki/canon/work-requests/s3-to-s5-reply-s3-requests-one-track-target-context-acquisition-contract-for-s5.md"
   - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
+  - "wiki/canon/api/s5-paper-context-api.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"
 migration_status: "canonicalized"
 ---
 
@@ -22,7 +24,7 @@ migration_status: "canonicalized"
 # Knowledge Base API 계약서
 
 
-## Current-state overlay — 2026-05-20
+## Current-state overlay — 2026-05-21
 
 This page remains the canonical general Knowledge Base API contract. For the paper-specific S3 consumer surface, use [[wiki/canon/api/s5-paper-context-api]] and the current-state snapshot [[wiki/canon/specs/s5-current-implementation-snapshot-20260520]].
 
@@ -36,6 +38,8 @@ Important current additions since the older general API sections:
 - `X-Timeout-Ms` is optional for paper endpoints and is not a semantic terminal deadline.
 - Paper POST requests require body `requestId` and `idempotencyKey`; if `X-Request-Id` is supplied, it must match body `requestId`.
 - Paper responses are contextual support only and must not be consumed as final TP/FP/UNKNOWN evidence.
+- `POST /v1/paper/code-kb/prepare` now reports weak/selectable Source KG bundles as `surfaceStatus=partial` with `readiness.sourceKgQualityGate=accepted_with_caveats` and diagnostic-only quality caveats, rather than over-claiming clean `produced` readiness.
+- S3 consumer action for this additive paper-context contract update: keep consuming `codeKbRef`/`sourceKgRef` when `stageReadiness=ready` and `readiness.contextSelectable=true`, but preserve `accepted_with_caveats` diagnostics and do not render weak Source KG as complete/high-confidence graph coverage.
 - Canonical JSONL logging for S5 is verified at `/home/kosh/AEGIS/logs/aegis-knowledge-base.jsonl` with `service=s5-kb`, numeric levels, request IDs, lifecycle rows, and `log-analyzer.trace_request` support.
 - `/v1/health` is liveness-only; it can echo `X-Request-Id` via middleware but intentionally has no explicit lifecycle log. Use paper/contract endpoints for traceability proof.
 
@@ -46,12 +50,13 @@ S5 paper/freeze/observability focused: 53 passed
 S5 full service-root suite: 765 passed
 Paper observability/API focused after live log proof: 18 passed in 37.47s
 S5 canonical JSONL/log-analyzer proof: PASS
+S5 Source KG partial-quality contract/update suite: 143 passed in 154.34s
 ```
 
 > **소유자**: S5 (Knowledge Base)
 > **포트**: 8002
 > **호출자**: S2 (Backend), S3 (Analysis Agent)
-> **최종 업데이트**: 2026-05-20 (S5 Paper Context API는 별도 계약서 `wiki/canon/api/s5-paper-context-api.md`에서 관리; 본 일반 KB API 계약서에는 paper endpoint 분리, no-final-verdict boundary, canonical JSONL/log-analyzer traceability proof, S5_FREEZE_GATE pass 상태를 overlay로 반영)
+> **최종 업데이트**: 2026-05-21 (S5 Paper Context API는 별도 계약서 `wiki/canon/api/s5-paper-context-api.md`에서 관리; 본 일반 KB API 계약서에는 paper endpoint 분리, no-final-verdict boundary, canonical JSONL/log-analyzer traceability proof, S5_FREEZE_GATE pass, Source KG partial-quality 소비 규칙을 overlay로 반영)
 
 ---
 

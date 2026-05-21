@@ -39,6 +39,7 @@ Minimum block:
     "systemStability": {},
     "evidenceReadiness": {},
     "claimSupportReadiness": {},
+    "coverageQuality": {},
     "qualityEvaluation": {}
   },
   "coverage": {},
@@ -53,13 +54,14 @@ The field is additive. Existing findings, execution, SCA, code graph, metadata, 
 
 ## 2. Gate separation
 
-The contract deliberately separates four questions:
+The contract deliberately separates five questions:
 
 | Gate | Meaning | Must not be interpreted as |
 |---|---|---|
 | `systemStability` | Did the local S4 tool/execution path complete reliably enough to emit an artifact? | vulnerability quality, safe code, or TP/FP/UNKNOWN |
 | `evidenceReadiness` | Are required local evidence surfaces present enough for bounded S4 consumption? | complete coverage or negative evidence |
 | `claimSupportReadiness` | Can the artifact support bounded local-static claims while rejecting unsupported claims? | risk score or final verdict |
+| `coverageQuality` | Did configured local tool coverage report effective-coverage caveats such as unproven Semgrep C++ coverage? | recall/precision/noise score, safe code, or system failure |
 | `qualityEvaluation` | Was an offline validation/golden-corpus profile run? | runtime quality unless a named validation profile actually ran |
 
 Default runtime `qualityEvaluation` is:
@@ -187,6 +189,9 @@ Each row reports local execution/governance state, not vulnerability truth. Mini
   "skipReason": null,
   "degraded": false,
   "degradeReasons": [],
+  "coverageDegraded": false,
+  "coverageReasons": [],
+  "coverage": null,
   "consumerPolicy": "local_tool_execution_state_only_not_vulnerability_verdict",
   "evidenceRefs": ["execution.toolResults.semgrep"],
   "deterministic": true,
@@ -197,7 +202,7 @@ Each row reports local execution/governance state, not vulnerability truth. Mini
 }
 ```
 
-Missing, failed, partial, degraded, skipped, or unknown tool states must be explicit and must not be hidden behind an empty findings list.
+Missing, failed, partial, degraded, skipped, unknown, or effective-coverage-caveated tool states must be explicit and must not be hidden behind an empty findings list. Semgrep `coverageDegraded=true` does not make `systemStability` fail by itself; it is reported through `coverageQuality` and consumer policy.
 
 ## 6. Runtime policy
 
@@ -249,7 +254,7 @@ Latest verification for this document refresh:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 ```
 
 Relevant focused coverage includes:

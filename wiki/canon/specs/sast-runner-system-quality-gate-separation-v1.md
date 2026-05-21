@@ -28,9 +28,10 @@ S4 separates three different questions that must never be collapsed:
 
 1. **System Stability Gate** — did the required local tools/steps run completely enough to trust this as an execution artifact?
 2. **Evidence/Producer Contract Gate** — did S4 describe emitted evidence, missing evidence, diagnostics, traces, and claim boundaries safely enough for consumers?
-3. **Quality Gate** — after stable execution and a frozen oracle/corpus profile, what do recall/precision/noise/coverage metrics say?
+3. **Effective Coverage Gate** — did a successfully executed local tool still report bounded coverage caveats, such as Semgrep C++ coverage being unproven?
+4. **Quality Gate** — after stable execution and a frozen oracle/corpus profile, what do recall/precision/noise/coverage metrics say?
 
-A failed System Stability Gate blocks quality scoring. A produced paper/static-evidence bundle with bounded diagnostics can still be consumable if its contract is valid and it honestly says what was not produced. Neither gate is a vulnerability verdict.
+A failed System Stability Gate blocks quality scoring. A produced paper/static-evidence bundle with bounded diagnostics can still be consumable if its contract is valid and it honestly says what was not produced. Effective coverage caveats do not mean the tool process failed; they tell S3 what S4 could not prove about configured local coverage. None of these gates is a vulnerability verdict.
 
 ## 2. Runtime system-stability rule
 
@@ -89,7 +90,21 @@ S4_STATIC_EVIDENCE_FREEZE_GATE = pass
 
 This gate means S4's paper producer boundary is validated. It does not mean S3 paper export is ready, S5 context is ready, or the code under analysis is secure.
 
-## 4. Offline quality gate rule
+## 4. Effective coverage gate rule
+
+A tool can be alive and still have incomplete effective coverage. S4 reports this separately from system stability using:
+
+```text
+execution.toolResults.<tool>.coverage
+execution.toolResults.<tool>.coverageDegraded
+execution.toolResults.<tool>.coverageReasons[]
+staticEvidenceContract.gates.coverageQuality
+paper toolRuns[].coverage* plus tool-coverage diagnostics
+```
+
+For Semgrep, `SEMGREP_CPP_EFFECTIVE_COVERAGE_UNPROVEN` means the configured local rule surface does not prove C++ Semgrep coverage for C++ targets. It is not a recall/precision score and not negative security evidence.
+
+## 5. Offline quality gate rule
 
 Quality evaluation requires a named validation/test/canary profile. Runtime S4 must not invent quality scores.
 
@@ -102,7 +117,7 @@ If `systemStabilityGate.status="fail"` in a tool-portfolio report:
 
 If system stability passes but the corpus/readiness profile is not decision-grade, quality remains blocked/not decision-grade. S4 must not use a one-off run or a missing corpus as a portfolio-change basis.
 
-## 5. Semgrep executable lesson
+## 6. Semgrep executable and C++ coverage lesson
 
 Semgrep is probed and executed through the service-local canonical executable when present:
 
@@ -110,9 +125,9 @@ Semgrep is probed and executed through the service-local canonical executable wh
 services/sast-runner/.venv/bin/semgrep
 ```
 
-PATH fallback is allowed only if the service-local executable is absent. This rule exists because prior work proved that a tool can be installed but silently missed if only shell PATH is checked.
+PATH fallback is allowed only if the service-local executable is absent. This rule exists because prior work proved that a tool can be installed but silently missed if only shell PATH is checked. The 2026-05-20 Semgrep C++ hardening additionally proved that liveness alone is insufficient: S4 must report effective coverage caveats when C++ targets are excluded or only C-local rules are proven.
 
-## 6. Consumer policy
+## 7. Consumer policy
 
 Consumers may use a passing System Stability Gate as a precondition for considering S4 local evidence. They must not use it as:
 
@@ -124,13 +139,13 @@ Consumers may use a passing System Stability Gate as a precondition for consider
 
 Quality reports may support tool/governance decisions only when system stability, corpus readiness, oracle split, threshold policy, and consumer canary checks all pass for that decision cycle.
 
-## 7. Verification evidence
+## 8. Verification evidence
 
 Current verification for this document refresh:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 ```
 
 Relevant suites:

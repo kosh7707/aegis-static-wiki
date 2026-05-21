@@ -9,15 +9,15 @@ source_refs:
   - "services/sast-runner/app/scanner/orchestrator.py"
   - "services/sast-runner/app/scanner/paper_static_evidence.py"
   - "services/sast-runner/tests/test_paper_static_evidence.py"
-last_verified: "2026-05-20"
-service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit", "observability"]
-decision_tags: ["current-state", "handoff", "s4-static-evidence-freeze-gate", "e2e-smoke-ready"]
-related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md", "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md", "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md"]
+last_verified: "2026-05-21"
+service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit", "observability", "semgrep-effective-coverage"]
+decision_tags: ["current-state", "handoff", "s4-static-evidence-freeze-gate", "e2e-smoke-ready", "session-reset-bootstrap"]
+related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md", "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md", "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md", "wiki/canon/handoff/s4/session-s4-semgrep-effective-coverage-hardening-20260520.md", "wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md"]
 ---
 
 # S4. SAST Runner 인수인계서
 
-> Last verified: **2026-05-20**
+> Last verified: **2026-05-21**
 > Owner: **S4 / SAST Runner**
 > Code owner path: `services/sast-runner/`
 > Service: `s4-sast`, port `9000`, version `0.11.2`
@@ -34,6 +34,27 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
    - `wiki/canon/specs/sast-runner-static-evidence-contract.md`
    - `wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md`
 5. Check open WRs with `aegis-static-wiki.list_my_open_wrs(lane="s4")`.
+
+### 0.1 Fresh-session reset bootstrap — 2026-05-21
+
+If the S4 session context is being reset, treat this subsection as the minimal state-transfer packet.
+
+1. **Do not restart discovery from old docs.** Canonical state is this page plus the related wiki pages listed in section 7.
+2. **Current code checkpoint is post-Semgrep hardening and may be uncommitted** until S2/user commits. Expected S4-owned changed paths include:
+   - `services/sast-runner/app/scanner/semgrep_coverage.py`
+   - `services/sast-runner/rules/cpp/command-injection.yaml`
+   - `services/sast-runner/app/scanner/orchestrator.py`
+   - `services/sast-runner/app/scanner/static_evidence_contract.py`
+   - `services/sast-runner/app/scanner/paper_static_evidence.py`
+   - `services/sast-runner/app/routers/scan.py`
+   - `services/sast-runner/app/schemas/response.py`
+   - `services/sast-runner/benchmark/static_evidence_consumer_canary.py`
+   - Semgrep/coverage/consumer regression tests under `services/sast-runner/tests/`.
+3. **Do not touch other lane dirty files.** S4 may read/write only `services/sast-runner/` and S4-owned wiki/API/spec/handoff pages.
+4. **Current S3 notification WR is already registered:** `wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md`.
+5. **Current verification baseline:** full S4 suite `1406 passed, 1 skipped in 34.39s`; Semgrep rule validation `41 rule(s), 0 configuration errors`; wiki validation `PASS`.
+6. **Current semantic boundary:** Semgrep `coverageDegraded=true` is an effective-coverage caveat, not tool process failure, not `execution.degraded`, not negative security evidence, and not an offline quality score.
+7. **If resuming work:** first run `git status --short -- services/sast-runner`, read this page, then read `wiki/canon/roadmap/s4-roadmap.md`; only re-run tests if code changed after the baseline above.
 
 ## 1. Current S4 role
 
@@ -90,6 +111,7 @@ As of 2026-05-20:
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass
 S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
 S4_E2E_SMOKE_READINESS = ready
+S4_SEMGREP_CPP_EFFECTIVE_COVERAGE_CANARY = pass
 ```
 
 Meaning:
@@ -97,10 +119,12 @@ Meaning:
 - S4 paper static-evidence producer invariants are implemented and tested.
 - S4 canonical JSONL logs are visible to `log-analyzer` by `service=s4-sast` and `requestId`.
 - S4 has no known open S4-lane WR blocker before S3 e2e smoke.
+- S4 has already notified S3 about the Semgrep effective-coverage additive contract fields.
 
 Caveat:
 
 - Runtime tool liveness must still be checked at e2e time with `/v1/health` or an actual paper-path request, because host environment can drift.
+- Semgrep now reports effective-coverage caveats separately from liveness: `coverageDegraded=true` / `coverageReasons[]` does not mean process failure, but S3 must not treat `findingsCount=0` as clean evidence when coverage diagnostics are present.
 
 ## 4. Current proof snapshot
 
@@ -108,7 +132,7 @@ Latest S4 verification evidence recorded on 2026-05-20:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1406 passed, 1 skipped in 34.39s
 
 cd /home/kosh/AEGIS/services/sast-runner && \
   .venv/bin/pytest tests/test_paper_static_evidence.py \
@@ -132,6 +156,7 @@ Session evidence:
 
 - `wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md`
 - `wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md`
+- `wiki/canon/handoff/s4/session-s4-semgrep-effective-coverage-hardening-20260520.md`
 
 ## 5. Implementation map
 
@@ -157,7 +182,8 @@ services/sast-runner/
 │       ├── build_runner.py             # caller-materialized build execution
 │       └── library_*                   # SCA identity/diff/hash helpers
 ├── benchmark/                          # deterministic offline reports/corpus/tool portfolio harnesses
-├── rules/automotive/                   # Semgrep rules
+├── rules/automotive/                   # Semgrep C rules
+├── rules/cpp/                          # Semgrep C++ canary rules
 └── tests/                              # S4-owned regression/contract/oracle tests
 ```
 
@@ -186,4 +212,4 @@ services/sast-runner/
 
 ## 8. Next work pointer
 
-Use `wiki/canon/roadmap/s4-roadmap.md` for next S4 work. At this checkpoint the next likely work is **S3 e2e smoke support and consumer integration evidence**, not another S4-internal contract rewrite.
+Use `wiki/canon/roadmap/s4-roadmap.md` for next S4 work. At this checkpoint the next likely work is **S3 e2e smoke support and consumer integration evidence**, not another S4-internal contract rewrite and not another Semgrep coverage rewrite unless S3 reports a concrete consumer mismatch.

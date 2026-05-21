@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/api/llm-gateway-api.md"
 original_path: "docs/api/llm-gateway-api.md"
-last_verified: "2026-05-11"
+last_verified: "2026-05-20"
 service_tags: ["s7"]
 decision_tags: []
 related_pages: []
@@ -35,7 +35,8 @@ http://localhost:8000
 | `X-Timeout-Seconds` | 요청 | `/v1/chat` 전용. 호출자가 원하는 read timeout (초). Gateway가 LLM Engine 호출 시 이 값을 적용. 미전달 시 기본 1800초. 상한 1800초. |
 | `X-Model` | 응답 | `/v1/chat` 전용. Gateway가 실제 사용한 모델명 (오버라이드 후). 호출자가 어떤 모델명을 보냈든 실제 적용된 모델을 확인할 수 있다. |
 | `X-Gateway-Latency-Ms` | 응답 | `/v1/chat` 전용. Gateway 측정 지연시간 (밀리초). LLM Engine 호출 + 전후 처리 포함. |
-| `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 및 `/v1/async-chat-requests` opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용한다. `/v1/chat` 동기 응답에는 `applied`를 돌려준다. async ownership 경로에서는 terminal status/result body에 strict JSON 실패 정보를 명시한다. |
+| `X-AEGIS-Strict-JSON` | 요청/응답 | `/v1/chat` 및 `/v1/async-chat-requests` opt-in strict JSON 모드 헤더. 요청에서 `true`/`1`/`yes`/`on` 중 하나를 보내면 Gateway가 JSON object 응답 강제 제어를 적용한다. `/v1/chat` 동기 응답에는 `applied`를 돌려준다. async ownership 경로에서는 terminal status/result body에 strict JSON 실패 정보를 명시한다. Paper-controls finalizer에서는 caller-supplied `response_format={"type":"json_schema",...}`를 `json_object`로 덮어쓰지 않는다. |
+| `X-AEGIS-Paper-Controls` | 요청 | `/v1/chat` 및 `/v1/async-chat-requests` opt-in TraceAudit paper generation-control 계약 헤더. `true`/`1`/`yes`/`on`이면 S7이 phase-scoped 필수 제어값, schema gate, prompt-redacted audit log를 적용한다. |
 | `X-AEGIS-Effective-Thinking` | 응답 | `/v1/chat` 전용. Gateway가 LLM Engine에 전달한 caller-supplied `chat_template_kwargs.enable_thinking` 값. 이 값은 필수 generation control이며 S7이 기본값을 주입하지 않는다. |
 
 ---
@@ -87,6 +88,29 @@ S7 Gateway는 `/v1/chat`, `/v1/async-chat-requests`, `/v1/tasks` 어디에서도
 - thinking-on은 reasoning 토큰을 소비하므로 S3 hotN/hot20 같은 deep-analysis path는 충분한 `max_tokens`와 `X-Timeout-Seconds` 예산을 잡아야 한다. `finish_reason=length`와 빈 final content는 token budget 부족으로 취급한다.
 
 `frequency_penalty` / `frequencyPenalty`는 Qwen3.6 권장 sampling family에 없으므로 S7 schema에 추가하지 않는다.
+
+#### TraceAudit paper-controls opt-in (2026-05-20)
+
+`X-AEGIS-Paper-Controls: true`는 S3 TraceAudit paper path 전용 no-default 계약이다. S7은 값을 선택하지 않고, S3가 보낸 값을 검증/보존/전달/관측한다. 누락 또는 타입/범위 오류는 backend 호출 전에 HTTP 422 `INVALID_GENERATION_CONTROLS`로 실패한다. Production long-running paper 호출은 `/v1/async-chat-requests`를 우선 사용하고, `/v1/chat`는 sync smoke/compatibility 용도다.
+
+공통 필수 필드:
+- `max_tokens`, `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty`, `repetition_penalty`
+- `seed` (signed int64)
+- `logprobs` (명시적 boolean)
+- `chat_template_kwargs.enable_thinking` (명시적 boolean)
+- `chat_template_kwargs.preserve_thinking` (명시적 boolean; true가 baseline을 의미하지 않음)
+- `tool_choice` (`"auto"` 또는 `"none"`)
+
+`logprobs=true`이면 `top_logprobs`가 필수이며 non-negative integer여야 한다. `logprobs=false`이면 `top_logprobs`는 생략해야 하며, 전달되면 422로 거절한다.
+
+Phase-scoped rules:
+
+| Phase | Required shape | Forbidden/invalid | Notes |
+|---|---|---|---|
+| acquisition/tool-call | non-empty `tools`, `tool_choice="auto"`, explicit generation controls | `response_format`, `structured_outputs`, `X-AEGIS-Strict-JSON` | S3 owns whether `enable_thinking` is true; S7 only requires explicit boolean. |
+| finalizer/schema | no tools, `tool_choice="none"`, `response_format={"type":"json_schema", "json_schema": {"schema": ...}}` | `response_format={"type":"json_object"}` as paper schema, `structured_outputs` until separately verified | No silent fallback to `json_object`; if schema enforcement is not supported by the DGX vLLM deployment, the paper contract is not ready. |
+
+Paper-mode exchange logs include `controlObservability` with `requestId`, async `requestId` when present, `traceRequestId`, accepted/forwarded/observed controls, control diff, `schemaSnapshotHash`, `profileSnapshotHash`, request/control/response-summary hashes, and known-unverified fields. Paper-mode logs must not contain raw prompt text, raw schema text, raw seed values, or large raw response bodies. Metrics remain low-cardinality and must not use raw prompt/seed/schema as labels.
 
 #### Tool-choice compatibility guard (2026-05-06)
 
@@ -194,7 +218,8 @@ OpenAI-compatible chat completion body를 거의 그대로 받는다. `model`은
 - `tool_choice`는 누락/`"auto"`/`"none"`만 지원한다. `"required"` 또는 named function object는 HTTP 422 `INVALID_TOOL_CHOICE`로 거절한다.
 - `X-Request-Id`는 원래 trace/correlation ID로 유지된다
 - async surface의 durable ownership ID는 별도의 `requestId`다
-- `X-AEGIS-Strict-JSON: true`를 보내면 async job도 `/v1/chat`과 동일하게 `response_format={"type":"json_object"}`를 강제한다. caller-supplied thinking 값은 보존되며 final response content가 JSON object가 아니면 completed로 처리하지 않는다
+- non-paper `X-AEGIS-Strict-JSON: true`를 보내면 async job도 `/v1/chat`과 동일하게 `response_format={"type":"json_object"}`를 강제한다. caller-supplied thinking 값은 보존되며 final response content가 JSON object가 아니면 completed로 처리하지 않는다
+- paper-controls finalizer에서는 `X-AEGIS-Strict-JSON: true`가 함께 있어도 caller-supplied `response_format={"type":"json_schema",...}`를 보존하며 `json_object`로 덮어쓰지 않는다. paper-controls acquisition에서 strict JSON 헤더는 tool-call phase와 충돌하므로 422로 거절한다
 
 #### 응답
 

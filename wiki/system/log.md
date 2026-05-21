@@ -6948,3 +6948,145 @@ related_pages:
 - Updated all active S4-owned current contract/context docs to 2026-05-20 state.
 - Recorded session evidence at wiki/canon/handoff/s4/session-s4-docs-current-state-refresh-20260520.md.
 - Critic final review PASS; wiki validation PASS.
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange
+- Registered notice WR for s3, s7
+- Path: wiki/canon/work-requests/s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange.md
+
+## [2026-05-20] S5 completed log triage and notified S3/S7 | S5 e2e smoke log triage
+- Run e2e-certmaker-start-20260520-164228 failed after S5 success: S5 prepare-code-kb child completed 200 in 113ms internal / 132ms as observed by S3.
+- Failure point was S3 -> S7 /v1/chat after ~80m17s with RemoteProtocolError and S3 502.
+- Critic reviewed and passed the interpretation with caution not to overclaim S7 restart as confirmed root cause.
+- Notice WR registered: wiki/canon/work-requests/s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange.md
+
+## [2026-05-20] mcp | register_wr | s7-to-s3-s3-align-traceaudit-qwen3.6-27b-generation-profiles-with-verified-s7-dgx-runtime
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-align-traceaudit-qwen3.6-27b-generation-profiles-with-verified-s7-dgx-runtime.md
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange
+- Lane s3 completed recipient-side handling
+- Status: open
+
+## [2026-05-20] mcp | register_wr | s3-to-s7-s7-unblock-traceaudit-live-smoke-with-async-chat-request-observability-and-profi
+- Registered request WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s7-unblock-traceaudit-live-smoke-with-async-chat-request-observability-and-profi.md
+
+## [2026-05-20] S5 added Source KG quality caveats for weak paper Code KB prepare responses | S5 Source KG quality gate
+- Live certmaker Source KG audit found the bundle was structurally ingested but weak quality: 12 graph nodes, 11 edges, 12 snippets, 0 rich IR, smoke/manual harness provenance, low-confidence edges, and missing functions/external-dangerous call coverage compared with main.cpp.
+- S5 now returns selectable-but-weak Source KG prepare responses as surfaceStatus=partial with readiness.sourceKgQualityGate=accepted_with_caveats and diagnostic-only caveats.
+- Updated canonical docs: wiki/canon/api/s5-paper-context-api.md, wiki/canon/api/knowledge-base-api.md, wiki/canon/specs/s5-current-implementation-snapshot-20260520.md.
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r.md
+
+## [2026-05-20] S5 notified S3 that certmaker Source KG clean-ready response is superseded | S5 certmaker Source KG quality notice
+- Notice WR registered: wiki/canon/work-requests/s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r.md
+- S5 code now marks weak selectable Source KG bundles partial with accepted_with_caveats diagnostics.
+
+## [2026-05-20] Updated machine-readable contract for Source KG partial quality gate | S5 paper-context contract quality caveat discovery
+- Added GET /v1/contracts/paper-context policies.sourceKgQualityGatePolicy/sourceKgQualityDiagnostics/sourceKgPartialReadiness so S3 can discover selectable-but-partial Source KG semantics.
+- Verified live contract on localhost:8002 exposes the new policy fields.
+- Relevant S5 tests: paper-context API/observability/freeze-gate plus Source KG suites passed (143 passed).
+
+## [2026-05-20] mcp | register_wr | s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow
+- Registered request WR for s3
+- Path: wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md
+
+## [2026-05-20] Registered S3 consumer WR and clarified contract docs | S5 to S3 Source KG partial-quality consumption request
+- Registered request WR: wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md
+- Clarified S3 consumer action in wiki/canon/api/s5-paper-context-api.md, wiki/canon/api/knowledge-base-api.md, and wiki/canon/specs/s5-current-implementation-snapshot-20260520.md.
+- The update is additive under s5-paper-context-api-v1 but requires S3 to preserve accepted_with_caveats diagnostics when consuming partial-but-ready Source KG.
+
+## [2026-05-20] mcp | register_wr | s7-to-s3-s3-review-requested-s7-qwen-generation-control-contract-plan-before-implementati
+- Registered question WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s3-review-requested-s7-qwen-generation-control-contract-plan-before-implementati.md
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | complete_wr | s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | register_wr | s3-to-s7-s3-review-reply-iterate-s7-qwen-paper-controls-plan-before-implementation
+- Registered reply WR for s7
+- Path: wiki/canon/work-requests/s3-to-s7-s3-review-reply-iterate-s7-qwen-paper-controls-plan-before-implementation.md
+
+## [2026-05-20] mcp | complete_wr | s7-to-s3-s3-review-requested-s7-qwen-generation-control-contract-plan-before-implementati
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] Updated canonical S7 API contract for TraceAudit paper controls | S7 paper-controls implementation
+- Added X-AEGIS-Paper-Controls header contract to wiki/canon/api/llm-gateway-api.md.
+- Documented phase-scoped acquisition/finalizer rules, required no-default controls, logprobs/top_logprobs semantics, preserve_thinking handling, schema hard gate, prompt-redacted audit observability, and strict JSON coexistence.
+
+## [2026-05-20] mcp | register_wr | s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path.md
+
+## [2026-05-20] Completed S7 phase-scoped Qwen paper-controls implementation and sent S3 WR notice | S7 paper-controls implementation
+- S7 tests passed: cd services/llm-gateway && PYTHONPATH=. /tmp/aegis-s7-venv/bin/pytest -q tests => 328 passed in 6.61s.
+- DGX vLLM probes confirmed seed/logprobs/top_logprobs/preserve_thinking acceptance and json_schema finalizer HTTP 200.
+- Final Critic implementation validation returned APPROVE.
+- S3 WR notice registered: wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path.md.
+
+## [2026-05-20] mcp | complete_wr | s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-20] mcp | register_wr | s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-
+- Registered notice WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md
+
+## [2026-05-20] completed | S4 Semgrep effective-coverage hardening
+- Added deterministic Semgrep effective-coverage metadata and C++ command-injection canary rules.
+- Separated coverage caveats from system stability/degraded semantics via coverageDegraded/coverageReasons and staticEvidenceContract.gates.coverageQuality.
+- Updated S4 API/spec/handoff/roadmap docs and registered S3 notice WR wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md.
+- Verified full S4 suite: 1406 passed, 1 skipped; Semgrep config valid with 41 rules; wiki validation PASS.
+
+## [2026-05-21] mcp | complete_wr | s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-
+- Lane s3 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] Implemented post-WR S3 consumer handling for S4 Semgrep coverage caveats | S3 S4 coverage caveat consumer hardening
+- coverageDegraded=true toolRuns rows are diagnostic ledger rows, not ordinary security evidence.
+- Validation now requires coverageReasons and resolved diagnosticRefs for coverage-degraded tool runs.
+- Regression test added for zero-finding Semgrep coverage caveat export.
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s3-review-reply-iterate-s7-qwen-paper-controls-plan-before-implementation
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] mcp | complete_wr | s3-to-s7-s7-unblock-traceaudit-live-smoke-with-async-chat-request-observability-and-profi
+- Lane s7 completed recipient-side handling
+- Status: completed
+
+## [2026-05-21] completed | S4 bootstrap documentation refresh
+- Updated wiki/canon/handoff/s4/readme.md with a fresh-session reset bootstrap packet.
+- Updated wiki/canon/roadmap/s4-roadmap.md with reset-first next actions and Semgrep coverage notice state.
+- Validated wiki and rebuilt index.
+- Recorded session history at wiki/canon/handoff/s4/session-s4-bootstrap-refresh-20260521.md.
+
+## [2026-05-21] Refreshed S7 handoff for fresh-session bootstrap | S7 bootstrap documentation
+- Updated wiki/canon/handoff/s7/readme.md with a fresh-session bootstrap checklist and current TraceAudit paper-controls status.
+- Marked S7-side S3 ITERATE and async/observability unblock WRs complete.
+- Appended S7 test evidence to session-omx-1779269184895-8gprdc.md and recorded doc-refresh session history.
+- Remaining S7-relevant open WR is the S5/S3/S7 e2e smoke notice for RCA follow-up.
+
+## [2026-05-21] Updated S5 handoff/API/snapshot docs for clean session restart | S5 bootstrap documentation refresh
+- Refreshed wiki/canon/handoff/s5/readme.md with 2026-05-21 first-read order, active S5 status, Source KG partial-quality caveat, outgoing S3 WR pointer, and current verification evidence.
+- Updated wiki/canon/specs/s5-current-implementation-snapshot-20260520.md with a fresh-session bootstrap checklist, machine-readable Source KG quality contract fields, and current verification evidence.
+- Updated wiki/canon/api/s5-paper-context-api.md and wiki/canon/api/knowledge-base-api.md last-verified/current-state overlays for the additive Source KG partial-quality consumer contract.
+- Recorded session artifact wiki/canon/handoff/s5/session-s5-bootstrap-doc-refresh-20260521.md.
+
+## [2026-05-21] Updated canonical S3 handoff for session restart | S3 bootstrap handoff refresh
+- Added fast bootstrap sequence for next S3 session.
+- Added current TraceAudit paper API/runner/S4/S5/S7 consumption snapshot.
+- Recorded current verification snapshot and next meaningful e2e smoke gates.
+
+## [2026-05-21] Documented current DGX Spark OpenVPN proxy access path | S7 DGX Spark OpenVPN bootstrap
+- Updated wiki/canon/handoff/s7/llm-engine-ops.md with dgx-spark-proxy Docker/OpenVPN namespace runbook.
+- Added SSH ProxyCommand using docker exec socat to 10.126.37.19:22 and HTTP proxy on 127.0.0.1:18000.
+- Linked llm-engine-ops.md from S7 fresh-session bootstrap checklist.

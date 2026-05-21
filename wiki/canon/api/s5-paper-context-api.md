@@ -10,7 +10,7 @@ source_refs:
   - "wiki/canon/work-requests/s5-to-s3-s5-reply-accept_with_scope-for-paper-facing-code-kb-and-retrieval-tool-call-cont.md"
   - "wiki/canon/api/knowledge-base-api.md"
   - "wiki/canon/work-requests/s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability"]
 decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned"]
 related_pages:
@@ -21,13 +21,14 @@ related_pages:
   - "wiki/canon/work-requests/s3-to-s5-s3-reply-hybrid-timing-for-s5_freeze_gate-implementation.md"
   - "wiki/canon/handoff/s5/session-s5-paper-context-implementation-interview-20260519.md"
   - "wiki/canon/specs/s5-current-implementation-snapshot-20260520.md"
+  - "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"
 ---
 
 
 # S5 Paper Context API Contract
 
 
-## Current-state overlay — 2026-05-20 post-log-analyzer WR
+## Current-state overlay — 2026-05-21 bootstrap refresh
 
 S5 additionally verified canonical JSONL logging and `log-analyzer` traceability for the paper/contract path before S3 e2e smoke. See [[wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e]] and [[wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520]].
 
@@ -45,7 +46,7 @@ All proof rows carried `service=s5-kb`, numeric `level=30`, request ID, method/p
 > Status: **S5_FREEZE_GATE pass for S5 producer obligations**.
 > Owner: S5 / Knowledge Base lane.
 > Consumer: S3 / paper harness.
-> Last verified: 2026-05-20.
+> Last verified: 2026-05-21.
 > Critic status: post-implementation freeze-gate review `PASS`; no blocking S5 implementation issue found.
 > Implementation status: the `/v1/paper/*` endpoints and `GET /v1/contracts/paper-context` are implemented in `services/knowledge-base/**` with S5-owned freeze-gate validation. S3 consumer execution remains separately owned and is advertised as `pending_s3_owned_validation`.
 
@@ -348,6 +349,10 @@ freezeGate.validationReportRef = s5-freeze-gate-report:s5-paper-freeze-gate-v1
 freezeGate.idempotencyDurability = ledger_backed_all_paper_endpoints
 freezeGate.s3ConsumerExecutionStatus = pending_s3_owned_validation
 freezeGate.missingValidationItems = []
+policies.sourceKgQualityGatePolicy = selectable_context_may_be_partial_with_caveats
+policies.sourceKgPartialReadiness.surfaceStatus = partial
+policies.sourceKgPartialReadiness.stageReadiness = ready
+policies.sourceKgPartialReadiness.sourceKgQualityGate = accepted_with_caveats
 ```
 
 The runtime contract pass is an S5 producer-boundary claim only. It does not mean S3 has executed its own renderer/consumer validation, and it does not turn S5 context into final triage evidence.
@@ -375,13 +380,62 @@ sourceKgRef = s5-source-kg:{caseId}:{buildTargetId}
 
 When real Source KG context is selectable, S5 stores the `sourceKgRef` mapping through the existing ledger `provider_observation` table with provider `s5-paper-context`. No new DB migration is required for the hard-now subset.
 
-`stageReadiness` values:
+### 7.1 Source KG quality caveat overlay — 2026-05-20
+
+`prepare_code_kb` now distinguishes **selectable Source KG presence** from **complete/high-quality source graph coverage**. If a provided Source KG bundle is selectable but has weak provenance, S5 must not over-claim `produced` quality. Examples include smoke/manual harness provenance, low-confidence or manually produced graph edges, graph nodes without snippet coverage, multi-node graphs without edges, or weak graphs with no corroborating rich IR.
+
+For these cases S5 returns:
+
+```json
+{
+  "surfaceStatus": "partial",
+  "stageReadiness": "ready",
+  "readiness": {
+    "codeKbReady": true,
+    "sourceKgReady": true,
+    "contextSelectable": true,
+    "sourceKgQualityGate": "accepted_with_caveats"
+  },
+  "diagnostics": [
+    {"code": "S5_PAPER_SOURCE_KG_SMOKE_HARNESS_PROVENANCE"},
+    {"code": "S5_PAPER_SOURCE_KG_LOW_CONFIDENCE_EDGES"},
+    {"code": "S5_PAPER_SOURCE_KG_RICH_IR_NOT_AVAILABLE"}
+  ]
+}
+```
+
+These diagnostics are quality/context caveats only. They are not final security evidence and carry `negativeEvidenceAllowed=false`. The idempotency record schema was advanced to `s5-paper-idempotency-record-v2` so stale v1 cached `produced` prepare responses are not replayed after this quality gate change.
+
+The machine-readable contract endpoint also advertises this behavior under:
+
+```text
+policies.sourceKgQualityGatePolicy
+policies.sourceKgQualityDiagnostics
+policies.sourceKgPartialReadiness
+```
+
+This lets S3 discover that selectable Source KG context can be `ready` for consumption while still being marked `partial` for graph-quality confidence.
+
+S3 consumer action:
+
+```text
+If prepare_code_kb returns stageReadiness=ready and readiness.contextSelectable=true,
+S3 may continue using codeKbRef/sourceKgRef even when surfaceStatus=partial.
+When readiness.sourceKgQualityGate=accepted_with_caveats, S3 must preserve the
+diagnostic caveats in its packet/trace metadata and must not render the Source KG
+as complete/high-confidence graph coverage.
+```
+
+This is an additive response/contract-discovery change under `s5-paper-context-api-v1`: existing endpoint paths, request schemas, response schema versions, and enum values are unchanged. Consumers that only require selectable context can continue, but consumers that distinguish clean graph quality from weak graph quality should read `readiness.sourceKgQualityGate` and the diagnostic codes advertised by `GET /v1/contracts/paper-context`.
+
+`stageReadiness` values currently emitted by the implementation:
 
 ```text
 ready
-ready_with_diagnostics
 not_ready
 ```
+
+Quality caveats are represented by `surfaceStatus=partial` plus diagnostic rows rather than a separate stage readiness value.
 
 ## 8. Endpoint: `POST /v1/paper/finding-context/retrieve`
 

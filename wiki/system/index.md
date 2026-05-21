@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-21"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -60,7 +60,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/specs/s5-acquisition-state-machine/storage-ownership|S5 Storage Ownership]] — Decision: S5 owns a durable SQL ledger. Neo4j and Qdrant are projections. S2 DB is not S5 acquisition source of truth. *(verified 2026-05-11; s5/s2/s3/knowledge-base/storage/neo4j/qdrant)*
 - [[wiki/canon/specs/s5-acquisition-state-machine/target-context-lifecycle|S5 Target Context Lifecycle]] — Scope: one S3-supplied TargetContextBundleV1 under S5 ownership. *(verified 2026-05-11; s5/s3/knowledge-base/target-context/state-machine)*
 - [[wiki/canon/specs/s5-acquisition-state-machine/transition-table|S5 Acquisition State Machine Transition Table]] — Implementation-facing transition rows for the S5 acquisition state-machine family. *(verified 2026-05-11; s5/s3/knowledge-base/state-machine/transition-table)*
-- [[wiki/canon/specs/s5-current-implementation-snapshot-20260520|S5 Current Implementation Snapshot — 2026-05-20]] — This page is the canonical S5 current-state pointer for documents that predate the 2026-05-20 paper-context/freeze-gate/observability work. Historical pages remain useful for de... *(verified 2026-05-20; s5/knowledge-base/paper-context/source-code-kg/threat-kb/judge/observability/log-analyzer)*
+- [[wiki/canon/specs/s5-current-implementation-snapshot-20260520|S5 Current Implementation Snapshot — 2026-05-20]] — This page is the canonical S5 current-state pointer for documents that predate the 2026-05-20 paper-context/freeze-gate/observability work. Historical pages remain useful for de... *(verified 2026-05-21; s5/knowledge-base/paper-context/source-code-kg/threat-kb/judge/observability/log-analyzer)*
 - [[wiki/canon/specs/s5-etl-pipeline-modernization-target-context|S5 ETL Pipeline Modernization — Target Context Acquisition Contract]] — This target-context modernization document remains design/history context for S5 acquisition diagnostics. It is not the active paper/e2e entry point. Current S5 implementation s... *(verified 2026-05-20; s5/s3/knowledge-base/analysis-agent/etl/acquisition-diagnostics/target-context)*
 - [[wiki/canon/specs/s5-evidence-grounded-threat-knowledge-db|S5 Evidence-Grounded Threat Knowledge DB Foundation]] — This foundation document remains valid as S5 Threat KB rationale. Current active implementation state is now tracked by wiki/canon/specs/s5-current-implementation-snapshot-20260... *(verified 2026-05-20; s5/knowledge-base/threat-knowledge/etl/quality-gate/projection)*
 - [[wiki/canon/specs/s5-graphrag-source-code-boundary|S5 GraphRAG and Source Code Graph Boundary]] — This boundary document remains the S5 GraphRAG/Source Code Graph background reference. Current active e2e/paper state is summarized in wiki/canon/specs/s5-current-implementation... *(verified 2026-05-20; S5/knowledge-base/graphrag/source-code-graph/threat-kb)*
@@ -81,11 +81,11 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/api/analysis-agent-api|Analysis Agent API 명세]] — 소유자: S3 *(verified 2026-05-08; s3/analysis-agent/api-contract/s2)*
 - [[wiki/canon/api/build-agent-api|Build Agent API 명세 (build-v1.1 active)]] — 소유자: S3 *(verified 2026-05-08; s3)*
 - [[wiki/canon/api/container-gateway-api|S8. Container Gateway API 명세]] — Base URL: *(verified 2026-04-15; s8)*
-- [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — This page remains the canonical general Knowledge Base API contract. For the paper-specific S3 consumer surface, use wiki/canon/api/s5-paper-context-api and the current-state sn... *(verified 2026-05-20; s5)*
+- [[wiki/canon/api/knowledge-base-api|Knowledge Base API 계약서]] — This page remains the canonical general Knowledge Base API contract. For the paper-specific S3 consumer surface, use wiki/canon/api/s5-paper-context-api and the current-state sn... *(verified 2026-05-21; s5)*
 - [[wiki/canon/api/llm-engine-api|S7. LLM Engine API 명세]] — S7(LLM Gateway)이 LLM Engine을 호출할 때 참조하는 API 계약서. *(verified 2026-04-28; s7)*
-- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-05-11; s7)*
+- [[wiki/canon/api/llm-gateway-api|S7. LLM Gateway API 명세]] — 소유자: S7 (LLM Gateway + LLM Engine) *(verified 2026-05-20; s7)*
 - [[wiki/canon/api/paper-analysis-api|AEGIS Paper Analysis API Draft]] — Status: draft, S3/S4 consensus incorporated, S5 API pending, Critic PASSWITHCHANGES incorporated. *(verified 2026-05-18; s3/s4/s5/analysis-agent/sast-runner/knowledge-base/paper-pipeline)*
-- [[wiki/canon/api/s5-paper-context-api|S5 Paper Context API Contract]] — S5 additionally verified canonical JSONL logging and log-analyzer traceability for the paper/contract path before S3 e2e smoke. See wiki/canon/work-requests/s5-to-s3-s5-reply-ca... *(verified 2026-05-20; s5/s3/knowledge-base/paper-pipeline/traceaudit/source-code-kg/code-kb/threat-kb/api-contract/observability)*
+- [[wiki/canon/api/s5-paper-context-api|S5 Paper Context API Contract]] — S5 additionally verified canonical JSONL logging and log-analyzer traceability for the paper/contract path before S3 e2e smoke. See wiki/canon/work-requests/s5-to-s3-s5-reply-ca... *(verified 2026-05-21; s5/s3/knowledge-base/paper-pipeline/traceaudit/source-code-kg/code-kb/threat-kb/api-contract/observability)*
 - [[wiki/canon/api/sast-runner-api|SAST Runner API 명세 (v0.11.2)]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/sast-runner/api-contract/static-analysis/paper-pipeline/observability)*
 - [[wiki/canon/api/sast-runner-paper-static-evidence-api|S4 Paper Static Evidence API Contract]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/s3/paper-pipeline/traceaudit/sast-runner/static-evidence/observability)*
 - [[wiki/canon/api/shared-models|Shared (S1-S2) API / Model Contract]] — Canonical contract for the current S1 (frontend) ↔ S2 (backend) integration. *(verified 2026-05-11; platform)*
@@ -199,7 +199,8 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s2/session-s2-project-owner-buildv11-20260427|Session history — s2 / s2-project-owner-buildv11-20260427]] — - Lane: s2 *(verified 2026-04-27; s2)*
 - [[wiki/canon/handoff/s2/session-s2-s3-outcome-contract-20260425|Session history — s2 / s2-s3-outcome-contract-20260425]] — - Lane: s2 *(verified 2026-04-25; s2)*
 - [[wiki/canon/handoff/s2/session-s2-sdk-progress-contract-wr-20260425|Session history — S2 / s2-sdk-progress-contract-wr-20260425]] — - Lane: S2 *(verified 2026-04-25; s2)*
-- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-05-12; s3)*
+- [[wiki/canon/handoff/s3/prework-interview-qwen-generation-controls-2026-05-20|Prework interview — S3 Qwen generation-control WR]] — - State: answered. *(verified 2026-05-20; s3-analysis-agent/s7-llm-gateway/dgx-spark/vllm/traceaudit-paper)*
+- [[wiki/canon/handoff/s3/readme|S3. Analysis Agent 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. *(verified 2026-05-21; s3)*
 - [[wiki/canon/handoff/s3/s4-exploitability-consumer-contract-response|S4 exploitability consumer contract response]] — S3 Analysis Agent 관점에서 S4 evidence를 exploitability reasoning에 소비할 때 필요한 최소 필드 세트와 normalization expectation을 명확히 정의한다. *(verified 2026-04-07; s3/s4/analysis-agent/sast-runner)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef-ralph-fail-never-state-machine]] — - Lane: s3 *(verified 2026-04-24; s3)*
 - [[wiki/canon/handoff/s3/session-019dbeea-7ffe-7632-9661-96bab91b0cef|Session history — s3 / 019dbeea-7ffe-7632-9661-96bab91b0cef]] — - Lane: s3 *(verified 2026-04-24; s3)*
@@ -251,6 +252,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-paper-timeout-policy-2026-05-20|Session history — S3 / paper-timeout-policy-2026-05-20]] — - Lane: S3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-agent-shared-doc-cleanup-20260427|Session history — s3 / s3-agent-shared-doc-cleanup-20260427]] — - Lane: s3 *(verified 2026-04-27; s3)*
 - [[wiki/canon/handoff/s3/session-s3-analysis-agent-s4-s5-wr-interview-20260518|Session notes — S3 Analysis Agent S4/S5 WR interview 2026-05-18]] — Prepare concise interview evidence before drafting S3-origin WRs to S4 and S5. *(verified 2026-05-18; s3/s4/s5/analysis-agent/sast-runner/knowledge-base)*
+- [[wiki/canon/handoff/s3/session-s3-bootstrap-handoff-refresh-20260521|Session history — s3 / s3-bootstrap-handoff-refresh-20260521]] — - Lane: s3 *(verified 2026-05-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-build-sdk-materialization-20260507|Session history — s3 / s3-build-sdk-materialization-20260507]] — - Lane: s3 *(verified 2026-05-07; s3)*
 - [[wiki/canon/handoff/s3/session-s3-canonical-log-path-fix-20260520|Session history — s3 / s3-canonical-log-path-fix-20260520]] — - Lane: s3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-hot3-20260426|Session history — s3 / s3-certificate-maker-hot3-20260426]] — - Lane: s3 *(verified 2026-04-26; s3)*
@@ -260,6 +262,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-certificate-maker-toolcall-probe-20260503-030111|Session history — s3 / s3-certificate-maker-toolcall-probe-20260503-030111]] — - Lane: s3 *(verified 2026-05-02; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claim-evidence-state-machine-20260423|Session history — s3 / s3-claim-evidence-state-machine-20260423]] — - Lane: s3 *(verified 2026-04-23; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claims-schema-repair-20260421|Session history — s3 / session-s3-claims-schema-repair-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521|Session history — s3 / s3-consume-s4-semgrep-coverage-caveat-20260521]] — - Lane: s3 *(verified 2026-05-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralph-20260422|Session history — s3 / s3-final-output-clean-refactor-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralplan-20260422|Session history — s3 / s3-final-output-clean-refactor-ralplan-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-generate-poc-quality-hardening-20260421|Session history — s3 / s3-generate-poc-quality-hardening-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
@@ -272,6 +275,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-hot15-reliability-ralph-20260422|Session history — s3 / session-s3-hot15-reliability-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-hot15-reliability-ralplan-20260422|Session history — s3 / session-s3-hot15-reliability-ralplan-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-http-status-terminal-failures-20260421|Session history — s3 / session-s3-http-status-terminal-failures-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520|Session history — s3 / s3-implements-s7-paper-controls-consumption-20260520]] — - Lane: s3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-observability-20260520|Session history — s3 / s3-observability-20260520]] — - Lane: s3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-owned-code-ai-slop-cleanup-20260422|Session history — s3 / s3-owned-code-ai-slop-cleanup-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-paper-anchor-sastbench-handling-update-20260518|Session history — S3 / s3-paper-anchor-sastbench-handling-update-20260518]] — - Lane: S3 *(verified 2026-05-18; s3)*
@@ -283,10 +287,12 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-post-fix-wiki-update-20260428|Session history — s3 / s3-post-fix-wiki-update-20260428]] — - Lane: s3 *(verified 2026-04-28; s3)*
 - [[wiki/canon/handoff/s3/session-s3-qg-hardening-20260509|Session history — s3 / s3-qg-hardening-20260509]] — - Lane: s3 *(verified 2026-05-08; s3)*
 - [[wiki/canon/handoff/s3/session-s3-ralph-strict-output-contract-20260421|Session history — s3 / session-s3-ralph-strict-output-contract-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-review-s7-paper-controls-20260520|Session history — s3 / s3-review-s7-paper-controls-20260520]] — - Lane: s3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-s4-api-alignment-20260513|Session history — s3 / s3-s4-api-alignment-20260513]] — - Lane: s3 *(verified 2026-05-13; s3)*
 - [[wiki/canon/handoff/s3/session-s3-s4-consolidated-contract-20260512|Session history — s3 / s3-s4-consolidated-contract-20260512]] — - Lane: s3 *(verified 2026-05-12; s3)*
 - [[wiki/canon/handoff/s3/session-s3-s4-paper-static-evidence-consumption-20260520|Session history — s3 / s3-s4-paper-static-evidence-consumption-20260520]] — - Lane: s3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-s4-v0112-consumption-20260518|Session history — s3 / s3-s4-v0112-consumption-20260518]] — - Lane: s3 *(verified 2026-05-18; s3)*
+- [[wiki/canon/handoff/s3/session-s3-s5-source-kg-partial-quality-20260520|Session history — S3 / s3-s5-source-kg-partial-quality-20260520]] — - Lane: S3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-s3-sastbench-direct-pdf-verification-20260518|Session history — S3 / s3-sastbench-direct-pdf-verification-20260518]] — - Lane: S3 *(verified 2026-05-18; s3)*
 - [[wiki/canon/handoff/s3/session-s3-stability-qualitygate-separation-20260425|Session history — s3 / s3-stability-qualitygate-separation-20260425]] — - Lane: s3 *(verified 2026-04-25; s3)*
 - [[wiki/canon/handoff/s3/session-s3-stabilization-dataset-hardening-20260513|Session history — s3 / s3-stabilization-dataset-hardening-20260513]] — - Lane: s3 *(verified 2026-05-13; s3)*
@@ -317,7 +323,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s5-paper-timeout-consumption-2026-05-20|Session history — S3 / s5-paper-timeout-consumption-2026-05-20]] — - Lane: S3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s3/session-traceaudit-50-dry-run-2026-05-20|Session history — S3 / traceaudit-50-dry-run-2026-05-20]] — - Lane: S3 *(verified 2026-05-20; s3)*
 - [[wiki/canon/handoff/s4/build-snapshot-consumer-seam|S4 Build Snapshot Consumer Seam 설계 메모]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/sast-runner/build-snapshot/provenance/build)*
-- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/sast-runner/paper-pipeline/traceaudit/observability)*
+- [[wiki/canon/handoff/s4/readme|S4. SAST Runner 인수인계서]] — Last verified: 2026-05-21 *(verified 2026-05-21; s4/sast-runner/paper-pipeline/traceaudit/observability/semgrep-effective-coverage)*
 - [[wiki/canon/handoff/s4/s4-paper-static-evidence-implementation-crystallization|S4 paper static evidence implementation crystallization]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/s3/s5/paper-api/static-evidence/traceaudit)*
 - [[wiki/canon/handoff/s4/session-019daee7-5108-7432-9683-790245a318cb|Session history — s4 / 019daee7-5108-7432-9683-790245a318cb]] — - Lane: s4 *(verified 2026-04-21; s4)*
 - [[wiki/canon/handoff/s4/session-019e1477-4c30-7582-ab7a-cbc26bdb509b|Session history — s4 / 019e1477-4c30-7582-ab7a-cbc26bdb509b]] — - Lane: s4 *(verified 2026-05-13; s4)*
@@ -350,7 +356,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-omx-1778459818640-2qvuzs|Session history — s4 / omx-1778459818640-2qvuzs]] — - Lane: s4 *(verified 2026-05-14; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1778459822605-7wqa9d|Session history — s4 / omx-1778459822605-7wqa9d]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-omx-1779068232819-j7ui46|Session history — s4 / omx-1779068232819-j7ui46]] — - Lane: s4 *(verified 2026-05-18; s4)*
+- [[wiki/canon/handoff/s4/session-omx-1779334043555-q4a62s|Session history — S4 / omx-1779334043555-q4a62s]] — - Lane: S4 *(verified 2026-05-21; s4)*
 - [[wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512|Session history — s4 / s4-api-doc-sync-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-bootstrap-refresh-20260521|Session history — s4 / s4-bootstrap-refresh-20260521]] — - Lane: s4 *(verified 2026-05-21; s4)*
 - [[wiki/canon/handoff/s4/session-s4-corpus-readiness-authoritative-report-merge-20260513|Session history — s4 / s4-corpus-readiness-authoritative-report-merge-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-s4-corpus-readiness-cli-fail-closed-20260513|Session history — s4 / s4-corpus-readiness-cli-fail-closed-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-s4-corpus-readiness-gate-20260513|Session history — s4 / s4-corpus-readiness-gate-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
@@ -377,6 +385,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-s4-paper-static-evidence-ownership-wr-20260520|Session history — s4 / s4-paper-static-evidence-ownership-wr-20260520]] — - Lane: s4 *(verified 2026-05-20; s4)*
 - [[wiki/canon/handoff/s4/session-s4-report-identity-provenance-validation-fail-closed-20260513|Session history — s4 / s4-report-identity-provenance-validation-fail-closed-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-s4-required-tool-system-stability-gate-20260512|Session history — s4 / s4-required-tool-system-stability-gate-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
+- [[wiki/canon/handoff/s4/session-s4-semgrep-effective-coverage-hardening-20260520|Session history — s4 / s4-semgrep-effective-coverage-hardening-20260520]] — - Lane: s4 *(verified 2026-05-20; s4)*
 - [[wiki/canon/handoff/s4/session-s4-static-evidence-freeze-gate-status-20260520|Session history — s4 / s4-static-evidence-freeze-gate-status-20260520]] — - Lane: s4 *(verified 2026-05-20; s4)*
 - [[wiki/canon/handoff/s4/session-s4-system-stability-gate-consistency-validation-fail-closed-20260513|Session history — s4 / s4-system-stability-gate-consistency-validation-fail-closed-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
 - [[wiki/canon/handoff/s4/session-s4-system-stability-not-run-decision-grade-hardening-20260513|Session history — s4 / s4-system-stability-not-run-decision-grade-hardening-20260513]] — - Lane: s4 *(verified 2026-05-13; s4)*
@@ -387,7 +396,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s4/session-s4-to-s3-api-contract-alignment-request-20260512|Session history — s4 / s4-to-s3-api-contract-alignment-request-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s4/session-s4-to-s3-consolidated-wr-cleanup-20260512|Session history — s4 / s4-to-s3-consolidated-wr-cleanup-20260512]] — - Lane: s4 *(verified 2026-05-12; s4)*
 - [[wiki/canon/handoff/s5/architecture|S5 Knowledge Base — 아키텍처 상세]] — Current active architecture is summarized in wiki/canon/specs/s5-current-implementation-snapshot-20260520. This page remains the S5 architecture detail page, but older sections ... *(verified 2026-05-20; s5)*
-- [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — This handoff now reflects the post-paper-context / S5FREEZEGATE / log-analyzer readiness state. For the compact canonical current-state entry point, read wiki/canon/specs/s5-cur... *(verified 2026-05-20; s5)*
+- [[wiki/canon/handoff/s5/readme|S5. Knowledge Base 인수인계서]] — This handoff is the S5 bootstrap surface for a fresh session. The intended first-read order is: *(verified 2026-05-21; s5)*
 - [[wiki/canon/handoff/s5/session-019da96c-0be2-77b2-86a7-c74413e9fd8a|Session history — s5 / 019da96c-0be2-77b2-86a7-c74413e9fd8a]] — - Lane: s5 *(verified 2026-04-21; s5)*
 - [[wiki/canon/handoff/s5/session-019dc3e6-5266-7f92-bfaf-0f56b573ff3f|Session history — s5 / 019dc3e6-5266-7f92-bfaf-0f56b573ff3f]] — - Lane: s5 *(verified 2026-04-25; s5)*
 - [[wiki/canon/handoff/s5/session-1|S5 Session 1 — 2026-03-18]] — | 변경 | 상세 | *(verified 2026-04-06; s5)*
@@ -429,6 +438,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s5/session-omx-1777020039406-vnmfjf|Session history — s5 / omx-1777020039406-vnmfjf]] — - Lane: s5 *(verified 2026-04-24; s5)*
 - [[wiki/canon/handoff/s5/session-omx-1778459822605-7wqa9d|Session history — s5 / omx-1778459822605-7wqa9d]] — - Lane: s5 *(verified 2026-05-11; s5)*
 - [[wiki/canon/handoff/s5/session-omx-1778663363090-gw9lq6|Session history — S5 / omx-1778663363090-gw9lq6]] — - Lane: S5 *(verified 2026-05-18; s5)*
+- [[wiki/canon/handoff/s5/session-omx-1779334094936-yb27wl|Session history — S5 / omx-1779334094936-yb27wl]] — - Lane: S5 *(verified 2026-05-21; s5)*
 - [[wiki/canon/handoff/s5/session-s5-2026-05-18|Session history — S5 / s5-2026-05-18]] — - Lane: S5 *(verified 2026-05-18; s5)*
 - [[wiki/canon/handoff/s5/session-s5-2026-05-19-judge-control-credential-url-redaction|Session history — S5 / s5-2026-05-19-judge-control-credential-url-redaction]] — - Lane: S5 *(verified 2026-05-19; s5)*
 - [[wiki/canon/handoff/s5/session-s5-2026-05-19-judge-nested-url-validator|Session history — S5 / s5-2026-05-19-judge-nested-url-validator]] — - Lane: S5 *(verified 2026-05-18; s5)*
@@ -440,6 +450,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s5/session-s5-2026-05-19-source-kg-payload-redaction-drift-guard|Session history — S5 / s5-2026-05-19-source-kg-payload-redaction-drift-guard]] — - Lane: S5 *(verified 2026-05-18; s5)*
 - [[wiki/canon/handoff/s5/session-s5-2026-05-19-source-kg-validator-payload-redaction|Session history — S5 / s5-2026-05-19-source-kg-validator-payload-redaction]] — - Lane: S5 *(verified 2026-05-18; s5)*
 - [[wiki/canon/handoff/s5/session-s5-2026-05-19|Session history — s5 / session-s5-2026-05-19]] — - Lane: s5 *(verified 2026-05-18; s5)*
+- [[wiki/canon/handoff/s5/session-s5-bootstrap-doc-refresh-20260521|Session history — s5 / s5-bootstrap-doc-refresh-20260521]] — - Lane: s5 *(verified 2026-05-21; s5)*
 - [[wiki/canon/handoff/s5/session-s5-doc-refresh-20260520|Session history — s5 / s5-doc-refresh-20260520]] — - Lane: s5 *(verified 2026-05-20; s5)*
 - [[wiki/canon/handoff/s5/session-s5-freeze-gate-implementation-20260520|Session history — s5 / session-s5-freeze-gate-implementation-20260520]] — - Lane: s5 *(verified 2026-05-20; s5)*
 - [[wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520|Session history — s5 / s5-log-analyzer-traceability-20260520]] — - Lane: s5 *(verified 2026-05-20; s5)*
@@ -452,8 +463,9 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s6/session-2|S6 세션 2 — 2026-03-31]] — 1. 코드베이스 재탐색 (세션 인수인계) *(verified 2026-04-06; s6)*
 - [[wiki/canon/handoff/s6/session-3|S6 세션 3 — 2026-04-04]] — 1. 공통 공지 재확인 *(verified 2026-04-06; s6)*
 - [[wiki/canon/handoff/s7/architecture|S7 LLM Gateway — 아키텍처 상세]] — 이 문서는 Gateway 코드의 구조, 요청 처리 흐름, 환경변수, Observability를 상세히 기술한다. *(verified 2026-05-11; s7)*
-- [[wiki/canon/handoff/s7/llm-engine-ops|S7 LLM Engine — 운영 정보]] — DGX Spark에서 구동되는 S7 LLM Engine(vLLM)의 접속, 기동, 성능, 트러블슈팅 정보. *(verified 2026-04-28; s7)*
-- [[wiki/canon/handoff/s7/readme|S7. LLM Gateway + LLM Engine 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-11; s7)*
+- [[wiki/canon/handoff/s7/llm-engine-ops|S7 LLM Engine — 운영 정보]] — DGX Spark에서 구동되는 S7 LLM Engine(vLLM)의 접속, 기동, 성능, 트러블슈팅 정보. *(verified 2026-05-21; s7)*
+- [[wiki/canon/handoff/s7/plan-qwen-generation-controls-contract-2026-05-20|Plan — S7 Qwen generation-control contract for TraceAudit paper path]] — - Mode: $ralplan / consensus planning *(verified 2026-05-20; s7-llm-gateway/s3-analysis-agent/dgx-spark/vllm/traceaudit-paper)*
+- [[wiki/canon/handoff/s7/readme|S7. LLM Gateway + LLM Engine 인수인계서]] — 반드시 docs/AEGIS.md를 먼저 읽을 것. 프로젝트 공통 제약 사항, 역할 정의, 소유권이 그 문서에 있다. *(verified 2026-05-21; s7)*
 - [[wiki/canon/handoff/s7/session-019dd718-9a5f-7770-8d31-033276b7ffae|Session history — S7 / 019dd718-9a5f-7770-8d31-033276b7ffae]] — - Lane: S7 *(verified 2026-04-29; s7)*
 - [[wiki/canon/handoff/s7/session-1|Session 1 — S7 신설 (2026-03-19)]] — S3(Analysis Agent + LLM Gateway)에서 LLM Gateway + LLM Engine 관리를 S7으로 분리. *(verified 2026-04-06; s7)*
 - [[wiki/canon/handoff/s7/session-10|Session 10 — S7 handoff 문서 잔여 드리프트 정리 (2026-04-04)]] — - Session 9에서 Gateway 안정화 패치와 공용 .omx 메모 규칙 반영을 완료했다. *(verified 2026-04-06; s7)*
@@ -476,6 +488,10 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s7/session-omx-1778205195183-z7dmmz|Session history — s7 / omx-1778205195183-z7dmmz]] — - Lane: s7 *(verified 2026-05-08; s7)*
 - [[wiki/canon/handoff/s7/session-omx-1778230198291-omainf|Session history — s7 / omx-1778230198291-omainf]] — - Lane: s7 *(verified 2026-05-08; s7)*
 - [[wiki/canon/handoff/s7/session-omx-1778496500-s7-health-readiness-cache|Session history — s7 / omx-1778496500-s7-health-readiness-cache]] — - Lane: s7 *(verified 2026-05-11; s7)*
+- [[wiki/canon/handoff/s7/session-omx-1779266017427-ayixuq|Session history — S7 / omx-1779266017427-ayixuq]] — - Lane: S7 *(verified 2026-05-20; s7)*
+- [[wiki/canon/handoff/s7/session-omx-1779269184895-8gprdc|Session history — s7 / omx-1779269184895-8gprdc]] — - Lane: s7 *(verified 2026-05-21; s7)*
+- [[wiki/canon/handoff/s7/session-omx-1779328775327-9l0s6n-dgx-openvpn-doc|Session history — s7 / omx-1779328775327-9l0s6n-dgx-openvpn-doc]] — - Lane: s7 *(verified 2026-05-21; s7)*
+- [[wiki/canon/handoff/s7/session-omx-1779328775327-9l0s6n-doc-refresh|Session history — s7 / omx-1779328775327-9l0s6n-doc-refresh]] — - Lane: s7 *(verified 2026-05-21; s7)*
 - [[wiki/canon/handoff/s7/session-s7-bfcl-tool-benchmark-20260428|Session history — s7 / session-s7-bfcl-tool-benchmark-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
 - [[wiki/canon/handoff/s7/session-s7-doc-refresh-qwen36-mtp-20260428|Session history — s7 / session-s7-doc-refresh-qwen36-mtp-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
 - [[wiki/canon/handoff/s7/session-s7-gateway-perf-benchmark-20260428|Session history — s7 / s7-gateway-perf-benchmark-20260428]] — - Lane: s7 *(verified 2026-04-28; s7)*
@@ -497,7 +513,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/roadmap/s1-roadmap|S1 Frontend — Roadmap]] — 마지막 업데이트: 2026-04-02 *(verified 2026-04-06; s1)*
 - [[wiki/canon/roadmap/s2-roadmap|S2 개발 로드맵]] — 즉시 다음 작업 + 후순위 + 인프라 계획 *(verified 2026-04-20; s2)*
 - [[wiki/canon/roadmap/s3-roadmap|S3 로드맵]] — S3 lane의 다음 작업과 최근 완료 사항. *(verified 2026-04-27; s3)*
-- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — Last verified: 2026-05-20 *(verified 2026-05-20; s4/sast-runner/paper-pipeline/traceaudit)*
+- [[wiki/canon/roadmap/s4-roadmap|S4 SAST Runner — 로드맵]] — Last verified: 2026-05-21 *(verified 2026-05-21; s4/sast-runner/paper-pipeline/traceaudit/semgrep-effective-coverage)*
 - [[wiki/canon/roadmap/s5-knowledge-acquisition-modernization-one-track|S5 Knowledge Acquisition Modernization — One-track Plan]] — This one-track modernization plan is complete as a historical execution plan for G001-G010-era acquisition work. Current active S5 state and post-paper-context readiness live in... *(verified 2026-05-20; s5/s3/s4/knowledge-base/etl/graphrag/acquisition-ledger/knowledge-corpus/cve/code-graph)*
 - [[wiki/canon/roadmap/s5-roadmap|S5 Knowledge Base — Roadmap]] — Current as of 2026-05-20. This roadmap supersedes the older 2026-04 immediate-work list. Historical roadmap entries remain represented in older session pages and the one-track m... *(verified 2026-05-20; s5/knowledge-base/paper-context/source-code-kg/threat-kb/observability)*
 - [[wiki/canon/roadmap/s6-roadmap|S6 로드맵]] — v1.0.0 범위: 정적 분석 파이프라인 (ZIP→빌드→SAST+LLM). 동적 분석(S6)은 v2+로 명시적 미포함 (2026-03-21 확정). *(verified 2026-04-09; s6)*
@@ -693,8 +709,10 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s3-to-s7-s3-reply-live-s7-first-turn-tool-call-smoke-evidence-recorded|S3 reply: live S7 first-turn tool-call smoke evidence recorded]] — - Kind: reply *(verified 2026-05-06; s3/s7/analysis-agent/build-agent/llm-gateway)*
 - [[wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin|S3 requires thinking-on LLM Gateway semantics for hotN; clarify/remove S7 thinking-off overrides]] — - Kind: request *(verified 2026-04-28; s3/s7/llm-gateway/analysis-agent/strict-json/thinking-mode)*
 - [[wiki/canon/work-requests/s3-to-s7-s3-review-approve-separate-async-ownership-surface-with-narrow-contract-adjustme|S3 review: approve separate async ownership surface with narrow contract adjustments; S7 may start implementation]] — - Kind: reply *(verified 2026-04-14; s3/s7/llm-gateway/async-surface/phase-2/ownership)*
+- [[wiki/canon/work-requests/s3-to-s7-s3-review-reply-iterate-s7-qwen-paper-controls-plan-before-implementation|S3 review reply: ITERATE S7 Qwen paper-controls plan before implementation]] — - Kind: reply *(verified 2026-05-21; s3-analysis-agent/s7-llm-gateway/traceaudit-paper/dgx-spark/vllm)*
 - [[wiki/canon/work-requests/s3-to-s7-s7-health-must-not-report-llm-ready-when-dgx-backend-is-unreachable|S7 health must not report LLM-ready when DGX backend is unreachable]] — - Kind: request *(verified 2026-05-08; s7/s3/health/llm-gateway/timeout-policy)*
 - [[wiki/canon/work-requests/s3-to-s7-s7-implement-wait-while-alive-async-llm-ownership-per-health-control-v2|S7 implement wait-while-alive async LLM ownership per health-control v2]] — - Kind: request *(verified 2026-05-08; s7/s3/llm-gateway/timeout-policy/async-ownership/health-control-v2)*
+- [[wiki/canon/work-requests/s3-to-s7-s7-unblock-traceaudit-live-smoke-with-async-chat-request-observability-and-profi|S7: unblock TraceAudit live smoke with async chat, request observability, and profile passthrough]] — - Kind: request *(verified 2026-05-21; s3-analysis-agent/s7-llm-gateway/dgx-spark/traceaudit-paper/observability)*
 - [[wiki/canon/work-requests/s3-to-s7-start-immediate-s7-work-on-opt-in-strict-json-mode-for-v1-chat|start immediate S7 work on opt-in strict JSON mode for /v1/chat]] — - Kind: request *(verified 2026-04-14; s3/s7)*
 - [[wiki/canon/work-requests/s3-to-s7-system-stability-preflight-confirm-s7-llm-ownership-timeout-and-strict-json-fail|System-stability preflight: confirm S7 LLM ownership, timeout, and strict-JSON failure semantics]] — - Kind: question *(verified 2026-04-25; s3/s7/analysis-agent/llm-gateway/strict-json/system-stability)*
 - [[wiki/canon/work-requests/s4-to-s2-reply-explicit-build-preparation-and-one-shot-quick-contract-is-ready-on-s4|reply: explicit build-preparation and one-shot Quick contract is ready on S4]] — - Kind: reply *(verified 2026-04-13; s4/s2)*
@@ -727,6 +745,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s4-to-s3-s4-accepts-final-paper-anchor.md-freeze-with-implementation-boundary-notes|S4 accepts final PAPER-ANCHOR.md freeze with implementation boundary notes]] — - Kind: notice *(verified 2026-05-19; s3/s4/paper-pipeline/traceaudit/sast-runner)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu|S4 consolidated contract notice: tool liveness, system-stability gate, and local Quality Gate status supersede older staticEvidenceContract notices]] — - Kind: notice *(verified 2026-05-12; s4/s3/sast-runner/analysis-agent)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-notice-e2e-smoke-ready-with-verified-s4-responsibility-boundary|S4 notice — e2e smoke ready with verified S4 responsibility boundary]] — - Kind: notice *(verified 2026-05-20; s4/s3/paper/e2e-smoke/static-evidence/observability)*
+- [[wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-|S4 notice: Semgrep C++ effective-coverage hardening and additive coverage contract fields are ready for S3 consumption]] — - Kind: notice *(verified 2026-05-21; s4/s3/sast-runner/analysis-agent/semgrep/paper-pipeline/traceaudit)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ|S4 paper static-evidence endpoint implemented and verified for S3 consumer integration]] — - Kind: notice *(verified 2026-05-20; s4/s3/paper-api/static-evidence/traceaudit/consumer-integration)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-reply-accept_with_corrections-for-traceaudit-use-cases-and-state-machine-comp|S4 reply: ACCEPT_WITH_CORRECTIONS for TraceAudit use cases and state machine companion spec]] — - Kind: reply *(verified 2026-05-19; s3/s4/paper-pipeline/traceaudit/sast-runner/state-machine)*
 - [[wiki/canon/work-requests/s4-to-s3-s4-reply-accept-after-corrections-for-traceaudit-s3-s4-s5-companion-spec|S4 reply: ACCEPT after corrections for TraceAudit S3/S4/S5 companion spec]] — - Kind: reply *(verified 2026-05-19; s3/s4/paper-pipeline/traceaudit/sast-runner/state-machine)*
@@ -754,6 +773,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s5-to-s3-reply-target-context-acquisition-deadline-and-mixed-status-blockers-fixed|Reply: target-context acquisition deadline and mixed-status blockers fixed]] — - Kind: reply *(verified 2026-05-11; s5/s3/knowledge-base/target-context/acquisition-envelope/deadline/cve)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-consume-judge-controleffects-validator-catalog-without-clean-pass-semantics|S3 consume Judge controlEffects validator catalog without clean-pass semantics]] — - Kind: request *(verified 2026-05-19; s5/s3)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-consume-judge-reasoningpath-policy-and-add-cache-hit-consumer-canary|S3 consume Judge reasoningPath policy and add cache-hit consumer canary]] — - Kind: request *(verified 2026-05-19; s5/s3)*
+- [[wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow|S3 consume S5 Source KG partial-quality gate in paper context flow]] — - Kind: request *(verified 2026-05-20; s5/s3/paper-pipeline/source-code-kg/code-kb/api-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-guidance-requested-run-s5_freeze_gate-now-or-defer-after-s3-consumable-api-im|S3 guidance requested: run S5_FREEZE_GATE now or defer after S3-consumable API implementation]] — - Kind: question *(verified 2026-05-19; s5/s3/knowledge-base/paper-pipeline/traceaudit/s5-freeze-gate/api-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-review-requested-for-s5-acquisition-state-machine-and-durable-ledger-design|S3 review requested for S5 acquisition state-machine and durable ledger design]] — - Kind: request *(verified 2026-05-11; s5/s3/knowledge-base/analysis-agent/state-machine/acquisition-ledger)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-review-requested-s5-g010-consumption-validation-report-and-final-modernizatio|S3 review requested — S5 G010 consumption validation report and final modernization handoff]] — - Kind: request *(verified 2026-05-11; s5/s3/s4/knowledge-base/consumption-validation/evidence-catalog/graphrag/cve/code-graph)*
@@ -766,6 +786,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s5-to-s3-s4-s5-source-code-kg-producer-contract-v1-is-now-machine-readable-please-review-pro|S5 Source Code KG producer contract v1 is now machine-readable; please review producer adoption]] — - Kind: request *(verified 2026-05-18; s5/s3/s4/knowledge-base/source-code-kg/producer-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-api-66-shape|S5 API 계약 테스트 66건 완료 — 전 엔드포인트 응답 shape 검증됨]] — - Kind: notice *(verified 2026-04-08; s5/s3)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-final-review-paper-anchor-accepted-with-no-anchor-change-request|S5 final review: PAPER-ANCHOR accepted with no anchor change request]] — - Kind: notice *(verified 2026-05-19; s5/s3/paper-pipeline/traceaudit/knowledge-base/analysis-agent/source-code-kg/threat-kb)*
+- [[wiki/canon/work-requests/s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r|S5 notice: certmaker Source KG was structurally ingested but quality is partial, rerun prepare after S5 quality gate patch]] — - Kind: notice *(verified 2026-05-20; s5-kb/s3-agent/source-code-kg)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-notice-e2e-smoke-ready-for-s5-paper-context-producer-scope|S5 notice: e2e smoke ready for S5 paper-context producer scope]] — - Kind: notice *(verified 2026-05-20; s5/s3/knowledge-base/analysis-agent/paper-pipeline/traceaudit/e2e-smoke/paper-context/source-code-kg/threat-kb)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-notice-s5_freeze_gate-passed-for-s5-producer-exported-fixture-obligations|S5 notice: S5_FREEZE_GATE passed for S5 producer/exported-fixture obligations]] — - Kind: notice *(verified 2026-05-20; S5/S3/knowledge-base/paper-pipeline/traceaudit/s5-freeze-gate/api-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-paper-context-api-hard-now-subset-implemented-and-verified-for-s3-consumption|S5 Paper Context API hard-now subset implemented and verified for S3 consumption]] — - Kind: notice *(verified 2026-05-20; s5/s3/knowledge-base/paper-context/paper-pipeline/traceaudit)*
@@ -778,6 +799,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s5-to-s3-s5-reply-paper-endpoints-aligned-with-no-absolute-timeout-liveness-policy|S5 reply: paper endpoints aligned with no-absolute-timeout liveness policy]] — - Kind: reply *(verified 2026-05-20; s5/s3/knowledge-base/paper-path/traceaudit)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-reply-paper-path-observability.md-compliance-alignment-completed|S5 reply — paper-path observability.md compliance alignment completed]] — - Kind: reply *(verified 2026-05-20; s5/s3/observability/paper/knowledge-base)*
 - [[wiki/canon/work-requests/s5-to-s3-s5-second-reply-accept-after-s4-corrections-for-traceaudit-companion-spec|S5 second reply: ACCEPT after S4 corrections for TraceAudit companion spec]] — - Kind: reply *(verified 2026-05-19; s5/s3/paper-pipeline/traceaudit/knowledge-base/code-kb/source-code-kg/threat-kb/state-machine)*
+- [[wiki/canon/work-requests/s5-to-s3-s7-s5-notice-e2e-smoke-failed-after-s5-success-at-s3-to-s7-chat-exchange|S5 notice: e2e smoke failed after S5 success at S3 to S7 chat exchange]] — - Kind: notice *(verified 2026-05-20; s3-agent/s5-kb/s7-gateway)*
 - [[wiki/canon/work-requests/s5-to-s4-s4-requested-define-and-report-paper-static-evidence-freeze-validation-gate-stat|S4 requested: define and report paper static evidence freeze/validation gate status]] — - Kind: request *(verified 2026-05-20; S5/S4/S3/paper-pipeline/traceaudit/sast-runner/static-evidence/freeze-gate)*
 - [[wiki/canon/work-requests/s5-to-s7-reply-s5-accepts-s7-task-pipeline-rag-enrichment-policy-as-context-only-kb-usage|Reply: S5 accepts S7 task-pipeline RAG enrichment policy as context-only KB usage]] — - Kind: reply *(verified 2026-05-06; s5/s7/rag/knowledge-base/llm-gateway)*
 - [[wiki/canon/work-requests/s7-to-all-s7-notice-llm-engine-default-serving-model-changed-to-qwen3.6-27b|S7 notice — LLM Engine default serving model changed to Qwen3.6-27B]] — - Kind: notice *(verified 2026-05-18; s7/llm-gateway/llm-engine)*
@@ -793,13 +815,16 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s7-to-s3-reply-qwen3.6-rollout-recipe-prepared-s7-live-cutover-not-yet-verified|Reply: Qwen3.6 rollout recipe prepared; S7 live cutover not yet verified]] — - Kind: reply *(verified 2026-04-24; s7/s3/llm-gateway/model-rollout)*
 - [[wiki/canon/work-requests/s7-to-s3-reply-s7-chooses-option-c-for-phase-2-no-result-loss-semantics-keep-v1-chat-fini|Reply: S7 chooses Option C for phase-2 no-result-loss semantics — keep /v1/chat finite and use a new async ownership surface]] — - Kind: reply *(verified 2026-04-14; s7/s3/health/timeout-policy/ack-liveness/llm-gateway/phase-2)*
 - [[wiki/canon/work-requests/s7-to-s3-reply-s7-health-request-summary-is-now-implemented-in-repo-first-rollout-v1-chat|Reply: S7 /health request-summary is now implemented in repo; first-rollout /v1/chat timeout remains finite]] — - Kind: reply *(verified 2026-04-14; s7/s3/health/timeout-policy/ack-liveness/llm-gateway)*
+- [[wiki/canon/work-requests/s7-to-s3-s3-align-traceaudit-qwen3.6-27b-generation-profiles-with-verified-s7-dgx-runtime|S3: choose values and supply all S7-required Qwen generation controls]] — - Kind: request *(verified 2026-05-20; s3-analysis-agent/s7-llm-gateway/dgx-spark/vllm/traceaudit-paper)*
 - [[wiki/canon/work-requests/s7-to-s3-s3-caller-follow-up-for-s7-tool_choice-guard-and-response-contract-enforcement|S3 caller follow-up for S7 tool_choice guard and response-contract enforcement]] — - Kind: request *(verified 2026-05-06; s7/s3/llm-gateway/analysis-agent/build-agent)*
 - [[wiki/canon/work-requests/s7-to-s3-s3-clarify-live-s7-first-turn-tool-call-smoke-evidence-for-tool_choice-follow-up|S3 clarify live S7 first-turn tool-call smoke evidence for tool_choice follow-up]] — - Kind: question *(verified 2026-05-06; s7/s3/llm-gateway/analysis-agent/build-agent)*
 - [[wiki/canon/work-requests/s7-to-s3-s3-generation-controls-alignment-after-s7-caller-owned-contract|S3 generation controls alignment after S7 caller-owned contract]] — - Kind: request *(verified 2026-04-29; s7/s3/llm-gateway)*
 - [[wiki/canon/work-requests/s7-to-s3-s3-llm-readiness-follow-up-required-after-s7-generation-observability-update|S3 LLM readiness follow-up required after S7 generation observability update]] — - Kind: request *(verified 2026-04-29; s7/s3/analysis-agent/build-agent)*
+- [[wiki/canon/work-requests/s7-to-s3-s3-review-requested-s7-qwen-generation-control-contract-plan-before-implementati|S3 review requested: S7 Qwen generation-control contract plan before implementation]] — - Kind: question *(verified 2026-05-20; s3-analysis-agent/s7-llm-gateway/traceaudit-paper/dgx-spark/vllm)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-follow-up-clarification-on-health-local-ack-vs-transport-liveness-semantics|S7 follow-up clarification on /health local-ack vs transport-liveness semantics]] — - Kind: reply *(verified 2026-04-13; s7/s3)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-gateway-generation-control-contract-updated-s3-chat-callers-must-send-full-tu|S7 Gateway generation-control contract updated — S3 chat callers must send full tuple]] — - Kind: request *(verified 2026-04-29; s7/s3/llm-gateway/analysis-agent/api-contract)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-health-request-summary-semantics-response-to-s3-rollout-request|S7 /health request-summary semantics — response to S3 rollout request]] — - Kind: reply *(verified 2026-04-13; s7/s3)*
+- [[wiki/canon/work-requests/s7-to-s3-s7-implemented-phase-scoped-qwen-paper-controls-contract-for-s3-traceaudit-path|S7 implemented phase-scoped Qwen paper-controls contract for S3 TraceAudit path]] — - Kind: notice *(verified 2026-05-20; s7-llm-gateway/s3-analysis-agent/traceaudit-paper/qwen3.6-27b/dgx-spark/vllm)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability|S7 notice: consume /v1/health ready/llmReady for DGX availability]] — - Kind: notice *(verified 2026-05-08; s7/s3)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-reply-async-llm-ownership-wait-while-alive-health-control-v2-implemented|S7 reply — async LLM ownership wait-while-alive health-control v2 implemented]] — - Kind: reply *(verified 2026-05-08; s7/s3/llm-gateway/timeout-policy/async-ownership/health-control-v2)*
 - [[wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re|S7 reply: health readiness fields no longer conflate process liveness with LLM readiness]] — - Kind: reply *(verified 2026-05-08; s7)*
@@ -852,7 +877,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-20; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-21; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*
