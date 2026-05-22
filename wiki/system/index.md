@@ -4,7 +4,7 @@ page_type: "system-index"
 canonical: false
 source_refs:
   - "../README.md"
-last_verified: "2026-05-21"
+last_verified: "2026-05-22"
 service_tags: ["platform"]
 decision_tags: ["navigation", "index"]
 related_pages: ["./log.md", "./migration-map.md", "./writing-guide.md", "../Home.md"]
@@ -268,6 +268,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/handoff/s3/session-s3-claim-evidence-state-machine-20260423|Session history — s3 / s3-claim-evidence-state-machine-20260423]] — - Lane: s3 *(verified 2026-04-23; s3)*
 - [[wiki/canon/handoff/s3/session-s3-claims-schema-repair-20260421|Session history — s3 / session-s3-claims-schema-repair-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
 - [[wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521|Session history — s3 / s3-consume-s4-semgrep-coverage-caveat-20260521]] — - Lane: s3 *(verified 2026-05-21; s3)*
+- [[wiki/canon/handoff/s3/session-s3-consume-s5-contextcoverage-source-kg-20260522|Session history — s3 / session-s3-consume-s5-contextcoverage-source-kg-20260522]] — - Lane: s3 *(verified 2026-05-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralph-20260422|Session history — s3 / s3-final-output-clean-refactor-ralph-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-final-output-clean-refactor-ralplan-20260422|Session history — s3 / s3-final-output-clean-refactor-ralplan-20260422]] — - Lane: s3 *(verified 2026-04-22; s3)*
 - [[wiki/canon/handoff/s3/session-s3-generate-poc-quality-hardening-20260421|Session history — s3 / s3-generate-poc-quality-hardening-20260421]] — - Lane: s3 *(verified 2026-04-21; s3)*
@@ -788,6 +789,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 - [[wiki/canon/work-requests/s5-to-s3-reply-target-context-acquisition-deadline-and-mixed-status-blockers-fixed|Reply: target-context acquisition deadline and mixed-status blockers fixed]] — - Kind: reply *(verified 2026-05-11; s5/s3/knowledge-base/target-context/acquisition-envelope/deadline/cve)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-consume-judge-controleffects-validator-catalog-without-clean-pass-semantics|S3 consume Judge controlEffects validator catalog without clean-pass semantics]] — - Kind: request *(verified 2026-05-19; s5/s3)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-consume-judge-reasoningpath-policy-and-add-cache-hit-consumer-canary|S3 consume Judge reasoningPath policy and add cache-hit consumer canary]] — - Kind: request *(verified 2026-05-19; s5/s3)*
+- [[wiki/canon/work-requests/s5-to-s3-s3-consume-s5-contextcoverage-and-explore_source_kg-in-iterative-paper-analysis|S3 consume S5 contextCoverage and explore_source_kg in iterative paper analysis]] — - Kind: request *(verified 2026-05-22; s3/s5/analysis-agent/knowledge-base/paper-pipeline/traceaudit/source-code-kg/tool-use)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow|S3 consume S5 Source KG partial-quality gate in paper context flow]] — - Kind: request *(verified 2026-05-20; s5/s3/paper-pipeline/source-code-kg/code-kb/api-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-guidance-requested-run-s5_freeze_gate-now-or-defer-after-s3-consumable-api-im|S3 guidance requested: run S5_FREEZE_GATE now or defer after S3-consumable API implementation]] — - Kind: question *(verified 2026-05-19; s5/s3/knowledge-base/paper-pipeline/traceaudit/s5-freeze-gate/api-contract)*
 - [[wiki/canon/work-requests/s5-to-s3-s3-review-requested-for-s5-acquisition-state-machine-and-durable-ledger-design|S3 review requested for S5 acquisition state-machine and durable ledger design]] — - Kind: request *(verified 2026-05-11; s5/s3/knowledge-base/analysis-agent/state-machine/acquisition-ledger)*
@@ -897,7 +899,7 @@ Content-oriented catalog of the wiki. Agents should read this first to locate re
 ## System
 
 - [[Home|Home]] — This is the Obsidian-friendly dashboard for the canonical AEGIS wiki. *(verified 2026-04-05; platform)*
-- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-21; platform)*
+- [[wiki/system/index|AEGIS static wiki index]] — Content-oriented catalog of the wiki. Agents should read this first to locate relevant pages before drilling into individual documents. *(verified 2026-05-22; platform)*
 - [[wiki/system/log|AEGIS static wiki log]] — - Created repo structure for canonical and context page families. *(verified 2026-04-05; platform)*
 - [[wiki/system/migration-map|Migration map]] — This file is the authoritative old-path to new-path ledger during phased cutover. *(verified 2026-04-05; platform)*
 - [[wiki/system/session-history-policy|Session history policy]] — Every lane work session should produce durable wiki evidence. *(verified 2026-04-06; platform)*
