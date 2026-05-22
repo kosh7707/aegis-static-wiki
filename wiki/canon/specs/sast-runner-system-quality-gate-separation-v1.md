@@ -10,7 +10,7 @@ source_refs:
   - "services/sast-runner/tests/test_orchestrator.py"
   - "services/sast-runner/tests/test_scan_endpoint.py"
   - "services/sast-runner/tests/test_paper_static_evidence.py"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "system-stability", "quality-gate", "tool-preflight"]
 decision_tags: ["system-stability-gate", "quality-gate", "tool-preflight", "fail-closed", "current-six-tools"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
@@ -18,7 +18,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner
 
 # S4 SAST Runner System Stability and Quality Gate Separation v1
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Status: implemented
 
@@ -86,9 +86,12 @@ Current state:
 
 ```text
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass
+S4_STATIC_EVIDENCE_CONSUMER_CONTRACT_IMPROVEMENT = pass
 ```
 
 This gate means S4's paper producer boundary is validated. It does not mean S3 paper export is ready, S5 context is ready, or the code under analysis is secure.
+
+After the first e2e smoke review, S4 also validated the consumer-context projection layer: gcc-fanalyzer dataflow/status diagnostics, function extent anchoring, direct calls, and bounded category/cluster hints. This is still an evidence/producer-contract improvement, not a quality gate or final verdict.
 
 ## 4. Effective coverage gate rule
 
@@ -144,8 +147,14 @@ Quality reports may support tool/governance decisions only when system stability
 Current verification for this document refresh:
 
 ```bash
+cd /home/kosh/AEGIS/services/sast-runner && \
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
+
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Relevant suites:

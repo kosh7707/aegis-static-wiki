@@ -35,25 +35,21 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
    - `wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md`
 5. Check open WRs with `aegis-static-wiki.list_my_open_wrs(lane="s4")`.
 
-### 0.1 Fresh-session reset bootstrap — 2026-05-21
+### 0.1 Fresh-session reset bootstrap — 2026-05-22
 
 If the S4 session context is being reset, treat this subsection as the minimal state-transfer packet.
 
 1. **Do not restart discovery from old docs.** Canonical state is this page plus the related wiki pages listed in section 7.
-2. **Current code checkpoint is post-Semgrep hardening and may be uncommitted** until S2/user commits. Expected S4-owned changed paths include:
-   - `services/sast-runner/app/scanner/semgrep_coverage.py`
-   - `services/sast-runner/rules/cpp/command-injection.yaml`
-   - `services/sast-runner/app/scanner/orchestrator.py`
-   - `services/sast-runner/app/scanner/static_evidence_contract.py`
+2. **Current code checkpoint is post-Semgrep hardening and post-static-evidence consumer-context hardening.** If local code changes are present, expected S4-owned paths from the latest hardening are:
    - `services/sast-runner/app/scanner/paper_static_evidence.py`
-   - `services/sast-runner/app/routers/scan.py`
-   - `services/sast-runner/app/schemas/response.py`
-   - `services/sast-runner/benchmark/static_evidence_consumer_canary.py`
-   - Semgrep/coverage/consumer regression tests under `services/sast-runner/tests/`.
+   - `services/sast-runner/app/scanner/ast_dumper.py`
+   - `services/sast-runner/tests/test_paper_static_evidence.py`
+   - `services/sast-runner/tests/test_ast_dumper.py`
+   Older Semgrep effective-coverage checkpoint paths may also appear if the checkout predates S2/user integration; preserve S4-only changes and do not touch other lanes.
 3. **Do not touch other lane dirty files.** S4 may read/write only `services/sast-runner/` and S4-owned wiki/API/spec/handoff pages.
-4. **Current S3 notification WR is already registered:** `wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md`.
-5. **Current verification baseline:** full S4 suite `1406 passed, 1 skipped in 34.39s`; Semgrep rule validation `41 rule(s), 0 configuration errors`; wiki validation `PASS`.
-6. **Current semantic boundary:** Semgrep `coverageDegraded=true` is an effective-coverage caveat, not tool process failure, not `execution.degraded`, not negative security evidence, and not an offline quality score.
+4. **Current outbound WRs are already registered:** Semgrep coverage notice `wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md`; S3/S5 static-evidence consumer-context reply `wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete.md`.
+5. **Current verification baseline:** focused static-evidence consumer regression `5 passed in 0.08s`; related S4 static-evidence suite `198 passed, 1 skipped in 2.21s`; full S4 suite `1411 passed, 1 skipped in 36.10s`; wiki validation `PASS`.
+6. **Current semantic boundary:** Semgrep `coverageDegraded=true` is an effective-coverage caveat, and static-evidence consumer-context fields (`functionMatchStatus`, `dataFlowStatus`, `pathEvidenceStatus`, `findingCategory`, `securityRelevance`, cluster hints) are local evidence context. Neither category is tool process failure, negative security evidence, offline quality score, or final TP/FP/UNKNOWN.
 7. **If resuming work:** first run `git status --short -- services/sast-runner`, read this page, then read `wiki/canon/roadmap/s4-roadmap.md`; only re-run tests if code changed after the baseline above.
 
 ## 1. Current S4 role
@@ -105,7 +101,7 @@ S4 currently exposes **13 route surfaces** in `services/sast-runner/app/routers/
 
 ## 3. Current gates and readiness
 
-As of 2026-05-20:
+As of 2026-05-22:
 
 ```text
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass

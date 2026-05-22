@@ -7307,3 +7307,18 @@ related_pages:
 ## [2026-05-22] mcp | complete_wr | s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete
 - Lane s5 completed recipient-side handling
 - Status: open
+
+## [2026-05-22] s5-session-closeout-doc-refresh | certificate-maker full-live paper smoke S5 closeout
+- Updated S5 handoff, current implementation snapshot, S5 paper context API overlay, and e2e smoke source-context session page.
+- Recorded new S5 closeout session history: wiki/canon/handoff/s5/session-s5-certificate-maker-paper-smoke-closeout-20260522.md
+- S5 open WR count verified as zero; no commit/push performed.
+
+## [2026-05-22] handoff-update | s3-session-closeout-certificate-maker-paper-smoke
+- Updated S3 handoff and roadmap for certificate-maker full live e2e smoke closeout.
+- Recorded S3 closeout session artifact at wiki/canon/handoff/s3/session-s3-session-closeout-certificate-maker-paper-smoke-20260522.md.
+- No commit/push performed after user explicitly stopped commit/push during closeout.
+
+## [2026-05-22] S4 session-close documentation refresh completed | s4-docs-session-close
+- Updated S4 managed documents for the 2026-05-22 static-evidence consumer-context hardening checkpoint and session close handoff.
+- Refreshed current verification baseline to focused 5 passed, related 198 passed/1 skipped, full S4 suite 1411 passed/1 skipped, and wiki validation PASS.
+- Updated roadmap, main SAST Runner API/spec, gate separation, tool portfolio governance/experiment notes, build snapshot seam, paper static-evidence historical crystallization, S4 handoff, and system index. No commit or push performed.

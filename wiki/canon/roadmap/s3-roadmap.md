@@ -4,16 +4,16 @@ page_type: "canonical-roadmap"
 canonical: true
 source_refs:
   - "docs/s3-handoff/roadmap.md"
-last_verified: "2026-04-27"
+last_verified: "2026-05-22"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract"]
-related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "traceaudit", "certificate-maker-full-live-smoke", "paper-evidence", "e2e-closeout"]
+related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/handoff/s3/session-s3-session-closeout-certificate-maker-paper-smoke-20260522.md", "wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete.md", "wiki/canon/handoff/s3/session-s3-review-s4-static-evidence-hardening-20260522.md", "wiki/canon/handoff/s3/session-s3-consume-s5-contextcoverage-source-kg-20260522.md"]
 ---
 
 # S3 로드맵
 
 > S3 lane의 다음 작업과 최근 완료 사항.
-> **마지막 업데이트: 2026-04-27**
+> **마지막 업데이트: 2026-05-22**
 
 ---
 
@@ -129,3 +129,36 @@ related_pages: ["wiki/canon/handoff/s3/readme.md", "wiki/canon/specs/analysis-ag
 - Build Agent full suite: **252 passed**
 - Build boundary targeted suite: **23 passed**
 - `compileall` / `git diff --check`: **passed**
+---
+
+## 2026-05-22 진행/완료
+
+### TraceAudit certificate-maker full live smoke 및 evidence hardening
+
+1. ✅ S3 paper path가 live S4/S5/S7/S3로 `bt-0001-certificate_maker` full e2e smoke를 완료했다.
+2. ✅ 결과는 `PAPER_EXPORT_READY`, TP=11 / FP=5 / UNKNOWN=3, `qualityGate=warn`으로 정리되었다.
+3. ✅ reviewer entrypoint와 expanded archive를 `/home/kosh/aegis-for-paper`에 보존했다.
+4. ✅ S4/S5 deep-review WR을 발행했고, 양쪽 모두 `usable-with-caveats`로 수락했다.
+5. ✅ S4 static-evidence hardening follow-up을 발행했고, S4 구현 완료 후 S3가 focused/full S4 tests로 재검증했다.
+6. ✅ S3 canonical WR inbox는 closeout 시점 기준 open item이 없다.
+
+### 현재 실험 전 대기 상태
+
+- 다음 실험을 늘리기 전에 “왜 이것이 논문인가” 방향성을 먼저 고정한다.
+- 유력한 축은 단순 LLM triage가 아니라 **evidence-led, producer-boundary-aware, auditable SAST triage under slow/on-prem LLM constraints**다.
+- 다음 e2e smoke는 서비스 업데이트 반영 후 S4 enriched evidence, S5 coverage caveat, S3 finalizer/UNKNOWN handling uptake를 확인하는 목적이어야 한다.
+
+## 다음 우선순위 (2026-05-22 closeout)
+
+### 1. Paper claim / novelty freeze
+- TraceAudit의 논문 기여를 metric과 artifact condition으로 재정의한다.
+- `PAPER_EXPORT_READY`와 scientific quality gate를 분리해서 표현한다.
+- `UNKNOWN`을 실패가 아니라 evidence-boundary-preserving outcome으로 설명할지 결정한다.
+
+### 2. Updated service uptake smoke
+- 서비스 재배포/업데이트 후 certificate-maker 또는 다음 target 하나를 full e2e smoke로 재실행한다.
+- 확인 포인트: S4 functionId/body extent/dataFlow/diagnostics/cluster metadata가 S3 artifacts에 보존되는지, S5 Source KG caveat가 최종 rationale에 적절히 반영되는지.
+
+### 3. Evidence review package stabilization
+- 사람이 먼저 볼 entrypoint는 `EVIDENCE-REVIEW.md`, `finding-review-table.csv`, `triage-envelope.jsonl`, `finding-evidence-summary.jsonl`, `llm-transcript.raw.jsonl`, `evidence-ledger.jsonl`로 고정한다.
+- 이후 target별 archive/review manifest가 같은 구조를 유지하는지 확인한다.

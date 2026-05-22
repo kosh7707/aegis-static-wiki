@@ -9,7 +9,7 @@ source_refs:
   - "services/sast-runner/app/scanner/paper_static_evidence.py"
   - "services/sast-runner/app/schemas/request.py"
   - "services/sast-runner/app/schemas/response.py"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "static-analysis", "paper-pipeline", "traceaudit"]
 decision_tags: ["deterministic-static-evidence", "current-six-tools", "durable-ownership", "observability"]
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/roadmap/s4-roadmap.md"]
@@ -17,7 +17,7 @@ related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner
 
 # S4. SAST Runner 기능 명세 (v0.11.2)
 
-> Last verified: **2026-05-20**
+> Last verified: **2026-05-22**
 > Owner: **S4 / SAST Runner**
 > Scope: **C/C++ deterministic static/source/build evidence production**
 
@@ -49,7 +49,7 @@ S4 does not perform or emit:
 | Version | `0.11.2` (`app/config.py`) |
 | Service log identity | `s4-sast` |
 | Canonical log file | `/home/kosh/AEGIS/logs/s4-sast-runner.jsonl` |
-| Current test gate | `1406 passed, 1 skipped in 34.39s` on 2026-05-20 |
+| Current test gate | `1411 passed, 1 skipped in 36.10s` on 2026-05-22 |
 
 ## 4. Current route surfaces
 
@@ -181,6 +181,8 @@ Key principles:
 - top-level `claimBoundaryMatrix` and `claimBoundaries` mirrors;
 - no verdict/risk/hash/checksum/integrity/reproducibility semantics.
 
+After the first S3/S5 e2e smoke review, the paper bundle also preserves consumer-grade local static context when available: gcc-fanalyzer dataflow, explicit missing-path/unknown-variable diagnostics, function extent anchored `functionId`, direct-call hints, and bounded local category/cluster fields. These remain local S4 evidence, not final triage.
+
 ## 9. Durable ownership
 
 For long-running production or paper calls, caller should use:
@@ -247,24 +249,27 @@ It is not semantic GraphRAG and does not claim completeness for vulnerability re
 ## 13. Current verification evidence
 
 ```bash
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+cd /home/kosh/AEGIS/services/sast-runner && \
+  python3 -m py_compile app/scanner/paper_static_evidence.py app/scanner/ast_dumper.py && \
+  .venv/bin/pytest \
+    tests/test_paper_static_evidence.py::test_live_endpoint_preserves_gcc_fanalyzer_dataflow_and_function_anchor \
+    tests/test_paper_static_evidence.py::test_live_endpoint_diagnoses_gcc_fanalyzer_missing_path_details \
+    tests/test_paper_static_evidence.py::test_live_endpoint_replays_certificate_maker_style_unknown_gcc_findings \
+    tests/test_paper_static_evidence.py::test_live_endpoint_projects_related_clusters_and_local_categories \
+    tests/test_ast_dumper.py::TestDumpFunctionsParallel::test_function_rows_preserve_body_end_line_and_calls -q
+# 5 passed in 0.08s
 
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/python -m compileall app
-# pass, last recorded in S4 freeze hardening evidence
+cd /home/kosh/AEGIS/services/sast-runner && \
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
+
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+# 1411 passed, 1 skipped in 36.10s
 
 cd /home/kosh/aegis-static-wiki && python3 tools/validate_wiki.py
 # PASS
-```
-
-Focused paper/logging proof:
-
-```bash
-cd /home/kosh/AEGIS/services/sast-runner && \
-  .venv/bin/pytest tests/test_paper_static_evidence.py \
-    tests/test_scan_router_logging.py \
-    tests/test_main_startup_logging.py -q
-# 63 passed, 1 skipped in 2.02s
 ```
 
 ## 14. Related docs

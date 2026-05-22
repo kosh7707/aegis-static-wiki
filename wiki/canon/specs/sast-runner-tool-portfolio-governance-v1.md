@@ -11,7 +11,7 @@ source_refs:
   - "services/sast-runner/tests/test_tool_output_compat.py"
   - "services/sast-runner/tests/test_benchmark_slice_report.py"
   - "services/sast-runner/tests/fixtures/golden_corpus_v1/manifest.json"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "tool-portfolio", "governance", "static-analysis"]
 decision_tags: ["tool-portfolio-governance-v1", "keep-current-six-tools", "golden-corpus-v1", "no-tool-change"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
@@ -19,13 +19,13 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner
 
 # S4 Tool Portfolio Governance v1
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Current decision: `keep-current-six-tools`
 
 Decision: **keep-current-six-tools**
 
-This page defines how S4 decides whether to add, remove, or upgrade deterministic C/C++ SAST tools. It is a governance policy, not a tool-change request. As of 2026-05-20, S4 deliberately keeps the current six tools and focuses on measurement, stability, contract safety, and paper/e2e integration.
+This page defines how S4 decides whether to add, remove, or upgrade deterministic C/C++ SAST tools. It is a governance policy, not a tool-change request. As of 2026-05-22, S4 deliberately keeps the current six tools and focuses on measurement, stability, contract safety, and paper/e2e integration. The first-smoke consumer-context hardening improved projection of existing tool evidence; it did not add, remove, or upgrade tools.
 
 ## 1. Current portfolio
 
@@ -123,7 +123,7 @@ Current full S4 verification:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Relevant governance/experiment assets:
@@ -136,4 +136,4 @@ Relevant governance/experiment assets:
 - `tests/test_benchmark_slice_report.py`
 - `tests/fixtures/golden_corpus_v1/manifest.json`
 
-Current status: keep the six tools; do not add/remove/upgrade until a frozen experiment cycle produces decision-grade evidence.
+Current status: keep the six tools; do not add/remove/upgrade until a frozen experiment cycle produces decision-grade evidence. The 2026-05-22 S4 changes are projection/consumer-contract hardening over existing evidence, not a portfolio decision.

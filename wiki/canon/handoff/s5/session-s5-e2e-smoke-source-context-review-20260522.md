@@ -36,3 +36,10 @@ Reviewed certificate-maker full-live e2e smoke S5 Source KG evidence. Verdict: u
 
 ## Test evidence
 _No test evidence recorded yet._
+
+
+## Follow-up closeout — 2026-05-22
+
+After this review, S5 registered companion WR [[wiki/canon/work-requests/s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements]] to S4. S4 completed the S3/S5 static-evidence consumer-context hardening and replied at [[wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete]]. S5 reviewed the reply, verified focused/related S4 regression evidence, and completed S5 recipient-side handling. Current S5 open WR count is zero.
+
+Next expected action is another S3/S5 e2e smoke observation to confirm S3/S5 consumer uptake of enriched S4 fields (`functionId`, full function extents, call hints, gcc-fanalyzer diagnostics/dataFlow, local categories, and cluster hints).

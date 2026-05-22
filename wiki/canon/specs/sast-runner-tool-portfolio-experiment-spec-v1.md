@@ -13,7 +13,7 @@ source_refs:
   - "services/sast-runner/tests/test_tool_portfolio_report.py"
   - "services/sast-runner/tests/test_tool_portfolio_report_consumer_canary.py"
   - "services/sast-runner/tests/test_tool_portfolio_corpus_readiness.py"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "tool-portfolio", "experiment", "golden-corpus", "quality-gate"]
 decision_tags: ["tool-portfolio-experiment-v1", "deterministic-experiment", "validation-test-split", "corpus-readiness", "quality-gate"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md"]
@@ -21,7 +21,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner
 
 # S4 Tool Portfolio Experiment Spec v1
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Status: implemented harness + governance baseline; no current add/remove/upgrade decision
 
@@ -235,13 +235,15 @@ S4 has enough harness/gate structure to run controlled experiments, but not enou
 
 Until that cycle is complete, governance remains `keep-current-six-tools`.
 
+The 2026-05-22 static-evidence consumer-context hardening does not change this experiment posture. It improves how existing current-six outputs are projected to S3/S5, while portfolio sufficiency/add-remove-upgrade claims still require the experiment cycle above.
+
 ## 13. Verification evidence
 
 Current full S4 verification:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 The full suite includes the current experiment harness, corpus readiness, report, consumer canary, CLI diagnostic, parser compatibility, and system-stability tests. Historical per-hardening proof remains in S4 session history; this page is the current compact protocol.

@@ -8,7 +8,7 @@ source_refs:
   - "wiki/canon/handoff/s4/session-s4-paper-static-evidence-implementation-interview-20260519.md"
   - "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md"
   - "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "s3", "s5", "paper-api", "static-evidence", "traceaudit"]
 decision_tags: ["implementation-crystallization", "paper-static-evidence", "historical-crystallization", "producer-boundary", "traceability", "tdd"]
 related_pages: ["wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/work-requests/s3-to-s4-s3-reply-accept-s4-paper-static-evidence-api-contract.md", "wiki/canon/work-requests/s4-to-s3-s4-paper-static-evidence-endpoint-implemented-and-verified-for-s3-consumer-integ.md", "wiki/canon/work-requests/s4-to-s3-s4-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-for-e2e-.md"]
@@ -16,8 +16,8 @@ related_pages: ["wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki
 
 # S4 paper static evidence implementation crystallization
 
-Last verified: 2026-05-20
-Status: historical crystallization, implementation completed and superseded by current API/spec pages
+Last verified: 2026-05-22
+Status: historical crystallization; implementation completed and superseded by current API/spec pages plus the 2026-05-22 consumer-context hardening session
 
 This page records the pre-implementation decisions that shaped `POST /v1/paper/static-evidence`. It is no longer the current API contract. For implementation-facing work, use:
 
@@ -115,6 +115,7 @@ The crystallized work was implemented. Current state:
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass
 S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
 S4_E2E_SMOKE_READINESS = ready
+S4_STATIC_EVIDENCE_CONSUMER_CONTRACT_IMPROVEMENT = pass
 ```
 
 Implementation covers:
@@ -133,20 +134,35 @@ Implementation covers:
 - async durable ownership;
 - JSONL lifecycle logging and log-analyzer traceability.
 
+Post-first-smoke hardening additionally covers:
+
+- gcc-fanalyzer dataflow preservation when provided;
+- explicit `TOOL_PATH_NOT_AVAILABLE` / `VARIABLE_NAME_NOT_AVAILABLE` diagnostics when gcc-fanalyzer lacks reviewer-visible path/variable detail;
+- function extent anchored `functionId` mapping;
+- direct-call hints;
+- bounded local category/cluster hints without final verdict semantics.
+
 ## 5. Current verification evidence
 
 Current full S4 suite during doc refresh:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
-Focused paper/logging evidence:
+Focused paper/static-evidence consumer-context evidence:
 
 ```bash
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py -q
-# 63 passed, 1 skipped in 2.02s
+cd /home/kosh/AEGIS/services/sast-runner && \
+  python3 -m py_compile app/scanner/paper_static_evidence.py app/scanner/ast_dumper.py && \
+  .venv/bin/pytest \
+    tests/test_paper_static_evidence.py::test_live_endpoint_preserves_gcc_fanalyzer_dataflow_and_function_anchor \
+    tests/test_paper_static_evidence.py::test_live_endpoint_diagnoses_gcc_fanalyzer_missing_path_details \
+    tests/test_paper_static_evidence.py::test_live_endpoint_replays_certificate_maker_style_unknown_gcc_findings \
+    tests/test_paper_static_evidence.py::test_live_endpoint_projects_related_clusters_and_local_categories \
+    tests/test_ast_dumper.py::TestDumpFunctionsParallel::test_function_rows_preserve_body_end_line_and_calls -q
+# 5 passed in 0.08s
 ```
 
 Log-analyzer proof exists for request `req-s4-log-proof-1779259710-6143`, showing S4 paper lifecycle start/end, terminal status 200, `bundleStatus=produced`, and non-empty `s4ProducerRunId` in canonical JSONL logs.

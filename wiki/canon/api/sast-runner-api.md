@@ -12,7 +12,7 @@ source_refs:
   - "services/sast-runner/tests/test_scan_router_logging.py"
   - "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md"
   - "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "api-contract", "static-analysis", "paper-pipeline", "observability"]
 decision_tags: ["s4-v0.11.2", "current-six-tools", "static-evidence-contract", "durable-ownership", "paper-static-evidence"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md"]
@@ -20,7 +20,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/specs/sast-runner
 
 # SAST Runner API 명세 (v0.11.2)
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / `services/sast-runner`
 Base path: `/v1`
 Service identity: `s4-sast`, implementation version `0.11.2`
@@ -138,10 +138,13 @@ Response envelope minimum:
 
 Forbidden paper request/response semantics include build execution fields, TP/FP/UNKNOWN, verdicts, safe/risk scores, CVE affectedness, exploitability, checksum/hash/digest/fingerprint/integrity/reproducibility claims, and GraphRAG/LLM output.
 
+Current additive consumer-context projection, after the first S3/S5 e2e smoke review, includes function-extent anchoring, direct-call hints, gcc-fanalyzer dataflow preservation, explicit gcc-fanalyzer missing-path/unknown-variable diagnostics, and local category/cluster hints. These are evidence-context fields only and do not change S4 into a verdict producer. See `wiki/canon/api/sast-runner-paper-static-evidence-api.md` for exact row fields.
+
 Current S4 paper gate:
 
 ```text
 S4_STATIC_EVIDENCE_FREEZE_GATE = pass
+S4_STATIC_EVIDENCE_CONSUMER_CONTRACT_IMPROVEMENT = pass
 ```
 
 ## 6. `POST /v1/scan`
@@ -233,21 +236,27 @@ S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
 Latest service-root verification for this document refresh:
 
 ```bash
-cd services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+cd /home/kosh/AEGIS/services/sast-runner && \
+  python3 -m py_compile app/scanner/paper_static_evidence.py app/scanner/ast_dumper.py && \
+  .venv/bin/pytest \
+    tests/test_paper_static_evidence.py::test_live_endpoint_preserves_gcc_fanalyzer_dataflow_and_function_anchor \
+    tests/test_paper_static_evidence.py::test_live_endpoint_diagnoses_gcc_fanalyzer_missing_path_details \
+    tests/test_paper_static_evidence.py::test_live_endpoint_replays_certificate_maker_style_unknown_gcc_findings \
+    tests/test_paper_static_evidence.py::test_live_endpoint_projects_related_clusters_and_local_categories \
+    tests/test_ast_dumper.py::TestDumpFunctionsParallel::test_function_rows_preserve_body_end_line_and_calls -q
+# 5 passed in 0.08s
+
+cd /home/kosh/AEGIS/services/sast-runner && \
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
+
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+# 1411 passed, 1 skipped in 36.10s
+
+cd /home/kosh/aegis-static-wiki && python3 tools/validate_wiki.py
+# PASS
 ```
 
-Additional current focused evidence:
-
-```bash
-cd services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py -q
-# 63 passed, 1 skipped in 2.02s
-
-cd services/sast-runner && .venv/bin/semgrep --validate --config rules
-# Configuration is valid - found 0 configuration error(s), and 41 rule(s).
-
-# Direct certmaker Semgrep proof after C++ canary rule pack:
-# services.sast-runner.rules.cpp.aegis.cpp.cwe-78-popen-with-variable at main.cpp:35
-```
-
-These prove S4 service behavior and documentation claims were checked against the live codebase on 2026-05-20. Cross-lane integration still belongs to the owning S3/S5 e2e smoke gates.
+These prove S4 service behavior and documentation claims were checked against the live codebase on 2026-05-22. Cross-lane integration still belongs to the owning S3/S5 e2e smoke gates.

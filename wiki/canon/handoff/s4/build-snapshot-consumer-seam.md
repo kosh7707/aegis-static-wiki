@@ -7,7 +7,7 @@ source_refs:
   - "services/sast-runner/app/scanner/build_runner.py"
   - "wiki/canon/api/sast-runner-api.md"
   - "wiki/canon/specs/sast-runner.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "build-snapshot", "provenance", "build"]
 decision_tags: ["build-snapshot-consumer-seam", "execution-evidence-authority", "provenance-pass-through"]
 related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runner.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md"]
@@ -15,7 +15,7 @@ related_pages: ["wiki/canon/api/sast-runner-api.md", "wiki/canon/specs/sast-runn
 
 # S4 Build Snapshot Consumer Seam 설계 메모
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Status: implemented `/v1` seam; still active for build/scan orchestration
 
@@ -109,13 +109,15 @@ The TraceAudit paper path does not require S4 to look up or own Build Snapshots.
 
 S4 echoes refs and produces raw static-evidence bundles. S3 owns paper orchestration, normalization, packet rendering, and final TP/FP/UNKNOWN handling.
 
+The 2026-05-22 consumer-context hardening is compatible with this seam: S4 still consumes caller-provided local `sourceRoot` and compile context, but the resulting static-evidence bundle now carries richer local finding/function/dataflow context for S3/S5 without turning build snapshot refs into S4-owned identity or verdict authority.
+
 ## 8. Verification evidence
 
 Current full S4 verification:
 
 ```bash
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1395 passed, 1 skipped in 34.93s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Current route inventory in `services/sast-runner/app/routers/scan.py` confirms the active build/scan/paper/request/health surfaces documented in `wiki/canon/api/sast-runner-api.md`.

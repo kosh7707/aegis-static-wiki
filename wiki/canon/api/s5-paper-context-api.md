@@ -10,7 +10,7 @@ source_refs:
   - "wiki/canon/work-requests/s5-to-s3-s5-reply-accept_with_scope-for-paper-facing-code-kb-and-retrieval-tool-call-cont.md"
   - "wiki/canon/api/knowledge-base-api.md"
   - "wiki/canon/work-requests/s3-to-s4-s5-s4-s5-paper-path-observability.md-compliance-alignment-request.md"
-last_verified: "2026-05-21"
+last_verified: "2026-05-22"
 service_tags: ["s5", "s3", "knowledge-base", "paper-pipeline", "traceaudit", "source-code-kg", "code-kb", "threat-kb", "api-contract", "observability", "source-kg-exploration", "coverage-diagnostics"]
 decision_tags: ["paper-api", "s5-paper-context-api", "consumer-contract", "s5-freeze-gate", "generic-threat-kb", "visible-leakage-class", "producer-boundary", "b2-b4-evidence-control", "idempotency", "timeout-policy", "critic-reviewed", "implemented-hard-now", "implemented-freeze-gate", "observability-aligned", "source-kg-coverage", "source-kg-exploration"]
 related_pages:
@@ -27,6 +27,21 @@ related_pages:
 
 
 # S5 Paper Context API Contract
+
+
+## Current-state overlay — 2026-05-22 first full-live smoke closeout
+
+The first full-live certificate-maker paper smoke completed and S5 reviewed the produced source-context evidence. No S5 paper endpoint/schema change was made during this closeout.
+
+Consumer-facing status to retain:
+
+- `prepare_code_kb` / Source KG quality semantics remain unchanged: selectable Source KG may be `stageReadiness=ready` while `surfaceStatus=partial` and `readiness.sourceKgQualityGate=accepted_with_caveats` carry graph-quality caveats.
+- The reviewed smoke had 14 Source KG nodes/snippets, 0 graph edges, and 0 rich IR; callers/neighborhood/data-flow modes are therefore expected to be weak or `not_available` until richer graph/IR input exists.
+- S5 context coverage worked for the smoke's finding-context path: all 19 finding-context rows had true line-overlap coverage, so `finding:0016`-`finding:0018` UNKNOWNs are not S5 coverage failures.
+- S4 has since enriched its static-evidence producer contract with function anchors, function calls, gcc-fanalyzer path/variable diagnostics, local categories, and cluster hints. The next S3/S5 e2e observation should verify whether S3 passes/uses those enriched S4 fields when selecting S5 `retrieve_finding_context` / `explore_source_kg` requests.
+- S5 remains a contextual support provider only: `no_hit`, `partial`, `not_available`, and graph-quality caveats are diagnostics/context gaps, not vulnerability absence or final triage evidence.
+
+Relevant closeout record: [[wiki/canon/handoff/s5/session-s5-certificate-maker-paper-smoke-closeout-20260522]].
 
 
 ## Current-state overlay — 2026-05-21 bootstrap refresh

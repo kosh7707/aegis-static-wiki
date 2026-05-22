@@ -6,7 +6,7 @@ source_repo: "AEGIS"
 source_refs:
   - "docs/s5-handoff/README.md"
 original_path: "docs/s5-handoff/README.md"
-last_verified: "2026-05-21"
+last_verified: "2026-05-22"
 service_tags: ["s5"]
 decision_tags: ["judge-question-credential-url-redaction-v1", "judge-control-credential-url-redaction-v1", "judge-serving-ledger-source-context-request-redaction-v1", "judge-source-context-query-echo-redaction-v1", "source-kg-partial-resolution-selector-redaction-v1", "judge-source-kg-validator-diagnostic-payload-budget-v1", "judge-source-kg-validator-diagnostic-payload-redaction-v1", "judge-source-kg-nested-url-redaction-validator-v1", "health-control-v2", "timeout-policy", "ack-liveness", "long-running-ownership", "current-state-boundary", "judge-threat-retrieval-validator-dynamic-field-catalog-v1", "judge-threat-retrieval-validator-issue-code-coverage-v1", "judge-threat-retrieval-validator-issue-code-ast-guard-v1", "judge-threat-retrieval-runtime-diagnostic-contract-v1", "judge-threat-retrieval-runtime-diagnostic-coverage-v1", "judge-source-kg-issue-diagnostic-catalog-v1", "source-kg-serving-diagnostic-coverage-v1", "judge-source-kg-serving-diagnostic-catalog-v1", "judge-relation-conflict-issue-code-catalog-v1", "judge-forbidden-inference-policy-v1", "judge-runtime-vocabulary-policy-v1", "judge-quality-gate-policy-v1", "judge-answer-status-policy-v1", "judge-verdict-policy-v1", "judge-uncertainty-followup-policy-v1", "judge-control-effects-policy-v1", "judge-fallback-trace-policy-v1", "judge-reasoning-path-policy-v1", "judge-reasoning-path-validator-v1", "judge-reasoning-path-sequence-semantics-v1", "judge-reasoning-path-validator-case-coverage-v1", "judge-reasoning-path-validator-issue-catalog-v1", "judge-fallback-trace-validator-v1", "judge-fallback-trace-validator-issue-catalog-v1", "judge-control-effects-validator-v1", "judge-control-effects-trace-scope-v1", "judge-control-effects-trace-alignment-v1", "judge-control-effects-accepted-control-alignment-v1", "judge-control-effects-risk-signal-key-contract-v1", "judge-fallback-trace-payload-validator-v1", "judge-uncertainty-followup-validator-v1", "judge-fallback-trace-payload-cardinality-v1", "judge-uncertainty-field-shape-validator-v1"]
 related_pages:
@@ -21,6 +21,22 @@ migration_status: "canonicalized"
 
 
 # S5. Knowledge Base 인수인계서
+
+
+## Current state refresh — 2026-05-22 session closeout
+
+Session closeout state for S5 / Knowledge Base after the first full-live certificate-maker paper smoke:
+
+- Current open S5 WR count: **0** (`list_my_open_wrs(lane="s5", include_to_all=true)` returned `[]` after closeout).
+- S5 reviewed S3's full-live smoke source-context WR and completed recipient handling with verdict **usable-with-caveats** for paper-smoke evidence.
+- Source KG evidence in the run remains selectable but partial quality: 14 graph nodes/snippets, 0 graph edges, 0 rich IR; all 19 finding-context rows had true line-overlap coverage, while callers/neighborhood/data-flow remained weak without graph edges/rich IR.
+- S5 registered companion WR [[wiki/canon/work-requests/s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements]] after Critic-reviewed analysis of S4 static-evidence consumer-contract gaps.
+- S4 completed both S3/S5 follow-up WRs and replied at [[wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete]]. S5 reviewed and accepted recipient-side handling.
+- S4's accepted hardening adds producer-side context S3/S5 should observe in the next e2e: `functionId` / `functionMatchStatus`, full function extents, `functions[].calls[]`, gcc-fanalyzer `dataFlow` when present, explicit `TOOL_PATH_NOT_AVAILABLE` / `VARIABLE_NAME_NOT_AVAILABLE`, `cweMappingStatus`, `findingCategory`, `securityRelevance`, and cluster/related-finding hints.
+- No S5 endpoint/schema change was made in this closeout; the next action is **another S3/S5 e2e smoke observation** to verify consumer uptake of the newly enriched S4 fields.
+- Repository hygiene: do not commit/push from S5. `services/knowledge-base/data/s5-ledger.sqlite` and `services/knowledge-base/data/s5-ledger.sqlite-*` are intentionally ignored.
+
+Newest S5 session record: [[wiki/canon/handoff/s5/session-s5-certificate-maker-paper-smoke-closeout-20260522]].
 
 
 ## Current state refresh — 2026-05-21

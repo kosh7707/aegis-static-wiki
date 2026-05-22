@@ -13,13 +13,42 @@ source_refs:
   - "services/knowledge-base/tests/test_paper_context_observability.py"
   - "services/knowledge-base/tests/test_paper_context_api_contract.py"
   - "services/knowledge-base/tests/test_paper_context_freeze_gate.py"
-last_verified: "2026-05-21"
+last_verified: "2026-05-22"
 service_tags: ["s5", "knowledge-base", "paper-context", "source-code-kg", "threat-kb", "judge", "observability", "log-analyzer"]
 decision_tags: ["current-state", "s5-freeze-gate", "producer-boundary", "canonical-jsonl", "request-id-traceability", "paper-api", "source-code-kg", "threat-kb"]
 related_pages: ["wiki/canon/handoff/s5/readme.md", "wiki/canon/handoff/s5/architecture.md", "wiki/canon/roadmap/s5-roadmap.md", "wiki/canon/api/knowledge-base-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/specs/knowledge-base.md", "wiki/canon/handoff/s5/session-s5-log-analyzer-traceability-20260520.md", "wiki/canon/work-requests/s5-to-s3-s5-reply-canonical-jsonl-logging-and-log-analyzer-traceability-verified-before-e.md", "wiki/canon/work-requests/s5-to-s3-s5-notice-certmaker-source-kg-was-structurally-ingested-but-quality-is-partial-r.md", "wiki/canon/work-requests/s5-to-s3-s3-consume-s5-source-kg-partial-quality-gate-in-paper-context-flow.md"]
 ---
 
 # S5 Current Implementation Snapshot — 2026-05-20
+
+
+## Current-state overlay — 2026-05-22 session closeout
+
+This snapshot remains the canonical S5 current-state pointer. Additive closeout state from the first full-live certificate-maker paper smoke:
+
+```text
+Open S5 WRs: none
+Latest S5 review verdict: usable-with-caveats for certificate-maker source-context evidence
+Latest S5 outbound WR: S5 companion request to S4 for static-evidence consumer-contract improvements
+Latest S4 reply consumed by S5: static-evidence consumer-context hardening complete
+Next action: rerun/observe S3/S5 e2e smoke to confirm consumer uptake, not additional S5 implementation
+```
+
+Evidence summary:
+
+- Run reviewed: `/home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-full-live-20260522-111336`.
+- S5 Code KB was selectable with caveats: 14 graph nodes/snippets, 0 graph edges, 0 rich IR, `sourceKgQualityGate=accepted_with_caveats`.
+- S5 finding-context coverage was not the root cause of the three UNKNOWNs: all 19 finding-context rows were covered with true line overlap; `finding:0016`-`finding:0018` remained UNKNOWN because caller/data-flow context and S4 gcc-fanalyzer path/variable details were insufficient in the first smoke.
+- S5 accepted S4's reply after checking code/docs/tests for function anchoring, call hints, gcc-fanalyzer path/variable diagnostics, category/security relevance, and cluster hints.
+- S5's paper-context API contract did not change in this closeout. Existing S5 hard boundary remains: S5 context rows and diagnostics are not final TP/FP/UNKNOWN evidence.
+
+Closeout/session references:
+
+- [[wiki/canon/handoff/s5/session-s5-e2e-smoke-source-context-review-20260522]]
+- [[wiki/canon/handoff/s5/session-s5-certificate-maker-paper-smoke-closeout-20260522]]
+- [[wiki/canon/work-requests/s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence]]
+- [[wiki/canon/work-requests/s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements]]
+- [[wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete]]
 
 > This page is the canonical S5 current-state pointer for documents that predate the 2026-05-20 paper-context/freeze-gate/observability work. Historical pages remain useful for design rationale, but this snapshot is the preferred entry point for active S5 implementation state.
 

@@ -6,22 +6,22 @@ source_refs:
   - "docs/s3-handoff/README.md"
   - "/home/kosh/AEGIS/.omc/state/codex-handoff-progress.md"
   - "/home/kosh/AEGIS/.omx/plans/prd-s3-paper-remediation-complete-20260427.md"
-last_verified: "2026-05-21"
+last_verified: "2026-05-22"
 service_tags: ["s3"]
-decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed", "traceaudit", "paper-path", "s4-s5-s7-consumption", "observability", "semgrep-coverage-caveat"]
-related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md", "wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md", "wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md", "wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md"]
+decision_tags: ["quick-deep", "build-agent", "analysis-agent", "contract", "paper-remediation-complete", "system-stability", "hotn-reporting", "build-v1.1-default", "critic-fix", "planner-runtime-wiring", "negative-evidence-honesty", "thinking-on", "generation-controls", "tool-schema-validation", "input-boundary", "s7-contract", "s7-health-readiness", "topk-alignment", "transitional-deprecation", "regression-gate", "tool-intent-runtime-dispatch", "non-dynamic-api-audit", "static-evidence-contract-v1", "evidence-readiness", "s4-static-evidence-gates", "s4-quality-evaluation-boundary", "s4-consolidated-contract", "tool-liveness", "system-stability-gate", "s4-local-quality-gate-boundary", "s4-current-api-alignment", "static-evidence-contract-fail-closed", "traceaudit", "paper-path", "s4-s5-s7-consumption", "observability", "semgrep-coverage-caveat", "certificate-maker-full-live-smoke", "e2e-closeout", "usable-with-caveats", "s4-static-evidence-hardening", "s5-contextcoverage-source-kg"]
+related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-agent.md", "wiki/canon/specs/build-agent.md", "wiki/canon/api/analysis-agent-api.md", "wiki/canon/api/build-agent-api.md", "wiki/canon/specs/s3-claim-evidence-state-machine/implementation-work-packages.md", "wiki/canon/work-requests/s3-to-s2-s3-build-agent-active-build-v1.1-contract-notice.md", "wiki/canon/work-requests/s3-to-s7-s3-requires-thinking-on-llm-gateway-semantics-for-hotn-clarify-remove-s7-thinkin.md", "wiki/canon/work-requests/s7-to-s3-s7-notice-consume-v1-health-ready-llmready-for-dgx-availability.md", "wiki/canon/work-requests/s7-to-s3-s7-reply-health-readiness-fields-no-longer-conflate-process-liveness-with-llm-re.md", "wiki/canon/handoff/s7/session-s7-thinking-default-true-20260428.md", "wiki/canon/api/llm-gateway-api.md", "wiki/context/project/non-dynamic-api-contract-audit-2026-05-04.md", "wiki/context/decisions/llm-tool-choice-required-incompat-20260503.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/work-requests/s4-to-s3-reply-s4-implemented-coverage-readiness-contract-golden-corpus-v1-and-governance.md", "wiki/canon/work-requests/s4-to-s3-s4-staticevidencecontract-gate-hardening-completed-s3-consumer-update.md", "wiki/canon/work-requests/s4-to-s3-s4-consolidated-contract-notice-tool-liveness-system-stability-gate-and-local-qu.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/handoff/s4/session-s4-api-doc-sync-20260512.md", "wiki/canon/work-requests/s4-to-s3-s3-align-consumers-to-current-s4-api-contract-tool-liveness-system-stability-gat.md", "wiki/canon/specs/aegis-traceaudit-prepaper-anchor-guideline.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/api/paper-analysis-api.md", "wiki/canon/api/s5-paper-context-api.md", "wiki/canon/api/llm-gateway-api.md", "wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md", "wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md", "wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md", "wiki/canon/work-requests/s3-to-s7-s3-follow-up-certificate-maker-disconnects-before-s7-backendactivity-despite-asy.md", "wiki/canon/handoff/s3/session-s3-consume-s5-contextcoverage-source-kg-20260522.md", "wiki/canon/handoff/s3/session-s3-review-s4-static-evidence-hardening-20260522.md", "wiki/canon/handoff/s3/session-s3-session-closeout-certificate-maker-paper-smoke-20260522.md", "wiki/canon/handoff/s5/session-s5-e2e-smoke-source-context-review-20260522.md", "wiki/canon/handoff/s4/session-s4-static-evidence-consumer-hardening-20260522.md", "wiki/canon/work-requests/s3-to-s4-s4-deep-review-certificate-maker-full-live-e2e-smoke-evidence.md", "wiki/canon/work-requests/s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence.md", "wiki/canon/work-requests/s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review.md", "wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete.md"]
 ---
 
 # S3. Analysis Agent 인수인계서
 
 > **반드시 `docs/AEGIS.md`를 먼저 읽을 것.**
-> **마지막 업데이트: 2026-05-21**
+> **마지막 업데이트: 2026-05-22**
 
-이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-21 기준 TraceAudit paper-path implementation/contract 정렬 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
+이 문서는 S3 lane의 현재 책임, 경계, 아키텍처, 그리고 2026-05-22 기준 TraceAudit paper-path implementation/contract 정렬 및 certificate-maker full-live smoke closeout 상태를 다음 세션이 바로 이어받을 수 있도록 정리한 canonical handoff다.
 
 ---
 
-## 0. 2026-05-21 세션 재시작용 fast bootstrap
+## 0. 2026-05-22 세션 재시작용 fast bootstrap
 
 새 S3 세션은 아래 순서로 읽으면 된다. 이 순서가 현재 paper-path 작업의 최소 bootstrap이다.
 
@@ -35,14 +35,19 @@ related_pages: ["wiki/canon/roadmap/s3-roadmap.md", "wiki/canon/specs/analysis-a
    - `wiki/canon/handoff/s3/session-s3-implements-s7-paper-controls-consumption-20260520.md`
    - `wiki/canon/handoff/s3/session-s3-consume-s4-semgrep-coverage-caveat-20260521.md`
    - `wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md`
+   - `wiki/canon/handoff/s3/session-s3-consume-s5-contextcoverage-source-kg-20260522.md`
+   - `wiki/canon/handoff/s3/session-s3-review-s4-static-evidence-hardening-20260522.md`
+   - `wiki/canon/handoff/s3/session-s3-session-closeout-certificate-maker-paper-smoke-20260522.md`
 
 Current one-line state:
 
 ```text
-S3 paper path is implemented as the consumer/orchestrator for S4 static evidence,
-S5 paper context, and S7 Qwen paper controls. Unit/contract tests are green.
-Live certificate-maker validation now reaches S7 async ownership but still fails
-before backendActivity with backend_transport_disconnected; S7 follow-up is open.
+S3 paper path has completed one full live certificate-maker e2e smoke over live
+S4/S5/S7/S3 and exported reviewer-ready evidence. The latest accepted state is
+PAPER_EXPORT_READY with TP=11, FP=5, UNKNOWN=3 and qualityGate=warn; S4/S5 both
+accepted the evidence as usable-with-caveats. S3 has no open WRs as of closeout.
+Next work should pause for paper-novelty/direction, then rerun e2e after services
+are updated to confirm S4/S5/S3 consumer uptake.
 ```
 
 Do not restart the benchmark design discussion unless a live/e2e gate fails in a way the anchor's downgrade paths cannot explain. The frozen paper direction remains TraceAudit: reviewer-auditable SAST triage decision artifacts, not model-SOTA or frontier parity.
@@ -103,7 +108,7 @@ Do not restart the benchmark design discussion unless a live/e2e gate fails in a
 - 계약과 구현이 어긋나면 WR로 조정
 
 ### 금지/주의
-- 커밋 금지
+- 사용자 명시 요청 없는 commit/push 금지
 - 사용자 허락 없는 서비스 start/stop 금지
 - canonical WR은 `wiki/canon/work-requests/**` 기준
 - `docs/work-requests/**`는 archive-only reference
@@ -1296,3 +1301,152 @@ Canonical session evidence:
 wiki/canon/handoff/s3/session-s3-s7-async-backendactivity-wr-handling-20260521.md
 ```
 <!-- S3-S7-BACKENDACTIVITY-WR-HANDLING-20260521:END -->
+---
+
+<!-- S3-CERTMAKER-FULL-LIVE-CLOSEOUT-20260522:START -->
+## 29. 2026-05-22 certificate-maker full live e2e smoke / closeout state
+
+This is the current S3 closeout anchor for the first full live TraceAudit certificate-maker paper smoke and the follow-up S4/S5 evidence-quality hardening loop.
+
+### Completed during this closeout window
+
+- S3 consumed S5 `contextCoverage` and `explore_source_kg` Source KG results in the paper path.
+- S3 enforced S5 as bounded contextual/corroborating evidence only; S4 local grounding remains required for TP/FP.
+- S3 ran a full live `bt-0001-certificate_maker` e2e smoke through live S4/S5/S7/S3.
+- S3 archived both reviewer entrypoints and expanded evidence for the full run.
+- S3 registered S4/S5 deep-review WRs with evidence paths.
+- S4 and S5 each replied `usable-with-caveats` for their producer/context evidence surfaces.
+- S3 issued and accepted a follow-up S4 implementation WR for static-evidence consumer-context hardening.
+- S4 implemented enriched static-evidence projection and S3 reverified/accepted the reply.
+- All S3-addressed canonical WRs are closed as of this handoff update.
+
+### Full live certificate-maker smoke result
+
+Run root:
+
+```text
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/runs/traceaudit-certmaker-full-live-20260522-111336
+```
+
+Archive entrypoints:
+
+```text
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/archives/traceaudit-certmaker-full-live-20260522-111336.tar.gz
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/archives/traceaudit-certmaker-full-live-20260522-111336.tar.gz.sha256
+/home/kosh/aegis-for-paper/experiments/triage-core-v1/archives/traceaudit-certmaker-full-live-20260522-111336/
+```
+
+Reviewer files:
+
+```text
+EVIDENCE-REVIEW.md
+evidence-review-summary.json
+finding-review-table.csv
+SHA256SUMS
+cases/case-bt-0001-certificate-maker-traceaudit-6afd0d788336/finding-evidence-summary.jsonl
+cases/case-bt-0001-certificate-maker-traceaudit-6afd0d788336/triage-envelope.jsonl
+cases/case-bt-0001-certificate-maker-traceaudit-6afd0d788336/llm-transcript.raw.jsonl
+cases/case-bt-0001-certificate-maker-traceaudit-6afd0d788336/evidence-ledger.jsonl
+```
+
+Observed result:
+
+```text
+status=PAPER_EXPORT_READY
+wallTime=5958.9s (~99.3m)
+S4 live findings=19
+triageCounts: TP=11, FP=5, UNKNOWN=3
+qualityGate=warn
+qualityGate reasons: SOME_FINDINGS_UNKNOWN, ACQUISITION_TOOL_CALLS_SKIPPED_OR_DUPLICATED
+UNKNOWN findings: finding:0016, finding:0017, finding:0018
+duplicate/skipped acquisition tool finding: finding:0008
+S5 finding-context requests=19
+S5 generic-threat requests=19
+S5 source-kg explore requests=33
+LLM transcript rows=19
+triage rows=19
+finding summary rows=19
+```
+
+Interpretation:
+
+- This run proves the synchronous per-finding paper pipeline can finish on a live target under slow local Qwen constraints.
+- `PAPER_EXPORT_READY` is export/readiness success, not a claim that all findings are resolved or that the scientific quality gate passed cleanly.
+- The `warn` quality gate is expected from `UNKNOWN` findings plus one malformed/duplicate acquisition-tool event.
+- `UNKNOWN` is an intentional evidence-boundary outcome, not a pipeline crash.
+
+### S5 review outcome
+
+S5 verdict: `usable-with-caveats`.
+
+S5 accepted the run as paper-smoke source-context evidence with caveats:
+
+- `contextCoverage` was truthful for all 19 findings; every requested `main.cpp` anchor had a true overlapping span.
+- Source KG setup was partial quality: 14 graph nodes/snippets, 0 graph edges, 0 rich IR artifacts.
+- Source slices/function bodies were useful, but callers/neighborhood expansion was weak because graph edges were absent.
+- `finding:0016`-`finding:0018` were not S5 coverage failures; they lacked caller/data-flow context sufficient for final TP/FP.
+- `finding:0008` malformed tool name was not an S5 request/response shape failure.
+
+Canonical S5 evidence:
+
+```text
+wiki/canon/handoff/s5/session-s5-e2e-smoke-source-context-review-20260522.md
+wiki/canon/work-requests/s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence.md
+```
+
+### S4 review and hardening outcome
+
+S4 verdict: `usable-with-caveats`.
+
+S4 accepted the 19-finding static-evidence bundle as valid paper-smoke evidence and then implemented the S3/S5 follow-up improvements:
+
+- preserve gcc-fanalyzer `dataFlow` when the tool output provides it;
+- emit `TOOL_PATH_NOT_AVAILABLE` and `VARIABLE_NAME_NOT_AVAILABLE` diagnostics for path-sensitive gcc-fanalyzer findings missing reviewer-visible path/variable detail;
+- preserve function body extents and map findings to `functionId` with `functionMatchStatus`;
+- expose bounded direct-call hints through `functions[].calls[]` / `callCount`;
+- add local consumer context fields such as `cweMappingStatus`, `findingCategory`, `securityRelevance`, `dataFlowStatus`, and `pathEvidenceStatus`;
+- add local `clusterId`, duplicate, and related-finding hints without merging findings into TP/FP/UNKNOWN.
+
+S3 accepted the S4 reply after rerunning:
+
+```text
+focused S4 acceptance tests: 5 passed
+S4 regression subset: 198 passed, 1 skipped
+full services/sast-runner suite: 1411 passed, 1 skipped
+wiki validation: PASS
+```
+
+Canonical S4 evidence:
+
+```text
+wiki/canon/work-requests/s3-to-s4-s4-deep-review-certificate-maker-full-live-e2e-smoke-evidence.md
+wiki/canon/work-requests/s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review.md
+wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete.md
+wiki/canon/handoff/s4/session-s4-static-evidence-consumer-hardening-20260522.md
+wiki/canon/handoff/s3/session-s3-review-s4-static-evidence-hardening-20260522.md
+```
+
+### Git state at closeout
+
+Last pushed commits before the documentation closeout request:
+
+```text
+/home/kosh/AEGIS:            ca087db Preserve S4 context needed for paper triage
+/home/kosh/aegis-static-wiki: 6dc6bcd Accept S4 static-evidence hardening reply
+/home/kosh/aegis-for-paper:  cbf91acd9 Preserve expanded certificate-maker smoke archive
+```
+
+After the user explicitly stopped commit/push during this closeout, any further documentation edits should remain uncommitted until the user re-authorizes commit/push.
+
+### Current WR state
+
+As of this closeout update, S3 has no open WRs in the canonical WR MCP inbox.
+
+### Next recommended work
+
+1. Pause before more experiments and decide the paper claim: why this is a paper beyond “LLM triages SAST”.
+2. Likely strong direction: evidence-led, producer-boundary-aware, auditable SAST triage under slow/on-prem LLM constraints.
+3. After services are updated/redeployed, rerun certificate-maker or one next selected target to confirm consumer uptake of S4 enriched static evidence and S5 caveat handling.
+4. For the next e2e smoke, inspect at minimum `EVIDENCE-REVIEW.md`, `finding-review-table.csv`, `triage-envelope.jsonl`, `finding-evidence-summary.jsonl`, `llm-transcript.raw.jsonl`, and `evidence-ledger.jsonl`.
+5. Do not start/stop services unless the user explicitly re-authorizes it; previous e2e smoke operations only called already-running services.
+<!-- S3-CERTMAKER-FULL-LIVE-CLOSEOUT-20260522:END -->
