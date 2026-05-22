@@ -10,7 +10,7 @@ source_refs:
   - "services/sast-runner/tests/test_static_evidence_consumer_canaries.py"
   - "services/sast-runner/tests/test_scan_endpoint.py"
   - "services/sast-runner/tests/test_paper_static_evidence.py"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "sast-runner", "static-evidence", "consumer-contract"]
 decision_tags: ["static-evidence-contract-v1", "coverage-contract", "readiness-contract", "claim-boundary", "tool-evidence-matrix"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/handoff/s4/readme.md"]
@@ -18,7 +18,7 @@ related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-a
 
 # S4 Static Evidence Contract v1
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Runtime surfaces: `/v1/scan`, `/v1/build-and-analyze`, and nested inclusion inside `/v1/paper/static-evidence`
 
@@ -84,7 +84,7 @@ Coverage entries use:
 provided | partial | not_provided | not_computed | not_applicable | unavailable | failed | unknown
 ```
 
-`provided` means only “S4 observed and emitted local deterministic evidence”. It never means vulnerability absence. Every non-`provided` status carries stable `reasonCodes[]` and `consumerPolicy`, normally `do_not_use_as_negative_evidence`.
+`provided` means only “S4 observed and emitted local deterministic evidence”. It never means vulnerability absence. Every non-`provided` status carries stable `reasonCodes[]` and `consumerPolicy`, normally `do_not_use_as_negative_evidence`. For paper bundle findings, `dataFlowStatus` / `pathEvidenceStatus` further distinguish tool-provided diagnostic paths from gcc-fanalyzer abstention (`TOOL_PATH_NOT_AVAILABLE`) without converting missing path detail into a final verdict.
 
 Required local surfaces:
 
@@ -235,7 +235,7 @@ The summary schema is:
 s4-static-evidence-contract-consumer-summary-v1
 ```
 
-`localStaticEvidenceReady=true` requires positive gates **and** complete projection of required coverage surfaces, required claim-boundary statuses, and current-six tool matrix readiness. Pass/ready/pass gates alone are necessary but not sufficient. Malformed projection, duplicate tool/claim rows, spoofed summary-only diagnostics, unsafe enum values, or malformed containers fail closed with `STATIC_EVIDENCE_CONTRACT_UNSAFE_PROJECTION` and `localStaticEvidenceReady=false`.
+`localStaticEvidenceReady=true` requires positive gates **and** complete projection of required coverage surfaces, required claim-boundary statuses, and current-six tool matrix readiness. Paper consumers may additionally use additive finding/function hints (`functionMatchStatus`, `findingCategory`, `cweMappingStatus`, `securityRelevance`, cluster/related-finding hints, and direct `functions[].calls[]`) only as local static evidence context, not as final triage. Pass/ready/pass gates alone are necessary but not sufficient. Malformed projection, duplicate tool/claim rows, spoofed summary-only diagnostics, unsafe enum values, or malformed containers fail closed with `STATIC_EVIDENCE_CONTRACT_UNSAFE_PROJECTION` and `localStaticEvidenceReady=false`.
 
 ## 8. Relationship to paper bundle
 
@@ -246,15 +246,21 @@ staticEvidenceContract.claimBoundaryMatrix -> claimBoundaryMatrix
 staticEvidenceContract.claimBoundaries     -> claimBoundaries
 ```
 
-The paper-specific `surfaceStatus`, row traces, file-backed artifacts, and B2/B4 evidence-control checks are defined in `wiki/canon/api/sast-runner-paper-static-evidence-api.md`. They do not replace this runtime contract.
+The paper-specific `surfaceStatus`, row traces, file-backed artifacts, row-local diagnostics, function extent/call projection, dataflow evidence rows, and B2/B4 evidence-control checks are defined in `wiki/canon/api/sast-runner-paper-static-evidence-api.md`. They do not replace this runtime contract.
 
 ## 9. Verification status
 
 Latest verification for this document refresh:
 
 ```bash
+cd /home/kosh/AEGIS/services/sast-runner && \
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
+
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Relevant focused coverage includes:
@@ -263,6 +269,7 @@ Relevant focused coverage includes:
 - `tests/test_static_evidence_consumer_canaries.py` — S3-facing projection/fail-closed summary.
 - `tests/test_tool_portfolio_system_stability_gate.py` — current-six stability gate fixtures.
 - `tests/test_scan_endpoint.py` — sync/async required-tool and request validation behavior.
-- `tests/test_paper_static_evidence.py` — paper-bundle wrapping, mirrors, trace, and validation split.
+- `tests/test_paper_static_evidence.py` — paper-bundle wrapping, mirrors, trace, validation split, dataflow preservation, gcc-fanalyzer abstention diagnostics, local categories/clusters, and certificate-maker-style replay anchors.
+- `tests/test_ast_dumper.py` — function body extents and direct-call projection used for paper finding anchors.
 
-Current state: implemented and live in S4 v0.11.2. Remaining cross-lane work, if any, is S3 consumer/e2e integration, not S4 contract definition.
+Current state: implemented and live in S4 v0.11.2. S4 now projects consumer-grade local static context for the first e2e smoke review. Remaining cross-lane work, if any, is S3/S5 consumer uptake and e2e monitoring, not another S4 verdict contract expansion.

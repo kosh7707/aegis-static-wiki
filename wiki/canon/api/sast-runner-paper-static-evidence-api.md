@@ -11,7 +11,7 @@ source_refs:
   - "wiki/canon/work-requests/s3-to-s4-s3-reply-accept-s4-paper-static-evidence-api-contract.md"
   - "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md"
   - "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md"
-last_verified: "2026-05-20"
+last_verified: "2026-05-22"
 service_tags: ["s4", "s3", "paper-pipeline", "traceaudit", "sast-runner", "static-evidence", "observability"]
 decision_tags: ["paper-api", "static-evidence-endpoint", "s4-static-evidence-producer", "consumer-contract", "producer-boundary", "durable-ownership", "s4-static-evidence-freeze-gate"]
 related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/paper-analysis-pipeline-design.md", "wiki/canon/specs/traceaudit-s3-s4-s5-usecases-state-machine.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/handoff/s4/readme.md", "wiki/canon/handoff/s4/s4-paper-static-evidence-implementation-crystallization.md"]
@@ -19,10 +19,10 @@ related_pages: ["wiki/canon/api/paper-analysis-api.md", "wiki/canon/specs/paper-
 
 # S4 Paper Static Evidence API Contract
 
-Last verified: 2026-05-20
+Last verified: 2026-05-22
 Owner: S4 / SAST Runner
 Endpoint: `POST /v1/paper/static-evidence`
-Current gate: `S4_STATIC_EVIDENCE_FREEZE_GATE = pass`
+Current gate: `S4_STATIC_EVIDENCE_FREEZE_GATE = pass`; `S4_STATIC_EVIDENCE_CONSUMER_CONTRACT_IMPROVEMENT = pass`
 
 This is the S4-owned producer contract for TraceAudit paper experiments. S3 may summarize it in the paper API, but this page is the detailed source of truth for what S4 emits and what S4 refuses to claim.
 
@@ -255,14 +255,26 @@ Join fields such as `toolRunId`, `sourceFileId`, `functionId`, and `libraryId` a
 ### `findings[]`
 Required: `findingId`, `toolId`, `ruleId`, `message`, `severity`, `cweCandidates[]`, `location`, `functionId|null`, `evidenceRefs[]`, `diagnosticRefs[]`, `trace`.
 
+Additive consumer-context fields may appear and are now produced when source data allows:
+
+- `functionMatchStatus = matched | no_match | ambiguous` explains whether `functionId` was anchored by source-file/function extents.
+- `cweMappingStatus = mapped | no_applicable_cwe | tool_did_not_report` distinguishes mapped CWE, local non-CWE categories, and tool abstention.
+- `findingCategory` is a local S4 grouping label such as `command-injection`, `memory-leak`, `uninitialized-value`, `dead-store`, `api-usability`, `performance`, `style`, or `other`.
+- `securityRelevance` is bounded local context (`security`, `reliability`, `maintainability`, `performance`, `style`, `unknown`), not a final vulnerability verdict.
+- `dataFlowStatus = provided | not_available` and `pathEvidenceStatus = provided | tool_did_not_report | not_provided` separate missing analyzer path detail from normal tools that do not emit paths.
+- `dataFlow[]` may preserve tool-provided path steps with source-file refs and line/text details.
+- `toolMetadata` may preserve allowlisted tool metadata such as `gccFlag`, `cppcheckId`, or `checkName`.
+- `evidenceResolution` may preserve allowlisted evidence-resolution metadata emitted by the runner.
+- `clusterId`, `clusterReason`, `duplicateOf`, `duplicateConfidence`, `relatedFindingIds[]`, and `semanticDistinction` are local grouping hints only; they do not merge findings into a final TP/FP/UNKNOWN decision.
+
 ### `evidence[]`
-Required: `evidenceId`, `evidenceType`, `producer="s4"`, `findingId|null`, `sourceFileId|null`, `text`, `consumerPolicy`, `diagnosticRefs[]`, `trace`.
+Required: `evidenceId`, `evidenceType`, `producer="s4"`, `findingId|null`, `sourceFileId|null`, `text`, `consumerPolicy`, `diagnosticRefs[]`, `trace`. Tool-provided dataflow steps are emitted as additive `evidenceType="sast-dataflow-step"` rows and referenced from the owning finding.
 
 ### `sourceFiles[]`
 Required: `sourceFileId`, `path`, `language`, `compileContextRef`, `diagnosticRefs[]`, `trace`.
 
 ### `functions[]`
-Required: `functionId`, `sourceFileId`, `name`, `qualifiedName`, `location`, `diagnosticRefs[]`, `trace`.
+Required: `functionId`, `sourceFileId`, `name`, `qualifiedName`, `location`, `diagnosticRefs[]`, `trace`. `location` should include full function extent (`startLine`, `endLine`) when AST extraction provides it. Additive `calls[]` and `callCount` expose bounded direct-call names observed by the local AST extractor.
 
 ### `includeEdges[]`
 Required: `includeEdgeId`, `fromSourceFileId`, `includeText`, `toSourceFileId|null`, `resolved`, `diagnosticRefs[]`, `trace`.
@@ -329,9 +341,11 @@ S4 freeze readiness requires positive and negative executable coverage for:
 - full surface-status coverage and count reconciliation;
 - row-local trace required fields;
 - required `diagnosticRefs` and reference resolution;
-- sanitized diagnostics;
+- sanitized diagnostics, including `TOOL_PATH_NOT_AVAILABLE` and `VARIABLE_NAME_NOT_AVAILABLE` when gcc-fanalyzer reports path-sensitive findings without reviewer-visible path/variable detail;
 - current-six `toolRuns[]` honesty, including Semgrep effective-coverage diagnostics;
 - duplicate ID failure;
+- function extent / `functionId` anchoring for finding locations;
+- local grouping/category hints without verdict semantics;
 - claim-boundary mirror consistency;
 - no verdict/risk/safe/TP/FP/UNKNOWN fields;
 - no checksum/hash/digest/fingerprint/integrity/reproducibility aliases;
@@ -345,14 +359,24 @@ S4 freeze readiness requires positive and negative executable coverage for:
 Latest S4 verification supporting this contract:
 
 ```bash
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py -q
-# 60 passed, 1 skipped (recorded in freeze-gate session)
+cd /home/kosh/AEGIS/services/sast-runner && \
+  python3 -m py_compile app/scanner/paper_static_evidence.py app/scanner/ast_dumper.py && \
+  .venv/bin/pytest \
+    tests/test_paper_static_evidence.py::test_live_endpoint_preserves_gcc_fanalyzer_dataflow_and_function_anchor \
+    tests/test_paper_static_evidence.py::test_live_endpoint_diagnoses_gcc_fanalyzer_missing_path_details \
+    tests/test_paper_static_evidence.py::test_live_endpoint_replays_certificate_maker_style_unknown_gcc_findings \
+    tests/test_paper_static_evidence.py::test_live_endpoint_projects_related_clusters_and_local_categories \
+    tests/test_ast_dumper.py::TestDumpFunctionsParallel::test_function_rows_preserve_body_end_line_and_calls -q
+# 5 passed in 0.08s
 
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_scan_router_logging.py tests/test_main_startup_logging.py -q
-# 63 passed, 1 skipped in 2.02s
+cd /home/kosh/AEGIS/services/sast-runner && \
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
 
 cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Log-analyzer proof exists for request `req-s4-log-proof-1779259710-6143`: S4 emitted canonical JSONL lifecycle logs from paper request start to terminal HTTP 200, with non-empty `s4ProducerRunId` and `bundleStatus=produced`.

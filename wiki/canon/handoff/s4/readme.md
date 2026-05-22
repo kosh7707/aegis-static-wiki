@@ -9,15 +9,15 @@ source_refs:
   - "services/sast-runner/app/scanner/orchestrator.py"
   - "services/sast-runner/app/scanner/paper_static_evidence.py"
   - "services/sast-runner/tests/test_paper_static_evidence.py"
-last_verified: "2026-05-21"
-service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit", "observability", "semgrep-effective-coverage"]
+last_verified: "2026-05-22"
+service_tags: ["s4", "sast-runner", "paper-pipeline", "traceaudit", "observability", "semgrep-effective-coverage", "static-evidence"]
 decision_tags: ["current-state", "handoff", "s4-static-evidence-freeze-gate", "e2e-smoke-ready", "session-reset-bootstrap"]
 related_pages: ["wiki/canon/specs/sast-runner.md", "wiki/canon/api/sast-runner-api.md", "wiki/canon/api/sast-runner-paper-static-evidence-api.md", "wiki/canon/specs/sast-runner-static-evidence-contract.md", "wiki/canon/specs/sast-runner-system-quality-gate-separation-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-governance-v1.md", "wiki/canon/specs/sast-runner-tool-portfolio-experiment-spec-v1.md", "wiki/canon/roadmap/s4-roadmap.md", "wiki/canon/handoff/s4/build-snapshot-consumer-seam.md", "wiki/canon/handoff/s4/session-s4-log-analyzer-traceability-20260520.md", "wiki/canon/handoff/s4/session-s4-freeze-observability-hardening-20260520.md", "wiki/canon/handoff/s4/session-s4-semgrep-effective-coverage-hardening-20260520.md", "wiki/canon/work-requests/s4-to-s3-s4-notice-semgrep-c-effective-coverage-hardening-and-additive-coverage-contract-.md"]
 ---
 
 # S4. SAST Runner 인수인계서
 
-> Last verified: **2026-05-21**
+> Last verified: **2026-05-22**
 > Owner: **S4 / SAST Runner**
 > Code owner path: `services/sast-runner/`
 > Service: `s4-sast`, port `9000`, version `0.11.2`
@@ -112,6 +112,7 @@ S4_STATIC_EVIDENCE_FREEZE_GATE = pass
 S4_CANONICAL_JSONL_LOG_ANALYZER_TRACEABILITY = pass
 S4_E2E_SMOKE_READINESS = ready
 S4_SEMGREP_CPP_EFFECTIVE_COVERAGE_CANARY = pass
+S4_STATIC_EVIDENCE_CONSUMER_CONTRACT_IMPROVEMENT = pass
 ```
 
 Meaning:
@@ -120,6 +121,7 @@ Meaning:
 - S4 canonical JSONL logs are visible to `log-analyzer` by `service=s4-sast` and `requestId`.
 - S4 has no known open S4-lane WR blocker before S3 e2e smoke.
 - S4 has already notified S3 about the Semgrep effective-coverage additive contract fields.
+- After the first S3/S5 e2e smoke review, S4 now preserves gcc-fanalyzer dataflow when present, emits explicit abstention diagnostics when it is absent, anchors findings to function extents, exposes direct calls, and adds bounded local category/cluster hints without verdict semantics.
 
 Caveat:
 
@@ -128,20 +130,27 @@ Caveat:
 
 ## 4. Current proof snapshot
 
-Latest S4 verification evidence recorded on 2026-05-20:
+Latest S4 verification evidence recorded on 2026-05-22:
 
 ```bash
-cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
-# 1406 passed, 1 skipped in 34.39s
+cd /home/kosh/AEGIS/services/sast-runner && \
+  python3 -m py_compile app/scanner/paper_static_evidence.py app/scanner/ast_dumper.py && \
+  .venv/bin/pytest \
+    tests/test_paper_static_evidence.py::test_live_endpoint_preserves_gcc_fanalyzer_dataflow_and_function_anchor \
+    tests/test_paper_static_evidence.py::test_live_endpoint_diagnoses_gcc_fanalyzer_missing_path_details \
+    tests/test_paper_static_evidence.py::test_live_endpoint_replays_certificate_maker_style_unknown_gcc_findings \
+    tests/test_paper_static_evidence.py::test_live_endpoint_projects_related_clusters_and_local_categories \
+    tests/test_ast_dumper.py::TestDumpFunctionsParallel::test_function_rows_preserve_body_end_line_and_calls -q
+# 5 passed in 0.08s
 
 cd /home/kosh/AEGIS/services/sast-runner && \
-  .venv/bin/pytest tests/test_paper_static_evidence.py \
-    tests/test_scan_router_logging.py \
-    tests/test_main_startup_logging.py -q
-# 63 passed, 1 skipped in 2.02s
+  .venv/bin/pytest tests/test_paper_static_evidence.py tests/test_ast_dumper.py \
+    tests/test_static_evidence_contract.py tests/test_static_evidence_consumer_canaries.py \
+    tests/test_gcc_analyzer_runner.py tests/test_scanbuild_runner.py tests/test_evidence_oracles.py -q
+# 198 passed, 1 skipped in 2.21s
 
-cd /home/kosh/aegis-static-wiki && python3 tools/validate_wiki.py
-# PASS
+cd /home/kosh/AEGIS/services/sast-runner && .venv/bin/pytest -q
+# 1411 passed, 1 skipped in 36.10s
 ```
 
 Runtime observability proof:
@@ -212,4 +221,4 @@ services/sast-runner/
 
 ## 8. Next work pointer
 
-Use `wiki/canon/roadmap/s4-roadmap.md` for next S4 work. At this checkpoint the next likely work is **S3 e2e smoke support and consumer integration evidence**, not another S4-internal contract rewrite and not another Semgrep coverage rewrite unless S3 reports a concrete consumer mismatch.
+Use `wiki/canon/roadmap/s4-roadmap.md` for next S4 work. At this checkpoint the next likely work is **monitor S3/S5 uptake of the improved S4 static-evidence projection in another e2e smoke**, not another S4-internal contract rewrite and not another Semgrep coverage rewrite unless S3/S5 reports a concrete consumer mismatch.

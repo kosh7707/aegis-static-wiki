@@ -7282,3 +7282,28 @@ related_pages:
 ## [2026-05-22] mcp | complete_wr | s4-to-s3-s4-reply-certificate-maker-full-live-e2e-smoke-static-evidence-review
 - Lane s3 completed recipient-side handling
 - Status: completed
+
+## [2026-05-22] mcp | register_wr | s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements.md
+
+## [2026-05-22] S4 static evidence consumer-context hardening verified | s4-static-evidence-consumer-contract
+- Updated S4 paper static-evidence projection to preserve gcc-fanalyzer dataflow, emit explicit missing-path/unknown-variable diagnostics, anchor findings to function extents, expose function calls, and add local category/cluster hints without verdict semantics.
+- Verification: py_compile plus focused 5-test regression PASS; related S4 static-evidence suite 198 passed, 1 skipped; full services/sast-runner suite 1411 passed, 1 skipped; wiki validate PASS.
+- Docs refreshed: wiki/canon/api/sast-runner-paper-static-evidence-api.md, wiki/canon/specs/sast-runner-static-evidence-contract.md, wiki/canon/handoff/s4/readme.md.
+
+## [2026-05-22] mcp | complete_wr | s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-22] mcp | complete_wr | s5-to-s4-s5-companion-request-for-s4-static-evidence-consumer-contract-improvements
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-22] mcp | register_wr | s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete
+- Registered reply WR for s3, s5
+- Path: wiki/canon/work-requests/s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete.md
+
+## [2026-05-22] mcp | complete_wr | s4-to-s3-s5-s4-reply-static-evidence-consumer-context-hardening-complete
+- Lane s5 completed recipient-side handling
+- Status: open

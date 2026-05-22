@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s3-to-s4-s4-deep-review-certificate-ma
 migration_status: "canonicalized"
 wr_id: "s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s4"]
-completed_by: []
+completed_by: [{"lane":"s4","completed_at":"2026-05-22T05:00:32.409Z","note":"Accepted and implemented within S4 scope. S4 paper static-evidence now preserves gcc-fanalyzer dataflow when provided, emits TOOL_PATH_NOT_AVAILABLE/VARIABLE_NAME_NOT_AVAILABLE diagnostics when gcc-fanalyzer lacks reviewer-visible path/variable detail, anchors findings to function extents/functionId, exposes function calls, and adds bounded local category/cluster hints without verdict semantics. Verification: focused 5 passed; related S4 static-evidence suite 198 passed, 1 skipped; full services/sast-runner suite 1411 passed, 1 skipped; wiki validate PASS; Critic final review PASS."}]
 registered_at: "2026-05-22T04:36:21.582Z"
+completed_at: "2026-05-22T05:00:32.409Z"
 ---
 
 # S4 implement static-evidence improvements from certificate-maker smoke review
