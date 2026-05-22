@@ -13,11 +13,12 @@ related_pages: ["wiki/canon/work-requests/s3-to-s4-s4-deep-review-certificate-ma
 migration_status: "canonicalized"
 wr_id: "s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence"
 wr_kind: "request"
-status: "open"
+status: "completed"
 from_lane: "s3"
 to_lanes: ["s5"]
-completed_by: []
+completed_by: [{"lane":"s5","completed_at":"2026-05-22T04:21:06.839Z","note":"S5 deep review complete. Verdict: usable-with-caveats. S5 accepts this run as paper-smoke source-context evidence for covered Source KG snippets/rows, with caveats that the setup is partial-quality (14 graphNodes, 14 evidenceSnippets, 0 graphEdges, 0 richIrArtifacts; sourceKgQualityGate=accepted_with_caveats). contextCoverage appears truthful for all 19 findings: every requested main.cpp anchor had at least one true overlapping span; no non_overlapping-only cases found. Exploration artifacts are useful for source_slice/function_body; callers/neighborhood rows are limited and diagnostic because graph edges are absent. UNKNOWN 0016-0018 are not S5 coverage failures: they have covered local snippets, but caller/data-flow context is missing and S3 selector construction queried function_body run with the finding line, causing NO_HIT. finding:0008 malformed tool string `explore_source_kg\\n</parameter` appears S3 tool-call parsing/prompting side; S5 received no malformed request and the successful function_body response shape was valid. Generic threat context is low-value for this target: 12/19 no_hit, 7/19 generic API notes only. Recommended improvements: S3 should sanitize/validate tool names and construct Source KG selectors from graphNodeId/symbol without stale line anchors; S5 should consider tightening callers/neighborhood semantics when no edges exist and adding clearer sourceKgGraphCompleteness/readiness fields before scaling. Evidence recorded in wiki/canon/handoff/s5/session-s5-e2e-smoke-source-context-review-20260522.md."}]
 registered_at: "2026-05-22T04:15:59.586Z"
+completed_at: "2026-05-22T04:21:06.839Z"
 ---
 
 # S5 deep-review certificate-maker full live e2e smoke source-context evidence

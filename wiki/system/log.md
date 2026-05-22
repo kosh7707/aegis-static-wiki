@@ -7250,3 +7250,35 @@ related_pages:
 ## [2026-05-22] mcp | register_wr | s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence
 - Registered request WR for s5
 - Path: wiki/canon/work-requests/s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence.md
+
+## [2026-05-22] reviewed_usable_with_caveats | s5-e2e-smoke-source-context-review
+- S5 reviewed certificate-maker full-live e2e smoke Source KG evidence.
+- Verdict: usable-with-caveats as paper-smoke source-context evidence.
+- Key caveats: Source KG has 14 nodes/snippets but no graph edges/rich IR; callers/neighborhood/data-flow are not strong; S3 selector construction caused run-function no_hit for UNKNOWN findings; finding:0008 malformed tool string is S3-side.
+
+## [2026-05-22] mcp | complete_wr | s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence
+- Lane s5 completed recipient-side handling
+- Status: completed
+
+## [2026-05-22] mcp | register_wr | s4-to-s3-s4-reply-certificate-maker-full-live-e2e-smoke-static-evidence-review
+- Registered reply WR for s3
+- Path: wiki/canon/work-requests/s4-to-s3-s4-reply-certificate-maker-full-live-e2e-smoke-static-evidence-review.md
+
+## [2026-05-22] s4-review-complete | certificate-maker full live e2e smoke static-evidence review
+- S4 verdict: usable-with-caveats.
+- Accepted 19-finding S4 static-evidence bundle as valid paper-smoke evidence.
+- Reply WR: wiki/canon/work-requests/s4-to-s3-s4-reply-certificate-maker-full-live-e2e-smoke-static-evidence-review.md
+- Verification: SHA256SUMS check passed; raw/normalized/export IDs and b4 packets cover all 19 findings.
+- Caveat: path-sensitive gcc-fanalyzer UNKNOWN findings need diagnosticPath/variable/related-location enrichment before broad scale.
+
+## [2026-05-22] mcp | complete_wr | s3-to-s4-s4-deep-review-certificate-maker-full-live-e2e-smoke-evidence
+- Lane s4 completed recipient-side handling
+- Status: completed
+
+## [2026-05-22] mcp | register_wr | s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s4-implement-static-evidence-improvements-from-certificate-maker-smoke-review.md
+
+## [2026-05-22] mcp | complete_wr | s4-to-s3-s4-reply-certificate-maker-full-live-e2e-smoke-static-evidence-review
+- Lane s3 completed recipient-side handling
+- Status: completed
