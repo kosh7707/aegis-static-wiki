@@ -7242,3 +7242,11 @@ related_pages:
 ## [2026-05-22] mcp | complete_wr | s5-to-s3-s3-consume-s5-contextcoverage-and-explore_source_kg-in-iterative-paper-analysis
 - Lane s3 completed recipient-side handling
 - Status: completed
+
+## [2026-05-22] mcp | register_wr | s3-to-s4-s4-deep-review-certificate-maker-full-live-e2e-smoke-evidence
+- Registered request WR for s4
+- Path: wiki/canon/work-requests/s3-to-s4-s4-deep-review-certificate-maker-full-live-e2e-smoke-evidence.md
+
+## [2026-05-22] mcp | register_wr | s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence
+- Registered request WR for s5
+- Path: wiki/canon/work-requests/s3-to-s5-s5-deep-review-certificate-maker-full-live-e2e-smoke-source-context-evidence.md
